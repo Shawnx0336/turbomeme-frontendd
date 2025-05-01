@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <meta name="description" content="TurboMeme - Launch meme coins on Solana instantly. Create, explore, and track recent tokens with no coding required.">
+  <meta name="keywords" content="meme coin, Solana, token creation, crypto, TurboMeme">
+  <meta property="og:title" content="TurboMeme - Instant Memecoin Launchpad on Solana">
+  <meta property="og:description" content="Create and launch your meme coin on Solana in seconds with TurboMeme's no-code platform.">
+  <meta property="og:image" content="https://turbomeme.fun/assets/og-image.jpg">
+  <meta property="og:url" content="https://turbomeme.fun">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="TurboMeme - Instant Memecoin Launchpad on Solana">
+  <meta name="twitter:description" content="Create and launch your meme coin on Solana in seconds with TurboMeme's no-code platform.">
+  <meta name="twitter:image" content="https://turbomeme.fun/assets/og-image.jpg">
+  <title>TurboMeme - Instant Memecoin Launchpad on Solana</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GP8LE0LZ38"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-GP8LE0LZ38');
+    function trackEvent(eventName, eventCategory) {
+      gtag('event', eventName, { 'event_category': eventCategory });
+    }
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- DOMPurify -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+
+  <!-- Toastify -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <!-- Styles -->
+  <style>
+    /* Existing styles unchanged, new styles added below */
+    :root {
+      --primary-green: #00ff88;
+      --primary-orange: #ff6b00;
+      --accent-blue: #00c2ff;
+      --bg-dark: #0a0e2b;
+      --bg-secondary: #1a1e4b;
+      --text-light: #e0e0e0;
+      --text-white: #ffffff;
+      --shadow-glow: 0 0 15px var(--primary-green);
+    }
+
+    /* Notification Banner (Enhanced) */
+    .notification {
+      display: none;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #28a745;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      max-width: 600px;
+      width: 90%;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .notification.show {
+      display: block;
+    }
+
+    .notification h3 {
+      margin: 0 0 10px;
+      font-size: 1.2em;
+    }
+
+    .notification p {
+      margin: 5px 0;
+      word-break: break-all;
+    }
+
+    .notification a {
+      color: #ffeb3b;
+      text-decoration: underline;
+    }
+
+    .notification a:hover {
+      color: #fff176;
+    }
+
+    .notification .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+
+    .notification .copy-btn {
+      background: var(--accent-blue);
+      color: var(--text-white);
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+
+    .notification .copy-btn:hover {
+      background: var(--primary-green);
+    }
+
+    /* Wallet Dropdown */
+    .wallet-dropdown {
+      background: var(--accent-blue);
+      color: var(--text-white);
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 0 10px var(--accent-blue);
+      min-width: 150px;
+      font-size: 1rem;
+    }
+
+    .wallet-dropdown:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px var(--accent-blue);
+    }
+
+    .wallet-status {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-left: 1rem;
+      display: none;
+    }
+
+    .wallet-status.show {
+      display: inline-block;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+      display: none;
+      border: 4px solid var(--text-light);
+      border-top: 4px solid var(--primary-green);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 2rem auto;
+    }
+
+    .loading-spinner.show {
+      display: block;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Error Message */
+    .error-message {
+      color: var(--primary-orange);
+      font-size: 1rem;
+      margin: 2rem 0;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* Existing styles (unchanged) */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cpath d="M0 0h100v100H0z" fill="none"/%3E%3Cpath d="M10 10h80v80H10z" stroke="%231a1e4b" stroke-width="1"/%3E%3C/svg%3E'), linear-gradient(135deg, var(--bg-dark), #2a1a5b);
+      color: var(--text-white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .navbar {
+      background: rgba(10, 14, 43, 0.95);
+      padding: 1.5rem 2rem;
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      color: var(--primary-green);
+      text-shadow: var(--shadow-glow);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      font-family: 'Inter', sans-serif;
+      color: var(--text-white);
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .nav-links a:hover {
+      background: var(--primary-green);
+      color: var(--bg-dark);
+    }
+
+    .nav-links a.active {
+      background: var(--primary-orange);
+      color: var(--text-white);
+    }
+
+    .hamburger {
+      display: none;
+      font-size: 1.5rem;
+      color: var(--text-white);
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 5rem;
+        left: 0;
+        width: 100%;
+        background: var(--bg-dark);
+        padding: 1rem;
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .wallet-dropdown {
+        width: 100%;
+        padding: 0.75rem;
+      }
+    }
+
+    .section {
+      padding: 5rem 2rem;
+      min-height: 100vh;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 2rem;
+    }
+
+    .section.active {
+      display: flex;
+    }
+
+    .headline {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      text-shadow: var(--shadow-glow);
+      color: var(--primary-green);
+    }
+
+    .subheadline {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      color: var(--text-light);
+      max-width: 700px;
+    }
+
+    .connect-wallet-btn, .launch-btn, .refresh-btn, .create-coin-btn, .next-btn, .prev-btn {
+      background: var(--primary-green);
+      color: var(--bg-dark);
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1.2rem;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: var(--shadow-glow);
+      margin: 1.5rem 0;
+      min-width: 200px;
+    }
+
+    .connect-wallet-btn:hover, .launch-btn:hover, .refresh-btn:hover, .create-coin-btn:hover, .next-btn:hover, .prev-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px var(--primary-green);
+    }
+
+    .connect-wallet-btn.hidden {
+      display: none;
+    }
+
+    .token-form {
+      background: var(--bg-secondary);
+      padding: 3rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow-glow);
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .form-step {
+      display: none;
+    }
+
+    .form-step.active {
+      display: block;
+    }
+
+    .form-group {
+      text-align: left;
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tooltip {
+      font-size: 0.8rem;
+      color: var(--accent-blue);
+      cursor: help;
+      position: relative;
+    }
+
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: -2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-dark);
+      color: var(--text-white);
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      width: max-content;
+      max-width: 200px;
+      z-index: 10;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      background: rgba(26, 30, 75, 0.8);
+      color: var(--text-white);
+      border: 2px solid var(--text-light);
+      border-radius: 8px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-green);
+      box-shadow: var(--shadow-glow);
+    }
+
+    input[type="file"] {
+      padding: 0.5rem;
+    }
+
+    .image-preview {
+      max-width: 100%;
+      max-height: 150px;
+      margin-top: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .progress-step {
+      width: 25%;
+      height: 6px;
+      background: var(--text-light);
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    .progress-step.active {
+      background: var(--primary-green);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--bg-secondary);
+      padding: 3rem;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: var(--shadow-glow);
+      text-align: left;
+    }
+
+    .modal-content h2 {
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 1.5rem;
+      color: var(--primary-green);
+    }
+
+    .modal-content p, .modal-content ul {
+      margin-bottom: 1.5rem;
+      color: var(--text-light);
+    }
+
+    .modal-content ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: flex-end;
+    }
+
+    .token-cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .token-card {
+      background: var(--bg-secondary);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow-glow);
+      transition: transform 0.3s;
+      text-align: left;
+    }
+
+    .token-card:hover {
+      transform: scale(1.05);
+    }
+
+    .token-image {
+      max-width: 100%;
+      max-height: 100px;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .token-image.show {
+      display: block;
+    }
+
+    .token-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary-green);
+    }
+
+    .token-symbol {
+      color: var(--primary-orange);
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .token-address {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+
+    .token-address:hover {
+      color: var(--accent-blue);
+    }
+
+    .footer {
+      padding: 4rem 2rem;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .headline {
+        font-size: 2.5rem;
+      }
+
+      .subheadline {
+        font-size: 1.1rem;
+      }
+
+      .token-form {
+        padding: 2rem;
+      }
+
+      .navbar {
+        padding: 1rem;
+      }
+
+      .token-card {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .connect-wallet-btn, .launch-btn, .refresh-btn, .create-coin-btn, .next-btn, .prev-btn {
+        font-size: 1rem;
+        padding: 0.75rem 2rem;
+        min-width: 100%;
+      }
+
+      .token-form {
+        padding: 1.5rem;
+      }
+
+      .modal-content {
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Notification Banner -->
+  <div id="notification" class="notification">
+    <button class="close-btn" onclick="closeNotification()">×</button>
+    <h3>Token Launched!</h3>
+    <p><strong>Name:</strong> <span id="notify-token-name"></span></p>
+    <p><strong>Symbol:</strong> <span id="notify-token-symbol"></span></p>
+    <p><strong>Contract:</strong> <span id="notify-token-contract"></span> <button class="copy-btn" onclick="copyContract()">Copy</button></p>
+    <p><strong>View on Solscan:</strong> <a id="notify-solscan-link" href="#" target="_blank" rel="noopener noreferrer"></a></p>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">TurboMeme</div>
+    <div class="hamburger" aria-label="Toggle navigation">☰</div>
+    <div class="nav-links" id="navLinks">
+      <a href="#" id="link-create" class="active">Create Token</a>
+      <a href="#" id="link-recent">Recent Launches</a>
+      <a href="https://raydium.io/swap/?initialize-pool" target="_blank">Create Liquidity</a>
+      <a href="https://raydium.io/portfolio" target="_blank">Manage Liquidity</a>
+    </div>
+    <div>
+      <select class="wallet-dropdown" id="walletSelect" aria-label="Select a Solana wallet">
+        <option value="none">Select Wallet</option>
+        <option value="phantom">Phantom</option>
+        <option value="solflare">Solflare</option>
+      </select>
+      <span class="wallet-status" id="walletStatus"></span>
+    </div>
+  </nav>
+
+  <!-- Create Token Page -->
+  <div id="create-page" class="section active">
+    <h1 class="headline">Launch Your Meme Coin in Seconds</h1>
+    <p class="subheadline">Create your token on Solana with TurboMeme's no-code platform. Fast, secure, and fun.</p>
+    <form class="token-form" id="tokenForm" enctype="multipart/form-data">
+      <div class="progress-bar">
+        <div class="progress-step active"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+      </div>
+
+      <!-- Step 1: Basic Info -->
+      <div class="form-step active" id="step1">
+        <div class="form-group">
+          <label for="token-name">Token Name <span class="tooltip" data-tooltip="The full name of your token (e.g., TurboMeme Coin)">ⓘ</span></label>
+          <input type="text" id="token-name" required placeholder="e.g., TurboMeme Coin">
+        </div>
+        <div class="form-group">
+          <label for="token-symbol">Token Symbol <span class="tooltip" data-tooltip="A short ticker for your token (e.g., TRBO, 3–5 letters)">ⓘ</span></label>
+          <input type="text" id="token-symbol" required minlength="3" maxlength="5" placeholder="e.g., TRBO">
+        </div>
+        <div class="form-group">
+          <label for="token-description">Description <span class="tooltip" data-tooltip="A short description of your token (optional, max 200 characters)">ⓘ</span></label>
+          <textarea id="token-description" maxlength="200" placeholder="e.g., The ultimate meme coin for turbo enthusiasts!"></textarea>
+        </div>
+        <button type="button" class="next-btn" data-step="2">Next</button>
+      </div>
+
+      <!-- Step 2: Token Details -->
+      <div class="form-step" id="step2">
+        <div class="form-group">
+          <label for="token-image">Token Image <span class="tooltip" data-tooltip="Upload a PNG/JPG image for your token (optional, max 5MB)">ⓘ</span></label>
+          <input type="file" id="token-image" accept="image/png,image/jpeg">
+          <img id="image-preview" class="image-preview" alt="Token Image Preview" loading="lazy">
+        </div>
+        <div class="form-group">
+          <label for="total-supply">Total Supply <span class="tooltip" data-tooltip="Total number of tokens to create (e.g., 1,000,000)">ⓘ</span></label>
+          <input type="number" id="total-supply" required min="1" placeholder="e.g., 1000000">
+        </div>
+        <div class="form-group">
+          <label for="decimals">Decimals <span class="tooltip" data-tooltip="Number of decimal places for token divisibility (0–18)">ⓘ</span></label>
+          <input type="number" id="decimals" required min="0" max="18" placeholder="e.g., 9">
+        </div>
+        <button type="button" class="prev-btn" data-step="1">Back</button>
+        <button type="button" class="next-btn" data-step="3">Next</button>
+      </div>
+
+      <!-- Step 3: Advanced Settings -->
+      <div class="form-step" id="step3">
+        <div class="form-group">
+          <label for="treasury-fee">Treasury Fee % <span class="tooltip" data-tooltip="Percentage of transactions sent to treasury (0–10%, default 1%)">ⓘ</span></label>
+          <input type="number" id="treasury-fee" min="0" max="10" step="0.1" value="1" placeholder="e.g., 1">
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="renounce-mint" checked>
+            Renounce Mint Authority <span class="tooltip" data-tooltip="Prevents further minting after launch (recommended)">ⓘ</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="allow-freeze">
+            Allow Token Freeze <span class="tooltip" data-tooltip="Enables freezing token transfers (optional, not recommended)">ⓘ</span>
+          </label>
+        </div>
+        <button type="button" class="prev-btn" data-step="2">Back</button>
+        <button type="button" class="next-btn" data-step="4">Next</button>
+      </div>
+
+      <!-- Step 4: Confirmation -->
+      <div class="form-step" id="step4">
+        <div class="form-group">
+          <label>Review Your Token</label>
+          <div id="review-text"></div>
+        </div>
+        <button type="button" class="prev-btn" data-step="3">Back</button>
+        <button type="button" class="launch-btn">Launch Token</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Recent Launches Page -->
+  <div id="recent-page" class="section">
+    <h1 class="headline">Recent Launches</h1>
+    <p class="subheadline">Explore the latest tokens launched on TurboMeme.</p>
+    <button class="refresh-btn" id="refreshRecent">Refresh Tokens</button>
+    <div class="loading-spinner" id="recentSpinner"></div>
+    <div class="error-message" id="recentError"></div>
+    <div class="token-cards-container" id="recentCardsContainer"></div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal" id="confirmationModal">
+    <div class="modal-content">
+      <h2>Confirm Token Launch</h2>
+      <p>This will deploy a real smart contract on Solana. Double-check all fields!</p>
+      <ul id="modal-review"></ul>
+      <div class="modal-buttons">
+        <button class="prev-btn" onclick="closeModal()">Cancel</button>
+        <button class="launch-btn" onclick="launchToken()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Follow our <a href="https://x.com/turbomeme">X Account</a> and <a href="https://t.me/turbomeme">Telegram Channel</a> for updates.</p>
+    <p style="margin: 1.5rem 0;">
+      TurboMeme is a token creation platform. We do not endorse or manage tokens. Use at your own risk. Always DYOR.
+    </p>
+    <p>© 2025 TurboMeme | All Rights Reserved | <a href="https://t.me/turbomeme_support">Support on Telegram</a> | <a href="https://turbomeme.fun/affiliate">Become an Affiliate</a></p>
+  </footer>
+
+  <script>
+    // Constants
+    const BACKEND_URL = ''; // Use relative URLs to let the browser resolve the domain
+    const SOLSCAN_URL = 'https://solscan.io/token/';
+    const PLACEHOLDER_IMAGE = 'https://placehold.co/64x64?text=Token';
+    const MAX_TOKENS = 50;
+
+    // State
+    let isWalletConnected = false;
+    let walletAddress = '';
+    let selectedWallet = 'none';
+
+    /**
+     * Escapes HTML to prevent XSS attacks.
+     * @param {string} text - The text to escape.
+     * @returns {string} Escaped text.
+     */
+    function escapeHTML(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    /**
+     * Toggles the navigation menu on mobile.
+     */
+    function toggleNav() {
+      document.getElementById('navLinks').classList.toggle('active');
+    }
+
+    /**
+     * Shows a specific page and hides others.
+     * @param {string} pageId - The ID of the page to show.
+     */
+    function showPage(pageId) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      if (pageId === 'recent-page') refreshRecentLaunches();
+      trackEvent('page_view', pageId);
+    }
+
+    /**
+     * Sets the active navigation link.
+     * @param {HTMLElement} link - The link element to activate.
+     */
+    function setActive(link) {
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      link.classList.add('active');
+    }
+
+    /**
+     * Updates the wallet UI based on connection status.
+     */
+    function updateWalletUI() {
+      const walletSelect = document.getElementById('walletSelect');
+      const walletStatus = document.getElementById('walletStatus');
+      if (isWalletConnected && walletAddress) {
+        const shortAddress = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+        walletStatus.textContent = `Connected: ${shortAddress}`;
+        walletStatus.classList.add('show');
+        walletSelect.value = selectedWallet;
+      } else {
+        walletStatus.textContent = '';
+        walletStatus.classList.remove('show');
+        walletSelect.value = 'none';
+      }
+    }
+
+    /**
+     * Disconnects the wallet and resets the UI.
+     */
+    async function disconnectWallet() {
+      try {
+        if (selectedWallet === 'phantom' && window.solana) {
+          await window.solana.disconnect();
+        } else if (selectedWallet === 'solflare' && window.solflare) {
+          await window.solflare.disconnect();
+        }
+        isWalletConnected = false;
+        walletAddress = '';
+        selectedWallet = 'none';
+        localStorage.removeItem('walletAddress');
+        localStorage.removeItem('walletType');
+        updateWalletUI();
+        trackEvent('wallet_disconnect', selectedWallet);
+      } catch (err) {
+        console.error('Disconnect Error:', err);
+      }
+    }
+
+    /**
+     * Connects to a Solana wallet (Phantom or Solflare).
+     * @param {string} walletType - 'phantom' or 'solflare'.
+     */
+    async function connectWallet(walletType) {
+      let solanaProvider;
+      if (walletType === 'phantom') {
+        solanaProvider = window.solana || (window.phantom && window.phantom.solana);
+      } else if (walletType === 'solflare') {
+        solanaProvider = window.solflare;
+      }
+
+      if (!solanaProvider) {
+        alert(`Please install ${walletType.charAt(0).toUpperCase() + walletType.slice(1)}:\n- Phantom: https://phantom.app\n- Solflare: https://solflare.com`);
+        return;
+      }
+
+      try {
+        let response;
+        try {
+          response = await solanaProvider.connect({ onlyIfTrusted: true });
+        } catch {
+          response = await solanaProvider.connect();
+        }
+        walletAddress = response.publicKey.toString();
+        isWalletConnected = true;
+        selectedWallet = walletType;
+        localStorage.setItem('walletAddress', walletAddress);
+        localStorage.setItem('walletType', walletType);
+        updateWalletUI();
+        console.log(`${walletType} connected: ${walletAddress}`);
+        trackEvent('wallet_connect', walletType);
+      } catch (err) {
+        console.error(`${walletType} Connection Failed:`, err);
+        alert(`Failed to connect ${walletType}. Please approve the connection or check your wallet.`);
+      }
+    }
+
+    /**
+     * Handles wallet selection from dropdown.
+     */
+    function handleWalletSelection() {
+      const walletSelect = document.getElementById('walletSelect');
+      const newWallet = walletSelect.value;
+      if (newWallet === 'none') {
+        disconnectWallet();
+      } else if (newWallet !== selectedWallet) {
+        disconnectWallet().then(() => connectWallet(newWallet));
+      }
+    }
+
+    /**
+     * Previews the uploaded token image.
+     */
+    function previewImage() {
+      const fileInput = document.getElementById('token-image');
+      const preview = document.getElementById('image-preview');
+      const file = fileInput.files[0];
+
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Image size exceeds 5MB limit.');
+          fileInput.value = '';
+          return;
+        }
+        if (!['image/png', 'image/jpeg'].includes(file.type)) {
+          alert('Only PNG or JPG files are allowed.');
+          fileInput.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          preview.src = reader.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = 'none';
+      }
+    }
+
+    /**
+     * Validates form inputs before proceeding.
+     * @param {number} step - The current form step.
+     * @returns {boolean} True if valid, false otherwise.
+     */
+    function validateForm(step) {
+      if (step === 1) {
+        const name = document.getElementById('token-name').value;
+        const symbol = document.getElementById('token-symbol').value;
+        if (name.length < 3 || name.length > 20) {
+          alert('Token name must be 3–20 characters.');
+          return false;
+        }
+        if (!/^[A-Z]{3,5}$/.test(symbol)) {
+          alert('Symbol must be 3–5 uppercase letters.');
+          return false;
+        }
+      } else if (step === 2) {
+        const supply = document.getElementById('total-supply').value;
+        const decimals = document.getElementById('decimals').value;
+        if (supply < 1) {
+          alert('Total supply must be at least 1.');
+          return false;
+        }
+        if (decimals < 0 || decimals > 18) {
+          alert('Decimals must be between 0 and 18.');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Advances to the next form step.
+     * @param {number} step - The step to advance to.
+     */
+    function nextStep(step) {
+      if (!validateForm(step - 1)) return;
+      document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step${step}`).classList.add('active');
+      document.querySelectorAll('.progress-step').forEach((prog, index) => {
+        prog.classList.toggle('active', index < step);
+      });
+
+      if (step === 4) {
+        const name = escapeHTML(document.getElementById('token-name').value);
+        const symbol = escapeHTML(document.getElementById('token-symbol').value);
+        const description = escapeHTML(document.getElementById('token-description').value || 'N/A');
+        const supply = escapeHTML(document.getElementById('total-supply').value);
+        const decimals = escapeHTML(document.getElementById('decimals').value);
+        const treasuryFee = escapeHTML(document.getElementById('treasury-fee').value);
+        const renounceMint = document.getElementById('renounce-mint').checked;
+        const allowFreeze = document.getElementById('allow-freeze').checked;
+        const imageUploaded = document.getElementById('token-image').files.length > 0 ? 'Yes' : 'No';
+
+        document.getElementById('review-text').innerHTML = `
+          <strong>Name:</strong> ${name}<br>
+          <strong>Symbol:</strong> ${symbol}<br>
+          <strong>Description:</strong> ${description}<br>
+          <strong>Total Supply:</strong> ${supply}<br>
+          <strong>Decimals:</strong> ${decimals}<br>
+          <strong>Treasury Fee:</strong> ${treasuryFee}%<br>
+          <strong>Image Uploaded:</strong> ${imageUploaded}<br>
+          <strong>Renounce Mint Authority:</strong> ${renounceMint ? 'Yes' : 'No'}<br>
+          <strong>Allow Token Freeze:</strong> ${allowFreeze ? 'Yes' : 'No'}
+        `;
+      }
+    }
+
+    /**
+     * Returns to the previous form step.
+     * @param {number} step - The step to return to.
+     */
+    function prevStep(step) {
+      nextStep(step);
+    }
+
+    /**
+     * Shows the confirmation modal with token details.
+     */
+    function showConfirmation() {
+      if (!isWalletConnected) {
+        alert('Please connect your wallet first.');
+        return;
+      }
+      const name = escapeHTML(document.getElementById('token-name').value);
+      const symbol = escapeHTML(document.getElementById('token-symbol').value);
+      const description = escapeHTML(document.getElementById('token-description').value || 'N/A');
+      const supply = escapeHTML(document.getElementById('total-supply').value);
+      const decimals = escapeHTML(document.getElementById('decimals').value);
+      const treasuryFee = escapeHTML(document.getElementById('treasury-fee').value);
+      const renounceMint = document.getElementById('renounce-mint').checked;
+      const allowFreeze = document.getElementById('allow-freeze').checked;
+      const image = document.getElementById('image-preview').src
+        ? `<img src="${document.getElementById('image-preview').src}" style="max-width: 100px; border-radius: 8px; margin-top: 1rem;" alt="Token Image" loading="lazy">`
+        : 'No image uploaded';
+
+      document.getElementById('modal-review').innerHTML = `
+        <li><strong>Name:</strong> ${name}</li>
+        <li><strong>Symbol:</strong> ${symbol}</li>
+        <li><strong>Description:</strong> ${description}</li>
+        <li><strong>Total Supply:</strong> ${supply}</li>
+        <li><strong>Decimals:</strong> ${decimals}</li>
+        <li><strong>Treasury Fee:</strong> ${treasuryFee}%</li>
+        <li><strong>Renounce Mint Authority:</strong> ${renounceMint ? 'Yes' : 'No'}</li>
+        <li><strong>Allow Token Freeze:</strong> ${allowFreeze ? 'Yes' : 'No'}</li>
+        <li><strong>Image:</strong><br>${image}</li>
+      `;
+      document.getElementById('confirmationModal').style.display = 'flex';
+    }
+
+    /**
+     * Closes the confirmation modal.
+     */
+    function closeModal() {
+      document.getElementById('confirmationModal').style.display = 'none';
+    }
+
+    /**
+     * Closes the notification banner.
+     */
+    function closeNotification() {
+      document.getElementById('notification').classList.remove('show');
+    }
+
+    /**
+     * Copies the contract address to clipboard.
+     */
+    function copyContract() {
+      const contract = document.getElementById('notify-token-contract').textContent;
+      navigator.clipboard.writeText(contract).then(() => {
+        const btn = document.querySelector('.notification .copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      }).catch(err => {
+        console.error('Copy Failed:', err);
+        alert('Failed to copy address.');
+      });
+    }
+
+    /**
+     * Launches the token by sending data to the backend.
+     */
+    async function launchToken() {
+      if (!isWalletConnected) {
+        alert('Please connect your wallet first.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('token-name').value);
+      formData.append('symbol', document.getElementById('token-symbol').value);
+      formData.append('description', document.getElementById('token-description').value || '');
+      formData.append('supply', parseInt(document.getElementById('total-supply').value));
+      formData.append('decimals', parseInt(document.getElementById('decimals').value));
+      formData.append('treasuryFee', parseFloat(document.getElementById('treasury-fee').value));
+      formData.append('renounceMint', document.getElementById('renounce-mint').checked);
+      formData.append('allowFreeze', document.getElementById('allow-freeze').checked);
+      formData.append('walletAddress', walletAddress);
+      const imageFile = document.getElementById('token-image').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/create-token`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+
+        const { mint, imageUrl } = await response.json();
+
+        // Show notification
+        const name = escapeHTML(document.getElementById('token-name').value);
+        const symbol = escapeHTML(document.getElementById('token-symbol').value);
+        document.getElementById('notify-token-name').textContent = name;
+        document.getElementById('notify-token-symbol').textContent = symbol;
+        document.getElementById('notify-token-contract').textContent = mint;
+        const solscanLink = document.getElementById('notify-solscan-link');
+        solscanLink.href = `${SOLSCAN_URL}${mint}${BACKEND_URL.includes('devnet') ? '?cluster=devnet' : ''}`;
+        solscanLink.textContent = `View on Solscan`;
+
+        document.getElementById('notification').classList.add('show');
+        setTimeout(closeNotification, 10000);
+
+        // Reset form and localStorage
+        localStorage.removeItem('prefillName');
+        localStorage.removeItem('prefillSymbol');
+        document.getElementById('tokenForm').reset();
+        document.getElementById('image-preview').style.display = 'none';
+        nextStep(1);
+        closeModal();
+
+        trackEvent('token_launch', name);
+      } catch (err) {
+        console.error('Launch Error:', err);
+        alert('Failed to launch token. Please try again.');
+      }
+    }
+
+    /**
+     * Generates HTML for a token card.
+     * @param {Object} token - Token data.
+     * @returns {string} HTML string.
+     */
+    function generateTokenCard(token) {
+      const image = token.imageUrl ? `<img src="${token.imageUrl}" class="token-image show" alt="${escapeHTML(token.name)} Image" loading="lazy">` : `<img src="${PLACEHOLDER_IMAGE}" class="token-image show" alt="Placeholder Image" loading="lazy">`;
+      const shortAddress = `${token.address.slice(0, 4)}...${token.address.slice(-4)}`;
+      return `
+        <div class="token-card">
+          ${image}
+          <h2 class="token-name">${escapeHTML(token.name)}</h2>
+          <p class="token-symbol">${escapeHTML(token.symbol)}</p>
+          <p class="token-address" onclick="copyAddress('${token.address}')">Contract: ${escapeHTML(shortAddress)}</p>
+          <button class="create-coin-btn" data-name="${escapeHTML(token.name)}" data-symbol="${escapeHTML(token.symbol)}">Create Similar</button>
+        </div>
+      `;
+    }
+
+    /**
+     * Copies a contract address to clipboard.
+     * @param {string} address - The full address.
+     */
+    function copyAddress(address) {
+      navigator.clipboard.writeText(address).then(() => {
+        alert('Contract address copied!');
+      }).catch(err => {
+        console.error('Copy Failed:', err);
+        alert('Failed to copy address.');
+      });
+    }
+
+    /**
+     * Refreshes the recent launches list.
+     */
+    async function refreshRecentLaunches() {
+      const container = document.getElementById('recentCardsContainer');
+      const spinner = document.getElementById('recentSpinner');
+      const error = document.getElementById('recentError');
+      container.innerHTML = '';
+      spinner.classList.add('show');
+      error.classList.remove('show');
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/recent-launches`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+
+        let tokens = await response.json();
+        if (!tokens || tokens.length === 0) {
+          error.textContent = 'No recent launches found.';
+          error.classList.add('show');
+          return;
+        }
+
+        tokens = tokens.slice(0, MAX_TOKENS).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        tokens.forEach(token => {
+          container.innerHTML += generateTokenCard(token);
+        });
+
+        localStorage.setItem('recentLaunchesCache', JSON.stringify(tokens));
+      } catch (err) {
+        console.error('Fetch Recent Launches Error:', err);
+        error.textContent = 'Failed to load recent launches. Retry?';
+        error.classList.add('show');
+        const cached = localStorage.getItem('recentLaunchesCache');
+        if (cached) {
+          const tokens = JSON.parse(cached).slice(0, MAX_TOKENS);
+          tokens.forEach(token => {
+            container.innerHTML += generateTokenCard(token);
+          });
+        }
+      } finally {
+        spinner.classList.remove('show');
+      }
+    }
+
+    /**
+     * Prefills the form to create a similar token.
+     * @param {string} name - Token name.
+     * @param {string} symbol - Token symbol.
+     */
+    function createSimilarToken(name, symbol) {
+      if (name.length > 18) name = name.slice(0, 18);
+      const newName = `${name} Copy`;
+      const newSymbol = symbol.length < 5 ? `${symbol}2` : symbol.slice(0, 4) + '2';
+      localStorage.setItem('prefillName', newName);
+      localStorage.setItem('prefillSymbol', newSymbol);
+      showPage('create-page');
+      setActive(document.getElementById('link-create'));
+      document.getElementById('token-name').value = newName;
+      document.getElementById('token-symbol').value = newSymbol.toUpperCase();
+      nextStep(1);
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Initialize Recent Launches
+      refreshRecentLaunches();
+
+      // Restore wallet state
+      walletAddress = localStorage.getItem('walletAddress') || '';
+      selectedWallet = localStorage.getItem('walletType') || 'none';
+      if (walletAddress && selectedWallet !== 'none') {
+        isWalletConnected = true;
+        await connectWallet(selectedWallet);
+      }
+
+      // Check for prefill
+      const prefillName = localStorage.getItem('prefillName');
+      const prefillSymbol = localStorage.getItem('prefillSymbol');
+      if (prefillName && prefillSymbol) {
+        document.getElementById('token-name').value = prefillName;
+        document.getElementById('token-symbol').value = prefillSymbol.toUpperCase();
+      }
+
+      trackEvent('page_load', 'init');
+
+      // Navigation
+      document.getElementById('link-create').addEventListener('click', e => {
+        e.preventDefault();
+        showPage('create-page');
+        setActive(e.target);
+      });
+
+      document.getElementById('link-recent').addEventListener('click', e => {
+        e.preventDefault();
+        showPage('recent-page');
+        setActive(e.target);
+      });
+
+      document.querySelector('.hamburger').addEventListener('click', toggleNav);
+
+      // Wallet
+      document.getElementById('walletSelect').addEventListener('change', handleWalletSelection);
+
+      // Form
+      document.getElementById('token-image').addEventListener('change', previewImage);
+      document.querySelectorAll('.next-btn').forEach(btn => {
+        btn.addEventListener('click', () => nextStep(parseInt(btn.dataset.step)));
+      });
+      document.querySelectorAll('.prev-btn').forEach(btn => {
+        btn.addEventListener('click', () => prevStep(parseInt(btn.dataset.step)));
+      });
+      document.querySelector('#step4 .launch-btn').addEventListener('click', showConfirmation);
+
+      // Recent Launches
+      document.getElementById('refreshRecent').addEventListener('click', refreshRecentLaunches);
+      document.getElementById('recentError').addEventListener('click', refreshRecentLaunches);
+      document.getElementById('recentCardsContainer').addEventListener('click', e => {
+        if (e.target.classList.contains('create-coin-btn')) {
+          createSimilarToken(e.target.dataset.name, e.target.dataset.symbol);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+[build]
+  publish = "."  # Serve directly from the root (since index.html is in the root)
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
