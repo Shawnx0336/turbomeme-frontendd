@@ -10,6 +10,7 @@ dist/
 # Temporary files
 *.log
 *.zip
+*.tgz
 *.bak
 
 # Netlify-specific
@@ -32,3 +33,9 @@ Thumbs.db
 # Sensitive files
 *.key
 *.pem
+
+# Parcel cache
+.parcel-cache/
+
+# Miscellaneous
+olvctl status
