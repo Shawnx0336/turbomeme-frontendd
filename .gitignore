@@ -10,6 +10,25 @@ dist/
 # Temporary files
 *.log
 *.zip
+*.bak
 
 # Netlify-specific
 .netlify/
+netlify.toml.bak
+
+# Test coverage reports
+coverage/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Sensitive files
+*.key
+*.pem
