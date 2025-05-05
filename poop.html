@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ theme: localStorage.getItem('theme') || 'dark' }" :class="theme">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MemePicks – Meme Coin Prop Betting</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
+  <script src="https://sdk.privy.io/privy.js" async></script>
+  <style>
+    /* Base styles using Tailwind's @apply where possible for consistency */
+    @tailwind base;
+    @tailwind components;
+    @tailwind utilities;
+
+    body {
+      font-family: 'Inter', sans-serif;
+      @apply bg-gradient-to-b from-gray-900 to-gray-950 text-white dark:bg-gray-100 dark:text-gray-900;
+      min-height: 100vh;
+      margin: 0;
+      overscroll-behavior: none; /* Prevent pull-to-refresh */
+      touch-action: manipulation; /* Improve touch responsiveness */
+    }
+
+    body.modal-open {
+      overflow: hidden; /* Prevent background scroll when modal/drawer is open */
+    }
+
+    /* Component Styles */
+    .card {
+      @apply bg-gray-800 dark:bg-white rounded-lg p-4 mb-4 shadow-lg transition-all duration-300 ease-in-out flex flex-col gap-2 min-w-0; /* Task 3: Added min-w-0 */
+    }
+    .card:hover {
+      @apply shadow-purple-500/30 scale-[1.02];
+    }
+    .card:active {
+      @apply scale-[0.98];
+    }
+
+    .button-primary {
+      /* Task 2: Updated gradient (darker), shadow */
+      background: linear-gradient(90deg, #6D28D9 0%, #2563EB 100%); /* purple-700 to blue-600 */
+      @apply text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 ease-in-out shadow-md; /* Task 2: Added shadow-md */
+    }
+    .button-primary:hover:not(:disabled) {
+      /* Task 2: Stronger hover shadow */
+      @apply shadow-lg shadow-purple-500/40 scale-[1.03];
+    }
+    .button-primary:active:not(:disabled) {
+      @apply scale-[0.97];
+    }
+    .button-primary:disabled {
+      /* Task 2: Disabled style without !important */
+      @apply bg-gray-600 text-gray-400 cursor-not-allowed shadow-none scale-100;
+    }
+
+    .button-secondary {
+      @apply bg-transparent border border-purple-600 text-white dark:text-purple-600 font-semibold py-3 px-4 rounded-lg transition-all duration-200 ease-in-out;
+    }
+    .button-secondary:hover:not(:disabled) {
+      @apply bg-purple-600 text-white scale-[1.03] shadow-md shadow-purple-500/40;
+    }
+    .button-secondary:active:not(:disabled) {
+      @apply scale-[0.97];
+    }
+    .button-secondary:disabled {
+      @apply border-gray-600 text-gray-600 cursor-not-allowed shadow-none scale-100;
+    }
+    .button-secondary.active {
+      @apply bg-purple-600 text-white border-transparent shadow-md shadow-purple-500/40;
+    }
+
+    .button-auth {
+      background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%);
+      @apply text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 ease-in-out;
+    }
+    .button-auth:hover {
+      @apply shadow-md shadow-purple-500/40 scale-[1.03];
+    }
+    .button-auth:active {
+      @apply scale-[0.97];
+    }
+
+    .input-field {
+      @apply bg-gray-800 dark:bg-gray-200 border border-gray-600 dark:border-gray-400 text-white dark:text-gray-900 p-3 rounded-lg w-full text-base transition-colors duration-200 ease-in-out;
+    }
+    .input-field:focus {
+      @apply outline-none border-purple-500 ring-2 ring-purple-500/30;
+    }
+
+    .tab-button {
+      @apply bg-gray-700 dark:bg-gray-300 text-gray-400 dark:text-gray-600 text-sm font-semibold py-2 px-4 rounded-full transition-all duration-200 ease-in-out whitespace-nowrap flex items-center justify-center flex-shrink-0;
+      scroll-snap-align: start;
+      min-width: max-content; /* Task 3: Ensure tabs don't shrink too much */
+      min-height: 44px; /* Task 3: Ensure tap target size */
+    }
+    .tab-button.active {
+      @apply bg-purple-600 text-white dark:bg-purple-600 dark:text-white shadow-md shadow-purple-500/40 scale-[1.05] opacity-100;
+    }
+
+    .slip-tray {
+      @apply bg-gray-800 dark:bg-white rounded-t-3xl p-4 shadow-[-4px_0px_12px_rgba(0,0,0,0.3)] transition-transform duration-300 ease-in-out fixed bottom-[56px] left-0 w-full max-h-[50vh] z-[30] translate-y-full pointer-events-none;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 48px); /* Task 1: Adjusted padding-bottom (48px) + safe area */
+      overflow-y: auto; /* Task 1: Make content scrollable */
+      max-width: 100%; /* Task 3: Ensure no horizontal overflow */
+      box-sizing: border-box; /* Task 3: Include padding in width */
+    }
+    .slip-tray.open {
+      @apply translate-y-0 pointer-events-auto;
+    }
+    /* Task 1: Sticky Submit Button */
+    .slip-tray .button-primary {
+        position: sticky;
+        bottom: 16px; /* Position above bottom padding */
+        z-index: 70; /* Above slip content, below modals */
+        width: calc(100% - 32px); /* Account for parent padding */
+        margin-left: auto;
+        margin-right: auto;
+        display: block; /* Center the button */
+    }
+
+    .modal {
+      @apply bg-gray-800 dark:bg-white rounded-t-xl p-4 w-full max-w-full shadow-[-4px_0px_12px_rgba(0,0,0,0.3)] transition-transform duration-300 ease-in-out fixed bottom-0 left-0 z-40 translate-y-full;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+    .modal.open {
+      @apply translate-y-0;
+    }
+    .modal-container {
+      @apply bg-black/60 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none fixed inset-0 z-30;
+    }
+    .modal-container.open {
+      @apply opacity-100 pointer-events-auto;
+    }
+
+    .drawer {
+      @apply fixed top-0 left-0 w-3/4 max-w-xs h-full bg-gray-800 dark:bg-white -translate-x-full transition-transform duration-300 ease-in-out z-30 p-4;
+    }
+    .drawer.open {
+      @apply translate-x-0;
+    }
+    .overlay {
+      @apply fixed inset-0 bg-black/60 z-20 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none;
+    }
+    .overlay.open {
+      @apply opacity-100 pointer-events-auto;
+    }
+
+    .fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .toast {
+      @apply bg-purple-600 text-white py-2 px-4 rounded-lg fixed top-4 right-4 z-[1000] shadow-lg;
+      animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    .badge {
+      @apply text-white px-2 py-0.5 rounded-full text-xs font-semibold ml-2 inline-block;
+    }
+    .badge-hot { @apply bg-red-500; }
+    .badge-new { @apply bg-blue-500; }
+    .badge-expiring { @apply bg-yellow-500 text-black; } /* Adjusted for better contrast */
+
+    .glow { animation: glow 2s ease-in-out infinite; }
+    @keyframes glow {
+      0%, 100% { @apply shadow-lg shadow-purple-500/20; }
+      50% { @apply shadow-xl shadow-purple-500/40; }
+    }
+
+    .slip-preview {
+      @apply transition-opacity duration-300 opacity-0 z-20 fixed w-full bg-gray-800 dark:bg-gray-700 text-sm p-2 text-center;
+      bottom: calc(56px + env(safe-area-inset-bottom) + 8px); /* Position above bottom nav */
+    }
+    .slip-preview.visible {
+      @apply opacity-100;
+    }
+
+    /* Privy modal z-index override */
+    .privy-modal {
+      z-index: 9999 !important;
+    }
+
+    /* Tooltip Styles - Task 5 */
+    .tooltip-container {
+        @apply relative inline-flex items-center;
+    }
+    .tooltip-icon {
+        @apply w-5 h-5 bg-gray-500 dark:bg-gray-400 text-white dark:text-gray-800 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer ml-1; /* Increased size */
+    }
+    .tooltip {
+        @apply absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-[80vw] bg-black/80 dark:bg-gray-700 text-white dark:text-gray-200 text-xs rounded-md px-3 py-1.5 shadow-lg z-[100] transition-opacity duration-200 pointer-events-none opacity-0; /* Added dark mode styles, max-width */
+    }
+    .tooltip-container:hover .tooltip,
+    .tooltip-container [x-show="show"] + .tooltip { /* Show on hover or when Alpine's show is true */
+        @apply opacity-100 pointer-events-auto;
+    }
+
+    /* Theme Toggle Button - Task 4 */
+    .theme-toggle {
+        @apply w-11 h-11 rounded-full flex items-center justify-center text-xl text-gray-400 dark:text-gray-600 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors;
+    }
+
+    /* Mobile Specific Adjustments */
+    @media (max-width: 767px) {
+      .header {
+        @apply fixed top-0 left-0 w-full bg-gray-900 dark:bg-gray-100 z-20 px-4 border-b border-gray-700 dark:border-gray-300 h-14 flex items-center justify-between;
+      }
+      .header-left { @apply flex items-center gap-2; }
+      .hamburger { @apply w-11 h-11 flex items-center justify-center text-2xl text-gray-400 dark:text-gray-600 hover:text-white dark:hover:text-black; }
+      .logo { @apply flex-1 text-center text-xl font-bold text-white dark:text-black; }
+      .header-right { @apply flex items-center gap-2; } /* Adjusted gap */
+      .button-auth { @apply py-2 px-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-sm; }
+      .profile-avatar { @apply w-8 h-8 rounded-full; }
+      .profile-avatar-container { @apply w-11 h-11 flex items-center justify-center; }
+
+      .sticky-tabs {
+        @apply sticky top-14 z-10 bg-gray-900 dark:bg-gray-100 px-4 py-2 border-b border-gray-700 dark:border-gray-300; /* Adjusted top value */
+      }
+      .tabs {
+        @apply flex gap-2 overflow-x-auto pb-2 -mb-2; /* Added padding-bottom and negative margin to hide scrollbar visually if needed */
+        scroll-snap-type: x mandatory; /* Task 3: Mandatory snap */
+        scroll-padding: 0 16px;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+        -webkit-overflow-scrolling: touch;
+      }
+      .tabs::-webkit-scrollbar { display: none; /* Safari/Chrome */ }
+
+      .main-content {
+        padding-top: calc(56px + 56px + 16px); /* header + tabs height + spacing */
+        @apply px-4 pb-20 transition-all duration-300 ease-in-out; /* Adjusted padding */
+      }
+      .main-content.slip-tray-open {
+        padding-bottom: calc(72px + 50vh); /* Adjust based on slip tray height */
+      }
+
+      .card .prop-content { @apply flex items-start gap-3; }
+      .card img { @apply w-16 h-16 object-contain rounded-full flex-shrink-0; }
+      .card .separator { @apply border-t border-gray-700 dark:border-gray-300 my-2; }
+      .card h3 { @apply text-base font-bold flex items-center gap-2 sticky pt-2; /* Removed top positioning, background */ }
+      .card p.text-sm { @apply text-sm mt-1 text-gray-200 dark:text-gray-700 leading-snug break-words; }
+      .card p.text-xs { @apply text-xs mt-1 text-gray-400 dark:text-gray-500; }
+      .card .stats { @apply border-t border-gray-700 dark:border-gray-300 pt-2 mt-2; }
+
+      .button-secondary,
+      .button-primary { @apply py-3 px-4 min-h-[48px] min-w-[64px] text-sm; }
+
+      .fab {
+        @apply bg-gradient-to-r from-purple-600 to-blue-500 text-white py-3 px-5 rounded-full shadow-lg flex items-center gap-2 text-sm font-semibold fixed bottom-20 right-4 z-20; /* Adjusted bottom */
+        bottom: calc(56px + env(safe-area-inset-bottom) + 16px); /* Position above bottom nav + spacing */
+      }
+      .fab .badge { @apply bg-white text-gray-900 rounded-full w-5 h-5 flex justify-center items-center text-xs leading-none ml-0; }
+
+      .bottom-nav {
+        @apply bg-gray-900 dark:bg-gray-100 border-t border-gray-700 dark:border-gray-300 fixed bottom-0 left-0 w-full z-[60] flex justify-around items-center h-14;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .bottom-nav button {
+        @apply min-h-[48px] w-1/4 flex flex-col items-center justify-center gap-1 text-xs text-gray-400 dark:text-gray-600 transition-all duration-200 ease-in-out;
+      }
+      .bottom-nav button.active { @apply text-white dark:text-black scale-[1.05]; }
+      .bottom-nav button:hover { @apply text-white dark:text-black; }
+      .bottom-nav .icon { @apply text-2xl; }
+      .bottom-nav .label { @apply text-xs; }
+    }
+  </style>
+</head>
+<body x-data="{
+  tab: 'trending',
+  walletAddress: null,
+  walletBalance: null,
+  showProfileDropdown: false,
+  showDrawer: false,
+  showSlipTray: false,
+  activeModal: null,
+  modals: { walletModal: false, helpModal: false, genericModal: false }, // Renamed 'modal' to 'genericModal'
+  slip: { picks: [], wager: 0 },
+  multipliers: { 2: 2, 3: 5, 4: 10, 5: 20 },
+  walletConnection: null, // Placeholder for wallet connection instance
+
+  // Theme Management - Task 4
+  initTheme() {
+    this.theme = localStorage.getItem('theme') || 'dark';
+    this.applyTheme();
+  },
+  toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', this.theme);
+    this.applyTheme();
+  },
+  applyTheme() {
+    // The class is applied directly to <html> via Alpine's :class binding
+    console.log('Theme set to:', this.theme);
+  },
+  init() { // Alpine component initialization
+      this.initTheme(); // Initialize theme on load
+      // Potentially initialize Privy connection listener here
+      // Example: Listen for Privy auth state changes
+      // if (window.Privy) {
+      //     window.Privy.on('authStateChange', (user) => {
+      //         if (user) {
+      //             this.walletAddress = user.wallet?.address || user.email?.address || user.id; // Adjust based on Privy user object
+      //             // Fetch balance if needed
+      //             // this.fetchWalletBalance(this.walletAddress);
+      //             this.closeModal('walletModal');
+      //         } else {
+      //             this.walletAddress = null;
+      //             this.walletBalance = null;
+      //         }
+      //     });
+      // }
+  },
+
+
+  // Body Scroll Lock
+  toggleBodyScroll(enabled) {
+    document.body.classList.toggle('modal-open', !enabled);
+  },
+
+  // Modal Management
+  openModal(name) {
+    this.closeAllModals(); // Close any other open modals/trays
+    this.showSlipTray = false;
+    this.modals[name] = true;
+    this.activeModal = name;
+    this.toggleBodyScroll(false); // Disable body scroll
+    console.log('Opening modal:', name);
+  },
+  closeModal(name) {
+    this.modals[name] = false;
+    if (this.activeModal === name) {
+        this.activeModal = null;
+        // Only re-enable scroll if no other modal/tray is active
+        if (!this.showSlipTray && !Object.values(this.modals).some(isOpen => isOpen)) {
+            this.toggleBodyScroll(true);
+        }
+    }
+  },
+  closeAllModals() {
+    Object.keys(this.modals).forEach(name => { this.modals[name] = false; });
+    this.activeModal = null;
+    // Only re-enable scroll if slip tray is also closed
+    if (!this.showSlipTray) {
+        this.toggleBodyScroll(true);
+    }
+  },
+
+  // Tab Scrolling
+  scrollTabIntoView(element) {
+    element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  },
+
+  // Slip Tray Management
+  toggleSlipTray() {
+    this.showSlipTray = !this.showSlipTray;
+    if (this.showSlipTray) {
+      this.closeAllModals(); // Close modals when opening tray
+      this.toggleBodyScroll(false); // Disable body scroll
+    } else {
+      // Only re-enable scroll if no modal is active
+      if (!this.activeModal) {
+        this.toggleBodyScroll(true);
+      }
+    }
+  },
+
+  // Slip Logic
+  addToSlip(event) {
+    const button = event.currentTarget; // Use currentTarget for the element the listener is attached to
+    const propId = button.dataset.prop;
+    const choice = button.dataset.option;
+    const card = button.closest('.card');
+    const tokenElement = card.querySelector('h3');
+    const token = tokenElement ? tokenElement.textContent.trim().split(' ')[0] : 'Unknown'; // Safer token extraction
+    const descriptionElement = card.querySelector('p.text-sm');
+    const description = descriptionElement ? descriptionElement.textContent.trim() : 'No description'; // Safer description extraction
+
+    // Check if the other option for the same prop is selected
+    const otherOptionButton = card.querySelector(`.button-secondary[data-prop='${propId}']:not([data-option='${choice}'])`);
+    if (otherOptionButton && otherOptionButton.classList.contains('active')) {
+        this.removePick(propId); // Remove the other pick first
+        otherOptionButton.classList.remove('active');
+    }
+
+    // Check if this pick is already added
+    const existingPickIndex = this.slip.picks.findIndex(pick => pick.propId === propId);
+
+    if (existingPickIndex !== -1) {
+        // If the same choice is clicked again, remove it
+        if (this.slip.picks[existingPickIndex].choice === choice) {
+            this.removePick(propId);
+            button.classList.remove('active');
+            showToast(`${token}: ${choice} removed from slip.`);
+        } else {
+            // If a different choice for the same prop is clicked, update the pick
+            this.slip.picks[existingPickIndex].choice = choice;
+            // Update button states
+            card.querySelectorAll(`.button-secondary[data-prop='${propId}']`).forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            showToast(`${token}: Choice updated to ${choice}.`);
+        }
+    } else {
+        // Add new pick if limit not reached
+        if (this.slip.picks.length >= 5) {
+            showToast('Max 5 picks allowed.');
+            return;
+        }
+        this.slip.picks.push({ propId, token, description, choice });
+        button.classList.add('active');
+        showToast(`${token}: ${choice} added to slip.`);
+    }
+  },
+
+  removePick(propId) {
+    this.slip.picks = this.slip.picks.filter(pick => pick.propId !== propId);
+    // Deactivate corresponding button(s) in the main content
+    document.querySelectorAll(`.button-secondary[data-prop='${propId}'].active`).forEach(btn => {
+        btn.classList.remove('active');
+    });
+  },
+
+  updateSlipWager() {
+    const wagerInput = document.getElementById('wager-mobile');
+    this.slip.wager = parseFloat(wagerInput.value) || 0;
+  },
+
+  isValidSlip() {
+    const numPicks = this.slip.picks.length;
+    const wager = this.slip.wager;
+    return numPicks >= 2 && numPicks <= 5 && wager >= 0.1 && wager <= 10;
+  },
+
+  submitSlip() {
+    if (!this.walletAddress) {
+      // Prompt to connect wallet using Privy
+      if (window.Privy?.login) {
+          window.Privy.login();
+      } else {
+          this.openModal('genericModal'); // Fallback generic modal
+          document.getElementById('modal-title').textContent = 'Connect Wallet';
+          document.getElementById('modal-message').textContent = 'Please connect your wallet to submit your slip.';
+          console.error('Privy login function not available.');
+      }
+      return;
+    }
+    if (!this.isValidSlip()) {
+      this.openModal('genericModal');
+      document.getElementById('modal-title').textContent = 'Invalid Slip';
+      document.getElementById('modal-message').textContent = 'Select 2–5 picks and set a wager between 0.1–10 SOL.';
+      return;
+    }
+
+    // --- Placeholder for actual submission logic ---
+    console.log('Submitting slip:', JSON.stringify(this.slip));
+    // Example: Call backend API, interact with smart contract, etc.
+    // Show confirmation modal
+    this.openModal('genericModal');
+    document.getElementById('modal-title').textContent = 'Slip Submitted';
+    document.getElementById('modal-message').textContent = `Your slip with ${this.slip.picks.length} picks for ${this.slip.wager} SOL has been submitted! Good luck!`;
+    // --- End Placeholder ---
+
+    // Clear slip after submission
+    this.slip.picks.forEach(pick => this.removePick(pick.propId)); // Ensure buttons are deactivated
+    this.slip.picks = [];
+    this.slip.wager = 0;
+    const wagerInput = document.getElementById('wager-mobile');
+    if(wagerInput) wagerInput.value = ''; // Clear input field
+    this.showSlipTray = false; // Close slip tray
+    this.toggleBodyScroll(true); // Re-enable scroll if no other modal is open
+  },
+
+  // Wallet Management (using Privy)
+  connectWallet() {
+      if (window.Privy?.login) {
+          window.Privy.login(); // Trigger Privy login/connection flow
+      } else {
+          showToast('Wallet connection service not available.');
+          console.error('Privy login function not available.');
+      }
+  },
+  disconnectWallet() {
+      if (window.Privy?.logout) {
+          window.Privy.logout(); // Trigger Privy logout flow
+          this.walletAddress = null; // Clear local state immediately
+          this.walletBalance = null;
+          showToast('Wallet disconnected.');
+      } else {
+          showToast('Wallet disconnection service not available.');
+          console.error('Privy logout function not available.');
+      }
+  },
+
+  // Placeholder for fetching balance (would likely happen after connection)
+  // fetchWalletBalance(address) {
+  //   console.log('Fetching balance for:', address);
+  //   // Replace with actual Solana balance fetching logic
+  //   setTimeout(() => { this.walletBalance = Math.random() * 10; }, 1000); // Mock balance
+  // }
+
+}" @click.outside="if(activeModal) closeAllModals()" @keydown.escape.window="if(activeModal) closeAllModals(); else if(showSlipTray) showSlipTray = false; else if(showDrawer) showDrawer = false" x-init="init()">
+
+  <div class="overlay" :class="{ 'open': showDrawer }" @click="showDrawer = false" aria-hidden="true"></div>
+  <aside class="drawer" :class="{ 'open': showDrawer }" x-show="showDrawer" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <div class="flex justify-between items-center mb-6">
+      <h2 id="drawer-title" class="text-lg font-semibold text-purple-500 dark:text-purple-600">MemePicks</h2>
+      <button class="text-gray-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-600 w-8 h-8 flex items-center justify-center text-2xl" @click="showDrawer = false" aria-label="Close menu">✕</button>
+    </div>
+    <nav class="space-y-2">
+      <button x-show="!walletAddress" class="block w-full text-left py-2 text-sm text-gray-200 dark:text-gray-700 hover:text-purple-500 dark:hover:text-purple-600" @click="showDrawer = false; connectWallet()" aria-label="Connect Wallet">Connect Wallet</button>
+      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-gray-200 dark:text-gray-700 hover:text-purple-500 dark:hover:text-purple-600" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
+
+      <a href="#" class="block py-2 text-sm text-gray-200 dark:text-gray-700 hover:text-purple-500 dark:hover:text-purple-600" @click="showDrawer = false; openModal('helpModal')" aria-label="Help Center">Help Center</a>
+      <a href="#" class="block py-2 text-sm text-gray-200 dark:text-gray-700 hover:text-purple-500 dark:hover:text-purple-600" aria-label="Responsible Betting">Responsible Betting</a>
+      <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-gray-200 dark:text-gray-700 hover:text-purple-500 dark:hover:text-purple-600" aria-label="Discord">Discord</a>
+      <a href="#" class="block py-2 text-sm text-gray-200 dark:text-gray-700 hover:text-purple-500 dark:hover:text-purple-600" aria-label="Terms & Privacy">Terms & Privacy</a>
+      </nav>
+  </aside>
+
+  <header class="header">
+    <div class="header-left">
+      <button class="hamburger" @click="showDrawer = true" aria-label="Open menu" aria-controls="drawer-menu" :aria-expanded="showDrawer.toString()">☰</button>
+    </div>
+    <h1 class="logo">MemePicks</h1>
+    <div class="header-right">
+        <button class="theme-toggle" @click="toggleTheme()" aria-label="Toggle light/dark theme">
+            <span x-show="theme === 'dark'">☀️</span> <span x-show="theme === 'light'">🌙</span> </button>
+        <button class="button-auth text-sm" @click="walletAddress ? disconnectWallet() : connectWallet()" aria-label="Connect or Disconnect Wallet">
+            <span x-show="!walletAddress">Connect</span>
+            <span x-show="walletAddress" x-text="walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4)"></span>
+        </button>
+    </div>
+  </header>
+
+  <div class="sticky-tabs" role="tablist" aria-label="Game Categories">
+    <div class="tabs" x-ref="tabs">
+      <button :class="{ 'tab-button active': tab === 'trending', 'tab-button': tab !== 'trending' }" @click="tab = 'trending'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'trending'" aria-controls="trending-panel" :tabindex="tab === 'trending' ? 0 : -1">Trending 🔥</button>
+      <button :class="{ 'tab-button active': tab === 'marketcap', 'tab-button': tab !== 'marketcap' }" @click="tab = 'marketcap'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'marketcap'" aria-controls="marketcap-panel" :tabindex="tab === 'marketcap' ? 0 : -1">MCap 💰</button>
+      <button :class="{ 'tab-button active': tab === 'volume', 'tab-button': tab !== 'volume' }" @click="tab = 'volume'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'volume'" aria-controls="volume-panel" :tabindex="tab === 'volume' ? 0 : -1">Volume 📈</button>
+      <button :class="{ 'tab-button active': tab === 'headtohead', 'tab-button': tab !== 'headtohead' }" @click="tab = 'headtohead'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'headtohead'" aria-controls="headtohead-panel" :tabindex="tab === 'headtohead' ? 0 : -1">H2H ⚔️</button>
+      <button :class="{ 'tab-button active': tab === 'memefactor', 'tab-button': tab !== 'memefactor' }" @click="tab = 'memefactor'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'memefactor'" aria-controls="memefactor-panel" :tabindex="tab === 'memefactor' ? 0 : -1">Meme Factor 😂</button>
+      <button :class="{ 'tab-button active': tab === 'expiring', 'tab-button': tab !== 'expiring' }" @click="tab = 'expiring'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'expiring'" aria-controls="expiring-panel" :tabindex="tab === 'expiring' ? 0 : -1">Expiring ⏳</button>
+    </div>
+  </div>
+
+  <main class="main-content" :class="{ 'slip-tray-open': showSlipTray }">
+
+    <div x-show="tab === 'trending'" role="tabpanel" id="trending-panel" aria-labelledby="trending-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+        <div class="card">
+          <div class="prop-content">
+            <img src="https://placehold.co/64x64/7B61FF/FFFFFF?text=NUTZ" alt="$NUTZ logo" class="w-16 h-16 rounded-full object-cover" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
+            <div class="flex-1">
+              <h3 class="text-base font-bold">$NUTZ <span class="badge badge-hot">Hot</span></h3>
+              <p class="text-sm">Will $NUTZ hit $100K MC in 6 hours?</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center gap-2 mt-2">
+            <div class="flex space-x-2">
+              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'nutz-001' && p.choice === 'Yes')}" data-prop="nutz-001" data-option="Yes" @click="addToSlip($event)" aria-label="Pick Yes for $NUTZ">Yes</button>
+              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'nutz-001' && p.choice === 'No')}" data-prop="nutz-001" data-option="No" @click="addToSlip($event)" aria-label="Pick No for $NUTZ">No</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500">
+              <p>
+                72% picked Yes
+                <span class="tooltip-container" x-data="{ show: false }" @click.away="show = false" @mouseover="show = true" @mouseleave="show = false" @click.stop="show = !show">
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip" x-show="show" x-transition>Percentage of users picking this option</span>
+                </span>
+              </p>
+              <p>MC: $73K · Vol: $12K</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="prop-content">
+            <img src="https://placehold.co/64x64/00B0FF/FFFFFF?text=MOON" alt="$MOONSHOT logo" class="w-16 h-16 rounded-full object-cover" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
+            <div class="flex-1">
+              <h3 class="text-base font-bold">$MOONSHOT <span class="badge badge-new">New</span></h3>
+              <p class="text-sm">Will $MOONSHOT reach 500 buys by 10PM EST?</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center gap-2 mt-2">
+            <div class="flex space-x-2">
+              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'moon-003' && p.choice === 'Over')}" data-prop="moon-003" data-option="Over" @click="addToSlip($event)" aria-label="Pick Over for $MOONSHOT">Over</button>
+              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'moon-003' && p.choice === 'Under')}" data-prop="moon-003" data-option="Under" @click="addToSlip($event)" aria-label="Pick Under for $MOONSHOT">Under</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500">
+              <p>58% picked Over
+                <span class="tooltip-container" x-data="{ show: false }" @click.away="show = false" @mouseover="show = true" @mouseleave="show = false" @click.stop="show = !show">
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip" x-show="show" x-transition>Percentage of users picking this option</span>
+                </span>
+              </p>
+              <p>MC: $120K · Vol: $20K</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="tab === 'marketcap'" role="tabpanel" id="marketcap-panel" aria-labelledby="marketcap-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+        <p class="text-center text-gray-400 dark:text-gray-600">Market Cap props coming soon!</p>
+        </div>
+    </div>
+
+    <div x-show="tab === 'volume'" role="tabpanel" id="volume-panel" aria-labelledby="volume-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+         <p class="text-center text-gray-400 dark:text-gray-600">Volume props coming soon!</p>
+        </div>
+    </div>
+
+    <div x-show="tab === 'headtohead'" role="tabpanel" id="headtohead-panel" aria-labelledby="headtohead-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+         <p class="text-center text-gray-400 dark:text-gray-600">H2H props coming soon!</p>
+        </div>
+    </div>
+
+    <div x-show="tab === 'memefactor'" role="tabpanel" id="memefactor-panel" aria-labelledby="memefactor-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+         <p class="text-center text-gray-400 dark:text-gray-600">Meme Factor props coming soon!</p>
+        </div>
+    </div>
+
+    <div x-show="tab === 'expiring'" role="tabpanel" id="expiring-panel" aria-labelledby="expiring-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+        <div class="card">
+          <div class="prop-content">
+            <img src="https://placehold.co/64x64/FFD700/000000?text=WEN" alt="$WEN logo" class="w-16 h-16 rounded-full object-cover" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
+            <div class="flex-1">
+              <h3 class="text-base font-bold">$WEN
+                <span class="badge badge-expiring">
+                    Expiring Soon
+                    <span class="tooltip-container" x-data="{ show: false }" @click.away="show = false" @mouseover="show = true" @mouseleave="show = false" @click.stop="show = !show">
+                        <span class="tooltip-icon">?</span>
+                        <span class="tooltip" x-show="show" x-transition>This prop closes very soon!</span>
+                    </span>
+                </span>
+              </h3>
+              <p class="text-sm">Will $WEN pump 20% in 30 min?</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center gap-2 mt-2">
+            <div class="flex space-x-2">
+              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'wen-002' && p.choice === 'Yes')}" data-prop="wen-002" data-option="Yes" @click="addToSlip($event)" aria-label="Pick Yes for $WEN">Yes</button>
+              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'wen-002' && p.choice === 'No')}" data-prop="wen-002" data-option="No" @click="addToSlip($event)" aria-label="Pick No for $WEN">No</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500">
+              <p>50% picked Yes
+                <span class="tooltip-container" x-data="{ show: false }" @click.away="show = false" @mouseover="show = true" @mouseleave="show = false" @click.stop="show = !show">
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip" x-show="show" x-transition>Percentage of users picking this option</span>
+                </span>
+              </p>
+              <p>MC: $200K · Vol: $80K</p>
+            </div>
+            <p class="text-xs text-yellow-500 dark:text-yellow-600 mt-1">Expires in 28m</p>
+          </div>
+        </div>
+        </div>
+    </div>
+
+    <div x-show="tab === 'mypicks'" role="tabpanel" id="mypicks-panel" aria-labelledby="mypicks-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+        <h2 class="text-lg font-semibold mb-2 text-white dark:text-black">📜 Pick History</h2>
+        <p class="text-center text-gray-400 dark:text-gray-600" x-show="!walletAddress">Connect wallet to see your picks.</p>
+        <div class="card" x-show="walletAddress">
+          <div class="prop-content">
+            <img src="https://placehold.co/48x48/7B61FF/FFFFFF?text=NUTZ" alt="$NUTZ logo" class="w-12 h-12 rounded-full object-cover" onerror="this.src='https://placehold.co/48x48/707070/FFFFFF?text=ERR'">
+            <div class="flex-1">
+              <h3 class="text-sm font-bold">$NUTZ: Yes</h3>
+              <p class="text-xs text-gray-400 dark:text-gray-600">Hit $100K MC in 6h</p>
+              <p class="text-green-500 text-xs mt-1 font-semibold">Won: +2.5 SOL</p>
+            </div>
+          </div>
+        </div>
+         <div class="card" x-show="walletAddress">
+          <div class="prop-content">
+            <img src="https://placehold.co/48x48/FF0000/FFFFFF?text=MOON" alt="$MOONSHOT logo" class="w-12 h-12 rounded-full object-cover" onerror="this.src='https://placehold.co/48x48/707070/FFFFFF?text=ERR'">
+            <div class="flex-1">
+              <h3 class="text-sm font-bold">$MOONSHOT: Over</h3>
+              <p class="text-xs text-gray-400 dark:text-gray-600">Reach 500 buys by 10PM EST</p>
+              <p class="text-red-500 text-xs mt-1 font-semibold">Lost: -1.0 SOL</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="tab === 'leaderboard'" role="tabpanel" id="leaderboard-panel" aria-labelledby="leaderboard-tab" class="fade-in">
+      <div class="max-w-xl mx-auto space-y-4">
+        <div class="card p-4">
+          <p class="text-sm font-semibold mb-3 text-white dark:text-black">🏆 Top Winners (Daily)</p>
+          <div class="space-y-2">
+            <div class="flex items-center space-x-3 p-2 rounded-lg bg-gray-700 dark:bg-gray-200 glow">
+              <span class="text-yellow-400 text-lg font-bold">🥇</span>
+              <img src="https://placehold.co/32x32/E0E0E0/000000?text=1" alt="Top player avatar" class="w-8 h-8 rounded-full">
+              <p class="text-gray-300 dark:text-gray-700 text-xs flex-1">4xd5...0eF2</p>
+              <p class="text-green-400 dark:text-green-600 text-xs font-semibold">4.7 SOL</p>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-lg bg-gray-700 dark:bg-gray-200">
+              <span class="text-gray-400 text-lg font-bold">🥈</span>
+              <img src="https://placehold.co/32x32/E0E0E0/000000?text=2" alt="Second player avatar" class="w-8 h-8 rounded-full">
+              <p class="text-gray-300 dark:text-gray-700 text-xs flex-1">7G2A...9D1c</p>
+              <p class="text-green-400 dark:text-green-600 text-xs font-semibold">3.2 SOL</p>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-lg bg-gray-700 dark:bg-gray-200">
+              <span class="text-yellow-600 text-lg font-bold">🥉</span>
+              <img src="https://placehold.co/32x32/E0E0E0/000000?text=3" alt="Third player avatar" class="w-8 h-8 rounded-full">
+              <p class="text-gray-300 dark:text-gray-700 text-xs flex-1">9T5Q...1X7N</p>
+              <p class="text-green-400 dark:text-green-600 text-xs font-semibold">2.5 SOL</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="tab === 'help'" role="tabpanel" id="help-panel" aria-labelledby="help-tab" class="fade-in">
+      <div class="max-w-xl mx-auto">
+        <div class="card p-6">
+          <h2 class="text-lg font-semibold mb-4 text-white dark:text-black">Help & Support</h2>
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-sm font-semibold mb-2 text-purple-400 dark:text-purple-600">FAQs</h3>
+              <div class="space-y-4">
+                <div>
+                  <p class="text-xs text-gray-300 dark:text-gray-700 font-semibold">Q: How do I place a bet?</p>
+                  <p class="text-xs text-gray-400 dark:text-gray-600">A: Select 2–5 picks from the tabs, open the slip using the button at the bottom right, set a wager (0.1–10 SOL), and submit your slip.</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-300 dark:text-gray-700 font-semibold">Q: What wallets are supported?</p>
+                  <p class="text-xs text-gray-400 dark:text-gray-600">A: We support various wallets via Privy, including Phantom, Solflare, MetaMask (via Wallet Adapter), email, and social logins.</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-300 dark:text-gray-700 font-semibold">Q: How are winnings calculated?</p>
+                  <p class="text-xs text-gray-400 dark:text-gray-600">A: Winnings = Wager × Multiplier. Multipliers: 2 picks = 2x, 3 picks = 5x, 4 picks = 10x, 5 picks = 20x.</p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold mb-2 text-purple-400 dark:text-purple-600">Get in Touch</h3>
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="block text-sm text-purple-500 hover:underline mb-2" aria-label="Join Discord">Join our Discord</a>
+              <a href="mailto:support@memepicks.fun" class="block text-sm text-purple-500 hover:underline" aria-label="Contact Support">Contact Support</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <button id="slip-tray-trigger" class="fab" @click="toggleSlipTray()" aria-label="Open entry slip" aria-controls="slip-tray" :aria-expanded="showSlipTray.toString()">
+    <span>Slip</span>
+    <span id="pick-count" class="badge" x-text="slip.picks.length"></span>
+  </button>
+
+  <div id="slip-tray" class="slip-tray" :class="{ 'open': showSlipTray }" role="dialog" aria-modal="true" aria-labelledby="slip-tray-title">
+    <div class="flex justify-between items-center mb-3">
+      <h3 id="slip-tray-title" class="text-base font-semibold text-white dark:text-black">Your Slip</h3>
+      <button class="text-gray-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-600 w-8 h-8 flex items-center justify-center text-2xl" @click="showSlipTray = false" aria-label="Close entry slip">✕</button>
+    </div>
+
+    <div id="slip-picks-mobile" class="space-y-2 mb-4 flex-grow">
+      <template x-if="slip.picks.length === 0">
+        <p class="text-gray-400 dark:text-gray-600 text-sm text-center py-4">Add 2 to 5 picks to start your slip.</p>
+      </template>
+      <template x-for="pick in slip.picks" :key="pick.propId">
+        <div class="bg-gray-700 dark:bg-gray-200 p-2 rounded-lg flex justify-between items-center">
+          <div class="flex-1 mr-2">
+            <p class="text-xs font-semibold text-white dark:text-gray-900" x-text="pick.token"></p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 truncate" x-text="pick.description"></p>
+            <p class="text-xs text-purple-400 dark:text-purple-600 font-medium" x-text="pick.choice"></p>
+          </div>
+          <button class="text-gray-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-600 w-8 h-8 flex items-center justify-center flex-shrink-0" @click="removePick(pick.propId)" :aria-label="'Remove ' + pick.token + ' prediction from slip'">✕</button>
+        </div>
+      </template>
+    </div>
+
+    <div class="mb-4">
+      <label for="wager-mobile" class="text-xs text-gray-400 dark:text-gray-500 mb-1 block">Wager (SOL)</label>
+      <div class="relative">
+          <input id="wager-mobile" type="number" step="0.1" min="0.1" max="10" class="input-field text-sm pr-10" placeholder="0.1–10 SOL" aria-label="Wager amount in SOL (0.1 to 10)" x-model.number="slip.wager" @input="updateSlipWager()">
+           <span class="tooltip-container absolute top-1/2 right-2 -translate-y-1/2" x-data="{ show: false }" @click.away="show = false" @mouseover="show = true" @mouseleave="show = false" @click.stop="show = !show">
+              <span class="tooltip-icon">?</span>
+              <span class="tooltip" x-show="show" x-transition>Enter your wager amount (0.1 to 10 SOL)</span>
+          </span>
+      </div>
+    </div>
+
+    <div id="payout-mobile" class="flex justify-between text-xs mb-4" :class="{ 'invisible': slip.picks.length < 2 }">
+      <p class="text-gray-400 dark:text-gray-500">Potential Payout:</p>
+      <p class="text-purple-400 dark:text-purple-600 font-semibold" x-text="(slip.wager * (multipliers[slip.picks.length] || 0)).toFixed(2) + ' SOL'"></p>
+    </div>
+
+    <button class="button-primary w-full text-sm" :disabled="!isValidSlip()" @click="submitSlip()" aria-label="Submit entry slip">Submit Slip</button>
+
+    <p class="text-gray-400 dark:text-gray-500 text-xs mt-3 text-center">Balance: <span x-text="walletBalance !== null ? walletBalance.toFixed(2) : (walletAddress ? 'Loading...' : 'N/A')"></span> SOL</p>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Main Navigation">
+    <button :class="{ 'active': tab === 'trending' }" @click="tab = 'trending'; showSlipTray = false; closeAllModals()" aria-label="Home" aria-controls="trending-panel" :aria-selected="tab === 'trending'">
+      <span class="icon">🏠</span>
+      <span class="label">Home</span>
+    </button>
+    <button :class="{ 'active': tab === 'mypicks' }" @click="tab = 'mypicks'; showSlipTray = false; closeAllModals()" aria-label="My Picks" aria-controls="mypicks-panel" :aria-selected="tab === 'mypicks'">
+      <span class="icon">📊</span>
+      <span class="label">My Picks</span>
+    </button>
+    <button :class="{ 'active': tab === 'leaderboard' }" @click="tab = 'leaderboard'; showSlipTray = false; closeAllModals()" aria-label="Leaderboard" aria-controls="leaderboard-panel" :aria-selected="tab === 'leaderboard'">
+      <span class="icon">🏆</span>
+      <span class="label">Leaders</span>
+    </button>
+    <button :class="{ 'active': tab === 'help' }" @click="tab = 'help'; showSlipTray = false; closeAllModals()" aria-label="Help" aria-controls="help-panel" :aria-selected="tab === 'help'">
+      <span class="icon">❓</span>
+      <span class="label">Help</span>
+    </button>
+  </nav>
+
+  <div id="helpModal" x-show="modals.helpModal" x-ref="helpModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+    <div class="modal-container open" @click="closeModal('helpModal')"></div>
+    <div class="modal open">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="help-modal-title" class="text-base font-semibold text-white dark:text-black">Help & Support</h3>
+        <button class="text-gray-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-600 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('helpModal')" aria-label="Close help modal">✕</button>
+      </div>
+      <div class="space-y-3 text-sm">
+        <a href="#" class="block text-purple-400 dark:text-purple-600 hover:underline" aria-label="Help Center">Help Center / FAQs</a>
+        <a href="#" class="block text-purple-400 dark:text-purple-600 hover:underline" aria-label="Responsible Betting">Responsible Betting</a>
+        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="block text-purple-400 dark:text-purple-600 hover:underline" aria-label="Join Discord">Join our Discord</a>
+        <a href="mailto:support@memepicks.fun" class="block text-purple-400 dark:text-purple-600 hover:underline" aria-label="Contact Support">Contact Support</a>
+      </div>
+      <button class="button-primary w-full text-sm mt-6" @click="closeModal('helpModal')" aria-label="Close help modal">Close</button>
+    </div>
+  </div>
+
+  <div id="genericModal" x-show="modals.genericModal" x-ref="genericModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-container open" @click="closeModal('genericModal')"></div>
+    <div class="modal open">
+      <h3 id="modal-title" class="text-base font-semibold mb-3 text-white dark:text-black"></h3>
+      <p id="modal-message" class="text-gray-400 dark:text-gray-600 text-sm mb-4"></p>
+      <button class="button-primary w-full text-sm py-2" @click="closeModal('genericModal')" aria-label="Close modal">OK</button>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed top-4 right-4 z-[1000] space-y-2"></div>
+
+  <script>
+    // Toast Notification Function
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'toast'; // Base class from CSS
+      toast.textContent = message;
+
+      // Optional: Add type-specific styling
+      if (type === 'error') {
+        toast.classList.add('bg-red-600');
+      } else if (type === 'success') {
+         toast.classList.add('bg-green-600');
+      } else {
+         toast.classList.add('bg-purple-600'); // Default info
+      }
+
+      container.appendChild(toast);
+      // Auto-remove toast
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300); // Remove after fade out
+      }, 3000);
+    }
+
+    // Privy Initialization and Event Handling
+    window.addEventListener('load', () => {
+        if (window.Privy) {
+            console.log('Privy SDK detected. Initializing...');
+            try {
+                window.Privy.init({
+                    appId: 'clwzpsnvy08gq18f163h1c9z5', // Replace with your actual Privy App ID from environment variable or config
+                    config: {
+                        // Default appearance to dark mode to match initial site theme
+                        appearance: {
+                            theme: 'dark', // Can be 'light', 'dark', or 'system'
+                            accentColor: '#7B61FF', // Purple accent
+                            logoUrl: 'https://placehold.co/100x40/FFFFFF/7B61FF?text=MemePicks', // Optional: Your logo
+                        },
+                        // Configure login methods
+                        loginMethods: ['email', 'wallet', 'google', 'discord', 'twitter'], // Example methods
+                        // Embedded wallets configuration (optional)
+                        embeddedWallets: {
+                            createOnLogin: 'users-without-wallets', // Or 'all-users' or 'off'
+                            requireUserPasswordOnCreate: false,
+                        },
+                        // Wallet settings
+                        walletConnectV2ProjectId: 'YOUR_WALLETCONNECT_PROJECT_ID', // Replace with your WalletConnect Cloud Project ID
+                    },
+                    // Listen for auth state changes within the init callback or separately
+                    events: {
+                        login: (user, isNewUser) => {
+                            console.log('Privy login successful:', user);
+                            const alpineComponent = document.body._x_dataStack[0]; // Access Alpine data context
+                            if (alpineComponent) {
+                                alpineComponent.walletAddress = user.wallet?.address || user.email?.address || user.id;
+                                // alpineComponent.fetchWalletBalance(alpineComponent.walletAddress); // Fetch balance on login
+                                showToast('Wallet connected successfully!');
+                                alpineComponent.closeModal('walletModal'); // Close any open wallet modal
+                            }
+                        },
+                        logout: () => {
+                            console.log('Privy logout successful');
+                            const alpineComponent = document.body._x_dataStack[0];
+                            if (alpineComponent) {
+                                alpineComponent.walletAddress = null;
+                                alpineComponent.walletBalance = null;
+                                showToast('Wallet disconnected.');
+                            }
+                        },
+                        error: (error) => {
+                            console.error('Privy error:', error);
+                            showToast('Wallet connection error. Please try again.', 'error');
+                        }
+                    }
+                });
+                console.log('Privy initialized.');
+            } catch (error) {
+                console.error('Privy initialization failed:', error);
+                showToast('Failed to initialize wallet connection.', 'error');
+            }
+        } else {
+            console.error('Privy SDK not loaded.');
+            // Optionally inform the user or disable wallet features
+            // showToast('Wallet features are currently unavailable.', 'error');
+        }
+    });
+
+  </script>
+</body>
+</html>
