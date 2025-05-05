@@ -334,7 +334,11 @@
       position: fixed;
       width: 100%;
       background: #1E1E1E;
-      text-sm p-2 text-center;
+      /* text-sm p-2 text-center; Tailwind classes cannot be directly used here */
+      font-size: 0.875rem; /* text-sm */
+      line-height: 1.25rem;
+      padding: 0.5rem; /* p-2 */
+      text-align: center;
       bottom: calc(56px + env(safe-area-inset-bottom) + 8px); /* Position above bottom nav */
     }
     .slip-preview.visible {
@@ -742,11 +746,14 @@
     // State updates (walletAddress = null) should ideally happen via Privy event listener
   },
 
+  // connectWallet method remains the same, it calls Privy.login()
   connectWallet() {
     // Always use Privy login/show method
     if (window.Privy?.login) {
+        console.log('Calling Privy.login()'); // Debug log
         window.Privy.login(); // Recommended method
     } else if (window.Privy?.show) {
+        console.log('Calling Privy.show()'); // Debug log
         window.Privy.show(); // Fallback if login isn't available
     } else {
         showToast('Wallet connection service not available.');
@@ -770,43 +777,116 @@
 
   // Initialize Privy connection listener
   initPrivyListener() {
-      if (window.Privy) {
-          console.log('Setting up Privy event listeners...');
-          // It's better to set up listeners outside the init function if possible,
-          // but placing it here ensures Privy is loaded.
-          // Remove previous listeners if any to avoid duplicates on hot reloads (if applicable)
-          // window.Privy.removeAllListeners?.(); // Use if available
-
-          window.Privy.on('login', (user) => {
-              console.log('Privy login event received:', user);
-              this.walletAddress = user.wallet?.address || user.email?.address || user.id;
-              // this.fetchWalletBalance(this.walletAddress); // Optional: Fetch balance
-              showToast('Wallet connected!');
-              this.closeModal('walletModal'); // Close any open wallet modal
-          });
-
-          window.Privy.on('logout', () => {
-              console.log('Privy logout event received');
-              this.walletAddress = null;
-              this.walletBalance = null;
-              showToast('Wallet disconnected.');
-          });
-
-          window.Privy.on('error', (error) => {
-              console.error('Privy error event:', error);
-              showToast('Wallet connection error.', 'error');
-          });
-          console.log('Privy event listeners set up.');
-      } else {
-          console.warn('Privy SDK not available when setting up listeners.');
+      // Ensure Privy is available before setting listeners
+      if (!window.Privy) {
+          console.warn('Privy SDK not available when trying to set up listeners.');
+          // Optionally retry after a delay
+          // setTimeout(() => this.initPrivyListener(), 500);
+          return;
       }
+
+      console.log('Setting up Privy event listeners...');
+
+      // Remove previous listeners if any to avoid duplicates (optional but good practice)
+      // Note: Privy SDK might not expose a method like removeAllListeners.
+      // Relying on the SDK to handle listener management internally is usually safe.
+
+      // *** MODIFIED Privy.on('login') handler ***
+      window.Privy.on('login', async (user) => { // Make handler async
+          console.log('Privy login event received:', user);
+
+          // Extract wallet address (handle cases where user might not have a wallet immediately)
+          const connectedAddress = user.wallet?.address;
+
+          if (connectedAddress) {
+              console.log('Wallet connected:', connectedAddress);
+              // Update Alpine state
+              this.walletAddress = connectedAddress;
+
+              // Send POST request to backend
+              try {
+                  console.log('Sending POST request to /auth/privy with address:', connectedAddress);
+                  const response = await fetch('/auth/privy', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ address: connectedAddress }),
+                  });
+
+                  if (!response.ok) {
+                      // Log error if response status is not OK (e.g., 4xx, 5xx)
+                      console.error(`Error sending auth request: ${response.status} ${response.statusText}`);
+                      const errorBody = await response.text(); // Get error details if available
+                      console.error('Error response body:', errorBody);
+                      showToast('Authentication failed. Please try again.', 'error');
+                  } else {
+                      // Success case (optional: process response if backend sends data)
+                      const result = await response.json(); // Assuming backend sends JSON response
+                      console.log('Auth request successful:', result);
+                      showToast('Wallet connected & authenticated!');
+                  }
+              } catch (error) {
+                  // Log network or other errors during fetch
+                  console.error('Error during fetch to /auth/privy:', error);
+                  showToast('Network error during authentication.', 'error');
+              }
+
+              // Optional: Fetch balance after successful login and auth
+              // this.fetchWalletBalance(this.walletAddress);
+
+              this.closeModal('walletModal'); // Close any open wallet modal
+          } else {
+              // Handle case where user logged in but doesn't have a wallet linked yet
+              console.warn('User logged in via Privy but no wallet address found.');
+              // Update Alpine state accordingly (optional)
+              this.walletAddress = user.id; // Use Privy user ID as a fallback identifier
+              showToast('Logged in, but no wallet connected.');
+              this.closeModal('walletModal');
+          }
+      });
+
+      window.Privy.on('logout', () => {
+          console.log('Privy logout event received');
+          // Update Alpine state
+          this.walletAddress = null;
+          this.walletBalance = null; // Clear balance too
+          showToast('Wallet disconnected.');
+      });
+
+      window.Privy.on('error', (error) => {
+          console.error('Privy error event:', error);
+          showToast('Wallet connection error.', 'error');
+      });
+
+      console.log('Privy event listeners set up.');
   },
 
-  init() { // Alpine component initialization
-      // Initialize Privy connection listener after Alpine is ready
-      // Use a small delay to ensure Privy SDK might have loaded
-      setTimeout(() => this.initPrivyListener(), 100);
+  // Alpine init function remains the same
+  init() {
+      // Use document.addEventListener for reliable DOM ready check
+      document.addEventListener('alpine:initialized', () => {
+          console.log('Alpine initialized. Setting up Privy listener.');
+          // Ensure Privy is loaded before setting listeners
+          // A small delay might still be needed if Privy loads slower than Alpine
+          if (window.Privy) {
+              this.initPrivyListener();
+          } else {
+              // Retry if Privy is not yet loaded
+              console.warn('Privy not loaded when Alpine initialized, retrying listener setup...');
+              const intervalId = setInterval(() => {
+                  if (window.Privy) {
+                      console.log('Privy loaded after retry, setting up listener.');
+                      this.initPrivyListener();
+                      clearInterval(intervalId);
+                  }
+              }, 200); // Check every 200ms
+              // Add a timeout to stop retrying after a while
+              setTimeout(() => clearInterval(intervalId), 5000); // Stop after 5 seconds
+          }
+      });
   }
+
 
 }" @click.outside="if(activeModal) closeAllModals()" @keydown.escape.window="if(activeModal) closeAllModals(); else if(showSlipTray) showSlipTray = false; else if(showDrawer) showDrawer = false" x-init="init()">
 
@@ -824,7 +904,7 @@
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
       <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Discord">Discord</a>
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Terms & Privacy">Terms & Privacy</a>
-      </nav>
+    </nav>
   </aside>
 
   <header class="header">
@@ -842,7 +922,8 @@
 
   <div class="sticky-tabs" role="tablist" aria-label="Game Categories">
     <div class="tabs" x-ref="tabs">
-      <div class="flex items-center flex-shrink-0"> <button :class="{ 'tab-button active': tab === 'trending', 'tab-button': tab !== 'trending' }" @click="tab = 'trending'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'trending'" aria-controls="trending-panel" :tabindex="tab === 'trending' ? 0 : -1">Trending</button>
+      <div class="flex items-center flex-shrink-0">
+        <button :class="{ 'tab-button active': tab === 'trending', 'tab-button': tab !== 'trending' }" @click="tab = 'trending'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'trending'" aria-controls="trending-panel" :tabindex="tab === 'trending' ? 0 : -1">Trending</button>
         <div class="tooltip" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
           <span class="tooltip-icon">ℹ️</span>
           <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'trending')?.text || ''"></div>
@@ -888,7 +969,8 @@
 
   <main class="main-content" :class="{ 'slip-tray-open': showSlipTray }">
     <div x-show="tab === 'trending'" role="tabpanel" id="trending-panel" aria-labelledby="trending-tab" class="fade-in">
-      <div id="trending-props" class="max-w-xl mx-auto space-y-4"> <div class="card">
+      <div id="trending-props" class="max-w-xl mx-auto space-y-4">
+        <div class="card">
           <div class="prop-content">
             <img src="https://placehold.co/64x64/7B61FF/FFFFFF?text=NUTZ" alt="$NUTZ logo" class="w-16 h-16 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
             <div class="flex-1">
@@ -896,7 +978,8 @@
               <p class="text-sm">Will $NUTZ hit $100K MC in 6 hours?</p>
             </div>
           </div>
-          <div class="flex justify-between items-center gap-2 mt-2"> <div class="flex space-x-2">
+          <div class="flex justify-between items-center gap-2 mt-2">
+            <div class="flex space-x-2">
               <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'nutz-001' && p.choice === 'Yes')}" data-prop="nutz-001" data-option="Yes" @click="addToSlip($event)" aria-label="Pick Yes for $NUTZ">Yes</button>
               <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'nutz-001' && p.choice === 'No')}" data-prop="nutz-001" data-option="No" @click="addToSlip($event)" aria-label="Pick No for $NUTZ">No</button>
             </div>
@@ -952,11 +1035,10 @@
         </div>
       </div>
     </div>
-
     <div x-show="tab === 'marketcap'" role="tabpanel" id="marketcap-panel" aria-labelledby="marketcap-tab" class="fade-in">
         <div id="marketcap-props" class="max-w-xl mx-auto space-y-4">
             <p class="text-center text-gray-400">Market Cap props coming soon!</p>
-            </div>
+        </div>
     </div>
     <div x-show="tab === 'volume'" role="tabpanel" id="volume-panel" aria-labelledby="volume-tab" class="fade-in">
         <div id="volume-props" class="max-w-xl mx-auto space-y-4">
@@ -982,7 +1064,7 @@
         <div id="mypicks-props" class="max-w-xl mx-auto space-y-4">
             <h2 class="text-lg font-semibold mb-2">📜 Pick History</h2>
             <p class="text-center text-gray-400" x-show="!walletAddress">Connect wallet to see your picks.</p>
-             <div class="card" x-show="walletAddress">
+            <div class="card" x-show="walletAddress">
               <div class="prop-content">
                 <img src="https://placehold.co/48x48/7B61FF/FFFFFF?text=NUTZ" alt="$NUTZ logo" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/48x48/707070/FFFFFF?text=ERR'">
                 <div class="flex-1">
@@ -1038,24 +1120,27 @@
   </button>
 
   <div id="slip-tray" class="slip-tray" :class="{ 'open': showSlipTray }" role="dialog" aria-modal="true" aria-labelledby="slip-tray-title">
-    <div class="flex justify-between items-center mb-3 flex-shrink-0"> <h3 id="slip-tray-title" class="text-base font-semibold">Your Slip</h3>
+    <div class="flex justify-between items-center mb-3 flex-shrink-0">
+      <h3 id="slip-tray-title" class="text-base font-semibold">Your Slip</h3>
       <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="showSlipTray = false" aria-label="Close entry slip">✕</button>
     </div>
-
-    <div id="slip-picks-mobile" class="space-y-2 mb-4 flex-grow overflow-y-auto"> <template x-if="slip.picks.length === 0">
+    <div id="slip-picks-mobile" class="space-y-2 mb-4 flex-grow overflow-y-auto">
+      <template x-if="slip.picks.length === 0">
         <p class="text-[#B0B0B0] text-sm text-center py-4">Add 2 to 5 picks to start your slip.</p>
       </template>
       <template x-for="pick in slip.picks" :key="pick.propId">
         <div class="bg-[#2A2A2A] p-2 rounded-lg flex justify-between items-center">
-          <div class="flex-1 mr-2"> <p class="text-xs font-semibold" x-text="pick.token"></p>
-            <p class="text-xs text-[#B0B0B0] truncate" x-text="pick.description"></p> <p class="text-xs text-[#7B61FF]" x-text="pick.choice"></p>
+          <div class="flex-1 mr-2">
+            <p class="text-xs font-semibold" x-text="pick.token"></p>
+            <p class="text-xs text-[#B0B0B0] truncate" x-text="pick.description"></p>
+            <p class="text-xs text-[#7B61FF]" x-text="pick.choice"></p>
           </div>
           <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center flex-shrink-0" @click="removePick(pick.propId)" :aria-label="'Remove ' + pick.token + ' prediction from slip'">✕</button>
         </div>
       </template>
     </div>
-
-    <div class="mt-auto flex-shrink-0"> <div class="mb-4">
+    <div class="mt-auto flex-shrink-0">
+        <div class="mb-4">
           <label for="wager-mobile" class="text-xs text-[#B0B0B0] mb-2 flex items-center">
             Wager (SOL)
             <div class="tooltip ml-1" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
@@ -1063,9 +1148,10 @@
               <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'wager')?.text || ''"></div>
             </div>
           </label>
-          <input id="wager-mobile" type="number" step="0.1" min="0.1" max="10" class="input-field text-sm" placeholder="0.1–10 SOL" aria-label="Wager amount in SOL (0.1 to 10)" x-model.number="slip.wager" @input="updateSlipWager()"> </div>
-
-        <div id="payout-mobile" class="flex justify-between items-center text-xs mb-4" x-show="slip.picks.length >= 2"> <div class="flex items-center">
+          <input id="wager-mobile" type="number" step="0.1" min="0.1" max="10" class="input-field text-sm" placeholder="0.1–10 SOL" aria-label="Wager amount in SOL (0.1 to 10)" x-model.number="slip.wager" @input="updateSlipWager()">
+        </div>
+        <div id="payout-mobile" class="flex justify-between items-center text-xs mb-4" x-show="slip.picks.length >= 2">
+          <div class="flex items-center">
             <p class="text-[#B0B0B0]">Potential Payout:</p>
             <div class="tooltip ml-1" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
               <span class="tooltip-icon">ℹ️</span>
@@ -1074,7 +1160,6 @@
           </div>
           <p class="text-[#7B61FF] font-semibold" x-text="(slip.wager * (multipliers[slip.picks.length] || 0)).toFixed(2) + ' SOL'"></p>
         </div>
-
         <button class="button-primary w-full text-sm flex items-center justify-center" :disabled="!isValidSlip()" @click="submitSlip()" aria-label="Submit entry slip">
           Submit Slip
           <div class="tooltip ml-1" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
@@ -1082,9 +1167,11 @@
             <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'slip')?.text || ''"></div>
           </div>
         </button>
-
         <p class="text-[#B0B0B0] text-xs mt-3 text-center">Balance: <span x-text="walletBalance !== null ? walletBalance.toFixed(2) : (walletAddress ? 'Loading...' : 'N/A')"></span> SOL</p>
-    </div> </div> <nav class="bottom-nav" aria-label="Main Navigation">
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Main Navigation">
     <button :class="{ 'active': tab === 'trending' }" @click="tab = 'trending'; showSlipTray = false; closeAllModals()" aria-label="Home" aria-controls="trending-panel" :aria-selected="tab === 'trending'">
       <span class="icon">🏠</span>
       <span class="label">Home</span>
@@ -1104,7 +1191,9 @@
   </nav>
 
   <div id="walletModal" x-show="modals.walletModal" x-ref="walletModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="wallet-modal-title">
-    <div class="modal-container open" @click="closeModal('walletModal')"></div> <div class="modal open"> <div class="flex justify-between items-center mb-4">
+    <div class="modal-container open" @click="closeModal('walletModal')"></div>
+    <div class="modal open">
+      <div class="flex justify-between items-center mb-4">
         <h3 id="wallet-modal-title" class="text-base font-semibold">Connect Wallet</h3>
         <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('walletModal')" aria-label="Close wallet modal">✕</button>
       </div>
@@ -1117,7 +1206,9 @@
   </div>
 
   <div id="helpModal" x-show="modals.helpModal" x-ref="helpModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
-    <div class="modal-container open" @click="closeModal('helpModal')"></div> <div class="modal open"> <div class="flex justify-between items-center mb-4">
+    <div class="modal-container open" @click="closeModal('helpModal')"></div>
+    <div class="modal open">
+      <div class="flex justify-between items-center mb-4">
         <h3 id="help-modal-title" class="text-base font-semibold">Help & Support</h3>
         <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('helpModal')" aria-label="Close help modal">✕</button>
       </div>
@@ -1132,7 +1223,9 @@
   </div>
 
   <div id="modal" x-show="modals.modal" x-ref="modal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-container open" @click="closeModal('modal')"></div> <div class="modal open"> <h3 id="modal-title" class="text-base font-semibold mb-3"></h3>
+    <div class="modal-container open" @click="closeModal('modal')"></div>
+    <div class="modal open">
+      <h3 id="modal-title" class="text-base font-semibold mb-3"></h3>
       <p id="modal-message" class="text-[#B0B0B0] text-sm mb-4"></p>
       <button class="button-primary w-full text-sm py-2" @click="closeModal('modal')" aria-label="Close modal">OK</button>
     </div>
@@ -1141,53 +1234,45 @@
   <div id="toast-container" class="fixed top-4 right-4 z-[1000] space-y-2"></div>
 
   <script>
-    // Toast Notification Function
+    // Toast Notification Function (remains the same)
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       if (!container) return;
-
       const toast = document.createElement('div');
-      toast.className = 'toast'; // Base class from CSS
+      toast.className = 'toast';
       toast.textContent = message;
-
-      // Optional: Add type-specific styling
       if (type === 'error') {
-        toast.style.backgroundColor = '#FF4D4D'; // Red
+        toast.style.backgroundColor = '#FF4D4D';
       } else if (type === 'success') {
-         toast.style.backgroundColor = '#4CAF50'; // Green
+         toast.style.backgroundColor = '#4CAF50';
       } else {
-         toast.style.backgroundColor = '#7B61FF'; // Default purple
+         toast.style.backgroundColor = '#7B61FF';
       }
-
       container.appendChild(toast);
-      // Auto-remove toast
       setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300); // Remove after fade out
+        setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
 
-    // Privy Initialization Script (Keep as is, ensure App ID is correct)
+    // Privy Initialization Script (remains the same)
     window.addEventListener('load', () => {
       if (window.Privy) {
-        console.log('Privy init loaded');
+        console.log('Privy SDK script loaded.');
         try {
             window.Privy.init({
-              // Ensure this is your correct Privy App ID
-              appId: 'cma934bmv01t2lb0mcn0mmz7a',
-              // config object can be added here if needed
-              // config: { ... }
+              appId: 'cma934bmv01t2lb0mcn0mmz7a', // Replace with your actual App ID
+              // config: { /* Add any necessary Privy config here */ }
             });
             console.log('Privy initialized.');
-            // Setup listeners after init (handled in Alpine's init)
+            // Listeners are now set up via Alpine's init
         } catch (error) {
             console.error('Privy initialization failed:', error);
             showToast('Failed to initialize wallet connection.', 'error');
         }
       } else {
-        console.error('Privy SDK not loaded.');
-        // showToast('Wallet features are currently unavailable.', 'error');
+        console.error('Privy SDK not loaded on window.load.');
       }
     });
   </script>
