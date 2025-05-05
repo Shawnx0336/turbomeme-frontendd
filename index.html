@@ -8,6 +8,9 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
+  <script>
+    const BASE_URL = 'https://memepicks-backend.onrender.com';
+  </script>
   <style>
     /* Base styles */
     body {
@@ -339,6 +342,73 @@
       opacity: 1;
     }
 
+    /* Toggle Switch Styles (for 2FA placeholder) */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 40px; /* Smaller width */
+        height: 20px; /* Smaller height */
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #4A4A4A; /* Darker gray */
+        transition: .4s;
+        border-radius: 20px; /* Fully rounded */
+    }
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 14px; /* Smaller circle */
+        width: 14px; /* Smaller circle */
+        left: 3px; /* Adjusted position */
+        bottom: 3px; /* Adjusted position */
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+        background-color: #7B61FF; /* Purple when checked */
+    }
+    input:checked + .toggle-slider:before {
+        transform: translateX(20px); /* Adjusted translation */
+    }
+
+    /* Chat Styles Placeholder */
+    .chat-feed {
+        height: 200px; /* Example height */
+        background-color: #2A2A2A;
+        border-radius: 8px;
+        padding: 8px;
+        overflow-y: scroll;
+        margin-bottom: 8px;
+        display: flex;
+        flex-direction: column-reverse; /* Show latest messages at bottom */
+    }
+    .chat-message {
+        margin-bottom: 6px;
+        font-size: 12px;
+    }
+    .chat-message .username {
+        font-weight: 600;
+        color: #A0AEC0; /* Lighter gray */
+        margin-right: 4px;
+    }
+    .chat-input-area {
+        display: flex;
+        gap: 8px;
+    }
+
+
     /* Mobile Specific Adjustments */
     @media (max-width: 767px) {
       .header {
@@ -391,7 +461,7 @@
 
       .main-content {
         padding: 16px;
-        padding-top: calc(56px + 48px + 16px);
+        padding-top: calc(56px + 48px + 16px + 24px); /* Added space for price display */
         padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
         transition: padding-bottom 0.3s ease-in-out;
         box-sizing: border-box;
@@ -457,28 +527,29 @@
         align-items: center;
         box-sizing: border-box;
       }
+      /* Adjust button width for 5 items */
       .bottom-nav button {
         min-height: 48px;
-        width: 25%;
+        width: 20%; /* Equal width for 5 items */
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 4px;
-        font-size: 12px;
+        font-size: 10px; /* Slightly smaller label */
         color: #B0B0B0;
         transition: color 0.2s ease, transform 0.2s ease;
         padding: 4px 0;
       }
       .bottom-nav button.active { color: #FFFFFF; transform: scale(1.05); }
       .bottom-nav button:hover { color: #FFFFFF; }
-      .bottom-nav .icon { font-size: 24px; }
-      .bottom-nav .label { font-size: 12px; }
+      .bottom-nav .icon { font-size: 20px; } /* Slightly smaller icon */
+      .bottom-nav .label { font-size: 10px; } /* Smaller label */
     }
   </style>
 </head>
 <body x-data="{
-  tab: 'trending',
+  tab: 'trending', // Default tab
   walletAddress: localStorage.getItem('walletAddress') || null,
   walletBalance: null,
   faucetBalance: 5.0,
@@ -494,9 +565,13 @@
   slip: { picks: [], wager: 0 },
   multipliers: { 2: 2, 3: 5, 4: 10, 5: 20 },
   walletConnection: null,
-  // Referral state
   referrerAddress: localStorage.getItem('referrerAddress') || null,
   firstSlipSubmitted: localStorage.getItem('firstSlipSubmitted') === 'true',
+  // Community Tab specific state
+  show2FASection: false,
+  selectedChatRoom: 'global',
+  tipRecipient: '',
+  tipAmount: 0.1,
 
   toggleBodyScroll(enabled) {
     document.body.classList.toggle('modal-open', !enabled);
@@ -589,7 +664,6 @@
         button.classList.add('active');
         showToast(`${token}: ${choice} added to slip.`);
     }
-     // Update odds display on buttons after adding/removing
      this.updateOddsDisplay();
   },
 
@@ -598,19 +672,14 @@
     document.querySelectorAll(`.button-secondary[data-prop='${propId}'].active`).forEach(btn => {
         btn.classList.remove('active');
     });
-    // Update odds display on buttons after adding/removing
     this.updateOddsDisplay();
   },
 
-  // Function to update the odds display on prop buttons
   updateOddsDisplay() {
-      const currentMultiplier = this.multipliers[this.slip.picks.length] || 1; // Default to 1x if 0 or 1 pick
+      const currentMultiplier = this.multipliers[this.slip.picks.length] || 1;
       document.querySelectorAll('.button-secondary[data-prop]').forEach(button => {
-          // Remove existing odds span if present
           const existingOdds = button.querySelector('.odds-multiplier');
           if (existingOdds) existingOdds.remove();
-
-          // Add new odds span if picks > 0
           if (this.slip.picks.length > 0) {
               const oddsSpan = document.createElement('span');
               oddsSpan.className = 'odds-multiplier';
@@ -632,7 +701,7 @@
     return numPicks >= 2 && numPicks <= 5 && typeof wager === 'number' && wager >= 0.1 && wager <= 10;
   },
 
-  submitSlip() {
+  submitSlipAction() {
     if (!this.isValidSlip()) {
       this.openModal('modal');
       document.getElementById('modal-title').textContent = 'Invalid Slip';
@@ -668,20 +737,10 @@
             console.log(`Faucet balance updated: ${this.faucetBalance}`);
         }
 
-        this.openModal('modal');
-        document.getElementById('modal-title').textContent = 'Slip Submitted';
-        document.getElementById('modal-message').textContent = `Your slip with ${this.slip.picks.length} picks for ${this.slip.wager} SOL has been submitted! Good luck!`;
+        submitSlipToBackend(this.slip.picks, this.slip.wager, this.walletAddress, this.multipliers[this.slip.picks.length], this.referrerAddress);
 
         playSound('success');
-        triggerVibration(100);
-
-        // Referral tracking update
-        if (this.referrerAddress && !this.firstSlipSubmitted) {
-            const shortRef = this.referrerAddress.slice(0, 4) + '...' + this.referrerAddress.slice(-4);
-            showToast(`Referral from ${shortRef} tracked!`, 'success');
-            localStorage.setItem('firstSlipSubmitted', 'true');
-            this.firstSlipSubmitted = true; // Update Alpine state
-        }
+        triggerVibration(50);
 
         this.slip.picks.forEach(pick => this.removePick(pick.propId));
         this.slip.picks = [];
@@ -690,19 +749,19 @@
         if(wagerInput) wagerInput.value = '';
         this.showSlipTray = false;
         this.toggleBodyScroll(true);
-        this.updateOddsDisplay(); // Reset odds display
+        this.updateOddsDisplay();
     }
   },
 
   disconnectWallet() {
     console.log('Disconnect Wallet button clicked');
     localStorage.removeItem('walletAddress');
-    localStorage.removeItem('firstSlipSubmitted'); // Optional: Reset referral tracking on disconnect
+    localStorage.removeItem('firstSlipSubmitted');
     this.walletAddress = null;
     this.walletBalance = null;
-    this.firstSlipSubmitted = false; // Reset Alpine state
+    this.firstSlipSubmitted = false;
     showToast('Wallet disconnected.');
-    this.updateOddsDisplay(); // Reset odds display
+    this.updateOddsDisplay();
   },
 
   copyAddress() {
@@ -715,7 +774,6 @@
       });
   },
 
-  // Function to copy referral link
   getInviteLink() {
       if (!this.walletAddress) {
           showToast('Connect wallet to get invite link.', 'error');
@@ -730,10 +788,48 @@
       });
   },
 
+  // Placeholder for sending tip
+  sendTip() {
+      if (!this.walletAddress) {
+          showToast('Connect wallet to send tips.', 'error');
+          return;
+      }
+      if (!this.tipRecipient || this.tipAmount <= 0) {
+          showToast('Invalid recipient or amount.', 'error');
+          return;
+      }
+      console.log(`Placeholder: Sending ${this.tipAmount} SOL tip from ${this.walletAddress} to ${this.tipRecipient}`);
+      // TODO: Integrate with backend /tip endpoint
+      showToast(`Simulating tip of ${this.tipAmount} SOL to ${this.tipRecipient.slice(0,6)}...`, 'success');
+      this.tipRecipient = ''; // Clear fields after simulated send
+      this.tipAmount = 0.1;
+  },
+
+  // Placeholder for sending chat message
+  sendChatMessage(event) {
+      const input = event.target.elements.messageInput;
+      const message = input.value.trim();
+      if (!message) return;
+
+      console.log(`Placeholder: Sending chat message to room ${this.selectedChatRoom}: ${message}`);
+      // TODO: Integrate with Socket.io backend
+      // Example: socket.emit('chatMessage', { room: this.selectedChatRoom, message: message });
+
+      // Add message locally for demo purposes
+      const chatFeed = document.getElementById(`${this.selectedChatRoom}-chat-feed`);
+      if (chatFeed) {
+           const msgDiv = document.createElement('div');
+           msgDiv.className = 'chat-message';
+           msgDiv.innerHTML = `<span class="username">You:</span> ${message}`;
+           chatFeed.prepend(msgDiv); // Prepend to show at bottom (due to flex-direction: column-reverse)
+      }
+
+      input.value = ''; // Clear input
+  },
+
 
   init() {
       console.log('Alpine initializing...');
-      // Load state from localStorage
       this.walletAddress = localStorage.getItem('walletAddress') || null;
       this.referrerAddress = localStorage.getItem('referrerAddress') || null;
       this.firstSlipSubmitted = localStorage.getItem('firstSlipSubmitted') === 'true';
@@ -742,16 +838,14 @@
           console.log('Wallet address found in localStorage, fetching balance:', this.walletAddress);
           getWalletBalance(this.walletAddress);
       } else {
-          // Parse URL for referral code only if not connected
           const urlParams = new URLSearchParams(window.location.search);
           const refAddress = urlParams.get('ref');
-          if (refAddress && !localStorage.getItem('referrerAddress')) { // Only store if not already stored
+          if (refAddress && !localStorage.getItem('referrerAddress')) {
               console.log('Referral code found:', refAddress);
               if (refAddress.length > 30 && refAddress.length < 50) {
                  localStorage.setItem('referrerAddress', refAddress);
-                 this.referrerAddress = refAddress; // Update state
+                 this.referrerAddress = refAddress;
                  showToast(`Referral code ${refAddress.slice(0,4)}...${refAddress.slice(-4)} applied!`);
-                 // Clean URL only after processing
                  // window.history.replaceState({}, document.title, window.location.pathname);
               } else {
                   console.warn('Invalid referral code format ignored.');
@@ -763,7 +857,8 @@
           console.log('DOM fully loaded. Injecting content and tags.');
           injectDummyContent();
           addRiskTags();
-          this.updateOddsDisplay(); // Initial odds display update
+          this.updateOddsDisplay();
+          getPrice('SOL');
       });
 
       console.log('Alpine initialized.');
@@ -791,12 +886,10 @@
         <button class="button-auth w-full text-sm" @click="showDrawer = false; openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
       </div>
       <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
-
       <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button>
-
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; showHelpModal()" aria-label="Help Center">Help Center</a>
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
-      <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Discord">Discord</a>
+      <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Telegram">Telegram</a>
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Terms & Privacy">Terms & Privacy</a>
     </nav>
   </aside>
@@ -821,6 +914,9 @@
       </button>
     </div>
   </header>
+
+  <div class="text-center text-xs text-gray-400 pt-16"> Live SOL Price: $<span id="price-display">Loading...</span>
+  </div>
 
   <div class="sticky-tabs" role="tablist" aria-label="Game Categories">
     <div class="tabs" x-ref="tabs">
@@ -902,13 +998,123 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-semibold mb-2 text-[#7B61FF]">Get in Touch</h3>
-                  <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="block text-sm text-[#7B61FF] hover:underline mb-2" aria-label="Join Discord">Join our Discord</a>
+                  <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-sm text-[#7B61FF] hover:underline mb-2" aria-label="Join Telegram">Join our Telegram</a>
                   <a href="mailto:support@memepicks.fun" class="block text-sm text-[#7B61FF] hover:underline" aria-label="Contact Support">Contact Support</a>
                 </div>
               </div>
             </div>
          </div>
     </div>
+
+    <div x-show="tab === 'community'" role="tabpanel" id="community-panel" aria-labelledby="community-tab" class="fade-in">
+        <div class="max-w-xl mx-auto space-y-6">
+
+            <div class="card p-4">
+                <h2 class="text-lg font-semibold mb-3">My Profile</h2>
+                <div class="flex items-center space-x-4">
+                    <img src="https://placehold.co/64x64/7B61FF/FFFFFF?text=MP" alt="User Avatar" class="w-16 h-16 rounded-full object-cover flex-shrink-0">
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold" x-text="walletAddress ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4) : 'Not Connected'"></p>
+                        <div class="flex space-x-1 mt-1">
+                            <span class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-medium">Tier 1</span>
+                            <span class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-medium">Top 10%</span>
+                            <span class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-medium">OG</span>
+                        </div>
+                    </div>
+                     <button class="button-secondary text-xs py-1 px-3" @click="showToast('Edit Profile - Coming Soon!', 'info')">Edit</button>
+                </div>
+            </div>
+
+             <div class="card p-4" x-show="walletAddress">
+                <h3 class="text-md font-semibold mb-2">Referral Link</h3>
+                <div class="flex items-center space-x-2 bg-gray-700 p-2 rounded-md">
+                    <input type="text" readonly :value="`${window.location.origin}${window.location.pathname}?ref=${walletAddress}`" class="input-field bg-gray-700 border-none text-xs flex-1 p-1">
+                    <button class="button-secondary text-xs py-1 px-3" @click="getInviteLink()">Copy Link</button>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Share your link to earn rewards!</p>
+                </div>
+
+            <div class="card p-4">
+                <h3 class="text-md font-semibold mb-2">Send a Tip (SOL)</h3>
+                 <div class="space-y-2">
+                    <input type="text" x-model="tipRecipient" placeholder="Recipient Wallet Address" class="input-field text-sm">
+                    <div class="flex items-center gap-2">
+                        <input type="number" step="0.01" min="0.01" max="1" x-model.number="tipAmount" placeholder="Amount" class="input-field text-sm w-1/2">
+                        <button class="button-primary flex-1 text-sm" @click="sendTip()">Send Tip</button>
+                    </div>
+                 </div>
+            </div>
+
+             <div class="card p-4">
+                <h3 class="text-md font-semibold mb-2">Daily Quests</h3>
+                <ul class="space-y-1 text-sm">
+                    <li class="flex items-center justify-between">
+                        <span>✅ Make 3 bets today</span>
+                        <span class="text-green-400">1/3</span>
+                    </li>
+                    <li class="flex items-center justify-between opacity-50">
+                        <span>⬜️ Win 1 slip</span>
+                        <span class="text-gray-400">0/1</span>
+                    </li>
+                     <li class="flex items-center justify-between opacity-50">
+                        <span>⬜️ Invite 1 friend this week</span>
+                        <span class="text-gray-400">0/1</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card p-4" x-data="{ selectedChatRoom: 'global' }">
+                <h3 class="text-md font-semibold mb-2">Coin Chat Rooms</h3>
+                <select x-model="selectedChatRoom" class="input-field text-sm mb-2">
+                    <option value="global"># General Chat</option>
+                    <option value="$WIF">$WIF Chat</option>
+                    <option value="$BONK">$BONK Chat</option>
+                    <option value="$POPCAT">$POPCAT Chat</option>
+                </select>
+                <div :id="selectedChatRoom + '-chat-feed'" class="chat-feed">
+                    <div class="chat-message"><span class="username">TraderJoe:</span> $WIF to the moon! 🚀</div>
+                    <div class="chat-message"><span class="username">WhaleWatcher:</span> Careful, looks like resistance at $3.50</div>
+                    <div class="chat-message"><span class="username">MemeLord:</span> Popcat is popping!</div>
+                </div>
+                <form class="chat-input-area" @submit.prevent="sendChatMessage">
+                    <input type="text" name="messageInput" placeholder="Type message..." class="input-field text-sm flex-1">
+                    <button type="submit" class="button-primary text-sm px-4">Send</button>
+                </form>
+            </div>
+
+            <div class="card p-4">
+                <h3 class="text-md font-semibold mb-2">Live Chat (Global)</h3>
+                <div id="global-chat-feed" class="chat-feed">
+                    <div class="chat-message"><span class="username">AdminBot:</span> Welcome to MemePicks! Play responsibly.</div>
+                    <div class="chat-message"><span class="username">User123:</span> Anyone betting on $MYRO?</div>
+                    <div class="chat-message"><span class="username">DegenerateApe:</span> All in $PONKE expiring soon!</div>
+                </div>
+                 <form class="chat-input-area" @submit.prevent="sendChatMessage">
+                    <input type="text" name="messageInput" placeholder="Type message..." class="input-field text-sm flex-1">
+                    <button type="submit" class="button-primary text-sm px-4">Send</button>
+                </form>
+            </div>
+
+            <div class="card p-4" x-data="{ show2FA: false }">
+                <div class="flex justify-between items-center cursor-pointer" @click="show2FA = !show2FA">
+                    <h3 class="text-md font-semibold">Security Settings</h3>
+                    <span x-text="show2FA ? '−' : '+'" class="text-xl text-gray-400"></span>
+                </div>
+                <div x-show="show2FA" x-transition class="mt-3 border-t border-gray-700 pt-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-300">Enable 2FA (Coming Soon)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Enhance your account security with two-factor authentication.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
   </main>
 
   <button id="slip-tray-trigger" class="fab" @click="toggleSlipTray()" aria-label="Open entry slip" aria-controls="slip-tray" :aria-expanded="showSlipTray.toString()">
@@ -952,12 +1158,12 @@
             </div>
           <p class="text-[#7B61FF] font-semibold" x-text="(slip.wager * (multipliers[slip.picks.length] || 0)).toFixed(2) + ' SOL'"></p>
         </div>
-        <button class="button-primary w-full text-sm flex items-center justify-center" :disabled="!isValidSlip()" @click="submitSlip()" aria-label="Submit entry slip">
+        <button class="button-primary w-full text-sm flex items-center justify-center" :disabled="!isValidSlip()" @click="submitSlipAction()" aria-label="Submit entry slip">
           Submit Slip
            </button>
         <p class="text-[#B0B0B0] text-xs mt-3 text-center">
             <span x-show="walletAddress">Balance: <span x-text="walletBalance !== null ? walletBalance.toFixed(2) : 'Loading...'"></span> SOL</span>
-            <span x-show="!walletAddress">Faucet Balance: <span x-text="faucetBalance.toFixed(1)"></span> SOL</span>
+            <span x-show="!walletAddress">Free Mode Balance: <span x-text="faucetBalance.toFixed(1)"></span> SOL</span>
         </p>
     </div>
   </div>
@@ -970,6 +1176,9 @@
     <button :class="{ 'active': tab === 'mypicks' }" @click="tab = 'mypicks'; showSlipTray = false; closeAllModals()" aria-label="My Picks" aria-controls="mypicks-panel" :aria-selected="tab === 'mypicks'">
       <span class="icon">📊</span>
       <span class="label">My Picks</span>
+    </button>
+    <button :class="{ 'active': tab === 'community' }" @click="tab = 'community'; showSlipTray = false; closeAllModals()" aria-label="Community" aria-controls="community-panel" :aria-selected="tab === 'community'">
+      <span class="icon">👥</span> <span class="label">Community</span>
     </button>
     <button :class="{ 'active': tab === 'leaderboard' }" @click="tab = 'leaderboard'; showSlipTray = false; closeAllModals()" aria-label="Leaderboard" aria-controls="leaderboard-panel" :aria-selected="tab === 'leaderboard'">
       <span class="icon">🏆</span>
@@ -989,7 +1198,7 @@
       <div class="space-y-3 text-sm">
         <a href="#" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Help Center">Help Center / FAQs</a>
         <a href="#" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
-        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Join Discord">Join our Discord</a>
+        <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Join Telegram">Join our Telegram</a>
         <a href="mailto:support@memepicks.fun" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Contact Support">Contact Support</a>
       </div>
       <button class="button-primary w-full text-sm mt-6" @click="closeModal('helpModal')" aria-label="Close help modal">Close</button>
@@ -1020,6 +1229,10 @@
       </div>
       <button class="button-secondary w-full text-sm mt-4" @click="closeModal('walletChoiceModal')" aria-label="Cancel connection">Cancel</button>
     </div>
+  </div>
+
+  <div class="fixed bottom-20 left-4 z-50">
+      <button class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-2 rounded" onclick="submitSlipToBackend()">Test Submit Slip (DOGE)</button>
   </div>
 
   <script>
@@ -1179,9 +1392,8 @@
         Object.keys(propContainers).forEach(containerId => {
             const container = document.getElementById(containerId);
             if (container) {
-                container.innerHTML = ''; // Clear existing content/placeholders
+                container.innerHTML = '';
                 propContainers[containerId].forEach(prop => {
-                    // PART 1.3: Added odds display logic here
                     const cardHTML = `
                         <div class="card" data-risk="${prop.risk}" data-prop-id="${prop.id}">
                           <div class="prop-content">
@@ -1258,12 +1470,108 @@
         });
     }
 
-    // --- Initialization on DOM ready ---
+    // --- Frontend-Backend Connectivity ---
+
+    async function getPrice(coin) {
+      const displayElement = document.getElementById('price-display');
+      if (!displayElement) return;
+      try {
+        console.log(`Fetching price for ${coin}...`);
+        const res = await fetch(`${BASE_URL}/api/price/${coin}`); // Use BASE_URL
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        console.log(`Price data for ${coin}:`, data);
+        const price = data.price;
+        let formattedPrice = 'N/A';
+        if (typeof price === 'number') {
+            formattedPrice = price < 1 ? price.toFixed(4) : price.toFixed(2);
+        }
+        displayElement.innerText = formattedPrice;
+      } catch (e) {
+        console.error('Error fetching price:', e);
+        displayElement.innerText = 'Error';
+      }
+    }
+
+    async function submitSlipToBackend(picksData = null, wagerAmount = null, walletAddr = null, multiplierVal = null, referrerAddr = null) {
+        let payload;
+        let actualWalletAddress;
+
+        if (picksData && wagerAmount) {
+            actualWalletAddress = walletAddr;
+             payload = {
+                walletAddress: actualWalletAddress,
+                picks: picksData.map(p => ({ propId: p.propId, choice: p.choice, token: p.token, description: p.description })),
+                wager: wagerAmount,
+                duration: '1h', // TODO: Make duration selectable
+                multiplier: multiplierVal,
+                referrerWallet: referrerAddr
+            };
+            console.log('Submitting actual slip data:', payload);
+        } else {
+             const alpineData = document.querySelector('[x-data]')?.__x?.$data;
+             actualWalletAddress = alpineData?.walletAddress;
+             payload = {
+                walletAddress: actualWalletAddress,
+                picks: [{ propId: 'doge-test-001', token: '$DOGE', description: 'Test DOGE prop', choice: 'up' }],
+                wager: 0.1,
+                duration: '5m',
+                multiplier: 2,
+                referrerWallet: null
+            };
+            console.log('Submitting TEST slip data:', payload);
+        }
+
+        const token = localStorage.getItem('authToken'); // Example: retrieve token
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        } else if (actualWalletAddress) {
+            // If no JWT, but wallet connected, maybe include address for non-JWT auth?
+            // Or rely solely on JWT middleware on backend
+             console.warn("No JWT found, but wallet connected. Ensure backend handles this if needed.");
+        }
+
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/submit-slip`, { // Use BASE_URL and correct path
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+
+            if (!res.ok) {
+                console.error('Slip submission failed:', result);
+                showToast(`Error: ${result.message || 'Submission failed'}`, 'error');
+            } else {
+                console.log('Slip submitted successfully:', result);
+                showToast(`Slip submitted! ID: ${result.slipId?.slice(-6) || 'N/A'}`, 'success');
+                // Trigger referral confirmation AFTER successful backend response
+                const alpineData = document.querySelector('[x-data]').__x.$data; // Re-read Alpine data
+                if (alpineData.referrerAddress && !alpineData.firstSlipSubmitted) {
+                    const shortRef = alpineData.referrerAddress.slice(0, 4) + '...' + alpineData.referrerAddress.slice(-4);
+                    showToast(`Referral from ${shortRef} tracked!`, 'success');
+                    localStorage.setItem('firstSlipSubmitted', 'true');
+                    alpineData.firstSlipSubmitted = true; // Update Alpine state
+                }
+            }
+        } catch (err) {
+            console.error('Submit slip network error:', err);
+            showToast('Network error during submission.', 'error');
+        }
+    }
+
+
+    // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
         injectDummyContent();
         injectLeaderboardContent();
         addRiskTags();
-        // Alpine init will handle wallet check and referral parsing
+        // Alpine init handles wallet loading, referral parsing, and initial odds display
     });
 
   </script>
