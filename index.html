@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="preload" href="https://auth.privy.io/sdk.js" as="script">
   <title>MemePicks – Meme Coin Prop Betting</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@privy-io/js-sdk-core@0.46.3/dist/index.umd.js" async></script>
   <style>
     /* Base styles */
     body {
@@ -19,26 +17,25 @@
       min-height: 100vh;
       margin: 0;
       overscroll-behavior: none;
-      /* touch-action: manipulation; */ /* Removed as it might interfere with scrolling */
     }
 
     body.modal-open {
       overflow: hidden;
     }
 
-    /* Task 3: Responsive Card Styles */
     .card {
       background: #1E1E1E;
       border-radius: 8px;
-      padding: 12px; /* Reduced padding */
+      padding: 12px;
       margin-bottom: 16px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       transition: box-shadow 0.3s ease, transform 0.3s ease;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      width: 100%; /* Ensure full width */
-      box-sizing: border-box; /* Prevent padding overflow */
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
     }
     .card:hover {
       box-shadow: 0 6px 16px rgba(123, 97, 255, 0.3);
@@ -48,18 +45,20 @@
       transform: scale(0.98);
     }
 
-    /* Task 3: Improved Button Touch Targets */
     .button-primary,
     .button-secondary {
       padding: 12px 16px;
-      min-height: 48px; /* Ensure minimum height */
-      min-width: 80px; /* Ensure minimum width */
+      min-height: 48px;
+      min-width: 80px;
       font-size: 14px;
-      touch-action: manipulation; /* Improve touch responsiveness */
-      /* Base styles */
+      touch-action: manipulation;
       font-weight: 600;
       border-radius: 8px;
-      transition: all 0.2s ease; /* Simplified transition */
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: inline-flex; /* Ensure alignment */
+      align-items: center;
+      justify-content: center;
     }
 
     .button-primary {
@@ -76,8 +75,8 @@
     .button-primary:disabled {
       background: #4A4A4A;
       cursor: not-allowed;
-      transform: none; /* Reset transform */
-      box-shadow: none; /* Reset shadow */
+      transform: none;
+      box-shadow: none;
     }
 
     .button-secondary {
@@ -100,7 +99,7 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
-      background: transparent; /* Ensure background is reset */
+      background: transparent;
     }
     .button-secondary.active {
       background: #7B61FF;
@@ -116,7 +115,8 @@
       padding: 8px 16px;
       border-radius: 8px;
       transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-      min-height: 44px; /* Ensure tap target */
+      min-height: 44px;
+      cursor: pointer;
     }
     .button-auth:hover {
       box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
@@ -135,7 +135,7 @@
       width: 100%;
       font-size: 16px;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      box-sizing: border-box; /* Include padding in width */
+      box-sizing: border-box;
     }
     .input-field:focus {
       outline: none;
@@ -150,14 +150,14 @@
       font-weight: 600;
       padding: 8px 16px;
       border-radius: 12px;
-      transition: all 0.2s ease; /* Simplified transition */
+      transition: all 0.2s ease;
       white-space: nowrap;
       display: flex;
       align-items: center;
       justify-content: center;
       scroll-snap-align: start;
       opacity: 1;
-      min-height: 48px; /* Ensure tap target */
+      min-height: 48px;
     }
     .tab-button.active {
       background: #7B61FF;
@@ -167,60 +167,54 @@
       opacity: 1;
     }
 
-    /* Task 1: Slip Tray Scroll & Layout */
     .slip-tray {
       background: #1E1E1E;
       border-top-left-radius: 24px;
       border-top-right-radius: 24px;
       padding: 16px;
-      /* Keep padding-bottom for safe area, sticky elements will sit above it */
       padding-bottom: calc(16px + env(safe-area-inset-bottom));
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
       transition: transform 0.3s ease-in-out;
       position: fixed;
-      bottom: 56px; /* Sit above bottom nav */
+      bottom: 56px;
       left: 0;
       width: 100%;
       max-height: 50vh;
       z-index: 30;
       transform: translateY(100%);
       pointer-events: none;
-      overflow-y: auto; /* Enable scrolling */
-      display: flex; /* Enable flex layout */
-      flex-direction: column; /* Stack children vertically */
-      box-sizing: border-box; /* Ensure padding doesn't cause overflow */
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     .slip-tray.open {
       transform: translateY(0);
       pointer-events: auto;
     }
-    /* Task 1: Sticky Payout Section */
     #payout-mobile {
       position: sticky;
-      bottom: 64px; /* Position above the submit button */
-      background: #1E1E1E; /* Match tray background */
-      padding: 8px 0; /* Add some vertical padding */
-      z-index: 10; /* Above picks, below submit button */
-      margin-top: auto; /* Push other elements up */
+      bottom: 64px;
+      background: #1E1E1E;
+      padding: 8px 0;
+      z-index: 10;
+      margin-top: auto;
     }
-    /* Task 1 & 3: Sticky Submit Button in Tray */
     .slip-tray .button-primary {
       position: sticky;
-      bottom: 0; /* Stick to the very bottom of the scrollable area */
-      background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%); /* Keep gradient */
-      /* padding-bottom: 16px; Add padding if needed below button */
-      z-index: 20; /* Above payout */
-      width: 100%; /* Full width within padding */
-      margin-top: 16px; /* Space above button */
+      bottom: 0;
+      background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%);
+      z-index: 20;
+      width: 100%;
+      margin-top: 16px;
     }
 
-    /* Task 3: Modal Safe Area & Scrolling */
     .modal {
       background: #1E1E1E;
       border-top-left-radius: 12px;
       border-top-right-radius: 12px;
       padding: 16px;
-      padding-bottom: calc(16px + env(safe-area-inset-bottom)); /* Respect safe area */
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
       width: 100%;
       max-width: 100%;
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
@@ -230,9 +224,9 @@
       bottom: 0;
       left: 0;
       z-index: 40;
-      box-sizing: border-box; /* Ensure padding doesn't cause overflow */
-      max-height: 90vh; /* Limit height */
-      overflow-y: auto; /* Allow scrolling within modal */
+      box-sizing: border-box;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .modal.open {
       transform: translateY(0);
@@ -244,7 +238,7 @@
       pointer-events: none;
       position: fixed;
       inset: 0;
-      z-index: 35; /* Below modal */
+      z-index: 35;
     }
     .modal-container.open {
       opacity: 1;
@@ -261,7 +255,7 @@
       background: #1E1E1E;
       transform: translateX(-100%);
       transition: transform 0.3s ease-in-out;
-      z-index: 50; /* Above modals */
+      z-index: 50;
       padding: 16px;
       box-sizing: border-box;
     }
@@ -270,9 +264,9 @@
     }
     .overlay {
       position: fixed;
-      inset: 0; /* Cover entire screen */
+      inset: 0;
       background: rgba(0, 0, 0, 0.6);
-      z-index: 45; /* Below drawer, above modal */
+      z-index: 45;
       transition: opacity 0.3s ease-in-out;
       opacity: 0;
       pointer-events: none;
@@ -288,27 +282,6 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .toast {
-      background: #7B61FF;
-      color: #FFFFFF;
-      padding: 8px 16px;
-      border-radius: 8px;
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s forwards; /* Added forwards */
-    }
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-
     .badge {
       color: #FFFFFF;
       padding: 2px 8px;
@@ -316,11 +289,32 @@
       font-size: 12px;
       font-weight: 600;
       margin-left: 8px;
-      display: inline-block; /* Ensure it behaves like an inline element */
+      display: inline-block;
     }
     .badge-hot { background: #FF4D4D; }
     .badge-new { background: #7B61FF; }
-    .badge-expiring { background: #FFD700; color: #1A1A1A; } /* Dark text for yellow */
+    .badge-expiring { background: #FFD700; color: #1A1A1A; }
+
+    /* Risk Level Badge Styles */
+    .badge-risk {
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-left: 8px;
+    }
+    .badge-risk-low { background-color: #10B981; color: white; } /* Tailwind green-500 */
+    .badge-risk-medium { background-color: #F59E0B; color: white; } /* Tailwind yellow-500 */
+    .badge-risk-high { background-color: #EF4444; color: white; } /* Tailwind red-500 */
+
+    /* Odds Multiplier Style */
+    .odds-multiplier {
+        font-size: 10px;
+        color: #a0aec0; /* gray-500 */
+        margin-left: 4px;
+    }
+
 
     .glow { animation: glow 2s ease-in-out infinite; }
     @keyframes glow {
@@ -335,59 +329,14 @@
       position: fixed;
       width: 100%;
       background: #1E1E1E;
-      /* text-sm p-2 text-center; Tailwind classes cannot be directly used here */
-      font-size: 0.875rem; /* text-sm */
+      font-size: 0.875rem;
       line-height: 1.25rem;
-      padding: 0.5rem; /* p-2 */
+      padding: 0.5rem;
       text-align: center;
-      bottom: calc(56px + env(safe-area-inset-bottom) + 8px); /* Position above bottom nav */
+      bottom: calc(56px + env(safe-area-inset-bottom) + 8px);
     }
     .slip-preview.visible {
       opacity: 1;
-    }
-
-    /* Privy modal fix */
-    .privy-modal {
-      z-index: 9999 !important;
-      /* position, bottom, etc. might be handled by Privy itself */
-    }
-
-    /* Task 4: Tooltip Styles */
-    .tooltip {
-      position: relative; /* Container for positioning */
-      display: inline-flex; /* Align icon nicely */
-      align-items: center;
-      vertical-align: middle; /* Align with text */
-    }
-    .tooltip-content {
-      position: absolute;
-      background: #2A2A2A;
-      color: #FFFFFF;
-      padding: 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      width: 200px; /* Fixed width */
-      z-index: 100; /* High z-index */
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      /* Position above the icon */
-      bottom: 100%; /* Place above the trigger */
-      left: 50%;
-      transform: translateX(-50%) translateY(-4px); /* Center and add small gap */
-      opacity: 0; /* Hidden by default */
-      pointer-events: none; /* Don't capture clicks */
-      transition: opacity 0.2s ease-in-out;
-    }
-    /* Show tooltip when parent .tooltip has .active class (controlled by Alpine) */
-    .tooltip.active .tooltip-content {
-      opacity: 1;
-      pointer-events: auto; /* Allow interaction if needed */
-    }
-    .tooltip-icon {
-      font-size: 16px; /* Slightly larger icon */
-      color: #7B61FF; /* Icon color */
-      margin-left: 4px;
-      cursor: pointer;
-      line-height: 1; /* Prevent extra spacing */
     }
 
     /* Mobile Specific Adjustments */
@@ -399,12 +348,12 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        position: fixed; /* Keep header fixed */
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
-        background: #1A1A1A; /* Ensure background */
-        z-index: 20; /* Below drawer overlay */
+        background: #1A1A1A;
+        z-index: 20;
       }
       .header-left { display: flex; align-items: center; gap: 8px; }
       .hamburger {
@@ -413,48 +362,41 @@
       .hamburger:hover { color: #FFFFFF; }
       .logo { flex: 1; text-align: center; font-size: 20px; font-weight: 700; color: #FFFFFF; }
       .header-right { display: flex; align-items: center; gap: 8px; }
-      .button-auth { padding: 8px 12px; font-size: 14px; } /* Adjusted padding */
+      .button-auth { padding: 8px 12px; font-size: 14px; }
 
       .sticky-tabs {
         position: sticky;
-        top: 56px; /* Stick below header */
+        top: 56px;
         z-index: 10;
         background: #1A1A1A;
-        padding: 0 16px; /* Remove vertical padding */
+        padding: 0 16px;
         border-bottom: 1px solid #2A2A2A;
       }
-      /* Task 3: Optimized Tabs Scrolling */
       .tabs {
         display: flex;
         overflow-x: auto;
-        /* scroll-snap-type: x proximity; */ /* Proximity can feel better */
-        scroll-snap-type: x mandatory; /* Using mandatory as requested */
-        scroll-padding: 0 16px; /* Padding for snapped items */
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0 16px;
         scroll-behavior: smooth;
         gap: 8px;
-        padding: 8px 0; /* Vertical padding */
+        padding: 8px 0;
         -webkit-overflow-scrolling: touch;
-        white-space: nowrap; /* Prevent wrapping */
+        white-space: nowrap;
         width: 100%;
         box-sizing: border-box;
-        scrollbar-width: none; /* Hide scrollbar Firefox */
-        -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
       }
-      .tabs::-webkit-scrollbar { display: none; /* Hide scrollbar Chrome/Safari */ }
-      /* Fade effect removed as it might interfere with scrolling */
+      .tabs::-webkit-scrollbar { display: none; }
 
-      /* Task 3: Adjusted Main Content Padding */
       .main-content {
         padding: 16px;
-        padding-top: calc(56px + 48px + 16px); /* header + tabs height + spacing */
-        padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px); /* Account for bottom nav */
+        padding-top: calc(56px + 48px + 16px);
+        padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
         transition: padding-bottom 0.3s ease-in-out;
         box-sizing: border-box;
         width: 100%;
-        max-width: 100vw; /* Prevent horizontal overflow */
-      }
-      .main-content.slip-tray-open {
-        /* Adjust padding when tray is open if needed, but tray overlays */
+        max-width: 100vw;
       }
 
       .card .prop-content { display: flex; align-items: flex-start; gap: 12px; }
@@ -462,36 +404,32 @@
       .card .separator { border-top: 1px solid #2A2A2A; margin: 8px 0; }
       .card h3 {
         font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;
-        /* Removed sticky header logic for cards */
       }
       .card p.text-sm { font-size: 14px; margin-top: 4px; color: #E0E0E0; line-height: 1.4; }
       .card p.text-xs { font-size: 12px; margin-top: 4px; color: #B0B0B0; }
       .card .stats { border-top: 1px solid #2A2A2A; padding-top: 8px; margin-top: 8px; }
 
-      /* Task 2: FAB Contrast & Styling */
       .fab {
-        background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%); /* Apply gradient */
+        background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%);
         color: #FFFFFF;
         padding: 12px 20px;
-        border-radius: 24px; /* Pill shape */
+        border-radius: 24px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+        border: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 14px;
         font-weight: 600;
         position: fixed;
-        /* Adjusted bottom position to be above bottom nav */
         bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
         right: 16px;
-        z-index: 20; /* Below slip tray */
-        min-height: 44px; /* Ensure tap target */
+        z-index: 20;
+        min-height: 44px;
       }
-      /* Task 2: FAB Badge Contrast */
       .fab .badge {
         background: #FFFFFF;
-        color: #1A1A1A; /* Dark text */
+        color: #1A1A1A;
         border-radius: 50%;
         width: 20px;
         height: 20px;
@@ -500,37 +438,37 @@
         align-items: center;
         font-size: 12px;
         line-height: 1;
-        margin-left: 0; /* Reset margin */
-        border: 1px solid rgba(0, 0, 0, 0.2); /* Definition */
+        margin-left: 0;
+        border: 1px solid rgba(0, 0, 0, 0.2);
       }
 
       .bottom-nav {
         background: #1A1A1A;
         border-top: 1px solid #2A2A2A;
         height: 56px;
-        padding-bottom: env(safe-area-inset-bottom); /* Respect safe area */
+        padding-bottom: env(safe-area-inset-bottom);
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        z-index: 60; /* High z-index */
+        z-index: 60;
         display: flex;
         justify-content: space-around;
         align-items: center;
         box-sizing: border-box;
       }
       .bottom-nav button {
-        min-height: 48px; /* Ensure tap target */
+        min-height: 48px;
         width: 25%;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center; /* Center content */
+        justify-content: center;
         gap: 4px;
         font-size: 12px;
         color: #B0B0B0;
         transition: color 0.2s ease, transform 0.2s ease;
-        padding: 4px 0; /* Add some padding */
+        padding: 4px 0;
       }
       .bottom-nav button.active { color: #FFFFFF; transform: scale(1.05); }
       .bottom-nav button:hover { color: #FFFFFF; }
@@ -541,46 +479,35 @@
 </head>
 <body x-data="{
   tab: 'trending',
-  walletAddress: null,
+  walletAddress: localStorage.getItem('walletAddress') || null,
   walletBalance: null,
+  faucetBalance: 5.0,
   showProfileDropdown: false,
   showDrawer: false,
   showSlipTray: false,
   activeModal: null,
   modals: {
-    walletModal: false,
     helpModal: false,
-    modal: false // Generic modal
+    modal: false, // Generic modal
+    walletChoiceModal: false
   },
   slip: { picks: [], wager: 0 },
   multipliers: { 2: 2, 3: 5, 4: 10, 5: 20 },
-  walletConnection: null, // Placeholder for wallet connection instance
+  walletConnection: null,
+  // Referral state
+  referrerAddress: localStorage.getItem('referrerAddress') || null,
+  firstSlipSubmitted: localStorage.getItem('firstSlipSubmitted') === 'true',
 
-  // Task 4: Tooltip data
-  tooltips: [
-    { id: 'multipliers', text: 'Multipliers: 2 picks = 2x, 3 picks = 5x, 4 picks = 10x, 5 picks = 20x payout.' },
-    { id: 'wager', text: 'Wager between 0.1 and 10 SOL per slip.' },
-    { id: 'slip', text: 'Slips require 2–5 picks to submit.' },
-    { id: 'trending', text: 'Trending: Most popular prop bets right now.' },
-    { id: 'marketcap', text: 'MCap: Bets on tokens reaching specific market caps.' },
-    { id: 'volume', text: 'Volume: Bets on trading volume within a timeframe.' },
-    { id: 'headtohead', text: 'H2H: Head-to-head token performance bets.' },
-    { id: 'memefactor', text: 'Meme Factor: Bets on social media trends and memes.' },
-    { id: 'expiring', text: 'Expiring: Bets closing soon.' },
-  ],
-
-  // --- Existing Alpine methods ---
   toggleBodyScroll(enabled) {
     document.body.classList.toggle('modal-open', !enabled);
-    // document.body.style.overflow = enabled ? 'auto' : 'hidden'; // Avoid direct style manipulation if possible
   },
 
   openModal(name) {
     this.closeAllModals();
-    this.showSlipTray = false; // Ensure slip tray is closed
+    this.showSlipTray = false;
     this.modals[name] = true;
     this.activeModal = name;
-    this.toggleBodyScroll(false); // Disable body scroll
+    this.toggleBodyScroll(false);
     console.log('Opening modal:', name);
   },
 
@@ -588,7 +515,6 @@
     this.modals[name] = false;
     if (this.activeModal === name) {
         this.activeModal = null;
-        // Only re-enable scroll if no other modal/tray is active
         if (!this.showSlipTray && !Object.values(this.modals).some(isOpen => isOpen)) {
             this.toggleBodyScroll(true);
         }
@@ -598,14 +524,12 @@
   closeAllModals() {
     Object.keys(this.modals).forEach(name => { this.modals[name] = false; });
     this.activeModal = null;
-    // Only re-enable scroll if slip tray is also closed
     if (!this.showSlipTray) {
         this.toggleBodyScroll(true);
     }
   },
 
   scrollTabIntoView(element) {
-    // Use block: 'nearest' to avoid unnecessary vertical scroll
     element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   },
 
@@ -616,10 +540,9 @@
   toggleSlipTray() {
     this.showSlipTray = !this.showSlipTray;
     if (this.showSlipTray) {
-      this.closeAllModals(); // Close modals when opening tray
-      this.toggleBodyScroll(false); // Disable body scroll
+      this.closeAllModals();
+      this.toggleBodyScroll(false);
     } else {
-      // Only re-enable scroll if no modal is active
       if (!this.activeModal) {
         this.toggleBodyScroll(true);
       }
@@ -627,42 +550,37 @@
   },
 
   addToSlip(event) {
-    const button = event.currentTarget; // Use currentTarget
+    const button = event.currentTarget;
     const propId = button.dataset.prop;
     const choice = button.dataset.option;
     const card = button.closest('.card');
-    if (!card) return; // Safety check
+    if (!card) return;
 
     const tokenElement = card.querySelector('h3');
     const token = tokenElement ? tokenElement.textContent.trim().split(' ')[0] : 'Unknown';
     const descriptionElement = card.querySelector('p.text-sm');
     const description = descriptionElement ? descriptionElement.textContent.trim() : 'No description';
 
-    // Check if the other option for the same prop is selected
     const otherOptionButton = card.querySelector(`.button-secondary[data-prop='${propId}']:not([data-option='${choice}'])`);
     if (otherOptionButton && otherOptionButton.classList.contains('active')) {
-        this.removePick(propId); // Remove the other pick first
+        this.removePick(propId);
         otherOptionButton.classList.remove('active');
     }
 
     const existingPickIndex = this.slip.picks.findIndex(pick => pick.propId === propId);
 
     if (existingPickIndex !== -1) {
-        // If the same choice is clicked again, remove it
         if (this.slip.picks[existingPickIndex].choice === choice) {
             this.removePick(propId);
             button.classList.remove('active');
             showToast(`${token}: ${choice} removed from slip.`);
         } else {
-            // If a different choice for the same prop is clicked, update the pick
             this.slip.picks[existingPickIndex].choice = choice;
-            // Update button states
             card.querySelectorAll(`.button-secondary[data-prop='${propId}']`).forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             showToast(`${token}: Choice updated to ${choice}.`);
         }
     } else {
-        // Add new pick if limit not reached
         if (this.slip.picks.length >= 5) {
             showToast('Max 5 picks allowed.');
             return;
@@ -671,43 +589,50 @@
         button.classList.add('active');
         showToast(`${token}: ${choice} added to slip.`);
     }
+     // Update odds display on buttons after adding/removing
+     this.updateOddsDisplay();
   },
 
   removePick(propId) {
     this.slip.picks = this.slip.picks.filter(pick => pick.propId !== propId);
-    // Deactivate corresponding button(s) in the main content
     document.querySelectorAll(`.button-secondary[data-prop='${propId}'].active`).forEach(btn => {
         btn.classList.remove('active');
     });
+    // Update odds display on buttons after adding/removing
+    this.updateOddsDisplay();
   },
 
-  // Renamed from updateSlip to avoid conflict with addToSlip
+  // Function to update the odds display on prop buttons
+  updateOddsDisplay() {
+      const currentMultiplier = this.multipliers[this.slip.picks.length] || 1; // Default to 1x if 0 or 1 pick
+      document.querySelectorAll('.button-secondary[data-prop]').forEach(button => {
+          // Remove existing odds span if present
+          const existingOdds = button.querySelector('.odds-multiplier');
+          if (existingOdds) existingOdds.remove();
+
+          // Add new odds span if picks > 0
+          if (this.slip.picks.length > 0) {
+              const oddsSpan = document.createElement('span');
+              oddsSpan.className = 'odds-multiplier';
+              oddsSpan.textContent = `(+${currentMultiplier}x)`;
+              button.appendChild(oddsSpan);
+          }
+      });
+  },
+
+
   updateSlipWager() {
     const wagerInput = document.getElementById('wager-mobile');
-    // Ensure wager is treated as a number, default to 0 if invalid
     this.slip.wager = Number(wagerInput.value) || 0;
   },
 
   isValidSlip() {
     const numPicks = this.slip.picks.length;
     const wager = this.slip.wager;
-    // Use strict number check for wager
     return numPicks >= 2 && numPicks <= 5 && typeof wager === 'number' && wager >= 0.1 && wager <= 10;
   },
 
   submitSlip() {
-    if (!this.walletAddress) {
-      // Prompt to connect wallet using Privy
-      if (window.Privy?.login) {
-          window.Privy.login();
-      } else {
-          this.openModal('modal'); // Fallback generic modal
-          document.getElementById('modal-title').textContent = 'Connect Wallet';
-          document.getElementById('modal-message').textContent = 'Please connect your wallet to submit your slip.';
-          console.error('Privy login function not available.');
-      }
-      return;
-    }
     if (!this.isValidSlip()) {
       this.openModal('modal');
       document.getElementById('modal-title').textContent = 'Invalid Slip';
@@ -715,181 +640,145 @@
       return;
     }
 
-    console.log('Submitting slip:', JSON.stringify(this.slip));
-    // --- Placeholder for actual submission logic ---
-    this.openModal('modal');
-    document.getElementById('modal-title').textContent = 'Slip Submitted';
-    document.getElementById('modal-message').textContent = `Your slip with ${this.slip.picks.length} picks for ${this.slip.wager} SOL has been submitted! Good luck!`;
-    // --- End Placeholder ---
+    let submissionMode = '';
+    let sufficientBalance = false;
 
-    // Clear slip after submission
-    this.slip.picks.forEach(pick => this.removePick(pick.propId)); // Ensure buttons are deactivated
-    this.slip.picks = [];
-    this.slip.wager = 0;
-    const wagerInput = document.getElementById('wager-mobile');
-    if(wagerInput) wagerInput.value = ''; // Clear input field
-    this.showSlipTray = false; // Close slip tray
-    this.toggleBodyScroll(true); // Re-enable scroll if no other modal is open
-  },
-
-  signOut() {
-    // Use Privy logout if available
-    if (window.Privy?.logout) {
-        window.Privy.logout();
+    if (this.walletAddress) {
+        sufficientBalance = true; // Assume sufficient for now
+        submissionMode = 'wallet';
+        if (!sufficientBalance) {
+            showToast('Insufficient wallet balance.', 'error');
+            return;
+        }
     } else {
-        // Fallback if Privy isn't loaded or doesn't have logout
-        this.walletAddress = null;
-        this.walletBalance = null;
-        this.showProfileDropdown = false;
-        showToast('Signed out successfully.');
-        console.warn('Privy logout function not available, signing out locally.');
+        if (this.faucetBalance >= this.slip.wager) {
+            sufficientBalance = true;
+            submissionMode = 'faucet';
+        } else {
+            showToast(`Insufficient faucet balance. You have ${this.faucetBalance.toFixed(1)} SOL left.`, 'error');
+            return;
+        }
     }
-    // State updates (walletAddress = null) should ideally happen via Privy event listener
-  },
 
-  // connectWallet method remains the same, it calls Privy.login()
-  connectWallet() {
-    // Always use Privy login/show method
-    if (window.Privy?.login) {
-        console.log('Calling Privy.login()'); // Debug log
-        window.Privy.login(); // Recommended method
-    } else if (window.Privy?.show) {
-        console.log('Calling Privy.show()'); // Debug log
-        window.Privy.show(); // Fallback if login isn't available
-    } else {
-        showToast('Wallet connection service not available.');
-        console.error('Privy login/show function not available.');
+    if (sufficientBalance) {
+        console.log(`Submitting slip in ${submissionMode} mode:`, JSON.stringify(this.slip));
+
+        if (submissionMode === 'faucet') {
+            this.faucetBalance -= this.slip.wager;
+            console.log(`Faucet balance updated: ${this.faucetBalance}`);
+        }
+
+        this.openModal('modal');
+        document.getElementById('modal-title').textContent = 'Slip Submitted';
+        document.getElementById('modal-message').textContent = `Your slip with ${this.slip.picks.length} picks for ${this.slip.wager} SOL has been submitted! Good luck!`;
+
+        playSound('success');
+        triggerVibration(100);
+
+        // Referral tracking update
+        if (this.referrerAddress && !this.firstSlipSubmitted) {
+            const shortRef = this.referrerAddress.slice(0, 4) + '...' + this.referrerAddress.slice(-4);
+            showToast(`Referral from ${shortRef} tracked!`, 'success');
+            localStorage.setItem('firstSlipSubmitted', 'true');
+            this.firstSlipSubmitted = true; // Update Alpine state
+        }
+
+        this.slip.picks.forEach(pick => this.removePick(pick.propId));
+        this.slip.picks = [];
+        this.slip.wager = 0;
+        const wagerInput = document.getElementById('wager-mobile');
+        if(wagerInput) wagerInput.value = '';
+        this.showSlipTray = false;
+        this.toggleBodyScroll(true);
+        this.updateOddsDisplay(); // Reset odds display
     }
   },
 
   disconnectWallet() {
-    // Use Privy logout
-     if (window.Privy?.logout) {
-        window.Privy.logout();
-    } else {
-        // Fallback if Privy isn't loaded or doesn't have logout
-        this.walletAddress = null;
-        this.walletBalance = null;
-        showToast('Wallet disconnected.');
-        console.warn('Privy logout function not available, disconnecting locally.');
-    }
-     // State updates handled by Privy event listener
+    console.log('Disconnect Wallet button clicked');
+    localStorage.removeItem('walletAddress');
+    localStorage.removeItem('firstSlipSubmitted'); // Optional: Reset referral tracking on disconnect
+    this.walletAddress = null;
+    this.walletBalance = null;
+    this.firstSlipSubmitted = false; // Reset Alpine state
+    showToast('Wallet disconnected.');
+    this.updateOddsDisplay(); // Reset odds display
   },
 
-  // Initialize Privy connection listener
-  initPrivyListener() {
-      // Ensure Privy is available before setting listeners
-      if (!window.Privy) {
-          console.warn('Privy SDK not available when trying to set up listeners.');
-          // Optionally retry after a delay
-          // setTimeout(() => this.initPrivyListener(), 500);
+  copyAddress() {
+      if (!this.walletAddress) return;
+      navigator.clipboard.writeText(this.walletAddress).then(() => {
+          showToast('Copied!');
+      }).catch(err => {
+          console.error('Failed to copy address: ', err);
+          showToast('Failed to copy address.', 'error');
+      });
+  },
+
+  // Function to copy referral link
+  getInviteLink() {
+      if (!this.walletAddress) {
+          showToast('Connect wallet to get invite link.', 'error');
           return;
       }
-
-      console.log('Setting up Privy event listeners...');
-
-      // Remove previous listeners if any to avoid duplicates (optional but good practice)
-      // Note: Privy SDK might not expose a method like removeAllListeners.
-      // Relying on the SDK to handle listener management internally is usually safe.
-
-      // *** MODIFIED Privy.on('login') handler ***
-      window.Privy.on('login', async (user) => { // Make handler async
-          console.log('Privy login event received:', user);
-
-          // Extract wallet address (handle cases where user might not have a wallet immediately)
-          const connectedAddress = user.wallet?.address;
-
-          if (connectedAddress) {
-              console.log('Wallet connected:', connectedAddress);
-              // Update Alpine state
-              this.walletAddress = connectedAddress;
-
-              // Send POST request to backend
-              try {
-                  console.log('Sending POST request to /auth/privy with address:', connectedAddress);
-                  const response = await fetch('/auth/privy', {
-                      method: 'POST',
-                      headers: {
-                          'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ address: connectedAddress }),
-                  });
-
-                  if (!response.ok) {
-                      // Log error if response status is not OK (e.g., 4xx, 5xx)
-                      console.error(`Error sending auth request: ${response.status} ${response.statusText}`);
-                      const errorBody = await response.text(); // Get error details if available
-                      console.error('Error response body:', errorBody);
-                      showToast('Authentication failed. Please try again.', 'error');
-                  } else {
-                      // Success case (optional: process response if backend sends data)
-                      const result = await response.json(); // Assuming backend sends JSON response
-                      console.log('Auth request successful:', result);
-                      showToast('Wallet connected & authenticated!');
-                  }
-              } catch (error) {
-                  // Log network or other errors during fetch
-                  console.error('Error during fetch to /auth/privy:', error);
-                  showToast('Network error during authentication.', 'error');
-              }
-
-              // Optional: Fetch balance after successful login and auth
-              // this.fetchWalletBalance(this.walletAddress);
-
-              this.closeModal('walletModal'); // Close any open wallet modal
-          } else {
-              // Handle case where user logged in but doesn't have a wallet linked yet
-              console.warn('User logged in via Privy but no wallet address found.');
-              // Update Alpine state accordingly (optional)
-              this.walletAddress = user.id; // Use Privy user ID as a fallback identifier
-              showToast('Logged in, but no wallet connected.');
-              this.closeModal('walletModal');
-          }
+      const inviteLink = `${window.location.origin}${window.location.pathname}?ref=${this.walletAddress}`;
+      navigator.clipboard.writeText(inviteLink).then(() => {
+          showToast('Invite link copied!');
+      }).catch(err => {
+          console.error('Failed to copy invite link: ', err);
+          showToast('Failed to copy link.', 'error');
       });
-
-      window.Privy.on('logout', () => {
-          console.log('Privy logout event received');
-          // Update Alpine state
-          this.walletAddress = null;
-          this.walletBalance = null; // Clear balance too
-          showToast('Wallet disconnected.');
-      });
-
-      window.Privy.on('error', (error) => {
-          console.error('Privy error event:', error);
-          showToast('Wallet connection error.', 'error');
-      });
-
-      console.log('Privy event listeners set up.');
   },
 
-  // Alpine init function remains the same
+
   init() {
-      // Use document.addEventListener for reliable DOM ready check
-      document.addEventListener('alpine:initialized', () => {
-          console.log('Alpine initialized. Setting up Privy listener.');
-          // Ensure Privy is loaded before setting listeners
-          // A small delay might still be needed if Privy loads slower than Alpine
-          if (window.Privy) {
-              this.initPrivyListener();
-          } else {
-              // Retry if Privy is not yet loaded
-              console.warn('Privy not loaded when Alpine initialized, retrying listener setup...');
-              const intervalId = setInterval(() => {
-                  if (window.Privy) {
-                      console.log('Privy loaded after retry, setting up listener.');
-                      this.initPrivyListener();
-                      clearInterval(intervalId);
-                  }
-              }, 200); // Check every 200ms
-              // Add a timeout to stop retrying after a while
-              setTimeout(() => clearInterval(intervalId), 5000); // Stop after 5 seconds
+      console.log('Alpine initializing...');
+      // Load state from localStorage
+      this.walletAddress = localStorage.getItem('walletAddress') || null;
+      this.referrerAddress = localStorage.getItem('referrerAddress') || null;
+      this.firstSlipSubmitted = localStorage.getItem('firstSlipSubmitted') === 'true';
+
+      if (this.walletAddress) {
+          console.log('Wallet address found in localStorage, fetching balance:', this.walletAddress);
+          getWalletBalance(this.walletAddress);
+      } else {
+          // Parse URL for referral code only if not connected
+          const urlParams = new URLSearchParams(window.location.search);
+          const refAddress = urlParams.get('ref');
+          if (refAddress && !localStorage.getItem('referrerAddress')) { // Only store if not already stored
+              console.log('Referral code found:', refAddress);
+              if (refAddress.length > 30 && refAddress.length < 50) {
+                 localStorage.setItem('referrerAddress', refAddress);
+                 this.referrerAddress = refAddress; // Update state
+                 showToast(`Referral code ${refAddress.slice(0,4)}...${refAddress.slice(-4)} applied!`);
+                 // Clean URL only after processing
+                 // window.history.replaceState({}, document.title, window.location.pathname);
+              } else {
+                  console.warn('Invalid referral code format ignored.');
+              }
           }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+          console.log('DOM fully loaded. Injecting content and tags.');
+          injectDummyContent();
+          addRiskTags();
+          this.updateOddsDisplay(); // Initial odds display update
       });
+
+      console.log('Alpine initialized.');
   }
 
+}"
+   @wallet-connected.window="walletAddress = $event.detail.address; getWalletBalance($event.detail.address); updateOddsDisplay()"
+   @balance-updated.window="walletBalance = $event.detail.balance"
+   @click.outside="if(activeModal) closeAllModals()"
+   @keydown.escape.window="if(activeModal) closeAllModals(); else if(showSlipTray) showSlipTray = false; else if(showDrawer) showDrawer = false"
+   x-init="init()">
 
-}" @click.outside="if(activeModal) closeAllModals()" @keydown.escape.window="if(activeModal) closeAllModals(); else if(showSlipTray) showSlipTray = false; else if(showDrawer) showDrawer = false" x-init="init()">
+   <div x-show="!walletAddress" class="fixed top-4 left-4 bg-indigo-700 text-white text-sm font-bold py-1 px-3 rounded-full z-50 animate-pulse">
+      Free Mode: <span x-text="faucetBalance.toFixed(1)"></span> SOL
+   </div>
 
   <div class="overlay" :class="{ 'open': showDrawer }" @click="showDrawer = false" aria-hidden="true"></div>
   <aside class="drawer p-4" :class="{ 'open': showDrawer }" x-show="showDrawer" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
@@ -898,8 +787,12 @@
       <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="showDrawer = false" aria-label="Close menu">✕</button>
     </div>
     <nav class="space-y-2">
-      <button x-show="!walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; connectWallet()" aria-label="Connect Wallet">Connect Wallet</button>
+      <div x-show="!walletAddress" class="space-y-2">
+        <button class="button-auth w-full text-sm" @click="showDrawer = false; openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
+      </div>
       <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
+
+      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button>
 
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; showHelpModal()" aria-label="Help Center">Help Center</a>
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
@@ -914,172 +807,75 @@
     </div>
     <h1 class="logo">MemePicks</h1>
     <div class="header-right">
-      <p class="text-xs text-[#B0B0B0] hidden sm:block" x-show="walletAddress" x-text="walletAddress ? walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4) : ''"></p>
-      <button class="button-auth text-sm" @click="walletAddress ? disconnectWallet() : connectWallet()" aria-label="Connect or Disconnect Wallet">
-        <span x-text="walletAddress ? 'Disconnect' : 'Connect'"></span>
+      <p class="text-xs text-[#B0B0B0] hidden sm:block cursor-pointer hover:text-white"
+         x-show="walletAddress"
+         x-text="walletAddress ? walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4) : ''"
+         @click="copyAddress()"
+         title="Copy address">
+      </p>
+      <div class="flex items-center gap-2" x-show="!walletAddress">
+          <button class="button-auth text-sm" @click="openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
+      </div>
+      <button class="button-auth text-sm" x-show="walletAddress" @click="disconnectWallet()" aria-label="Disconnect Wallet">
+        <span>Disconnect</span>
       </button>
     </div>
   </header>
 
   <div class="sticky-tabs" role="tablist" aria-label="Game Categories">
     <div class="tabs" x-ref="tabs">
-      <div class="flex items-center flex-shrink-0">
-        <button :class="{ 'tab-button active': tab === 'trending', 'tab-button': tab !== 'trending' }" @click="tab = 'trending'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'trending'" aria-controls="trending-panel" :tabindex="tab === 'trending' ? 0 : -1">Trending</button>
-        <div class="tooltip" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-          <span class="tooltip-icon">ℹ️</span>
-          <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'trending')?.text || ''"></div>
-        </div>
-      </div>
-      <div class="flex items-center flex-shrink-0">
-        <button :class="{ 'tab-button active': tab === 'marketcap', 'tab-button': tab !== 'marketcap' }" @click="tab = 'marketcap'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'marketcap'" aria-controls="marketcap-panel" :tabindex="tab === 'marketcap' ? 0 : -1">MCap</button>
-         <div class="tooltip" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-          <span class="tooltip-icon">ℹ️</span>
-          <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'marketcap')?.text || ''"></div>
-        </div>
-      </div>
-      <div class="flex items-center flex-shrink-0">
-        <button :class="{ 'tab-button active': tab === 'volume', 'tab-button': tab !== 'volume' }" @click="tab = 'volume'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'volume'" aria-controls="volume-panel" :tabindex="tab === 'volume' ? 0 : -1">Volume</button>
-         <div class="tooltip" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-          <span class="tooltip-icon">ℹ️</span>
-          <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'volume')?.text || ''"></div>
-        </div>
-      </div>
-       <div class="flex items-center flex-shrink-0">
-        <button :class="{ 'tab-button active': tab === 'headtohead', 'tab-button': tab !== 'headtohead' }" @click="tab = 'headtohead'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'headtohead'" aria-controls="headtohead-panel" :tabindex="tab === 'headtohead' ? 0 : -1">H2H</button>
-         <div class="tooltip" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-          <span class="tooltip-icon">ℹ️</span>
-          <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'headtohead')?.text || ''"></div>
-        </div>
-      </div>
-       <div class="flex items-center flex-shrink-0">
-        <button :class="{ 'tab-button active': tab === 'memefactor', 'tab-button': tab !== 'memefactor' }" @click="tab = 'memefactor'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'memefactor'" aria-controls="memefactor-panel" :tabindex="tab === 'memefactor' ? 0 : -1">Meme Factor</button>
-         <div class="tooltip" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-          <span class="tooltip-icon">ℹ️</span>
-          <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'memefactor')?.text || ''"></div>
-        </div>
-      </div>
-       <div class="flex items-center flex-shrink-0">
-        <button :class="{ 'tab-button active': tab === 'expiring', 'tab-button': tab !== 'expiring' }" @click="tab = 'expiring'; scrollTabIntoView($el.parentElement); closeAllModals()" role="tab" :aria-selected="tab === 'expiring'" aria-controls="expiring-panel" :tabindex="tab === 'expiring' ? 0 : -1">Expiring</button>
-         <div class="tooltip" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-          <span class="tooltip-icon">ℹ️</span>
-          <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'expiring')?.text || ''"></div>
-        </div>
-      </div>
+      <button :class="{ 'tab-button active': tab === 'trending', 'tab-button': tab !== 'trending' }" @click="tab = 'trending'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'trending'" aria-controls="trending-panel" :tabindex="tab === 'trending' ? 0 : -1">Trending</button>
+      <button :class="{ 'tab-button active': tab === 'marketcap', 'tab-button': tab !== 'marketcap' }" @click="tab = 'marketcap'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'marketcap'" aria-controls="marketcap-panel" :tabindex="tab === 'marketcap' ? 0 : -1">MCap</button>
+      <button :class="{ 'tab-button active': tab === 'volume', 'tab-button': tab !== 'volume' }" @click="tab = 'volume'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'volume'" aria-controls="volume-panel" :tabindex="tab === 'volume' ? 0 : -1">Volume</button>
+      <button :class="{ 'tab-button active': tab === 'headtohead', 'tab-button': tab !== 'headtohead' }" @click="tab = 'headtohead'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'headtohead'" aria-controls="headtohead-panel" :tabindex="tab === 'headtohead' ? 0 : -1">H2H</button>
+      <button :class="{ 'tab-button active': tab === 'memefactor', 'tab-button': tab !== 'memefactor' }" @click="tab = 'memefactor'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'memefactor'" aria-controls="memefactor-panel" :tabindex="tab === 'memefactor' ? 0 : -1">Meme Factor</button>
+      <button :class="{ 'tab-button active': tab === 'expiring', 'tab-button': tab !== 'expiring' }" @click="tab = 'expiring'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'expiring'" aria-controls="expiring-panel" :tabindex="tab === 'expiring' ? 0 : -1">Expiring</button>
     </div>
   </div>
 
   <main class="main-content" :class="{ 'slip-tray-open': showSlipTray }">
     <div x-show="tab === 'trending'" role="tabpanel" id="trending-panel" aria-labelledby="trending-tab" class="fade-in">
       <div id="trending-props" class="max-w-xl mx-auto space-y-4">
-        <div class="card">
-          <div class="prop-content">
-            <img src="https://placehold.co/64x64/7B61FF/FFFFFF?text=NUTZ" alt="$NUTZ logo" class="w-16 h-16 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
-            <div class="flex-1">
-              <h3 class="text-base font-bold">$NUTZ <span class="badge badge-hot">Hot</span></h3>
-              <p class="text-sm">Will $NUTZ hit $100K MC in 6 hours?</p>
-            </div>
-          </div>
-          <div class="flex justify-between items-center gap-2 mt-2">
-            <div class="flex space-x-2">
-              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'nutz-001' && p.choice === 'Yes')}" data-prop="nutz-001" data-option="Yes" @click="addToSlip($event)" aria-label="Pick Yes for $NUTZ">Yes</button>
-              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'nutz-001' && p.choice === 'No')}" data-prop="nutz-001" data-option="No" @click="addToSlip($event)" aria-label="Pick No for $NUTZ">No</button>
-            </div>
-          </div>
-          <div class="stats">
-            <div class="flex justify-between text-xs text-[#B0B0B0]">
-              <p>72% picked Yes</p>
-              <p>MC: $73K · Vol: $12K</p>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="prop-content">
-            <img src="https://placehold.co/64x64/00B0FF/FFFFFF?text=MOON" alt="$MOONSHOT logo" class="w-16 h-16 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
-            <div class="flex-1">
-              <h3 class="text-base font-bold">$MOONSHOT <span class="badge badge-new">New</span></h3>
-              <p class="text-sm">Will $MOONSHOT reach 500 buys by 10PM EST?</p>
-            </div>
-          </div>
-          <div class="flex justify-between items-center gap-2 mt-2">
-            <div class="flex space-x-2">
-              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'moon-003' && p.choice === 'Over')}" data-prop="moon-003" data-option="Over" @click="addToSlip($event)" aria-label="Pick Over for $MOONSHOT">Over</button>
-              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'moon-003' && p.choice === 'Under')}" data-prop="moon-003" data-option="Under" @click="addToSlip($event)" aria-label="Pick Under for $MOONSHOT">Under</button>
-            </div>
-          </div>
-          <div class="stats">
-            <div class="flex justify-between text-xs text-[#B0B0B0]">
-              <p>58% picked Over</p>
-              <p>MC: $120K · Vol: $20K</p>
-            </div>
-          </div>
-        </div>
-         <div class="card">
-          <div class="prop-content">
-            <img src="https://placehold.co/64x64/FFD700/000000?text=WEN" alt="$WEN logo" class="w-16 h-16 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
-            <div class="flex-1">
-              <h3 class="text-base font-bold">$WEN</h3>
-              <p class="text-sm">Will $WEN gain 1000 holders by midnight?</p>
-            </div>
-          </div>
-          <div class="flex justify-between items-center gap-2 mt-2">
-            <div class="flex space-x-2">
-              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'wen-004' && p.choice === 'Yes')}" data-prop="wen-004" data-option="Yes" @click="addToSlip($event)" aria-label="Pick Yes for $WEN">Yes</button>
-              <button class="button-secondary text-sm" :class="{'active': slip.picks.find(p => p.propId === 'wen-004' && p.choice === 'No')}" data-prop="wen-004" data-option="No" @click="addToSlip($event)" aria-label="Pick No for $WEN">No</button>
-            </div>
-          </div>
-          <div class="stats">
-            <div class="flex justify-between text-xs text-[#B0B0B0]">
-              <p>65% picked Yes</p>
-              <p>MC: $200K · Vol: $80K</p>
-            </div>
-          </div>
-        </div>
+          <p class="text-center text-gray-400 py-8">Loading Trending Props...</p>
       </div>
     </div>
     <div x-show="tab === 'marketcap'" role="tabpanel" id="marketcap-panel" aria-labelledby="marketcap-tab" class="fade-in">
         <div id="marketcap-props" class="max-w-xl mx-auto space-y-4">
-            <p class="text-center text-gray-400">Market Cap props coming soon!</p>
+            <p class="text-center text-gray-400 py-8">Loading Market Cap Props...</p>
         </div>
     </div>
     <div x-show="tab === 'volume'" role="tabpanel" id="volume-panel" aria-labelledby="volume-tab" class="fade-in">
         <div id="volume-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400">Volume props coming soon!</p>
+             <p class="text-center text-gray-400 py-8">Loading Volume Props...</p>
         </div>
     </div>
     <div x-show="tab === 'headtohead'" role="tabpanel" id="headtohead-panel" aria-labelledby="headtohead-tab" class="fade-in">
         <div id="headtohead-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400">H2H props coming soon!</p>
+             <p class="text-center text-gray-400 py-8">Loading H2H Props...</p>
         </div>
     </div>
      <div x-show="tab === 'memefactor'" role="tabpanel" id="memefactor-panel" aria-labelledby="memefactor-tab" class="fade-in">
         <div id="memefactor-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400">Meme Factor props coming soon!</p>
+             <p class="text-center text-gray-400 py-8">Loading Meme Factor Props...</p>
         </div>
     </div>
      <div x-show="tab === 'expiring'" role="tabpanel" id="expiring-panel" aria-labelledby="expiring-tab" class="fade-in">
         <div id="expiring-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400">Expiring props coming soon!</p>
+             <p class="text-center text-gray-400 py-8">Loading Expiring Props...</p>
         </div>
     </div>
      <div x-show="tab === 'mypicks'" role="tabpanel" id="mypicks-panel" aria-labelledby="mypicks-tab" class="fade-in">
         <div id="mypicks-props" class="max-w-xl mx-auto space-y-4">
             <h2 class="text-lg font-semibold mb-2">📜 Pick History</h2>
             <p class="text-center text-gray-400" x-show="!walletAddress">Connect wallet to see your picks.</p>
-            <div class="card" x-show="walletAddress">
-              <div class="prop-content">
-                <img src="https://placehold.co/48x48/7B61FF/FFFFFF?text=NUTZ" alt="$NUTZ logo" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/48x48/707070/FFFFFF?text=ERR'">
-                <div class="flex-1">
-                  <h3 class="text-sm font-bold">$NUTZ: Yes</h3>
-                  <p class="text-xs text-[#B0B0B0]">Hit $100K MC in 6h</p>
-                  <p class="text-[#7B61FF] text-xs mt-1 font-semibold">Won: +2.5 SOL</p>
+            <div x-show="walletAddress">
+                <p class="text-center text-gray-500 italic">Loading history...</p>
                 </div>
-              </div>
-            </div>
         </div>
     </div>
      <div x-show="tab === 'leaderboard'" role="tabpanel" id="leaderboard-panel" aria-labelledby="leaderboard-tab" class="fade-in">
         <div id="leaderboard-content" class="max-w-xl mx-auto space-y-4">
-            <p class="text-center text-gray-400">Leaderboard coming soon!</p>
+            <p class="text-center text-gray-400 py-8">Loading Leaderboard...</p>
         </div>
     </div>
      <div x-show="tab === 'help'" role="tabpanel" id="help-panel" aria-labelledby="help-tab" class="fade-in">
@@ -1095,12 +891,12 @@
                       <p class="text-xs text-[#B0B0B0]">A: Select 2–5 picks from the tabs, open the slip using the button at the bottom right, set a wager (0.1–10 SOL), and submit your slip.</p>
                     </div>
                     <div>
-                      <p class="text-xs text-[#E0E0E0] font-semibold">Q: What wallets are supported?</p>
-                      <p class="text-xs text-[#B0B0B0]">A: We support various wallets via Privy, including Phantom, Solflare, MetaMask (via Wallet Adapter), email, and social logins.</p>
-                    </div>
-                    <div>
                       <p class="text-xs text-[#E0E0E0] font-semibold">Q: How are winnings calculated?</p>
                       <p class="text-xs text-[#B0B0B0]">A: Winnings = Wager × Multiplier. Multipliers: 2 picks = 2x, 3 picks = 5x, 4 picks = 10x, 5 picks = 20x.</p>
+                    </div>
+                     <div>
+                      <p class="text-xs text-[#E0E0E0] font-semibold">Q: Can I play without a wallet?</p>
+                      <p class="text-xs text-[#B0B0B0]">A: Yes! You can use the free faucet balance (starting at 5.0 SOL) to try out the game without connecting a real wallet.</p>
                     </div>
                   </div>
                 </div>
@@ -1125,6 +921,9 @@
       <h3 id="slip-tray-title" class="text-base font-semibold">Your Slip</h3>
       <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="showSlipTray = false" aria-label="Close entry slip">✕</button>
     </div>
+    <div x-show="referrerAddress && !firstSlipSubmitted" class="text-xs text-green-400 mb-2 p-2 bg-green-900 rounded-md">
+      Referral from <span class="font-semibold" x-text="referrerAddress ? referrerAddress.slice(0,4) + '...' + referrerAddress.slice(-4) : ''"></span> tracked. Thanks for joining!
+    </div>
     <div id="slip-picks-mobile" class="space-y-2 mb-4 flex-grow overflow-y-auto">
       <template x-if="slip.picks.length === 0">
         <p class="text-[#B0B0B0] text-sm text-center py-4">Add 2 to 5 picks to start your slip.</p>
@@ -1144,31 +943,22 @@
         <div class="mb-4">
           <label for="wager-mobile" class="text-xs text-[#B0B0B0] mb-2 flex items-center">
             Wager (SOL)
-            <div class="tooltip ml-1" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-              <span class="tooltip-icon">ℹ️</span>
-              <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'wager')?.text || ''"></div>
-            </div>
-          </label>
+            </label>
           <input id="wager-mobile" type="number" step="0.1" min="0.1" max="10" class="input-field text-sm" placeholder="0.1–10 SOL" aria-label="Wager amount in SOL (0.1 to 10)" x-model.number="slip.wager" @input="updateSlipWager()">
         </div>
         <div id="payout-mobile" class="flex justify-between items-center text-xs mb-4" x-show="slip.picks.length >= 2">
           <div class="flex items-center">
-            <p class="text-[#B0B0B0]">Potential Payout:</p>
-            <div class="tooltip ml-1" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-              <span class="tooltip-icon">ℹ️</span>
-              <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'multipliers')?.text || ''"></div>
+            <p class="text-[#B0B0B0]">Potential Payout (<span x-text="multipliers[slip.picks.length] || 0"></span>x):</p>
             </div>
-          </div>
           <p class="text-[#7B61FF] font-semibold" x-text="(slip.wager * (multipliers[slip.picks.length] || 0)).toFixed(2) + ' SOL'"></p>
         </div>
         <button class="button-primary w-full text-sm flex items-center justify-center" :disabled="!isValidSlip()" @click="submitSlip()" aria-label="Submit entry slip">
           Submit Slip
-          <div class="tooltip ml-1" x-data="{ open: false }" @click.stop="open = !open" @click.away="open = false" :class="{ 'active': open }">
-            <span class="tooltip-icon">ℹ️</span>
-            <div class="tooltip-content" x-show="open" x-transition x-text="tooltips.find(t => t.id === 'slip')?.text || ''"></div>
-          </div>
-        </button>
-        <p class="text-[#B0B0B0] text-xs mt-3 text-center">Balance: <span x-text="walletBalance !== null ? walletBalance.toFixed(2) : (walletAddress ? 'Loading...' : 'N/A')"></span> SOL</p>
+           </button>
+        <p class="text-[#B0B0B0] text-xs mt-3 text-center">
+            <span x-show="walletAddress">Balance: <span x-text="walletBalance !== null ? walletBalance.toFixed(2) : 'Loading...'"></span> SOL</span>
+            <span x-show="!walletAddress">Faucet Balance: <span x-text="faucetBalance.toFixed(1)"></span> SOL</span>
+        </p>
     </div>
   </div>
 
@@ -1191,25 +981,8 @@
     </button>
   </nav>
 
-  <div id="walletModal" x-show="modals.walletModal" x-ref="walletModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="wallet-modal-title">
-    <div class="modal-container open" @click="closeModal('walletModal')"></div>
-    <div class="modal open">
-      <div class="flex justify-between items-center mb-4">
-        <h3 id="wallet-modal-title" class="text-base font-semibold">Connect Wallet</h3>
-        <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('walletModal')" aria-label="Close wallet modal">✕</button>
-      </div>
-      <div class="space-y-3">
-         <p class="text-sm text-[#B0B0B0] text-center">Use the main "Connect" button in the header, powered by Privy.</p>
-         <button class="button-primary w-full text-sm" @click="connectWallet()" aria-label="Connect Wallet via Privy">Connect Wallet</button>
-      </div>
-      <button class="button-secondary w-full text-sm mt-4" @click="closeModal('walletModal')" aria-label="Cancel connection">Cancel</button>
-    </div>
-  </div>
-
   <div id="helpModal" x-show="modals.helpModal" x-ref="helpModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
-    <div class="modal-container open" @click="closeModal('helpModal')"></div>
-    <div class="modal open">
-      <div class="flex justify-between items-center mb-4">
+    <div class="modal-container" :class="{'open': modals.helpModal}" @click="closeModal('helpModal')"></div> <div class="modal" :class="{'open': modals.helpModal}"> <div class="flex justify-between items-center mb-4">
         <h3 id="help-modal-title" class="text-base font-semibold">Help & Support</h3>
         <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('helpModal')" aria-label="Close help modal">✕</button>
       </div>
@@ -1224,58 +997,275 @@
   </div>
 
   <div id="modal" x-show="modals.modal" x-ref="modal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-container open" @click="closeModal('modal')"></div>
-    <div class="modal open">
-      <h3 id="modal-title" class="text-base font-semibold mb-3"></h3>
+    <div class="modal-container" :class="{'open': modals.modal}" @click="closeModal('modal')"></div> <div class="modal" :class="{'open': modals.modal}"> <h3 id="modal-title" class="text-base font-semibold mb-3"></h3>
       <p id="modal-message" class="text-[#B0B0B0] text-sm mb-4"></p>
       <button class="button-primary w-full text-sm py-2" @click="closeModal('modal')" aria-label="Close modal">OK</button>
     </div>
   </div>
 
-  <div id="toast-container" class="fixed top-4 right-4 z-[1000] space-y-2"></div>
+  <div id="walletChoiceModal" x-show="modals.walletChoiceModal" x-ref="walletChoiceModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="wallet-choice-modal-title" @keydown.escape.window="closeModal('walletChoiceModal')">
+    <div class="modal-container" :class="{'open': modals.walletChoiceModal}" @click="closeModal('walletChoiceModal')"></div>
+    <div class="modal" :class="{'open': modals.walletChoiceModal}">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="wallet-choice-modal-title" class="text-base font-semibold">Choose Wallet</h3>
+        <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('walletChoiceModal')" aria-label="Close wallet choice">✕</button>
+      </div>
+      <div class="space-y-3">
+        <button class="button-primary w-full text-sm flex items-center justify-center gap-2" @click="connectWallet('phantom'); closeModal('walletChoiceModal')" aria-label="Connect Phantom Wallet">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path></svg> Phantom Wallet
+        </button>
+        <button class="button-primary w-full text-sm flex items-center justify-center gap-2" @click="connectWallet('solflare'); closeModal('walletChoiceModal')" aria-label="Connect Solflare Wallet">
+           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg> Solflare Wallet
+        </button>
+      </div>
+      <button class="button-secondary w-full text-sm mt-4" @click="closeModal('walletChoiceModal')" aria-label="Cancel connection">Cancel</button>
+    </div>
+  </div>
 
   <script>
-    // Toast Notification Function (remains the same)
+    // --- Global Helper Functions ---
+
     function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
       const toast = document.createElement('div');
-      toast.className = 'toast';
+      toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl text-white text-sm z-[1000] shadow-lg ${
+        type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-gray-700'
+      }`;
       toast.textContent = message;
-      if (type === 'error') {
-        toast.style.backgroundColor = '#FF4D4D';
-      } else if (type === 'success') {
-         toast.style.backgroundColor = '#4CAF50';
-      } else {
-         toast.style.backgroundColor = '#7B61FF';
-      }
-      container.appendChild(toast);
+      document.body.appendChild(toast);
       setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300);
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 0.3s ease-out';
+          setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
 
-    // Privy Initialization Script (remains the same)
-    window.addEventListener('load', () => {
-      if (window.Privy) {
-        console.log('Privy SDK script loaded.');
-        try {
-            window.Privy.init({
-              appId: 'cma934bmv01t2lb0mcn0mmz7a', // Replace with your actual App ID
-              // config: { /* Add any necessary Privy config here */ }
-            });
-            console.log('Privy initialized.');
-            // Listeners are now set up via Alpine's init
-        } catch (error) {
-            console.error('Privy initialization failed:', error);
-            showToast('Failed to initialize wallet connection.', 'error');
+    function playSound(type) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!audioCtx) return;
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        if (type === 'success') {
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'error') {
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.2);
         }
-      } else {
-        console.error('Privy SDK not loaded on window.load.');
+    }
+
+    function triggerVibration(ms) {
+        if ('vibrate' in navigator) {
+            try { navigator.vibrate(ms); } catch (e) { console.warn("Vibration failed:", e); }
+        }
+    }
+
+    async function getWalletBalance(address) {
+        if (!address) return null;
+        console.log('Fetching balance for:', address);
+        try {
+            if (typeof solanaWeb3 === 'undefined') throw new Error('Solana Web3 library not loaded.');
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
+            const publicKey = new solanaWeb3.PublicKey(address);
+            const balance = await connection.getBalance(publicKey);
+            const balanceInSol = balance / solanaWeb3.LAMPORTS_PER_SOL;
+            console.log('Balance fetched:', balanceInSol, 'SOL');
+            document.body.dispatchEvent(new CustomEvent('balance-updated', { detail: { balance: balanceInSol } }));
+            return balanceInSol;
+        } catch (error) {
+            console.error('Error fetching balance:', error);
+            showToast('Could not fetch wallet balance.', 'error');
+            document.body.dispatchEvent(new CustomEvent('balance-updated', { detail: { balance: null } }));
+            return null;
+        }
+    }
+
+    async function connectWallet(walletType) {
+      let provider = null;
+      console.log(`Attempting to connect with ${walletType}...`);
+
+      if (walletType === 'phantom') {
+        if ('phantom' in window) {
+            const phantomProvider = window.phantom?.solana;
+            if (phantomProvider?.isPhantom) provider = phantomProvider;
+        }
+      } else if (walletType === 'solflare') {
+        if ('solflare' in window) {
+            const solflareProvider = window.solflare;
+            if (solflareProvider) provider = solflareProvider;
+        }
       }
+
+      if (!provider) {
+        showToast(`${walletType.charAt(0).toUpperCase() + walletType.slice(1)} Wallet not found. Install it and try again.`, 'error');
+        console.error(`${walletType} provider not found.`);
+        if (/Mobi|Android/i.test(navigator.userAgent)) {
+            const appUrl = encodeURIComponent(window.location.href);
+            const redirectLink = encodeURIComponent(window.location.href + '?connected=true');
+            if (walletType === 'phantom') window.location.href = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectLink}`;
+            else if (walletType === 'solflare') window.location.href = `https://solflare.com/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectLink}`;
+        }
+        return;
+      }
+
+      try {
+        console.log(`Connecting to ${walletType} provider...`);
+        if (!provider.isConnected) {
+            await provider.connect({ onlyIfTrusted: false });
+        }
+        const publicKey = provider.publicKey;
+        if (!publicKey) throw new Error('Could not get public key.');
+        const publicKeyString = publicKey.toString();
+        console.log(`Connected to ${walletType}:`, publicKeyString);
+        showToast(`Connected: ${publicKeyString.slice(0,6)}...${publicKeyString.slice(-4)}`, 'success');
+        localStorage.setItem('walletAddress', publicKeyString);
+        document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: publicKeyString } }));
+      } catch (err) {
+        console.error(`Connection error with ${walletType}:`, err);
+        let errorMessage = 'Connection failed. Please try again.';
+        if (err.message?.toLowerCase().includes('user rejected') || err.code === 4001) {
+            errorMessage = 'Connection rejected by user.';
+        }
+        showToast(errorMessage, 'error');
+        localStorage.removeItem('walletAddress');
+        document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: null } }));
+      }
+    }
+
+    // --- Content Injection & Tagging ---
+
+    function injectDummyContent() {
+        const propContainers = {
+            'trending-props': [
+                { token: 'DOGWIFHAT', desc: 'Will $WIF flip $BONK market cap by EOD?', risk: 'high', id: 'wif-001' },
+                { token: 'POPCAT', desc: 'Will $POPCAT reach 10k holders today?', risk: 'medium', id: 'pop-002' },
+                { token: 'SOLAMA', desc: 'Will $SOLAMA volume exceed $1M in 24h?', risk: 'low', id: 'solama-003' }
+            ],
+            'marketcap-props': [
+                { token: 'MYRO', desc: 'Will $MYRO hit $500M MC this week?', risk: 'medium', id: 'myro-mc1' },
+                { token: 'WEN', desc: 'Will $WEN reach $300M MC before Friday?', risk: 'medium', id: 'wen-mc2' },
+                { token: 'BODEN', desc: 'Will $BODEN reclaim $1B MC?', risk: 'high', id: 'boden-mc3' }
+            ],
+            'volume-props': [
+                { token: 'SLERF', desc: 'Will $SLERF 24h volume stay above $50M?', risk: 'low', id: 'slerf-vol1' },
+                { token: 'BONK', desc: 'Will $BONK daily volume exceed $100M?', risk: 'medium', id: 'bonk-vol2' },
+                { token: 'GME', desc: 'Will $GME (Solana) volume hit $10M today?', risk: 'high', id: 'gme-vol3' }
+            ],
+            'headtohead-props': [
+                { token: 'WIF vs PEPE', desc: 'Which token has higher % gain in next 1hr?', risk: 'high', id: 'wifpepe-h2h1' },
+                { token: 'POPCAT vs MEW', desc: 'Which token gets more buys in next 30min?', risk: 'medium', id: 'popmew-h2h2' },
+                { token: 'MYRO vs WEN', desc: 'Which token has lower % drop in 24h?', risk: 'low', id: 'myrowen-h2h3' }
+            ],
+            'memefactor-props': [
+                { token: 'TREMP', desc: 'Will $TREMP get mentioned by a politician?', risk: 'high', id: 'tremp-mf1' },
+                { token: 'HARAMBE', desc: 'Will $HARAMBE trend on X (Twitter)?', risk: 'medium', id: 'harambe-mf2' },
+                { token: 'GIGA', desc: 'Will $GIGA Chad meme resurface this week?', risk: 'low', id: 'giga-mf3' }
+            ],
+            'expiring-props': [
+                { token: 'PONKE', desc: 'Will $PONKE pump 15% in 10 minutes?', risk: 'high', id: 'ponke-exp1' },
+                { token: 'SILLY', desc: 'Will $SILLY drop 5% in next 5 minutes?', risk: 'medium', id: 'silly-exp2' },
+                { token: 'MANEKI', desc: 'Will $MANEKI volume spike in 1 hour?', risk: 'low', id: 'maneki-exp3' }
+            ]
+        };
+
+        Object.keys(propContainers).forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = ''; // Clear existing content/placeholders
+                propContainers[containerId].forEach(prop => {
+                    // PART 1.3: Added odds display logic here
+                    const cardHTML = `
+                        <div class="card" data-risk="${prop.risk}" data-prop-id="${prop.id}">
+                          <div class="prop-content">
+                            <img src="https://placehold.co/64x64/333333/FFFFFF?text=${prop.token.substring(0,4)}" alt="${prop.token} logo" class="w-16 h-16 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
+                            <div class="flex-1">
+                              <h3 class="text-base font-bold">${prop.token}</h3>
+                              <p class="text-sm">${prop.desc}</p>
+                            </div>
+                          </div>
+                          <div class="flex justify-between items-center gap-2 mt-2">
+                            <div class="flex space-x-2">
+                              <button class="button-secondary text-sm" data-prop="${prop.id}" data-option="Yes" @click="addToSlip($event)" aria-label="Pick Yes for ${prop.token}">
+                                Yes
+                                </button>
+                              <button class="button-secondary text-sm" data-prop="${prop.id}" data-option="No" @click="addToSlip($event)" aria-label="Pick No for ${prop.token}">
+                                No
+                                </button>
+                            </div>
+                          </div>
+                          <div class="stats">
+                            <div class="flex justify-between text-xs text-[#B0B0B0]">
+                              <p>50% picked Yes</p> <p>MC: $1M · Vol: $100K</p> </div>
+                          </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHTML);
+                });
+            }
+        });
+    }
+
+    function injectLeaderboardContent() {
+        const leaderboardContainer = document.getElementById('leaderboard-content');
+        if (!leaderboardContainer) return;
+        const leaders = [
+            { rank: 1, wallet: '4xd5...0eF2', wins: 4.7, avatar: '🏆' },
+            { rank: 2, wallet: '7G2A...9D1c', wins: 3.2, avatar: '🥈' },
+            { rank: 3, wallet: '9T5Q...1X7N', wins: 2.5, avatar: '🥉' },
+            { rank: 4, wallet: 'B3rN...y7U8', wins: 1.9, avatar: '4' },
+            { rank: 5, wallet: 'F1aM...z9P0', wins: 1.5, avatar: '5' },
+        ];
+        leaderboardContainer.innerHTML = `
+            <div class="card p-4">
+              <p class="text-sm font-semibold mb-3">🏆 Top Winners (Daily)</p>
+              <div class="space-y-2">
+                ${leaders.map(leader => `
+                  <div class="flex items-center space-x-3 p-2 rounded-lg bg-[#2A2A2A] ${leader.rank === 1 ? 'glow' : ''}">
+                    <span class="text-lg font-bold w-6 text-center ${leader.rank <= 3 ? 'text-yellow-400' : 'text-gray-400'}">${leader.avatar}</span>
+                    <p class="text-[#B0B0B0] text-xs flex-1">${leader.wallet}</p>
+                    <p class="text-green-400 text-xs font-semibold">${leader.wins.toFixed(1)} SOL</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+        `;
+    }
+
+    function addRiskTags() {
+        document.querySelectorAll('.card[data-risk]').forEach(card => {
+            const risk = card.dataset.risk;
+            const titleElement = card.querySelector('h3');
+            if (!risk || !titleElement || titleElement.querySelector('.badge-risk')) return;
+            let badgeClass = '';
+            switch (risk.toLowerCase()) {
+                case 'low': badgeClass = 'badge-risk-low'; break;
+                case 'medium': badgeClass = 'badge-risk-medium'; break;
+                case 'high': badgeClass = 'badge-risk-high'; break;
+                default: return;
+            }
+            const tag = document.createElement('span');
+            tag.className = `badge-risk ${badgeClass}`;
+            tag.textContent = risk;
+            titleElement.appendChild(tag);
+        });
+    }
+
+    // --- Initialization on DOM ready ---
+    document.addEventListener('DOMContentLoaded', () => {
+        injectDummyContent();
+        injectLeaderboardContent();
+        addRiskTags();
+        // Alpine init will handle wallet check and referral parsing
     });
+
   </script>
 </body>
 </html>
