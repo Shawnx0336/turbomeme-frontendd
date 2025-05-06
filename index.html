@@ -570,6 +570,15 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.1); }
     }
+    /* Auto-scrolling chat when idle */
+    .chat-feed.idle-scroll {
+        animation: autoScrollChat 15s linear infinite; /* Adjust duration as needed */
+    }
+    @keyframes autoScrollChat {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(calc(-100% + 200px)); /* Scroll up by feed height minus visible area */ }
+    }
+
 
     .chat-input-area { display: flex; gap: 8px; }
 
@@ -880,7 +889,8 @@
     @media (prefers-reduced-motion: reduce), .reduced-motion {
         .card.slot-reel, .progress-meter, .button-primary::before, .particle,
         .almost-won-card, .animate-shake, .badge-spots, .bets-ticker span,
-        .chat-message.hot, .countdown-timer.low-time, .modal {
+        .chat-message.hot, .countdown-timer.low-time, .modal,
+        .button-primary.idle, .chat-feed.idle-scroll { /* Added idle animations */
             animation: none !important;
             transition: none !important;
         }
@@ -892,6 +902,19 @@
     .almost-won-card, .bets-ticker span, .chat-message.hot, .countdown-timer.low-time {
         will-change: transform, opacity;
     }
+
+    /* Pulse Lock Animation for Idle Buttons */
+    @keyframes idlePulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0px transparent; }
+      50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255,215,0,0.4); } /* Subtle pulse */
+    }
+    .button-primary.idle {
+      animation: idlePulse 2s infinite ease-in-out;
+    }
+     .fab.idle {
+        animation: idlePulse 2s infinite ease-in-out;
+     }
+
 
     /* Mobile Specific Adjustments */
     @media (max-width: 767px) {
@@ -1114,6 +1137,10 @@
     x-init="init()">
 
   <div id="slot-particles"></div>
+  <div id="coin-flip" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 z-[9999] hidden pointer-events-none">
+    <img src="https://placehold.co/64x64/FFD700/000000?text=COIN" alt="Coin Flip" class="w-full h-full animate-spin" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
+  </div>
+
 
   <div class="overlay" :class="{ 'open': showDrawer || activeModal }" @click="if(activeModal !== 'teaserModal' && activeModal !== 'ageGateModal') closeAllModals(); else if(showDrawer) showDrawer = false;" aria-hidden="true"></div>
   <aside class="drawer p-4" :class="{ 'open': showDrawer }" x-show="showDrawer" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
@@ -1272,14 +1299,12 @@
                            <p>Total Wins: <span class="font-semibold text-green-400" x-text="userProfile.totalWins">0</span></p>
                            <p>Total Losses: <span class="font-semibold text-red-400" x-text="userProfile.totalLosses">0</span></p>
                            <p>Win Rate: <span class="font-semibold" x-text="((userProfile.totalWins / (userProfile.totalWins + userProfile.totalLosses || 1)) * 100).toFixed(1) + '%'">N/A</span></p>
-                           <p>Slip Streak: <span class="font-semibold text-[#FFD700]" x-text="userProfile.streak">0</span> 🔥</p> <div x-show="getVIPLevel() !== 'Diamond'">
-                                <p>Progress to <span class="font-semibold" x-text="getVIPLevel() === 'Bronze' ? 'Silver' : getVIPLevel() === 'Silver' ? 'Gold' : 'Diamond'"></span>:</p>
-                                <div class="h-2 bg-gray-700 rounded-full mt-1">
-                                    <div class="h-full bg-gradient-to-r from-[#FF1A1A] to-[#FFD700] rounded-full transition-all duration-500" :style="{ width: vipProgress + '%' }"></div> </div>
-                                <p class="text-xs text-gray-400 mt-1" x-text="`Wagered: ${userProfile.totalWagers.toFixed(2)} SOL`"></p>
+                           <p>Slip Streak: <span class="font-semibold text-[#FFD700]" x-text="userProfile.streak">0</span> 🔥</p>
+                           <div class="w-full h-2 bg-[#2A2A2A] rounded-full mt-2 overflow-hidden">
+                             <div class="h-full bg-gradient-to-r from-red-500 to-yellow-300 animate-pulse" :style="{ width: Math.min(100, (userProfile.streak / 7) * 100) + '%' }"></div> </div>
+                           <p class="text-xs text-gray-400 mt-1" x-text="`Wagered: ${userProfile.totalWagers.toFixed(2)} SOL`"></p>
                             </div>
                        </div>
-                   </div>
                    <div class="card p-4">
                        <h3 class="text-md font-semibold mb-2">Recent Activity</h3>
                        <p class="text-sm text-gray-400 italic">Your recent picks and results will appear here.</p>
@@ -1341,7 +1366,7 @@
 
                    <div class="card p-4">
                        <h3 class="text-md font-semibold mb-2">Live Chat (Global)</h3>
-                       <div id="global-chat-feed" class="chat-feed">
+                       <div id="global-chat-feed" class="chat-feed" :class="{'idle-scroll': isIdle}">
                            <div class="chat-message"><span class="username">AdminBot:</span> Welcome to MemePicks! Play responsibly.</div>
                            <div class="chat-message hot"><span class="username">User123:</span> Anyone betting on $MYRO?</div> <div class="chat-message"><span class="username">DegenerateApe:</span> All in $PONKE expiring soon!</div>
                        </div>
@@ -1374,7 +1399,13 @@
        </main>
 
         <div class="slip-tray-wrapper md:block" x-show="showSlipTray || window.innerWidth >= 768">
-           <div id="slip-tray" class="slip-tray md:static md:transform-none md:shadow-none md:max-h-none md:overflow-y-visible md:border-radius-12 md:p-6 md:min-w-[300px] md:flex-shrink-0" :class="{ 'open': showSlipTray && window.innerWidth < 768 }">
+           <div id="slip-tray" class="slip-tray md:static md:transform-none md:shadow-none md:max-h-none md:overflow-y-visible md:border-radius-12 md:p-6 md:min-w-[300px] md:flex-shrink-0" :class="{ 'open': showSlipTray && window.innerWidth < 768 }"
+                @mousedown="startLongPress($event)"
+                @touchstart="startLongPress($event)"
+                @mouseup="endLongPress($event)"
+                @touchend="endLongPress($event)"
+                @mousemove="cancelLongPress()"
+                @touchmove="cancelLongPress()">
                <div class="flex justify-between items-center mb-3 flex-shrink-0">
                    <h3 id="slip-tray-title" class="text-base font-semibold">Your Slip</h3>
                    <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl md:hidden" @click="showSlipTray = false" aria-label="Close entry slip">✕</button>
@@ -1429,10 +1460,14 @@
                                </div>
                            <p class="text-green-400 font-semibold text-base" x-text="(slip.wager * (multipliers[slip.picks.length] || 0)).toFixed(2) + ' SOL'"></p>
                        </div>
-                   </div>
+                    </div>
+
+                   <p class="text-xs text-[#FFD700] text-center mt-2" x-show="slip.picks.length > 0 && slip.wager > 0 && Math.random() < 0.5">
+                       🔥 Boost chance: +<span x-text="(Math.floor(Math.random() * 10) + 5)"></span>%
+                   </p>
 
 
-                   <button class="button-primary w-full text-sm flex items-center justify-center" :disabled="!isValidSlip()" @click="submitSlipAction()" aria-label="Submit entry slip">
+                   <button class="button-primary w-full text-sm flex items-center justify-center" :disabled="!isValidSlip()" @click="submitSlipAction()" aria-label="Submit entry slip" :class="{'idle': isIdle && !showSlipTray}">
                        Submit Slip
                    </button>
 
@@ -1451,7 +1486,7 @@
    </div>
 
 
-  <button id="slip-tray-trigger" class="fab md:hidden" @click="toggleSlipTray()" aria-label="Open entry slip" aria-controls="slip-tray" :aria-expanded="showSlipTray.toString()" :class="{ 'glow-green': slip.picks.length > 0 && slip.picks.length < 3, 'glow-yellow': slip.picks.length >= 3 && slip.picks.length < 5, 'glow-red': slip.picks.length === 5 }">
+  <button id="slip-tray-trigger" class="fab md:hidden" @click="toggleSlipTray()" aria-label="Open entry slip" aria-controls="slip-tray" :aria-expanded="showSlipTray.toString()" :class="{ 'glow-green': slip.picks.length > 0 && slip.picks.length < 3, 'glow-yellow': slip.picks.length >= 3 && slip.picks.length < 5, 'glow-red': slip.picks.length === 5, 'idle': isIdle && !showSlipTray }">
     <svg class="progress-meter" viewBox="0 0 64 64">
         <circle cx="32" cy="32" r="30"></circle>
         <circle class="progress-circle" cx="32" cy="32" r="30" :style="{ 'stroke-dashoffset': 188.5 - (188.5 * (betCount % 5 / 5)) }"></circle> <defs>
@@ -1615,12 +1650,13 @@
     // --- Howler.js Sound Objects ---
     // Initialize sounds on first user interaction to comply with mobile autoplay policies
     const sounds = {};
+    // Randomized win sounds
+    const winSounds = ['/sounds/win1.mp3', '/sounds/win2.mp3', '/sounds/win3.mp3']; // Placeholder paths
 
     function initializeSounds() {
         const soundFiles = {
             pick: ['/sounds/pick-ding.mp3', 'https://assets.codepen.io/t-1/pick-ding.mp3'],
             submit: ['/sounds/slot-pull.mp3', 'https://assets.codepen.io/t-1/slot-pull.mp3'],
-            win: ['/sounds/jackpot.mp3', 'https://assets.codepen.io/t-1/jackpot.mp3'],
             lossThud: ['/sounds/loss-thud.mp3', 'https://assets.codepen.io/t-1/loss-thud.mp3'],
             sadTrombone: ['/sounds/sad-trombone.mp3', 'https://assets.codepen.io/t-1/sad-trombone.mp3'],
             ambient: ['/sounds/casino-ambience.mp3', 'https://assets.codepen.io/t-1/casino-ambience.mp3']
@@ -1645,15 +1681,29 @@
             }
         });
 
+        // Initialize randomized win sounds
+         winSounds.forEach((src, index) => {
+             try {
+                 sounds[`win${index + 1}`] = new Howl({
+                     src: [src],
+                     onloaderror: (id, err) => console.warn(`Failed to load win sound ${index + 1}: ${err}`),
+                     onplayerror: (id, err) => console.warn(`Cannot play win sound ${index + 1}: ${err}`)
+                 });
+             } catch (e) {
+                 console.error(`Error initializing win sound ${index + 1}:`, e);
+             }
+         });
+
+
         // Remove the event listener after sounds are initialized
         document.removeEventListener('click', initializeSounds, { once: true });
          console.log('Sounds initialized.');
          // Optionally start ambient sound after initialization
-         // if (sounds.ambient && sounds.ambient.state() === 'unloaded') {
-         //     sounds.ambient.once('load', () => { sounds.ambient.play(); });
-         // } else if (sounds.ambient) {
-         //      sounds.ambient.play();
-         // }
+         if (sounds.ambient && sounds.ambient.state() === 'unloaded') {
+             sounds.ambient.once('load', () => { sounds.ambient.play(); });
+         } else if (sounds.ambient) {
+              sounds.ambient.play();
+         }
     }
 
      // Add event listener to initialize sounds on first user interaction
@@ -1668,6 +1718,17 @@
            console.warn(`Sound ${type} not available or not loaded`);
        }
     }
+     // Play a random win sound
+     function playRewardSound() {
+         const randomIndex = Math.floor(Math.random() * winSounds.length);
+         const soundKey = `win${randomIndex + 1}`;
+         if (sounds[soundKey]?.play) {
+             sounds[soundKey].play();
+         } else {
+             console.warn(`Random win sound ${soundKey} not available.`);
+         }
+     }
+
 
     // --- Global Helper Functions ---
 
@@ -1711,6 +1772,17 @@
         origin: { y: 0.6 }
       });
     }
+
+     // Trigger sparkle effect (for modal close)
+     function triggerSparkles(originX, originY) {
+         confetti({
+             particleCount: 50,
+             spread: 60,
+             origin: { x: originX, y: originY },
+             colors: ['#FFD700', '#FF1A1A', '#FFFFFF'],
+             disableForReducedMotion: true
+         });
+     }
 
 
     async function getWalletBalance(address) {
@@ -1962,6 +2034,8 @@
                      timerElement.textContent = 'Expired';
                       timerElement.classList.remove('badge-expiring', 'low-time'); // Remove low-time class
                      clearInterval(parseInt(timerElement.dataset.intervalId, 10)); // Clear interval
+                     // Trigger vibration on countdown to zero
+                     triggerVibration('loss'); // Using loss vibration for countdown end
                      // Optionally hide or disable the related prop card
                  } else {
                      const minutes = Math.floor(timeLeft / (60 * 1000));
@@ -2214,6 +2288,9 @@
         suggestedWager: 1.5, // Added for Wager Upsell
         topPick: '', // Added for Social Proof (Top Picks)
         challengeMessage: '', // Added for Live Challenge Feed
+        isIdle: false, // Added for Idle detection
+        longPressTimer: null, // Added for Long Press detection
+        longPressThreshold: 500, // 500ms for long press
 
 
         // Initialization
@@ -2379,6 +2456,15 @@
         },
 
         closeModal(name) {
+             // Trigger sparkle animation from modal corners on close
+            const modalElement = document.getElementById(name + 'Modal'); // Assuming modal IDs follow this pattern
+            if (modalElement) {
+                const rect = modalElement.getBoundingClientRect();
+                // Trigger sparkles from top-left and top-right corners
+                triggerSparkles(rect.left / window.innerWidth, rect.top / window.innerHeight);
+                triggerSparkles(rect.right / window.innerWidth, rect.top / window.innerHeight);
+            }
+
           this.modals[name] = false;
           if (this.activeModal === name) {
               this.activeModal = null;
@@ -2398,7 +2484,17 @@
         },
 
         closeAllModals() {
-          Object.keys(this.modals).forEach(name => { this.modals[name] = false; });
+          Object.keys(this.modals).forEach(name => {
+               // Trigger sparkle animation from modal corners on close
+              const modalElement = document.getElementById(name + 'Modal'); // Assuming modal IDs follow this pattern
+              if (modalElement) {
+                  const rect = modalElement.getBoundingClientRect();
+                   // Trigger sparkles from top-left and top-right corners
+                  triggerSparkles(rect.left / window.innerWidth, rect.top / window.innerHeight);
+                  triggerSparkles(rect.right / window.innerWidth, rect.top / window.innerHeight);
+              }
+              this.modals[name] = false;
+          });
           this.activeModal = null;
            // Re-enable scroll only if NO modals and NO slip tray are open
           if (!this.showSlipTray && !Object.values(this.modals).some(isOpen => isOpen)) {
@@ -2623,6 +2719,9 @@
                      localStorage.setItem('walletBalance', this.walletBalance.toFixed(2)); // Save wallet balance
                 }
 
+                // Trigger Coin Flip Micro-Reward Animation after submission
+                 this.triggerCoinFlip();
+
                 // Submit slip to backend (placeholder)
                 await submitSlipToBackend(this.lastSlip.picks, this.lastSlip.wager, this.walletAddress, this.multipliers[this.lastSlip.picks.length], this.referrerAddress);
 
@@ -2636,7 +2735,7 @@
                      document.body.classList.add('shake'); // Screen Shake
                      setTimeout(() => document.body.classList.remove('shake'), 500);
                     triggerConfetti(1.5); // Confetti Explosions
-                    playSound('win'); // Howler Win Sound
+                    playRewardSound(); // Play random win sound
                     triggerVibration('win'); // Win vibration
                     this.userProfile.totalWins++; // Update profile
                     this.userProfile.streak++; // Increase streak
@@ -3062,15 +3161,27 @@
             }
         },
 
-        // Placeholder function to set up the Inactivity Nudge
+        // Placeholder function to set up the Inactivity Nudge and Idle Pulse
         setupIdleNudge() {
             let idleTimeout;
+            const submitButton = document.querySelector('.button-primary'); // Get the submit button
+             const fabButton = document.getElementById('slip-tray-trigger'); // Get the FAB
+
             const resetTimer = () => {
                 clearTimeout(idleTimeout);
+                 // Remove idle class from buttons when activity is detected
+                 if (submitButton) submitButton.classList.remove('idle');
+                 if (fabButton) fabButton.classList.remove('idle');
+                 this.isIdle = false; // Set Alpine state
+
                 idleTimeout = setTimeout(() => {
-                     console.log('User is idle. Triggering hot prop alert.');
+                     console.log('User is idle. Triggering hot prop alert and idle pulse.');
                      this.modals.hotPropModal = true;
                      triggerVibration('pick'); // Vibrate on nudge
+                     // Add idle class to buttons
+                     if (submitButton) submitButton.classList.add('idle');
+                     if (fabButton) fabButton.classList.add('idle');
+                     this.isIdle = true; // Set Alpine state
                 }, 20000); // Trigger after 20 seconds of inactivity (Updated)
             };
 
@@ -3202,7 +3313,7 @@
                 const button = document.querySelector(`.button-secondary[data-prop='${propId}'][data-option='Yes']`);
                 if (button) {
                      // Simulate adding to slip without triggering the full addToSlip logic to avoid nested calls
-                     const card = button.closest('.card');
+                     const card = document.querySelector(`.card[data-prop-id='${propId}']`); // Find the card
                      const tokenElement = card.querySelector('h3');
                      const token = tokenElement ? tokenElement.textContent.trim().split(' ')[0] : 'Unknown';
                      const descriptionElement = card.querySelector('p.text-sm');
@@ -3292,7 +3403,88 @@
             localStorage.setItem('dailyWagerLimit', this.dailyWagerLimit.toFixed(2));
             showToast(`Daily wager limit set to ${this.dailyWagerLimit.toFixed(2)} SOL.`, 'success');
             this.closeModal('limitModal'); // Close modal after saving
+        },
+
+        // Placeholder for Long Press detection (for Wheel of Multipliers)
+        startLongPress(event) {
+            // Prevent default touch behavior (like scrolling) on touchstart if needed
+            // event.preventDefault();
+            this.cancelLongPress(); // Clear any existing timer
+            this.longPressTimer = setTimeout(() => {
+                console.log('Long press detected!');
+                this.triggerMultiplierWheel(); // Trigger the wheel animation
+            }, this.longPressThreshold);
+        },
+
+        endLongPress(event) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+             // If it was a quick tap, let the default click/tap event handle it
+        },
+
+        cancelLongPress() {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+        },
+
+        // Placeholder for Trigger Multiplier Wheel animation
+        triggerMultiplierWheel() {
+            console.log('Triggering Multiplier Wheel animation (placeholder)');
+            const slipTray = document.getElementById('slip-tray');
+            if (slipTray) {
+                // Simulate a spinning wheel effect on the slip tray or a dedicated element
+                gsap.to(slipTray, {
+                    rotation: 360, // Spin effect
+                    duration: 1,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        gsap.set(slipTray, { rotation: 0 }); // Reset rotation
+                        // Simulate revealing a multiplier or bonus
+                        showToast(`Multiplier Boost! (+${(Math.random() * 0.5 + 0.1).toFixed(1)}x)`, 'info');
+                        triggerVibration('win'); // Use win vibration for positive feedback
+                    }
+                });
+            }
+        },
+
+        // Placeholder for Trigger Coin Flip animation
+        triggerCoinFlip() {
+            const coinFlipElement = document.getElementById('coin-flip');
+            if (coinFlipElement) {
+                coinFlipElement.classList.remove('hidden');
+                gsap.fromTo(coinFlipElement,
+                    { opacity: 0, scale: 0.5, rotationY: 0 },
+                    { opacity: 1, scale: 1, rotationY: 720, duration: 0.8, ease: "power2.out" }
+                );
+                setTimeout(() => {
+                    gsap.to(coinFlipElement, {
+                        opacity: 0, scale: 0.5, duration: 0.4, ease: "power2.in",
+                        onComplete: () => coinFlipElement.classList.add('hidden')
+                    });
+                }, 1500); // Show for 1.5 seconds
+            }
+        },
+
+        // Placeholder for Auto-Scrolling Chat
+        startChatAutoScroll() {
+             const chatFeed = document.getElementById('global-chat-feed');
+             if (chatFeed) {
+                 // Check if chat content is taller than the feed height before scrolling
+                 if (chatFeed.scrollHeight > chatFeed.clientHeight) {
+                     chatFeed.classList.add('idle-scroll');
+                 }
+             }
+        },
+
+        stopChatAutoScroll() {
+             const chatFeed = document.getElementById('global-chat-feed');
+             if (chatFeed) {
+                 chatFeed.classList.remove('idle-scroll');
+                 // Reset scroll position to top when user interacts
+                 chatFeed.scrollTop = 0;
+             }
         }
+
 
       }));
     });
