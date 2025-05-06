@@ -1,44 +1,57 @@
 <!DOCTYPE html>
-<html lang="en" x-data="appState" x-init="init()">
+<html lang="en" x-data="cryptoDropApp" x-init="init()" :class="{ 'modal-open': modalOpen || walletModalOpen }">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>MemePicks – Meme Coin Prop Betting</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1A1A1A" />
+  <meta name="description" content="Play CryptoDrop on MemePicks: Stake SOL, drop orbs, win NFTs and DropTokens!" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>CryptoDrop – MemePicks</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js" defer></script>
   <script>
-    // Prerequisite: Define LS_PREFIX
     const LS_PREFIX = 'memepicks_';
-    // Task 1: Dynamic BASE_URL
     const BASE_URL = new URLSearchParams(window.location.search).get('env') === 'dev'
-        ? 'http://localhost:5001' // Default backend port
-        : 'https://memepicks-backend.onrender.com';
-    console.log("Using BASE_URL:", BASE_URL);
+      ? 'http://localhost:5001'
+      : 'https://memepicks-backend.onrender.com';
+    console.log('Using BASE_URL:', BASE_URL);
+    // Color mapping for slots (example)
+    const colorMap = {
+      '0x': '#9CA3AF', // Gray
+      '0.5x': '#60A5FA', // Blue
+      '1x': '#34D399', // Green
+      '2x': '#FBBF24', // Amber
+      '5x': '#F87171', // Red
+      '10x': '#A78BFA', // Violet
+      'Jackpot': '#F472B6' // Pink/Gold
+    };
   </script>
   <style>
-    /* Base styles - Reverted to original dark theme */
+    /* ===== Base Styles ===== */
     body {
       font-family: 'Sora', sans-serif;
-      /* Original dark gradient */
-      background: linear-gradient(180deg, #1A1A1A 0%, #121212 100%);
+      background: #121212; /* Darker base */
       color: #FFFFFF;
       min-height: 100vh;
       margin: 0;
       overscroll-behavior: none;
+      position: relative; /* Needed for absolute positioned elements like background */
+      overflow-x: hidden; /* Prevent horizontal scroll */
     }
-    /* Removed all body[data-theme='light'] selectors */
-
-    body.modal-open {
-      overflow: hidden;
+    body.modal-open { overflow: hidden; }
+    html.dark body { /* Light/dark mode prep */
+      background: #0A0A0A;
+      color: #FFFFFF;
     }
 
+    /* ===== Card Styles ===== */
     .card {
-      /* Original dark theme card style */
       @apply bg-gray-800 rounded-xl p-4 mb-4 shadow-lg flex flex-col gap-3 transition-all duration-300 ease-out;
       position: relative;
       will-change: transform, box-shadow;
@@ -49,1147 +62,1272 @@
         box-shadow: 0 8px 25px rgba(167, 139, 250, 0.3);
       }
     }
-     .card:active {
-        @apply scale-[0.98];
-    }
+    .card:active { @apply scale-[0.98]; }
 
-    .button-primary,
-    .button-secondary {
+    /* ===== Button Styles ===== */
+    .button-primary, .button-secondary, .button-auth {
       @apply px-4 py-3 min-h-[48px] min-w-[80px] text-sm font-semibold rounded-lg transition-all duration-200 ease-out cursor-pointer inline-flex items-center justify-center shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none;
       touch-action: manipulation;
       will-change: transform, box-shadow, background-color;
     }
-
-    .button-primary {
-      @apply bg-gradient-to-r from-purple-500 to-blue-500 text-white border-transparent;
-    }
+    .button-primary { @apply bg-gradient-to-r from-purple-500 to-blue-500 text-white border-transparent; }
+    .button-secondary { @apply bg-transparent border border-purple-500 text-purple-400; }
+    .button-auth { @apply bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold px-4 py-2 rounded-lg min-h-[44px] shadow-md; }
     @media (hover: hover) and (pointer: fine) {
-      .button-primary:hover:not(:disabled) {
+      .button-primary:hover:not(:disabled), .button-secondary:hover:not(:disabled), .button-auth:hover:not(:disabled) {
         @apply shadow-lg shadow-purple-500/50 scale-[1.03] -translate-y-px;
       }
     }
-    .button-primary:active:not(:disabled) {
+    .button-primary:active:not(:disabled), .button-secondary:active:not(:disabled), .button-auth:active:not(:disabled) {
       @apply scale-[0.97] transform-none shadow-md;
     }
-    .button-primary:disabled {
-      @apply bg-gray-600 text-gray-400;
+    .button-primary:disabled, .button-secondary:disabled, .button-auth:disabled {
+      @apply bg-gray-600 text-gray-400 border-gray-600;
+    }
+    .button-primary:focus-visible, .button-secondary:focus-visible, .button-auth:focus-visible {
+      outline: 2px solid #7B61FF;
+      outline-offset: 2px;
     }
 
-    .button-secondary {
-      @apply bg-transparent border border-purple-500 text-purple-400;
-    }
-    @media (hover: hover) and (pointer: fine) {
-      .button-secondary:hover:not(:disabled) {
-        @apply bg-purple-500 text-white scale-[1.03] -translate-y-px shadow-lg shadow-purple-500/30;
-      }
-    }
-    .button-secondary:active:not(:disabled) {
-      @apply scale-[0.97] transform-none shadow-md;
-    }
-    .button-secondary:disabled {
-      @apply border-gray-600 text-gray-500;
-    }
-    .button-secondary.active {
-      @apply bg-purple-500 text-white border-transparent shadow-lg shadow-purple-500/30;
-    }
-
-    .button-auth {
-      @apply bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-200 ease-out min-h-[44px] cursor-pointer shadow-md;
-    }
-    @media (hover: hover) and (pointer: fine) {
-      .button-auth:hover {
-        @apply shadow-lg shadow-purple-500/50 scale-[1.03] -translate-y-px;
-      }
-    }
-    .button-auth:active {
-      @apply scale-[0.97] transform-none shadow-md;
-    }
-
-    .input-field {
-      @apply bg-gray-800 border border-gray-600 text-white p-3 rounded-lg w-full text-base transition-colors duration-200 ease-in-out box-border;
-      font-family: 'Sora', sans-serif;
-    }
-    .input-field:focus {
-      @apply outline-none border-purple-500 ring-2 ring-purple-500/30;
-    }
-    select.input-field {
-        font-family: 'Sora', sans-serif;
-    }
-
-
-    .tab-button {
-      @apply bg-gray-700 text-gray-400 text-sm font-semibold py-2 px-4 rounded-full transition-all duration-200 ease-out whitespace-nowrap flex items-center justify-center flex-shrink-0 scroll-snap-align-start opacity-100 min-h-[48px];
-      font-family: 'Sora', sans-serif;
-    }
-    .tab-button.active {
-      @apply bg-purple-600 text-white shadow-md shadow-purple-500/40 scale-[1.05];
-    }
-
-    .slip-tray {
-      @apply bg-gray-900 rounded-t-3xl p-4 shadow-[-4px_0px_12px_rgba(0,0,0,0.3)] transition-transform duration-300 ease-in-out fixed bottom-[56px] left-0 w-full max-h-[50vh] z-30 translate-y-full pointer-events-none overflow-y-auto flex flex-col box-border;
-      padding-bottom: calc(16px + env(safe-area-inset-bottom));
-    }
-    .slip-tray.open {
-      @apply translate-y-0 pointer-events-auto;
-    }
-    #payout-mobile {
-      @apply sticky bottom-[64px] py-2 z-10 mt-auto;
-      background-color: #1E1E1E; /* Explicit dark background */
-    }
-    .slip-tray .button-primary {
-      @apply sticky bottom-0 z-20 w-full mt-4 bg-gradient-to-r from-purple-500 to-blue-500;
-    }
-
+    /* ===== Modal Styles ===== */
     .modal {
-      @apply bg-gray-900 rounded-t-xl p-4 w-full max-w-full shadow-[-4px_0px_12px_rgba(0,0,0,0.3)] transition-transform duration-350 ease-out fixed bottom-0 left-0 z-40 box-border max-h-[90vh] overflow-y-auto translate-y-full;
+      @apply bg-gray-900 rounded-t-xl p-4 w-full max-w-full shadow-[-4px_0px_12px_rgba(0,0,0,0.3)] transition-transform duration-350 ease-out fixed bottom-0 left-0 z-[80] box-border max-h-[90vh] overflow-y-auto;
       padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      transform: translateY(100%); /* Start hidden */
       transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .modal.open {
-      @apply translate-y-0;
-    }
+    .modal.open { @apply translate-y-0; }
     .modal-container {
-      @apply bg-black/60 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none fixed inset-0 z-35;
+      @apply bg-black/60 transition-opacity duration-300 ease-in-out fixed inset-0 z-[75] opacity-0 pointer-events-none;
+      backdrop-filter: blur(6px);
     }
-    .modal-container.open {
-      @apply opacity-100 pointer-events-auto;
-    }
+    .modal-container.open { @apply opacity-100 pointer-events-auto; }
 
-    .drawer {
-      @apply fixed top-0 left-0 w-3/4 max-w-xs h-full bg-gray-900 transition-transform duration-350 ease-out z-50 p-4 box-border shadow-xl -translate-x-full;
-       transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .drawer.open {
-      @apply translate-x-0;
-    }
-    .overlay {
-      @apply fixed inset-0 bg-black/60 z-45 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none;
-    }
-    .overlay.open {
-      @apply opacity-100 pointer-events-auto;
-    }
-
+    /* ===== Basic Animations ===== */
     .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px) scale(0.99); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-
-    .badge {
-      @apply text-white px-2 py-0.5 rounded-full text-xs font-semibold ml-2 inline-block;
-    }
-    .badge-hot { @apply bg-red-500; }
-    .badge-new { @apply bg-purple-600; }
-    .badge-expiring { @apply bg-yellow-400 text-black; }
-    /* Enhancement 12: Added new badge styles */
-    .badge-first-win { @apply bg-green-500; }
-    .badge-inviter { @apply bg-blue-500; }
-
-
-    .badge-risk {
-        @apply text-xs px-1.5 py-0.5 rounded-md font-bold uppercase ml-2;
-    }
-    .badge-risk-low { @apply bg-green-500 text-white; }
-    .badge-risk-medium { @apply bg-yellow-500 text-black; }
-    .badge-risk-high { @apply bg-red-500 text-white; }
-
-    .odds-multiplier {
-        @apply text-xs text-gray-400 ml-1;
-    }
-
     .glow { animation: glow 1.8s ease-in-out infinite; }
     @keyframes glow {
       0%, 100% { @apply shadow-lg shadow-purple-500/20; }
       50% { @apply shadow-xl shadow-purple-500/40; }
     }
 
-    .slip-preview {
-      @apply fixed w-full bg-gray-800 text-sm p-2 text-center z-20 transition-all duration-300 ease-out opacity-0 pointer-events-none;
-      bottom: calc(56px + env(safe-area-inset-bottom) + 8px);
+    /* ===== Plinko-Specific Styles ===== */
+    #plinko-board {
+        position: relative;
+        width: 100%;
+        max-width: 400px; /* Adjust as needed */
+        height: 450px; /* Adjust as needed */
+        margin: 0 auto;
+        /* border: 1px solid #444; */
+        border-radius: 8px;
+        overflow: hidden; /* Keep orb inside */
+        /* Background handled by dynamic-background now */
     }
-    .slip-preview.visible {
-      @apply opacity-100 pointer-events-auto transform translate-y-0;
-      animation: pulse 0.5s ease-in-out;
+     #orb {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: radial-gradient(circle, #fecdd3, #f472b6); /* Example gradient orb */
+        border-radius: 50%;
+        box-shadow: 0 0 10px #f472b6, 0 0 5px white;
+        z-index: 10;
+        left: 50%; /* Initial position */
+        top: 10px; /* Initial position */
+        transform: translateX(-50%);
+        will-change: top, left, transform;
+        /* Orb trail handled by JS */
     }
-    .slip-preview:not(.visible) {
-        @apply translate-y-4;
+    .peg {
+      position: absolute; /* Position pegs via JS */
+      width: 8px;
+      height: 8px;
+      background-color: #a78bfa; /* Purple pegs */
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(167, 139, 250, 0.7);
+      transition: background-color 0.2s ease;
     }
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.03); }
+    .peg:hover { background-color: #c4b5fd; } /* Subtle hover */
+    .slot-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      padding: 0 5px; /* Adjust spacing */
+    }
+    .slot {
+      width: 30px; /* Adjust size */
+      height: 30px;
+      border-radius: 4px; /* Can be rounded or square */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end; /* Label at bottom */
+      padding-bottom: 2px;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      position: relative; /* For hover info */
+      cursor: default; /* Default cursor */
+      transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+      /* Base background set by JS based on value */
+    }
+    .slot.winning {
+        animation: slotBounce 0.8s ease-in-out;
+        box-shadow: 0 0 15px currentColor, 0 0 30px currentColor; /* Glow with slot color */
+    }
+    @keyframes slotBounce { /* Winning Slot Bounce */
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.1); }
+    }
+    .slot-label {
+      @apply text-xs font-semibold text-center mt-1;
+      /* Removed text-shadow, handled by slot */
     }
 
-    .toggle-switch {
-        @apply relative inline-block w-10 h-5;
-    }
-    .toggle-switch input { @apply opacity-0 w-0 h-0; }
-    .toggle-slider {
-        @apply absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-600 rounded-full transition-colors duration-300;
-    }
-    .toggle-slider:before {
-        @apply absolute content-[''] h-3.5 w-3.5 left-0.5 bottom-0.5 bg-white rounded-full transition-transform duration-300;
-    }
-    input:checked + .toggle-slider { @apply bg-purple-600; }
-    input:checked + .toggle-slider:before { @apply translate-x-5; }
-
+    /* Community feed */
     .chat-feed {
-        @apply h-48 bg-gray-800 rounded-lg p-2 overflow-y-auto mb-2 flex flex-col-reverse;
+      @apply h-48 bg-gray-900 rounded-lg p-2 overflow-y-auto mb-2 flex flex-col-reverse; /* Darker feed */
+      scrollbar-width: thin;
+      scrollbar-color: #7B61FF #374151;
     }
     .chat-message { @apply mb-1.5 text-xs; }
-    .chat-message .username { @apply font-semibold text-gray-400 mr-1; }
-    .chat-input-area { @apply flex gap-2; }
+    .chat-message .username { @apply font-semibold text-purple-400 mr-1; } /* Purple username */
+    .chat-message .win-amount { @apply font-bold text-green-400 ml-1; } /* Green win amount */
 
-    .wager-preset-btn {
-        @apply button-secondary text-xs px-3 py-1 min-w-0 border-gray-600 text-gray-400;
+    /* Toast styles */
+    .toast {
+      @apply fixed bottom-20 left-1/2 transform -translate-x-1/2 text-white text-sm py-2 px-4 rounded-lg z-[100] shadow-lg;
+      animation: toastFade 0.4s ease-out forwards, toastSlideUp 0.4s ease-out forwards;
+      max-width: 90%;
     }
-    .wager-preset-btn:hover:not(:disabled) {
-         @apply bg-gray-600 text-white;
+    @keyframes toastFade {
+        0% { opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { opacity: 0; }
     }
-    /* Enhancement 4: Active state for wager preset */
-    .wager-preset-btn.active {
-        @apply bg-purple-500 text-white border-purple-500;
+    @keyframes toastSlideUp {
+        from { transform: translate(-50%, 20px); }
+        to { transform: translate(-50%, 0); }
+    }
+    .toast-success { @apply bg-gradient-to-r from-green-500 to-emerald-500; }
+    .toast-error { @apply bg-gradient-to-r from-red-500 to-pink-500; }
+    .toast-info { @apply bg-gradient-to-r from-blue-500 to-indigo-500; }
+
+    /* ===== Addictive Visual Enhancements ===== */
+    .dynamic-background {
+      position: fixed;
+      inset: 0;
+      z-index: -1; /* Behind everything */
+      animation: backgroundFlow 20s linear infinite;
+      background: linear-gradient(
+        45deg,
+        rgba(123, 97, 255, 0.1), /* Purple */
+        rgba(255, 105, 180, 0.1), /* Pink */
+        rgba(52, 211, 153, 0.1), /* Emerald */
+        rgba(123, 97, 255, 0.1) /* Purple again */
+      );
+      background-size: 400% 400%;
+    }
+    @keyframes backgroundFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
-    /* Task 9: Chat Enhancements CSS */
-    .mention { color: #A78BFA; font-weight: 600; } /* Light purple mention */
-    .react-btn { background: none; border: none; cursor: pointer; opacity: 0.6; }
-    .react-btn:hover { opacity: 1; }
-    .reaction { vertical-align: middle; background-color: #374151; padding: 1px 4px; border-radius: 4px; margin-left: 4px;}
-
-
-    /* Mobile Specific Adjustments */
-    @media (max-width: 767px) {
-      .header {
-        @apply px-4 border-b border-gray-700 h-14 flex items-center justify-between fixed top-0 left-0 w-full bg-gray-900 z-20;
-      }
-      .hamburger {
-        @apply w-11 h-11 flex items-center justify-center text-2xl text-gray-400;
-      }
-      .hamburger:hover { @apply text-white; }
-      .logo { @apply flex-1 text-center text-xl font-bold text-white; }
-      .header-right { @apply flex items-center gap-2; }
-      .button-auth { @apply px-3 py-2 text-sm; }
-
-      .sticky-tabs {
-        @apply sticky top-14 z-10 bg-gray-900 px-4 border-b border-gray-700;
-      }
-      .tabs {
-        @apply flex overflow-x-auto gap-2 py-2;
-        scroll-snap-type: x mandatory; scroll-padding: 0 16px; scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch; white-space: nowrap; width: 100%; box-sizing: border-box;
-        scrollbar-width: none; -ms-overflow-style: none;
-      }
-      .tabs::-webkit-scrollbar { display: none; }
-
-      .main-content {
-        @apply px-4 pb-[calc(56px+env(safe-area-inset-bottom)+16px)] transition-all duration-300 ease-out box-border w-full max-w-full;
-        padding-top: calc(56px + 48px + 8px);
-      }
-
-      .card h3 { @apply text-base; }
-      .card p.text-sm { @apply text-sm; }
-      .card p.text-xs { @apply text-xs; }
-      .card .stats { @apply border-t border-gray-700 pt-2 mt-2; }
-
-      .fab {
-        @apply bg-gradient-to-r from-purple-500 to-blue-500 text-white px-5 py-3 rounded-full shadow-lg flex items-center gap-2 text-sm font-semibold fixed right-4 z-20 min-h-[44px];
-        bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
-      }
-      .fab .badge {
-        @apply bg-white text-black rounded-full w-5 h-5 flex justify-center items-center text-xs leading-none ml-0 border border-gray-300;
-      }
-
-      .bottom-nav {
-        @apply bg-gray-900 border-t border-gray-700 h-14 fixed bottom-0 left-0 w-full z-50 flex justify-around items-center box-border;
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      .bottom-nav button {
-        @apply min-h-[48px] w-1/5 flex flex-col items-center justify-center gap-1 text-xs text-gray-400 transition-all duration-200 ease-out p-1;
-      }
-      .bottom-nav button.active { @apply text-white scale-[1.05]; }
-      .bottom-nav button:hover { @apply text-white; }
-      .bottom-nav .icon { @apply text-xl; }
-      .bottom-nav .label { @apply text-[10px]; }
+    /* Progressive Glow on Board (applied via JS) */
+    #plinko-board.addiction-glow {
+       transition: box-shadow 0.5s ease-out; /* Smooth transition for glow changes */
+       /* box-shadow is set dynamically in JS */
     }
+
+    /* Anticipation Glow (added/removed via JS) */
+    .anticipation-glow {
+      position: absolute;
+      inset: -10px; /* Slightly larger than board */
+      border-radius: 12px; /* Match board rounding */
+      background: rgba(123, 97, 255, 0); /* Start transparent */
+      box-shadow: 0 0 0px rgba(123, 97, 255, 0);
+      animation: anticipation 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      z-index: 5; /* Above board, below orb */
+      pointer-events: none;
+    }
+    @keyframes anticipation {
+      0%, 100% { opacity: 0.4; box-shadow: 0 0 15px rgba(123, 97, 255, 0.3); transform: scale(1); }
+      50% { opacity: 1; box-shadow: 0 0 35px rgba(123, 97, 255, 0.7); transform: scale(1.05); }
+    }
+
+    /* Reward Explosion (added/removed via JS) */
+    .reward-explosion {
+      position: absolute;
+      width: 100px; /* Base size */
+      height: 100px; /* Base size */
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 20; /* Above orb */
+      /* background set dynamically in JS */
+      animation: rewardPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; /* Bounce effect */
+    }
+    @keyframes rewardPop {
+      0% { transform: scale(0); opacity: 1; }
+      60% { transform: scale(2.5); opacity: 0.7; } /* Overshoot */
+      100% { transform: scale(2); opacity: 0; } /* Settle and fade */
+    }
+
+     /* Win Streak Notification */
+    .win-streak {
+      @apply fixed top-20 right-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-full text-base font-bold z-[90] shadow-xl;
+      animation: streakPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy pop */
+    }
+    @keyframes streakPop {
+      0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+      70% { transform: scale(1.15) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    /* Particle Canvas */
+    #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; /* Behind UI but above background */
+        pointer-events: none; /* Allow clicks through */
+    }
+
+    /* Gradient Pulse for Jackpot Slots (applied dynamically if needed) */
+    .jackpot-pulse {
+        background: linear-gradient(270deg, #ff6f00, #ff4081, #7b61ff);
+        background-size: 600% 600%;
+        animation: gradientShift 4s ease infinite;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+     /* Orb Trail Elements (created by JS) */
+    .orb-trail {
+      position: absolute;
+      width: 12px; /* Slightly smaller than orb */
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(244, 114, 182, 0.5); /* Trail color */
+      opacity: 1;
+      filter: blur(2px); /* Softer trail */
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Slower fade */
+      z-index: 9; /* Below orb */
+      pointer-events: none;
+    }
+
+    /* Sticky Drop Button */
+    .sticky-drop-button {
+        @apply fixed bottom-[70px] right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full px-5 py-3 shadow-lg z-[70] text-sm font-semibold transition-all duration-300 ease-out opacity-0 pointer-events-none;
+        transform: translateY(20px);
+    }
+    .sticky-drop-button.visible {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    /* Slot Hover Tooltip (Basic Structure) */
+    .slot-tooltip {
+        @apply absolute bottom-full left-1/2 mb-2 -translate-x-1/2 bg-gray-700 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 invisible transition-opacity duration-200 pointer-events-none;
+        z-index: 30;
+    }
+    .slot:hover .slot-tooltip {
+        @apply opacity-100 visible;
+    }
+
+    /* Progress Bar */
+    .progress-bar-container {
+      @apply w-full bg-gray-700 h-2 rounded-full overflow-hidden;
+    }
+    .progress-bar {
+      @apply bg-gradient-to-r from-purple-500 to-blue-500 h-full rounded-full transition-all duration-500 ease-out;
+    }
+
   </style>
 </head>
-<body x-data="appState"
-   x-init="init()"
-   @wallet-connected.window="walletAddress = $event.detail.address; getWalletBalance($event.detail.address); updateOddsDisplay()"
-   @balance-updated.window="walletBalance = $event.detail.balance"
-   @click.outside="if(activeModal) closeAllModals()"
-   @keydown.escape.window="if(activeModal) closeAllModals(); else if(showSlipTray) showSlipTray = false; else if(showDrawer) showDrawer = false">
+<body class="text-white"
+      @click.outside="if(modalOpen || walletModalOpen) closeModals()"
+      @keydown.escape.window="if(modalOpen || walletModalOpen) closeModals()"
+      @mousemove="updateMousePos($event)"
+      @scroll="handleScroll()">
 
-   <div x-show="!walletAddress" class="fixed top-4 left-4 bg-indigo-700 text-white text-sm font-bold py-1 px-3 rounded-full z-50 animate-pulse">
-      Free Mode: <span x-text="faucetBalance.toFixed(1)"></span> SOL
-   </div>
+  <div class="dynamic-background"></div>
 
-  <div class="overlay" :class="{ 'open': showDrawer }" @click="showDrawer = false" aria-hidden="true"></div>
-  <aside class="drawer p-4" :class="{ 'open': showDrawer }" x-show="showDrawer" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-    <div class="flex justify-between items-center mb-6">
-      <h2 id="drawer-title" class="text-lg font-semibold text-[#7B61FF]">MemePicks</h2>
-      <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="showDrawer = false" aria-label="Close menu">✕</button>
-    </div>
-    <nav class="space-y-2">
-      <div x-show="!walletAddress" class="space-y-2">
-        <button class="button-auth w-full text-sm" @click="showDrawer = false; openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
-      </div>
-      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-gray-300 hover:text-purple-400" @click="openProfile()" aria-label="My Profile">My Profile</button>
-      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-gray-300 hover:text-purple-400" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button>
-      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-gray-300 hover:text-purple-400" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
+  <canvas id="particle-canvas"></canvas>
 
-      <div class="mt-6 border-t border-gray-700 pt-4">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Help & Support</h3>
-             <a href="#" class="block py-2 text-sm text-gray-300 hover:text-purple-400" @click="showDrawer = false; openModal('helpModal')" aria-label="Help Center">Help Center / FAQs</a>
-             <a href="#" class="block py-2 text-sm text-gray-300 hover:text-purple-400" aria-label="Responsible Betting">Responsible Betting</a>
-             <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-gray-300 hover:text-purple-400" aria-label="Telegram">Telegram</a>
-             <a href="#" class="block py-2 text-sm text-gray-300 hover:text-purple-400" aria-label="Terms & Privacy">Terms & Privacy</a>
-       </div>
+  <div x-show="!walletConnected" class="fixed top-4 left-4 bg-indigo-700 text-white text-sm font-bold py-1 px-3 rounded-full z-[90] animate-pulse" aria-live="polite">
+    Free Mode: <span x-text="faucetBalance.toFixed(3)"></span> SOL
+  </div>
 
-       </nav>
-  </aside>
-
-  <header class="header">
-    <div class="header-left">
-      <button class="hamburger" @click="showDrawer = true" aria-label="Open menu" aria-controls="drawer-menu" :aria-expanded="showDrawer.toString()">☰</button>
-    </div>
-    <h1 class="logo">MemePicks</h1>
-    <div class="header-right">
-      <p class="text-xs text-gray-400 hidden sm:block cursor-pointer hover:text-white"
-         x-show="walletAddress"
-         x-text="walletAddress ? walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4) : ''"
-         @click="copyAddress()"
-         title="Copy address">
-      </p>
-      <div class="flex items-center gap-2" x-show="!walletAddress">
-          <button class="button-auth text-sm" @click="openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
-      </div>
-      <button class="button-auth text-sm" x-show="walletAddress" @click="disconnectWallet()" aria-label="Disconnect Wallet">
-        <span>Disconnect</span>
-      </button>
+  <header class="fixed top-0 left-0 w-full z-[70] h-14 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700/50 flex items-center justify-between px-4" data-component="header">
+    <div class="text-lg font-semibold text-[#7B61FF]">MemePicks</div>
+    <h1 class="text-xl font-bold text-white">CryptoDrop</h1>
+    <div class="flex items-center space-x-2">
+      <a href="/" class="button-secondary text-sm min-h-[44px] px-3 py-2" aria-label="Back to MemePicks">Back</a>
+      <button class="button-auth text-sm min-h-[44px] px-3 py-2" @click="walletConnected ? disconnectWallet() : openWalletModal()" x-text="walletConnected ? 'Disconnect' : 'Connect'" :aria-label="walletConnected ? 'Disconnect Wallet' : 'Connect Wallet'"></button>
     </div>
   </header>
 
-  <div class="text-center text-xs text-gray-400 pt-1 fixed top-14 left-0 right-0 z-[5] bg-gradient-to-b from-[#1A1A1A] via-[#1A1A1A] to-transparent pb-2 pointer-events-none">
-       Live SOL Price: $<span id="price-display">Loading...</span>
-  </div>
-
-
-  <div class="sticky-tabs" role="tablist" aria-label="Game Categories">
-    <div class="tabs" x-ref="tabs">
-      <button :class="{ 'tab-button active': tab === 'trending', 'tab-button': tab !== 'trending' }" @click="tab = 'trending'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'trending'" aria-controls="trending-panel" :tabindex="tab === 'trending' ? 0 : -1">Trending</button>
-      <button :class="{ 'tab-button active': tab === 'marketcap', 'tab-button': tab !== 'marketcap' }" @click="tab = 'marketcap'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'marketcap'" aria-controls="marketcap-panel" :tabindex="tab === 'marketcap' ? 0 : -1">MCap</button>
-      <button :class="{ 'tab-button active': tab === 'volume', 'tab-button': tab !== 'volume' }" @click="tab = 'volume'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'volume'" aria-controls="volume-panel" :tabindex="tab === 'volume' ? 0 : -1">Volume</button>
-      <button :class="{ 'tab-button active': tab === 'headtohead', 'tab-button': tab !== 'headtohead' }" @click="tab = 'headtohead'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'headtohead'" aria-controls="headtohead-panel" :tabindex="tab === 'headtohead' ? 0 : -1">H2H</button>
-      <button :class="{ 'tab-button active': tab === 'memefactor', 'tab-button': tab !== 'memefactor' }" @click="tab = 'memefactor'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'memefactor'" aria-controls="memefactor-panel" :tabindex="tab === 'memefactor' ? 0 : -1">Meme Factor</button>
-      <button :class="{ 'tab-button active': tab === 'expiring', 'tab-button': tab !== 'expiring' }" @click="tab = 'expiring'; scrollTabIntoView($el); closeAllModals()" role="tab" :aria-selected="tab === 'expiring'" aria-controls="expiring-panel" :tabindex="tab === 'expiring' ? 0 : -1">Expiring</button>
-    </div>
-  </div>
-
-  <main class="main-content" :class="{ 'slip-tray-open': showSlipTray }">
-    <div x-show="tab === 'trending'" role="tabpanel" id="trending-panel" aria-labelledby="trending-tab" class="fade-in">
-      <div class="flex justify-between mb-4 max-w-xl mx-auto gap-2">
-            <select x-model="propFilter" @change="applyFilters" class="input-field text-sm w-1/2 py-2">
-                <option value="">All Coins</option>
-                <option value="DOGWIFHAT">DOGWIFHAT</option>
-                <option value="POPCAT">POPCAT</option>
-                <option value="SOLAMA">SOLAMA</option>
-                <option value="MYRO">MYRO</option>
-                <option value="WEN">WEN</option>
-                </select>
-            <select x-model="propSort" @change="applyFilters" class="input-field text-sm w-1/2 py-2">
-                <option value="default">Default</option>
-                <option value="odds">Highest Odds</option>
-                <option value="expiry">Ending Soonest</option>
-            </select>
-        </div>
-      <div id="trending-props" class="max-w-xl mx-auto space-y-4">
-          <p class="text-center text-gray-400 py-8">Loading Trending Props...</p>
+  <main class="container mx-auto px-4 pt-20 pb-24 flex flex-col md:flex-row gap-6 relative z-10" data-component="main-content">
+    <section class="flex-grow md:w-2/3" data-component="game-board">
+      <div id="plinko-board" class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl relative overflow-visible" :class="{ 'addiction-glow': consecutivePlays > 0 }">
+         <div x-ref="plinkoBoardRef" class="w-full h-[450px] relative">
+            </div>
+         <div class="slot-container">
+            </div>
       </div>
-    </div>
-    <div x-show="tab === 'marketcap'" role="tabpanel" id="marketcap-panel" aria-labelledby="marketcap-tab" class="fade-in">
-        <div id="marketcap-props" class="max-w-xl mx-auto space-y-4">
-            <p class="text-center text-gray-400 py-8">Loading Market Cap Props...</p>
-        </div>
-    </div>
-    <div x-show="tab === 'volume'" role="tabpanel" id="volume-panel" aria-labelledby="volume-tab" class="fade-in">
-        <div id="volume-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400 py-8">Loading Volume Props...</p>
-        </div>
-    </div>
-    <div x-show="tab === 'headtohead'" role="tabpanel" id="headtohead-panel" aria-labelledby="headtohead-tab" class="fade-in">
-        <div id="headtohead-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400 py-8">Loading H2H Props...</p>
-        </div>
-    </div>
-     <div x-show="tab === 'memefactor'" role="tabpanel" id="memefactor-panel" aria-labelledby="memefactor-tab" class="fade-in">
-        <div id="memefactor-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400 py-8">Loading Meme Factor Props...</p>
-        </div>
-    </div>
-     <div x-show="tab === 'expiring'" role="tabpanel" id="expiring-panel" aria-labelledby="expiring-tab" class="fade-in">
-        <div id="expiring-props" class="max-w-xl mx-auto space-y-4">
-             <p class="text-center text-gray-400 py-8">Loading Expiring Props...</p>
-        </div>
-    </div>
-     <div x-show="tab === 'mypicks'" role="tabpanel" id="mypicks-panel" aria-labelledby="mypicks-tab" class="fade-in">
-        <div id="mypicks-props" class="max-w-xl mx-auto space-y-4">
-            <h2 class="text-lg font-semibold mb-2">📜 Pick History</h2>
-            <p class="text-center text-gray-400" x-show="!walletAddress">Connect wallet to see your picks.</p>
-            <div x-show="walletAddress">
-                <p class="text-center text-gray-500 italic">Loading history...</p>
-                </div>
-        </div>
-    </div>
-     <div x-show="tab === 'leaderboard'" role="tabpanel" id="leaderboard-panel" aria-labelledby="leaderboard-tab" class="fade-in">
-        <div id="leaderboard-content" class="max-w-xl mx-auto space-y-4">
-            <p class="text-center text-gray-400 py-8">Loading Leaderboard...</p>
-        </div>
-    </div>
-    <div x-show="tab === 'profile'" role="tabpanel" id="profile-panel" aria-labelledby="profile-tab" class="fade-in">
-        <div class="max-w-xl mx-auto space-y-6">
-             <div class="card p-4">
-                <h2 class="text-lg font-semibold mb-3">My Profile</h2>
-                <div x-show="!walletAddress" class="text-center text-gray-400 py-4">
-                    Connect your wallet to view your profile.
-                </div>
-                <div x-show="walletAddress">
-                    <div class="flex items-center space-x-4">
-                        <img :src="userProfile.avatar || 'https://placehold.co/64x64/7B61FF/FFFFFF?text=MP'" alt="User Avatar" class="w-16 h-16 rounded-full object-cover flex-shrink-0">
-                        <div class="flex-1">
-                            <p class="text-sm font-semibold" x-text="userProfile.username || (walletAddress ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4) : '')"></p>
-                            <p class="text-xs text-gray-400 cursor-pointer hover:text-white" @click="copyAddress()" title="Copy Address" x-text="walletAddress ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4) : ''"></p>
-                            <div class="flex space-x-1 mt-1 flex-wrap gap-1">
-                                <span class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-medium" x-text="userProfile.badge || 'Newbie'"></span>
-                                <template x-for="achievement in userProfile.achievements" :key="achievement">
-                                    <span x-show="achievement === 'first_bet'" class="badge badge-new">First Bet</span>
-                                    <span x-show="achievement === 'max_picks'" class="badge badge-hot">Max Picks</span>
-                                    <span x-show="achievement === 'first_win'" class="badge badge-first-win">First Win</span>
-                                    <span x-show="achievement === 'inviter'" class="badge badge-inviter">Inviter</span>
-                                </template>
-                            </div>
-                        </div>
-                         <button class="button-secondary text-xs py-1 px-3" @click="openModal('profileEditModal')">Edit</button>
-                    </div>
-                    <div class="mt-4 border-t border-gray-700 pt-3 space-y-1 text-sm">
-                        <p>Total Wins: <span class="font-semibold text-green-400" x-text="userProfile.totalWins">0</span></p>
-                        <p>Total Losses: <span class="font-semibold text-red-400" x-text="userProfile.totalLosses">0</span></p>
-                        <p>Win Rate: <span class="font-semibold" x-text="((userProfile.totalWins / (userProfile.totalWins + userProfile.totalLosses || 1)) * 100).toFixed(1) + '%'">N/A</span></p>
-                    </div>
-                    <button class="button-secondary w-full text-sm mt-4" @click="disconnectWallet()">Logout</button>
-                </div>
-            </div>
-            <div class="card p-4">
-                <h3 class="text-md font-semibold mb-2">Recent Activity / History</h3>
-                <p class="text-sm text-gray-400 italic">Your recent picks and results will appear here.</p>
-                </div>
-        </div>
-    </div>
 
-    <div x-show="tab === 'community'" role="tabpanel" id="community-panel" aria-labelledby="community-tab" class="fade-in">
-        <div class="max-w-xl mx-auto space-y-6">
+      <section id="controls" class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl mt-4 fade-in" data-component="controls">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-base font-semibold text-[#7B61FF]">Place Your Drop</h2>
+          <button class="button-secondary text-xs px-3 py-1 min-h-[32px]" @click="openBoardModal" x-text="`Board: ${selectedBoard}`" aria-label="Change board type"></button>
+        </div>
 
-            <div class="card p-4">
-                <h2 class="text-lg font-semibold mb-3">Community Hub</h2>
-                <p class="text-sm text-gray-400">Connect with other players, get tips, and more!</p>
+        <div class="mb-3">
+            <label for="bet-amount" class="block text-xs text-gray-400 mb-1">Bet Amount (SOL)</label>
+            <input type="number" id="bet-amount" step="0.001" min="0.001" max="1" x-model.number="betAmount"
+                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                   :disabled="dropping"
+                   aria-label="Bet amount in SOL">
             </div>
 
-             <div class="card p-4" x-show="walletAddress">
-                <h3 class="text-md font-semibold mb-2">Referral Link</h3>
-                <div class="flex items-center space-x-2 bg-gray-700 p-2 rounded-md">
-                    <input type="text" readonly :value="`${window.location.origin}${window.location.pathname}?ref=${walletAddress}`" class="input-field bg-gray-700 border-none text-xs flex-1 p-1" aria-label="Your referral link">
-                    <button class="button-secondary text-xs py-1 px-3" @click="getInviteLink()">Copy Link</button>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">Share your link to earn rewards!</p>
-             </div>
+        <button id="drop-button" class="button-primary w-full text-lg font-bold py-4 glow" @click="dropOrb()" :disabled="dropping || (!walletConnected && faucetBalance < betAmount) || (walletConnected && (walletBalance === null || walletBalance < betAmount))">
+          <span x-show="!dropping">Drop Orb</span>
+          <span x-show="dropping">Dropping...</span>
+        </button>
 
-            <div class="card p-4">
-                <h3 class="text-md font-semibold mb-2">Send a Tip (SOL)</h3>
-                 <div class="space-y-2">
-                    <input type="text" x-model="tipRecipient" placeholder="Recipient Wallet Address" class="input-field text-sm" aria-label="Recipient Wallet Address for Tip">
-                    <div class="flex items-center gap-2">
-                        <input type="number" step="0.01" min="0.01" max="1" x-model.number="tipAmount" placeholder="Amount" class="input-field text-sm w-1/2" aria-label="Tip Amount in SOL">
-                        <button class="button-primary flex-1 text-sm" @click="sendTip()">Send Tip</button>
-                    </div>
-                 </div>
-            </div>
-
-             <div class="card p-4">
-                <h3 class="text-md font-semibold mb-2">Daily Quests</h3>
-                <ul class="space-y-1 text-sm">
-                    <li class="flex items-center justify-between">
-                        <span>✅ Make 3 bets today</span>
-                        <span class="text-green-400">1/3</span>
-                    </li>
-                    <li class="flex items-center justify-between opacity-50">
-                        <span>⬜️ Win 1 slip</span>
-                        <span class="text-gray-400">0/1</span>
-                    </li>
-                     <li class="flex items-center justify-between opacity-50">
-                        <span>⬜️ Invite 1 friend this week</span>
-                        <span class="text-gray-400">0/1</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="card p-4">
-                <h3 class="text-md font-semibold mb-2">Live Chat (Global)</h3>
-                <div id="global-chat-feed" class="chat-feed">
-                    <div class="chat-message"><span class="username">AdminBot:</span> Welcome to MemePicks! Play responsibly.</div>
-                    <div class="chat-message"><span class="username">User123:</span> Anyone betting on $MYRO?</div>
-                    <div class="chat-message"><span class="username">DegenerateApe:</span> All in $PONKE expiring soon!</div>
-                </div>
-                 <form class="chat-input-area" @submit.prevent="sendChatMessage">
-                    <input type="text" name="messageInput" placeholder="Type message..." class="input-field text-sm flex-1" aria-label="Chat message input">
-                    <button type="submit" class="button-primary text-sm px-4">Send</button>
-                </form>
-            </div>
-
-            <div class="card p-4" x-data="{ show2FA: false }">
-                <div class="flex justify-between items-center cursor-pointer" @click="show2FA = !show2FA">
-                    <h3 class="text-md font-semibold">Security Settings</h3>
-                    <span x-text="show2FA ? '−' : '+'" class="text-xl text-gray-400"></span>
-                </div>
-                <div x-show="show2FA" x-transition class="mt-3 border-t border-gray-700 pt-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-300">Enable 2FA (Coming Soon)</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" disabled>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">Enhance your account security with two-factor authentication.</p>
-                </div>
-            </div>
-
+        <div class="flex justify-between items-center mt-3 text-xs text-gray-400">
+          <span>Balance:</span>
+          <span x-text="walletConnected ? (walletBalance !== null ? walletBalance.toFixed(5) + ' SOL' : 'Loading...') : faucetBalance.toFixed(3) + ' SOL (Free)'"></span>
         </div>
-    </div>
 
+        <div class="flex justify-between items-center mt-2 text-xs text-gray-400">
+           <span>Drop Streak: <span class="font-semibold text-white" x-text="consecutiveWins > 0 ? `🔥 ${consecutiveWins} Wins` : '0'"></span></span>
+           <span>Total Drops: <span class="font-semibold text-white" x-text="totalDrops"></span></span>
+        </div>
+
+         <div class="mt-3">
+            <span class="text-xs text-gray-400 block mb-1">Session Progress (Visual)</span>
+            <div class="progress-bar-container">
+              <div class="progress-bar" :style="`width: ${progress}%`"></div>
+            </div>
+         </div>
+
+      </section>
+    </section>
+
+    <aside class="md:w-1/3 space-y-4" data-component="info-feed">
+        <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="last-drop">
+           <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Last Drop</h2>
+           <div class="text-sm text-gray-300 min-h-[20px]" x-html="dropResult" aria-live="polite">No drop yet.</div>
+       </section>
+
+       <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="community-feed">
+           <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Recent Wins</h2>
+           <div class="chat-feed" x-ref="chatFeed" role="log" aria-label="Recent CryptoDrop Wins">
+               <template x-for="message in communityMessages" :key="message.id">
+                   <div class="chat-message">
+                       <span class="username" x-text="message.username"></span>
+                       <span x-text="message.text"></span>
+                       <span class="win-amount" x-text="message.reward ? `(+${message.reward} SOL)` : ''"></span>
+                   </div>
+               </template>
+               <div x-show="communityMessages.length === 0" class="text-center text-gray-500 text-xs mt-4">No recent wins yet.</div>
+           </div>
+       </section>
+    </aside>
   </main>
 
-  <button id="slip-tray-trigger" class="fab" @click="toggleSlipTray()" aria-label="Open entry slip" aria-controls="slip-tray" :aria-expanded="showSlipTray.toString()">
-    <span>Slip</span>
-    <span id="pick-count" class="badge" x-text="slip.picks.length"></span>
+  <button class="sticky-drop-button" :class="{ 'visible': showStickyButton }" @click="dropOrb()" :disabled="dropping || (!walletConnected && faucetBalance < betAmount) || (walletConnected && (walletBalance === null || walletBalance < betAmount))">
+      Drop Again!
   </button>
 
-  <div class="slip-preview" :class="{ 'visible': slip.picks.length > 0 }" x-text="`Slip updated: ${slip.picks.length} pick(s)`"></div>
-
-  <div id="slip-tray" class="slip-tray" :class="{ 'open': showSlipTray }" role="dialog" aria-modal="true" aria-labelledby="slip-tray-title">
-    <div class="flex justify-between items-center mb-3 flex-shrink-0">
-      <h3 id="slip-tray-title" class="text-base font-semibold">Your Slip</h3>
-      <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="showSlipTray = false" aria-label="Close entry slip">✕</button>
-    </div>
-    <div x-show="referrerAddress && !firstSlipSubmitted" class="text-xs text-green-400 mb-2 p-2 bg-green-900 rounded-md">
-      Referral from <span class="font-semibold" x-text="referrerAddress ? referrerAddress.slice(0,4) + '...' + referrerAddress.slice(-4) : ''"></span> tracked. Thanks for joining!
-    </div>
-    <div id="slip-picks-mobile" class="space-y-2 mb-4 flex-grow overflow-y-auto">
-      <template x-if="slip.picks.length === 0">
-        <p class="text-[#B0B0B0] text-sm text-center py-4">Add 2 to 5 picks to start your slip.</p>
-      </template>
-      <template x-for="pick in slip.picks" :key="pick.propId">
-        <div class="bg-[#2A2A2A] p-2 rounded-lg flex justify-between items-center">
-          <div class="flex-1 mr-2">
-            <p class="text-xs font-semibold" x-text="pick.token"></p>
-            <p class="text-xs text-[#B0B0B0] truncate" x-text="pick.description"></p>
-            <p class="text-xs text-[#7B61FF]" x-text="pick.choice"></p>
-          </div>
-          <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center flex-shrink-0" @click="removePick(pick.propId)" :aria-label="'Remove ' + pick.token + ' prediction from slip'">✕</button>
-        </div>
-      </template>
-    </div>
-    <div class="mt-auto flex-shrink-0">
-        <div class="mb-2 flex justify-center space-x-2">
-             <button @click="setWager(0.1)" :class="{ 'wager-preset-btn': true, 'active': slip.wager === 0.1 }">0.1</button>
-            <button @click="setWager(0.5)" :class="{ 'wager-preset-btn': true, 'active': slip.wager === 0.5 }">0.5</button>
-            <button @click="setWager(1.0)" :class="{ 'wager-preset-btn': true, 'active': slip.wager === 1.0 }">1.0</button>
-            <button @click="setWager(5.0)" :class="{ 'wager-preset-btn': true, 'active': slip.wager === 5.0 }">5.0</button>
-        </div>
-        <div class="mb-4">
-          <label for="wager-mobile" class="text-xs text-[#B0B0B0] mb-1 block sr-only">Wager (SOL)</label>
-          <input id="wager-mobile" type="number" step="0.1" min="0.1" max="10" class="input-field text-sm" placeholder="0.1–10 SOL" aria-label="Wager amount in SOL (0.1 to 10)" x-model.number="slip.wager" @input.debounce.500ms="updateSlipWager()">
-        </div>
-        <div id="payout-mobile" class="flex justify-between items-center text-xs mb-4" x-show="slip.picks.length >= 2">
-          <div class="flex items-center">
-            <p class="text-[#B0B0B0]">Potential Payout (<span x-text="multipliers[slip.picks.length] || 0"></span>x):</p>
-            </div>
-          <p class="text-[#7B61FF] font-semibold" x-text="(slip.wager * (multipliers[slip.picks.length] || 0)).toFixed(2) + ' SOL'"></p>
-        </div>
-        <button class="button-primary w-full text-sm flex items-center justify-center" :disabled="!isValidSlip()" @click="submitSlipAction()" aria-label="Submit entry slip">
-          Submit Slip
-           </button>
-        <p class="text-[#B0B0B0] text-xs mt-3 text-center">
-            <span x-show="walletAddress">Balance: <span x-text="walletBalance !== null ? walletBalance.toFixed(2) : 'Loading...'"></span> SOL</span>
-            <span x-show="!walletAddress">Free Mode Balance: <span x-text="faucetBalance.toFixed(1)"></span> SOL</span>
-        </p>
-    </div>
-  </div>
-
-  <nav class="bottom-nav" aria-label="Main Navigation">
-    <button :class="{ 'active': tab === 'trending' }" @click="tab = 'trending'; showSlipTray = false; closeAllModals()" aria-label="Home" aria-controls="trending-panel" :aria-selected="tab === 'trending'">
-      <span class="icon">🏠</span>
-      <span class="label">Home</span>
-    </button>
-    <button :class="{ 'active': tab === 'mypicks' }" @click="tab = 'mypicks'; showSlipTray = false; closeAllModals()" aria-label="My Picks" aria-controls="mypicks-panel" :aria-selected="tab === 'mypicks'">
-      <span class="icon">📊</span>
-      <span class="label">My Picks</span>
-    </button>
-    <button :class="{ 'active': tab === 'community' }" @click="tab = 'community'; showSlipTray = false; closeAllModals()" aria-label="Community" aria-controls="community-panel" :aria-selected="tab === 'community'">
-      <span class="icon">👥</span> <span class="label">Community</span>
-    </button>
-    <button :class="{ 'active': tab === 'leaderboard' }" @click="tab = 'leaderboard'; showSlipTray = false; closeAllModals()" aria-label="Leaderboard" aria-controls="leaderboard-panel" :aria-selected="tab === 'leaderboard'">
-      <span class="icon">🏆</span>
-      <span class="label">Leaders</span>
-    </button>
-    <button :class="{ 'active': tab === 'profile' }" @click="tab = 'profile'; showSlipTray = false; closeAllModals()" aria-label="Profile" aria-controls="profile-panel" :aria-selected="tab === 'profile'">
-        <span class="icon">👤</span>
-        <span class="label">Profile</span>
-    </button>
-  </nav>
-
-  <div id="helpModal" x-show="modals.helpModal" x-ref="helpModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
-     <div class="modal-container" :class="{'open': modals.helpModal}" @click="closeModal('helpModal')"></div>
-     <div class="modal" :class="{'open': modals.helpModal}">
-        <div class="flex justify-between items-center mb-4">
-            <h3 id="help-modal-title" class="text-base font-semibold">Help & Support</h3>
-            <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('helpModal')" aria-label="Close help modal">✕</button>
-        </div>
-        <div class="space-y-6 text-sm">
-             <div>
-                  <h3 class="text-sm font-semibold mb-2 text-purple-400">FAQs</h3>
-                  <div class="space-y-4">
-                    <div>
-                      <p class="text-xs text-gray-300 font-semibold">Q: How do I place a bet?</p>
-                      <p class="text-xs text-gray-400">A: Select 2–5 picks from the tabs, open the slip using the button at the bottom right, set a wager (0.1–10 SOL), and submit your slip.</p>
-                    </div>
-                    <div>
-                      <p class="text-xs text-gray-300 font-semibold">Q: How are winnings calculated?</p>
-                      <p class="text-xs text-gray-400">A: Winnings = Wager × Multiplier. Multipliers: 2 picks = 2x, 3 picks = 5x, 4 picks = 10x, 5 picks = 20x.</p>
-                    </div>
-                     <div>
-                      <p class="text-xs text-gray-300 font-semibold">Q: Can I play without a wallet?</p>
-                      <p class="text-xs text-gray-400">A: Yes! You can use the free faucet balance (starting at 5.0 SOL) to try out the game without connecting a real wallet.</p>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h3 class="text-sm font-semibold mb-2 text-purple-400">Get in Touch</h3>
-                  <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-sm text-purple-500 hover:underline mb-2" aria-label="Join Telegram">Join our Telegram</a>
-                  <a href="mailto:support@memepicks.fun" class="block text-sm text-purple-500 hover:underline" aria-label="Contact Support">Contact Support</a>
-                </div>
-        </div>
-        <button class="button-primary w-full text-sm mt-6" @click="closeModal('helpModal')" aria-label="Close help modal">Close</button>
-    </div>
-  </div>
-
-  <div id="modal" x-show="modals.modal" x-ref="modal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-container" :class="{'open': modals.modal}" @click="closeModal('modal')"></div> <div class="modal" :class="{'open': modals.modal}"> <h3 id="modal-title" class="text-base font-semibold mb-3"></h3>
-      <p id="modal-message" class="text-[#B0B0B0] text-sm mb-4"></p>
-      <button class="button-primary w-full text-sm py-2" @click="closeModal('modal')" aria-label="Close modal">OK</button>
-    </div>
-  </div>
-
-  <div id="walletChoiceModal" x-show="modals.walletChoiceModal" x-ref="walletChoiceModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="wallet-choice-modal-title" @keydown.escape.window="closeModal('walletChoiceModal')">
-    <div class="modal-container" :class="{'open': modals.walletChoiceModal}" @click="closeModal('walletChoiceModal')"></div>
-    <div class="modal" :class="{'open': modals.walletChoiceModal}">
+  <div id="boardModal" class="fixed inset-0 z-[80]" x-show="modalOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" role="dialog" aria-modal="true" aria-labelledby="board-modal-title" data-component="board-modal">
+    <div class="modal-container" :class="{ 'open': modalOpen }" @click="closeModals"></div>
+    <div class="modal" :class="{ 'open': modalOpen }" @click.stop>
       <div class="flex justify-between items-center mb-4">
-        <h3 id="wallet-choice-modal-title" class="text-base font-semibold">Choose Wallet</h3>
-        <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('walletChoiceModal')" aria-label="Close wallet choice">✕</button>
+        <h2 id="board-modal-title" class="text-base font-semibold text-[#7B61FF]">Choose Board</h2>
+        <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModals" aria-label="Close board selection modal">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button class="button-primary text-sm min-h-[44px]" :class="{ 'opacity-70': selectedBoard === 'Standard' }" @click="selectBoard('Standard')" aria-label="Select Standard Plinko Board">Standard</button>
+        <button class="button-primary text-sm min-h-[44px]" :class="{ 'opacity-70': selectedBoard === 'High Risk' }" @click="selectBoard('High Risk')" aria-label="Select High Risk Plinko Board">High Risk</button>
+        <button class="button-primary text-sm min-h-[44px]" :class="{ 'opacity-70': selectedBoard === 'NFT Boost' }" @click="selectBoard('NFT Boost')" aria-label="Select NFT Boost Plinko Board">NFT Boost</button>
+        <button class="button-primary text-sm min-h-[44px]" :class="{ 'opacity-70': selectedBoard === 'Jackpot' }" @click="selectBoard('Jackpot')" aria-label="Select Jackpot Plinko Board">Jackpot</button>
+      </div>
+      <button class="button-secondary w-full text-sm mt-4 min-h-[44px]" @click="closeModals" aria-label="Cancel board selection">Cancel</button>
+    </div>
+  </div>
+
+  <div id="walletChoiceModal" class="fixed inset-0 z-[80]" x-show="walletModalOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" role="dialog" aria-modal="true" aria-labelledby="wallet-choice-modal-title" data-component="wallet-modal">
+    <div class="modal-container" :class="{ 'open': walletModalOpen }" @click="closeModals"></div>
+    <div class="modal" :class="{ 'open': walletModalOpen }" @click.stop>
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="wallet-choice-modal-title" class="text-base font-semibold text-[#7B61FF]">Choose Wallet</h3>
+        <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModals" aria-label="Close wallet choice modal">✕</button>
       </div>
       <div class="space-y-3">
-        <button class="button-primary w-full text-sm flex items-center justify-center gap-2" @click="connectWallet('phantom'); closeModal('walletChoiceModal')" aria-label="Connect Phantom Wallet">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path></svg> Phantom Wallet
+        <button class="button-primary w-full text-sm flex items-center justify-center gap-2 min-h-[44px]" @click="connectWallet('phantom')" aria-label="Connect with Phantom Wallet">
+            <svg class="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18.0002 48C8.05822 48 0 39.9418 0 30V18.0002C0 8.05822 8.05822 0 18.0002 0H30C39.9418 0 48 8.05822 48 18.0002V30C48 39.9418 39.9418 48 30 48H18.0002ZM24.0003 31.861C28.718 31.861 32.5717 28.0073 32.5717 23.2896C32.5717 18.5719 28.718 14.7182 24.0003 14.7182C19.2826 14.7182 15.4289 18.5719 15.4289 23.2896C15.4289 28.0073 19.2826 31.861 24.0003 31.861Z" fill="currentColor"></path></svg>
+            Phantom
         </button>
-        <button class="button-primary w-full text-sm flex items-center justify-center gap-2" @click="connectWallet('solflare'); closeModal('walletChoiceModal')" aria-label="Connect Solflare Wallet">
-           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg> Solflare Wallet
+        <button class="button-primary w-full text-sm flex items-center justify-center gap-2 min-h-[44px]" @click="connectWallet('solflare')" aria-label="Connect with Solflare Wallet">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm4.818-10.585l-2.828 2.828-1.414-1.414 4.242-4.242 1.414 1.414-1.414 1.414zm-9.636 0l4.242 4.242-1.414 1.414-4.242-4.242 1.414-1.414z" fill="currentColor"></path></svg>
+            Solflare
         </button>
-      </div>
-      <button class="button-secondary w-full text-sm mt-4" @click="closeModal('walletChoiceModal')" aria-label="Cancel connection">Cancel</button>
+        </div>
+      <button class="button-secondary w-full text-sm mt-4 min-h-[44px]" @click="closeModals" aria-label="Cancel wallet connection">Cancel</button>
     </div>
   </div>
 
-   <div id="tutorialModal" x-show="modals.tutorialModal" x-ref="tutorialModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="tutorial-modal-title" @keydown.escape.window="closeModal('tutorialModal')">
-        <div class="modal-container" :class="{'open': modals.tutorialModal}" @click="closeModal('tutorialModal')"></div>
-        <div class="modal" :class="{'open': modals.tutorialModal}">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="tutorial-modal-title" class="text-base font-semibold">Welcome to MemePicks!</h3>
-                <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('tutorialModal'); localStorage.setItem(LS_PREFIX + 'hasSeenTutorial', 'true'); hasSeenTutorial = true" aria-label="Close tutorial">✕</button>
-            </div>
-            <div class="space-y-4 text-sm text-gray-300">
-                <p>1. <strong>Browse Props</strong>: Check out trending meme coin bets in the tabs above.</p>
-                <p>2. <strong>Add Picks</strong>: Select 2–5 picks by clicking "Yes" or "No" on prop cards.</p>
-                <p>3. <strong>Place Bet</strong>: Open the slip tray (bottom right <span class="inline-block bg-purple-600 text-white rounded-full px-2 py-0.5 text-xs">Slip</span> button), set a wager, and submit.</p>
-                <p>4. <strong>Connect Wallet</strong>: Link your Solana wallet for real bets or use <span class="font-bold text-indigo-400">Free Mode</span>.</p>
-                <p>5. <strong>Join Community</strong>: Chat, tip, and share referral links in the Community tab.</p>
-            </div>
-            <button class="button-primary w-full text-sm mt-6" @click="closeModal('tutorialModal'); localStorage.setItem(LS_PREFIX + 'hasSeenTutorial', 'true'); hasSeenTutorial = true" aria-label="Start using MemePicks">Got It!</button>
-        </div>
-    </div>
-
-    <div id="profileEditModal" x-show="modals.profileEditModal" x-ref="profileEditModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="profile-edit-modal-title" @keydown.escape.window="closeModal('profileEditModal')">
-        <div class="modal-container" :class="{'open': modals.profileEditModal}" @click="closeModal('profileEditModal')"></div>
-        <div class="modal" :class="{'open': modals.profileEditModal}">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="profile-edit-modal-title" class="text-base font-semibold">Edit Profile</h3>
-                <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('profileEditModal')" aria-label="Close edit profile">✕</button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label for="username" class="text-xs text-gray-300 block mb-1">Username</label>
-                    <input id="username" type="text" x-model="userProfile.username" class="input-field text-sm" placeholder="Enter username" aria-label="Username">
-                </div>
-                <div>
-                    <label for="avatar" class="text-xs text-gray-300 block mb-1">Avatar URL</label>
-                    <input id="avatar" type="url" x-model="userProfile.avatar" class="input-field text-sm" placeholder="Enter avatar URL" aria-label="Avatar URL">
-                </div>
-            </div>
-            <button class="button-primary w-full text-sm mt-4" @click="saveProfile()" aria-label="Save profile">Save</button>
-        </div>
-    </div>
-
-
-  <div class="fixed bottom-20 left-4 z-50" x-data="{ isLocalhost: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' }" x-show="isLocalhost">
-      <button class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-2 rounded" onclick="submitSlipToBackend()">Test Submit Slip (DOGE)</button>
-  </div>
+  <footer class="fixed bottom-0 left-0 w-full bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 text-center text-xs text-gray-400 py-2 z-[50]" style="padding-bottom: calc(8px + env(safe-area-inset-bottom))" data-component="footer">
+    3% staking fee | <a href="/bet" class="text-purple-500 hover:underline" aria-label="Try MemePicks Betting">Try MemePicks Betting</a> | Powered by MemePicks
+  </footer>
 
   <script>
-    // --- Alpine Store Definition ---
     document.addEventListener('alpine:init', () => {
-        // Define Alpine methods in a store for better organization and access
-        Alpine.store('appMethods', {
-             copyAddressFallback(text) {
-                const input = document.createElement('input');
-                input.value = text;
-                document.body.appendChild(input);
-                input.select();
-                input.setSelectionRange(0, 99999); // For mobile devices
-                try {
-                    document.execCommand('copy');
-                    showToast('Copied!');
-                } catch (err) {
-                    console.error('Fallback copy failed:', err);
-                    showToast('Copy failed. Please copy manually.', 'error');
-                }
-                document.body.removeChild(input);
-            },
-            copyAddress() {
-                const alpineData = Alpine.raw(Alpine.store('app')); // Access main app state
-                if (!alpineData.walletAddress) return;
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(alpineData.walletAddress).then(() => {
-                        showToast('Copied!');
-                    }).catch(err => {
-                        console.error('Async clipboard copy failed: ', err);
-                        this.copyAddressFallback(alpineData.walletAddress); // Use fallback
-                    });
-                } else {
-                    this.copyAddressFallback(alpineData.walletAddress); // Use fallback for non-secure contexts or older browsers
-                }
-            },
-            getInviteLink() {
-                const alpineData = Alpine.raw(Alpine.store('app'));
-                if (!alpineData.walletAddress) {
-                    showToast('Connect wallet to get invite link.', 'error');
-                    return;
-                }
-                const inviteLink = `${window.location.origin}${window.location.pathname}?ref=${alpineData.walletAddress}`;
-                 if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(inviteLink).then(() => {
-                        showToast('Invite link copied!');
-                    }).catch(err => {
-                        console.error('Async clipboard copy failed: ', err);
-                        this.copyAddressFallback(inviteLink);
-                    });
-                } else {
-                    this.copyAddressFallback(inviteLink);
-                }
-            },
-            isValidBase58(str) { return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(str); },
-            updateExpiryTimers() {
-                const appData = Alpine.store('app'); // Access main app state
-                document.querySelectorAll('.card[data-expiry]').forEach(card => {
-                    const expiryTimestamp = parseInt(card.dataset.expiry) * 1000;
-                    const propId = card.dataset.propId;
-                    const timerElement = card.querySelector(`.timer-${propId}`);
+      Alpine.data('cryptoDropApp', () => ({
+        // Wallet & Balance State
+        walletConnected: false,
+        walletAddress: null,
+        walletBalance: null, // Real SOL balance
+        faucetBalance: 5.000, // Free play balance
+        connection: null, // Solana connection object
 
-                    const update = () => {
-                        const now = Date.now();
-                        const timeLeft = expiryTimestamp - now;
+        // Game State
+        selectedBoard: 'Standard',
+        betAmount: 0.001, // Default bet
+        dropping: false, // Is an orb currently dropping?
+        dropResult: 'Place your first drop!',
+        orbElement: null,
+        pegElements: [],
+        slotElements: [],
+        boardRect: null, // Cache board dimensions
+        currentAnimationId: null, // To cancel animation frame
 
-                        if (timeLeft <= 0) {
-                            if (timerElement) timerElement.textContent = 'Expired';
-                             if(timerElement) timerElement.classList.remove('text-yellow-400');
-                             if(timerElement) timerElement.classList.add('text-red-400');
-                            clearInterval(appData.propTimers[propId]);
-                            delete appData.propTimers[propId];
-                            card.querySelectorAll('button').forEach(btn => btn.disabled = true);
-                            return;
-                        }
+        // Addictive Elements State
+        consecutivePlays: 0, // Plays since last win
+        consecutiveWins: 0, // Consecutive wins streak
+        lastWinTime: null,
+        totalDrops: 0, // Session drop counter
+        progress: 0, // Fake progress bar percentage
 
-                        const hours = Math.floor(timeLeft / 3600000);
-                        const minutes = Math.floor((timeLeft % 3600000) / 60000);
-                        const seconds = Math.floor((timeLeft % 60000) / 1000);
-                        const timerText = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        // UI State
+        modalOpen: false,
+        walletModalOpen: false,
+        communityMessages: [],
+        socket: null,
+        showStickyButton: false, // For sticky drop button
 
-                        if (timerElement) {
-                            timerElement.textContent = `Expires in ${timerText}`;
-                        } else {
-                            const newTimer = document.createElement('p');
-                            newTimer.className = `timer-${propId} text-xs text-yellow-400 mt-1 font-mono`;
-                            newTimer.textContent = `Expires in ${timerText}`;
-                            const statsDiv = card.querySelector('.stats');
-                            if (statsDiv) card.insertBefore(newTimer, statsDiv);
-                            else card.appendChild(newTimer);
-                        }
+        // Particle & Interaction State
+        particleCtx: null,
+        particles: [],
+        mouseX: window.innerWidth / 2,
+        mouseY: window.innerHeight / 2,
+
+        // Constants for Plinko board layout (adjust as needed)
+        BOARD_WIDTH: 400, // Corresponds to max-width in CSS
+        BOARD_HEIGHT: 450,
+        PEG_ROWS: 12, // Number of peg rows
+        PEG_SIZE: 8,
+        SLOT_COUNT: 9, // Number of slots
+        SLOT_WIDTH: 30,
+        SLOT_HEIGHT: 30,
+
+        // Outcomes (example, should match backend/VRF logic)
+        outcomes: [
+          { slot: '0x', rewardMult: 0, weight: 0.20, color: colorMap['0x'] },
+          { slot: '0.5x', rewardMult: 0.5, weight: 0.25, color: colorMap['0.5x'] },
+          { slot: '1x', rewardMult: 1, weight: 0.25, color: colorMap['1x'] },
+          { slot: '2x', rewardMult: 2, weight: 0.15, color: colorMap['2x'] },
+          { slot: '5x', rewardMult: 5, weight: 0.10, color: colorMap['5x'] },
+          { slot: '10x', rewardMult: 10, weight: 0.04, color: colorMap['10x'] },
+          { slot: 'Jackpot', rewardMult: 50, weight: 0.01, color: colorMap['Jackpot'] } // Example: 50x Jackpot
+        ],
+
+        init() {
+          console.log('Initializing CryptoDrop App...');
+          // Load wallet state
+          try {
+            this.walletAddress = localStorage.getItem(LS_PREFIX + 'walletAddress') || null;
+            this.walletConnected = !!this.walletAddress;
+            if (this.walletConnected) {
+              this.connection = new SolanaWeb3.Connection(
+                SolanaWeb3.clusterApiUrl(BASE_URL.includes('localhost') ? 'devnet' : 'mainnet-beta'), // Use clusterApiUrl
+                'confirmed'
+              );
+              this.getWalletBalance(this.walletAddress).catch(err => {
+                 console.error('Initial balance fetch failed:', err);
+                 this.showToast('Failed to load balance.', 'error');
+                 // Consider disconnecting if balance fails crucially
+                 // this.disconnectWallet();
+              });
+            }
+          } catch (err) {
+            console.error('Wallet init failed:', err);
+            this.showToast('Wallet initialization error.', 'error');
+            localStorage.removeItem(LS_PREFIX + 'walletAddress'); // Clear bad state
+            this.walletConnected = false;
+            this.walletAddress = null;
+          }
+
+          // Initialize Socket.IO
+          this.initSocket();
+
+          // Initialize board visuals (pegs, slots)
+          this.initBoard();
+
+          // Initialize particle system
+          this.initParticles();
+
+           // Load counters from local storage? (Optional)
+          this.totalDrops = parseInt(localStorage.getItem(LS_PREFIX + 'totalDrops') || '0');
+
+          // Set initial board glow based on state
+          this.updateBoardGlow();
+
+          console.log('CryptoDrop App Initialized.');
+        },
+
+        initSocket() {
+             try {
+                this.socket = io(BASE_URL, {
+                    auth: { token: localStorage.getItem(LS_PREFIX + 'authToken') }, // If using auth tokens
+                    reconnectionAttempts: 5, // Limit reconnections
+                    transports: ['websocket'] // Prefer websocket
+                });
+
+                this.socket.on('connect', () => {
+                    console.log('Socket connected:', this.socket.id);
+                    // Maybe request initial recent wins?
+                    this.socket.emit('getRecentWins');
+                });
+
+                this.socket.on('disconnect', (reason) => {
+                    console.log('Socket disconnected:', reason);
+                    if (reason === 'io server disconnect') {
+                        // The server disconnected deliberately, maybe auth failed
+                        this.showToast('Server disconnected.', 'error');
+                    }
+                     // Optionally try to reconnect manually or show status
+                });
+
+                this.socket.on('connect_error', (err) => {
+                    console.error('Socket connection error:', err.message, err.data);
+                    this.showToast(`Connection failed: ${err.message}`, 'error');
+                });
+
+                // Listen for results broadcasted from the server
+                this.socket.on('dropResult', (data) => {
+                    // data: { username, slot, reward, isJackpot, timestamp }
+                    console.log('Received dropResult:', data);
+                    const message = {
+                        id: data.timestamp || Date.now(),
+                        username: data.username === this.walletAddress ? 'You' : (data.username ? data.username.slice(0, 4) + '...' + data.username.slice(-4) : 'Guest'),
+                        text: `landed on ${data.slot}!`,
+                        reward: data.reward > 0 ? data.reward.toFixed(5) : null // Format reward
                     };
+                    this.communityMessages = [message, ...this.communityMessages.slice(0, 19)]; // Keep last 20 messages
+                    this.scrollToChatBottom(); // Auto-scroll chat on new message
 
-                    if (!appData.propTimers[propId]) {
-                        update();
-                        appData.propTimers[propId] = setInterval(update, 1000);
-                    }
-                });
-            },
-            applyFilters() {
-                 const alpineData = Alpine.raw(Alpine.store('app'));
-                 console.log(`Applying filters: Coin=${alpineData.propFilter}, Sort=${alpineData.propSort}`);
-                ['trending', 'marketcap', 'volume', 'headtohead', 'memefactor', 'expiring'].forEach(tabKey => {
-                    const container = document.getElementById(`${tabKey}-props`);
-                    if (!container) return;
-
-                    const cards = Array.from(container.querySelectorAll('.card[data-prop-id]'));
-                    if(cards.length === 0) return;
-
-                    let filteredAndSortedCards = cards;
-
-                    if (alpineData.propFilter) {
-                        filteredAndSortedCards = filteredAndSortedCards.filter(card => {
-                             const titleElement = card.querySelector('h3');
-                             return titleElement?.textContent.includes(alpineData.propFilter);
-                        });
-                    }
-
-                    if (alpineData.propSort === 'odds') {
-                        filteredAndSortedCards.sort((a, b) => {
-                            const oddsA = parseFloat(a.querySelector('.odds-multiplier')?.textContent.match(/[\d.]+/)?.[0] || 0);
-                            const oddsB = parseFloat(b.querySelector('.odds-multiplier')?.textContent.match(/[\d.]+/)?.[0] || 0);
-                            return oddsB - oddsA;
-                        });
-                    } else if (alpineData.propSort === 'expiry') {
-                        filteredAndSortedCards.sort((a, b) => (parseInt(a.dataset.expiry) || Infinity) - (parseInt(b.dataset.expiry) || Infinity));
-                    }
-
-                    container.innerHTML = '';
-                    if (filteredAndSortedCards.length > 0) {
-                         filteredAndSortedCards.forEach(card => container.appendChild(card));
-                    } else {
-                        container.innerHTML = '<p class="text-center text-gray-400 py-8">No props match your filters.</p>';
-                    }
-                });
-            },
-             clearTimers() {
-                 const appData = Alpine.store('app');
-                 Object.values(appData.propTimers).forEach(clearInterval);
-                 appData.propTimers = {};
-             }
-        });
-
-        // Define main Alpine component state, referencing methods from the store
-        Alpine.data('appState', () => ({
-            tab: 'trending',
-            walletAddress: localStorage.getItem(LS_PREFIX + 'walletAddress') || null,
-            walletBalance: null,
-            faucetBalance: 5.0,
-            showProfileDropdown: false,
-            showDrawer: false,
-            showSlipTray: false,
-            activeModal: null,
-            modals: {
-                helpModal: false,
-                modal: false,
-                walletChoiceModal: false,
-                profileModal: false,
-                profileEditModal: false, // Added profile edit modal state
-                tutorialModal: false
-            },
-            slip: { picks: [], wager: 0 },
-            multipliers: { 2: 2, 3: 5, 4: 10, 5: 20 },
-            walletConnection: null,
-            referrerAddress: localStorage.getItem(LS_PREFIX + 'referrerAddress') || null,
-            firstSlipSubmitted: localStorage.getItem(LS_PREFIX + 'firstSlipSubmitted') === 'true',
-            show2FASection: false,
-            selectedChatRoom: 'global',
-            tipRecipient: '',
-            tipAmount: 0.1,
-            userProfile: {
-                username: '',
-                avatar: 'https://placehold.co/64x64/7B61FF/FFFFFF?text=MP',
-                badge: 'Newbie',
-                totalWins: 0,
-                totalLosses: 0,
-                achievements: JSON.parse(localStorage.getItem(LS_PREFIX + 'achievements') || '[]')
-            },
-            // Theme state removed
-            hasSeenTutorial: localStorage.getItem(LS_PREFIX + 'hasSeenTutorial') === 'true',
-            propFilter: '',
-            propSort: 'default',
-            propTimers: {},
-            socket: null, // Initialize socket reference
-
-            // --- Methods ---
-            toggleBodyScroll(enabled) { document.body.classList.toggle('modal-open', !enabled); },
-            openModal(name) { this.closeAllModals(); this.showSlipTray = false; this.modals[name] = true; this.activeModal = name; this.toggleBodyScroll(false); console.log('Opening modal:', name); },
-            closeModal(name) { this.modals[name] = false; if (this.activeModal === name) { this.activeModal = null; if (!this.showSlipTray && !Object.values(this.modals).some(isOpen => isOpen)) { this.toggleBodyScroll(true); } } },
-            closeAllModals() { Object.keys(this.modals).forEach(name => { this.modals[name] = false; }); this.activeModal = null; if (!this.showSlipTray) { this.toggleBodyScroll(true); } },
-            scrollTabIntoView(element) { element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); },
-            openProfile() { this.tab = 'profile'; this.showDrawer = false; console.log('Switched to Profile tab'); },
-            toggleSlipTray() { this.showSlipTray = !this.showSlipTray; if (this.showSlipTray) { this.closeAllModals(); this.toggleBodyScroll(false); } else { if (!this.activeModal) { this.toggleBodyScroll(true); } } },
-            addToSlip(event) { /* ... existing logic ... */ this.updateOddsDisplay(); this.showSlipPreview(); },
-            removePick(propId) { /* ... existing logic ... */ this.updateOddsDisplay(); this.showSlipPreview(); },
-            updateOddsDisplay() { /* ... existing logic ... */ },
-            updateSlipWager() { const input = document.getElementById('wager-mobile'); this.slip.wager = Number(input.value) || 0; },
-            setWager(amount) { this.slip.wager = amount; this.updateSlipWager(); },
-            isValidSlip() { const { picks, wager } = this.slip; return picks.length >= 2 && picks.length <= 5 && typeof wager === 'number' && wager >= 0.1 && wager <= 10; },
-            submitSlipAction() { /* ... existing logic ... */ this.awardAchievement('first_bet'); if (this.slip.picks.length === 5) { this.awardAchievement('max_picks'); } /* ... */ },
-            disconnectWallet() { /* ... existing logic ... */ this.updateOddsDisplay(); },
-            // Use methods from store
-            copyAddress() { Alpine.store('appMethods').copyAddress(); },
-            getInviteLink() { Alpine.store('appMethods').getInviteLink(); },
-            sendTip() { /* ... existing placeholder ... */ },
-            sendChatMessage(event) { /* ... existing placeholder with XSS fix ... */ },
-            // Theme toggle removed
-            requestNotificationPermission() { if ('Notification' in window && Notification.permission !== 'denied') { Notification.requestPermission().then(p => { if (p === 'granted') console.log('Notification permission granted.'); }); } },
-            awardAchievement(name) { if (!this.userProfile.achievements.includes(name)) { this.userProfile.achievements.push(name); localStorage.setItem(LS_PREFIX + 'achievements', JSON.stringify(this.userProfile.achievements)); showToast(`Achievement Unlocked: ${name === 'first_bet' ? 'First Bet' : 'Max Picks'}!`, 'success'); } },
-            showSlipPreview() { /* ... existing logic ... */ },
-            // Task 2: Added saveProfile method
-            saveProfile() {
-                // Save locally first for immediate feedback
-                localStorage.setItem(LS_PREFIX + 'userProfile', JSON.stringify(this.userProfile));
-                showToast('Profile saved locally.', 'info'); // Indicate local save
-
-                // Send update to backend (placeholder)
-                console.log("Placeholder: Sending profile update to backend:", this.userProfile);
-                // fetch(`${BASE_URL}/api/user/update`, { // Use correct endpoint from backend setup
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         // Include Auth token if needed
-                //         // 'Authorization': `Bearer ${localStorage.getItem(LS_PREFIX + 'authToken')}`
-                //     },
-                //     body: JSON.stringify({
-                //         // Backend expects walletAddress to identify user
-                //         username: this.userProfile.username,
-                //         avatar: this.userProfile.avatar
-                //     })
-                // })
-                // .then(res => {
-                //     if (!res.ok) throw new Error('Network response was not ok');
-                //     return res.json();
-                //  })
-                // .then(data => {
-                //     if (data.success) { // Assuming backend returns { success: true }
-                //         showToast('Profile updated successfully!', 'success');
-                //     } else {
-                //         showToast(`Profile update failed: ${data.message || 'Unknown error'}`, 'error');
-                //         // Optionally revert local storage change if backend fails
-                //     }
-                // })
-                // .catch(err => {
-                //     console.error('Profile update failed:', err);
-                //     showToast('Error updating profile.', 'error');
-                // });
-
-                this.closeModal('profileEditModal');
-            },
-            // Use methods from store
-            updateExpiryTimers() { Alpine.store('appMethods').updateExpiryTimers(); },
-            applyFilters() { Alpine.store('appMethods').applyFilters(); },
-            clearTimers() { Alpine.store('appMethods').clearTimers(); },
-            isValidBase58(str) { return Alpine.store('appMethods').isValidBase58(str); }, // Reference store method
-            init() {
-                // Store 'this' context correctly
-                const component = this;
-                console.log('Alpine initializing...');
-                // Load from localStorage using LS_PREFIX
-                component.walletAddress = localStorage.getItem(LS_PREFIX + 'walletAddress') || null;
-                component.referrerAddress = localStorage.getItem(LS_PREFIX + 'referrerAddress') || null;
-                component.firstSlipSubmitted = localStorage.getItem(LS_PREFIX + 'firstSlipSubmitted') === 'true';
-                component.userProfile.achievements = JSON.parse(localStorage.getItem(LS_PREFIX + 'achievements') || '[]');
-                component.hasSeenTutorial = localStorage.getItem(LS_PREFIX + 'hasSeenTutorial') === 'true';
-                // Load saved user profile data
-                const savedProfile = JSON.parse(localStorage.getItem(LS_PREFIX + 'userProfile') || '{}');
-                component.userProfile = { ...component.userProfile, ...savedProfile };
-
-
-                // Initialize Socket.IO connection
-                if (typeof io !== 'undefined') {
-                    component.socket = io(BASE_URL, {
-                        // Optional: Add auth token if using JWT for sockets
-                        // auth: { token: localStorage.getItem(LS_PREFIX + 'authToken') }
-                    });
-
-                    component.socket.on('connect', () => { console.log('Socket connected:', component.socket.id); });
-                    component.socket.on('disconnect', (reason) => { console.log('Socket disconnected:', reason); });
-                    component.socket.on('connect_error', (err) => { console.error('Socket connection error:', err.message); showToast('Chat connection failed.', 'error'); }); // Added error toast
-
-                    component.socket.on('chatMessage', ({ username, message, messageId }) => { /* ... existing listener ... */ });
-                    component.socket.on('react', ({ messageId, reaction, count }) => { /* ... existing listener ... */ });
-
-                } else {
-                    console.error("Socket.IO client not loaded.");
-                }
-
-
-                if (component.walletAddress) {
-                    console.log('Wallet address found, fetching balance:', component.walletAddress);
-                    getWalletBalance(component.walletAddress);
-                    component.requestNotificationPermission();
-                } else {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const refAddress = urlParams.get('ref');
-                    if (refAddress && !localStorage.getItem(LS_PREFIX + 'referrerAddress')) {
-                        console.log('Referral code found:', refAddress);
-                        if (Alpine.store('appMethods').isValidBase58(refAddress)) { // Use store method
-                             // Task 6: Uncommented fetch call for referrer validation
-                             fetch(`${BASE_URL}/api/validate-referrer/${refAddress}`)
-                               .then(res => res.json())
-                               .then(data => {
-                                   if (data.isValid) {
-                                       localStorage.setItem(LS_PREFIX + 'referrerAddress', refAddress);
-                                       component.referrerAddress = refAddress;
-                                       showToast(`Referral code ${refAddress.slice(0,4)}...${refAddress.slice(-4)} applied!`);
-                                   } else {
-                                       console.warn('Invalid referral code ignored (backend validation).');
-                                   }
-                               })
-                               .catch(err => {
-                                   console.error('Referrer validation failed:', err);
-                                   showToast('Error validating referral code.', 'error');
-                                });
-                        } else {
-                            console.warn('Invalid referral code format ignored.');
-                        }
-                    }
-                    if (!component.hasSeenTutorial) {
-                        setTimeout(() => component.openModal('tutorialModal'), 500);
-                    }
-                }
-
-                Alpine.nextTick(() => {
-                     console.log('Alpine ready. Injecting content, adding tags, updating odds/timers.');
-                     injectDummyContent();
-                     addRiskTags();
-                     component.updateOddsDisplay();
-                     getPrice('SOL');
-                     injectLeaderboardContent();
-                     Alpine.store('appMethods').clearTimers(); // Use store method
-                     Alpine.store('appMethods').updateExpiryTimers(); // Use store method
-                     setInterval(() => Alpine.store('appMethods').updateExpiryTimers(), 1000);
-                     Alpine.store('appMethods').applyFilters(); // Use store method
+                    // Could add special effect if data.isJackpot is true
                 });
 
-                console.log('Alpine initialized.');
+                 // Handle receiving initial/recent wins list
+                this.socket.on('recentWins', (wins) => {
+                    console.log('Received recent wins:', wins);
+                    this.communityMessages = wins.map(w => ({
+                        id: w.timestamp || Date.now(),
+                        username: w.username === this.walletAddress ? 'You' : (w.username ? w.username.slice(0, 4) + '...' + w.username.slice(-4) : 'Guest'),
+                        text: `landed on ${w.slot}!`,
+                        reward: w.reward > 0 ? w.reward.toFixed(5) : null
+                    })).slice(0, 20); // Format and limit
+                });
+
+            } catch (error) {
+                console.error("Socket initialization failed:", error);
+                this.showToast("Cannot connect to live feed.", "error");
             }
-        }));
-    });
+        },
 
+        initBoard() {
+            const boardContainer = this.$refs.plinkoBoardRef;
+            if (!boardContainer) return;
+            boardContainer.innerHTML = ''; // Clear previous elements
+            this.pegElements = [];
+            this.slotElements = [];
 
-    // --- Global Helper Functions ---
-    function showToast(message, type = 'info') { /* ... */ }
-    function playSound(type) { /* ... */ }
-    function triggerVibration(ms) { /* ... */ }
-    async function getWalletBalance(address) { /* ... */ }
-    async function connectWallet(walletType) { /* ... */ }
-    function injectDummyContent() { /* ... */ }
-    function injectLeaderboardContent() { /* ... */ }
-    function addRiskTags() { /* ... */ }
-    async function getPrice(coin) { /* ... */ }
-    // Task 10: Updated submitSlipToBackend for push notifications
-    async function submitSlipToBackend(picksData = null, wagerAmount = null, walletAddr = null, multiplierVal = null, referrerAddr = null) {
-        let payload;
-        let actualWalletAddress;
+            const boardWidth = boardContainer.clientWidth || this.BOARD_WIDTH;
+            const boardHeight = this.BOARD_HEIGHT;
+            this.boardRect = boardContainer.getBoundingClientRect(); // Cache dimensions
 
-        if (picksData && wagerAmount) {
-            actualWalletAddress = walletAddr;
-             payload = {
-                walletAddress: actualWalletAddress,
-                picks: picksData.map(p => ({ propId: p.propId, choice: p.choice, token: p.token, description: p.description })),
-                wager: wagerAmount,
-                duration: '1h', // Default duration for now
-                multiplier: multiplierVal,
-                referrerWallet: referrerAddr
-            };
-            console.log('Submitting actual slip data:', payload);
-        } else {
-             const alpineData = document.querySelector('[x-data]')?.__x?.$data;
-             actualWalletAddress = alpineData?.walletAddress;
-             payload = {
-                walletAddress: actualWalletAddress,
-                picks: [{ propId: 'doge-test-001', token: '$DOGE', description: 'Test DOGE prop', choice: 'up' }],
-                wager: 0.1,
-                duration: '5m',
-                multiplier: 2,
-                referrerWallet: null
-            };
-            console.log('Submitting TEST slip data:', payload);
-        }
+            // Create Pegs
+            const rowHeight = boardHeight * 0.8 / (this.PEG_ROWS + 1); // Use ~80% of height for pegs
+            for (let i = 0; i < this.PEG_ROWS; i++) {
+                const pegsInRow = i + 3; // Simple increasing pattern
+                const y = rowHeight * (i + 1);
+                const spacing = boardWidth / (pegsInRow + 1);
+                for (let j = 0; j < pegsInRow; j++) {
+                    const x = spacing * (j + 1);
+                    const peg = document.createElement('div');
+                    peg.className = 'peg';
+                    peg.style.left = `${x - this.PEG_SIZE / 2}px`;
+                    peg.style.top = `${y - this.PEG_SIZE / 2}px`;
+                    boardContainer.appendChild(peg);
+                    this.pegElements.push({ element: peg, x, y, radius: this.PEG_SIZE / 2 });
+                }
+            }
 
-        const token = localStorage.getItem(LS_PREFIX + 'authToken'); // Use LS_PREFIX
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        } else if (actualWalletAddress) {
-             console.warn("No JWT found, but wallet connected. Ensure backend handles this if needed.");
-        }
-
-        try {
-            const res = await fetch(`${BASE_URL}/api/submit-slip`, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(payload)
-            });
-            const result = await res.json(); // Assuming backend returns { success: boolean, outcome?: 'win'|'lost', slipId?: string, message?: string }
-
-            if (!res.ok || !result.success) {
-                console.error('Slip submission failed:', result);
-                showToast(`Error: ${result.message || 'Submission failed'}`, 'error');
+             // Create Slots (ensure outcomes array matches SLOT_COUNT if using fixed count)
+            const totalSlotWidth = this.outcomes.length * this.SLOT_WIDTH;
+            const totalSpacing = boardWidth - totalSlotWidth;
+            const spacing = totalSpacing / (this.outcomes.length + 1);
+            const slotContainer = boardContainer.querySelector('.slot-container') || document.createElement('div');
+            if (!slotContainer.classList.contains('slot-container')) {
+                slotContainer.className = 'slot-container';
+                boardContainer.appendChild(slotContainer);
             } else {
-                console.log('Slip submitted successfully:', result);
-                showToast(`Slip submitted! ID: ${result.slipId?.slice(-6) || 'N/A'}`, 'success');
+                slotContainer.innerHTML = ''; // Clear existing slots
+            }
 
-                // Task 10: Show notification based on backend outcome (simulated delay)
-                setTimeout(() => {
-                    if ('Notification' in window && Notification.permission === 'granted' && result.outcome) {
-                        new Notification('Slip Outcome', {
-                            body: `Your slip with ${payload.picks.length} picks ${result.outcome === 'win' ? 'won' : 'lost'}!`,
-                            icon: 'https://placehold.co/64x64/7B61FF/FFFFFF?text=MP' // Replace with actual icon URL
-                        });
-                    } else if ('Notification' in window && Notification.permission !== 'granted') {
-                        console.log("Notification permission not granted for slip outcome.");
+            this.outcomes.forEach((outcome, i) => {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                slot.style.backgroundColor = outcome.color || '#4B5563'; // Use outcome color or default
+                slot.style.width = `${this.SLOT_WIDTH}px`;
+                slot.style.height = `${this.SLOT_HEIGHT}px`;
+
+                const label = document.createElement('span');
+                label.className = 'slot-label';
+                label.textContent = outcome.slot;
+                slot.appendChild(label);
+
+                 // Tooltip (simple version)
+                const tooltip = document.createElement('div');
+                tooltip.className = 'slot-tooltip';
+                tooltip.innerHTML = `
+                    Multiplier: ${outcome.slot}<br>
+                    Reward: ${(this.betAmount * outcome.rewardMult).toFixed(5)} SOL<br>
+                    Chance: ~${(outcome.weight * 100).toFixed(1)}%
+                `; // Note: Chance is approximate based on weights
+                slot.appendChild(tooltip);
+
+                slotContainer.appendChild(slot);
+                // Store slot element and its data for later reference
+                this.slotElements.push({ element: slot, outcome: outcome, index: i });
+            });
+
+        },
+
+        initParticles() {
+             const canvas = document.getElementById('particle-canvas');
+             if (!canvas) return;
+             this.particleCtx = canvas.getContext('2d');
+             canvas.width = window.innerWidth;
+             canvas.height = window.innerHeight;
+
+             const colors = ['#7B61FF', '#FF6BEC', '#61FF7B', '#FFB861', '#60A5FA'];
+             this.particles = Array.from({ length: 80 }, () => ({ // Reduced particle count
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 0.5, // Slightly larger min radius
+                vx: (Math.random() - 0.5) * 0.5, // Slower base speed
+                vy: (Math.random() - 0.5) * 0.5,
+                baseVx: (Math.random() - 0.5) * 0.5, // Store base velocity
+                baseVy: (Math.random() - 0.5) * 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                mass: Math.random() * 2 + 1 // Add mass for interaction later
+            }));
+
+            const animateParticles = () => {
+                if (!this.particleCtx) return;
+                const ctx = this.particleCtx;
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas completely for dynamic background
+                // Optional: Redraw a subtle background overlay if needed
+                // ctx.fillStyle = 'rgba(18, 18, 18, 0.05)';
+                // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                this.particles.forEach(p => {
+                    // Mouse interaction
+                    const dx = this.mouseX - p.x;
+                    const dy = this.mouseY - p.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = 150; // Interaction radius
+
+                    if (distance < maxDist) {
+                        const force = (maxDist - distance) / maxDist; // Closer = stronger force
+                        // Accelerate towards/away from mouse based on force
+                        p.vx += (dx / distance) * force * 0.08; // Adjusted force factor
+                        p.vy += (dy / distance) * force * 0.08;
+                    } else {
+                         // Dampen towards base velocity if far from mouse
+                        p.vx += (p.baseVx - p.vx) * 0.01;
+                        p.vy += (p.baseVy - p.vy) * 0.01;
                     }
-                }, 5000); // Simulate delay for outcome
 
-                // Handle referral tracking confirmation
-                const alpineData = Alpine.raw(Alpine.store('app'));
-                if (alpineData.referrerAddress && !alpineData.firstSlipSubmitted) {
-                    const shortRef = alpineData.referrerAddress.slice(0, 4) + '...' + alpineData.referrerAddress.slice(-4);
-                    showToast(`Referral from ${shortRef} tracked!`, 'success');
-                    localStorage.setItem(LS_PREFIX + 'firstSlipSubmitted', 'true');
-                    alpineData.firstSlipSubmitted = true;
+                    // Apply velocity limits
+                    p.vx = Math.max(-2, Math.min(2, p.vx));
+                    p.vy = Math.max(-2, Math.min(2, p.vy));
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Boundary check (wrap around)
+                    if (p.x < -p.radius) p.x = canvas.width + p.radius;
+                    if (p.x > canvas.width + p.radius) p.x = -p.radius;
+                    if (p.y < -p.radius) p.y = canvas.height + p.radius;
+                    if (p.y > canvas.height + p.radius) p.y = -p.radius;
+
+                    // Draw particle
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = Math.max(0.1, 1 - distance / (maxDist * 2)); // Fade if close to mouse? Optional.
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0; // Reset alpha
+                });
+
+                requestAnimationFrame(animateParticles);
+            };
+
+            animateParticles(); // Start the particle animation loop
+
+             // Resize listener
+            window.addEventListener('resize', () => {
+                if (!canvas) return;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                 // Reinitialize particles or just update positions?
+                 // For simplicity, we'll let them wrap on resize.
+            });
+        },
+
+         updateMousePos(event) {
+            this.mouseX = event.clientX;
+            this.mouseY = event.clientY;
+        },
+
+        handleScroll() {
+            const controlsElement = document.getElementById('controls');
+            if (!controlsElement) {
+                this.showStickyButton = false;
+                return;
+            }
+            const rect = controlsElement.getBoundingClientRect();
+             // Show sticky button if the main drop button section is scrolled out of view
+            this.showStickyButton = rect.bottom < 0;
+        },
+
+        // === Wallet Functions ===
+        async connectWallet(walletType) {
+            this.showToast('Connecting wallet...', 'info');
+            try {
+                let provider;
+                 // Use standard wallet adapter detection if available, otherwise basic check
+                if (walletType === 'phantom' && ('phantom' in window) && window.phantom.solana) {
+                    provider = window.phantom.solana;
+                } else if (walletType === 'solflare' && ('solflare' in window) && window.solflare) {
+                     provider = window.solflare;
+                } else {
+                     this.showToast(`Wallet ${walletType} not found. Please install it.`, 'error');
+                     // Optionally redirect to wallet installation page
+                     window.open(walletType === 'phantom' ? 'https://phantom.app/' : 'https://solflare.com/', '_blank');
+                     return;
+                }
+
+                 if (!provider.isSolana) throw new Error('Selected provider is not a Solana wallet.');
+
+                 // Try to connect
+                 console.log(`Attempting to connect with ${walletType}`);
+                 // Use `connect({ onlyIfTrusted: false })` to force prompt if not already connected
+                 const response = await provider.connect();
+                 const address = response.publicKey.toString();
+                 console.log('Wallet connected:', address);
+
+                 localStorage.setItem(LS_PREFIX + 'walletAddress', address);
+                 this.walletAddress = address;
+                 this.walletConnected = true;
+
+                 this.connection = new SolanaWeb3.Connection(
+                     SolanaWeb3.clusterApiUrl(BASE_URL.includes('localhost') ? 'devnet' : 'mainnet-beta'),
+                    'confirmed'
+                 );
+
+                await this.getWalletBalance(address); // Fetch balance immediately
+                this.showToast('Wallet connected!', 'success');
+                this.closeModals();
+                window.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address } }));
+
+                // Re-initialize board/slots if tooltips depend on bet amount/balance
+                this.initBoard();
+
+            } catch (err) {
+                console.error('Wallet connection failed:', err);
+                let message = 'Failed to connect wallet.';
+                if (err.message.includes('User rejected')) {
+                    message = 'Connection request rejected.';
+                } else if (err.message.includes('not found')) {
+                     message = `Please install ${walletType} wallet.`;
+                }
+                this.showToast(message, 'error');
+                this.disconnectWallet(); // Ensure clean state on failure
+            }
+        },
+
+        async getWalletBalance(address) {
+          if (!address || !this.connection) {
+            console.warn('Cannot fetch balance: No address or connection.');
+            this.walletBalance = null; // Set balance to null if connection fails
+            return;
+           }
+          try {
+            console.log(`Fetching balance for ${address}...`);
+            const publicKey = new SolanaWeb3.PublicKey(address);
+            const balanceLamports = await this.connection.getBalance(publicKey);
+            this.walletBalance = balanceLamports / SolanaWeb3.LAMPORTS_PER_SOL;
+            console.log('Balance updated:', this.walletBalance);
+            window.dispatchEvent(new CustomEvent('balance-updated', { detail: { balance: this.walletBalance } }));
+          } catch (err) {
+            console.error('Balance fetch failed:', err);
+            this.showToast('Failed to fetch balance.', 'error');
+             // Decide if we should disconnect or just show null balance
+             this.walletBalance = null; // Indicate failed fetch
+            // throw err; // Rethrow if caller needs to handle it
+          }
+        },
+
+        disconnectWallet() {
+          // Attempt to disconnect from provider if method exists (good practice)
+          try {
+            if (window.phantom?.solana?.disconnect) window.phantom.solana.disconnect();
+            if (window.solflare?.disconnect) window.solflare.disconnect();
+          } catch (e) { console.warn("Error during wallet disconnect:", e); }
+
+          localStorage.removeItem(LS_PREFIX + 'walletAddress');
+          this.walletAddress = null;
+          this.walletConnected = false;
+          this.walletBalance = null;
+          this.connection = null;
+          // Keep faucet balance as is
+          this.showToast('Wallet disconnected.', 'info');
+          this.closeModals(); // Ensure modals are closed
+          // Re-initialize board/slots if tooltips depend on balance
+          this.initBoard();
+        },
+
+        // === Modal Controls ===
+        openBoardModal() { this.modalOpen = true; },
+        openWalletModal() { this.walletModalOpen = true; },
+        closeModals() {
+          this.modalOpen = false;
+          this.walletModalOpen = false;
+        },
+
+        // === Board Selection ===
+        selectBoard(board) {
+          this.selectedBoard = board;
+          this.dropResult = `Switched to ${board} board.`;
+          this.closeModals();
+          // Update board visuals or fetch board-specific odds if necessary
+          // this.updateBoardAnimation(); // Example call
+          this.initBoard(); // Re-init to update slots/tooltips if needed
+          this.showToast(`Switched to ${board} board`, 'info');
+          // Inform backend if needed:
+          // this.socket.emit('boardChange', { board, username: this.walletAddress || 'Guest' });
+        },
+
+        // === Main Game Logic: Orb Drop ===
+        async dropOrb() {
+            if (this.dropping) return; // Prevent multiple drops
+
+            // Validation
+            const stake = this.betAmount;
+            if (stake < 0.001) {
+                this.showToast('Minimum bet is 0.001 SOL.', 'error');
+                return;
+            }
+            if (!this.walletConnected && this.faucetBalance < stake) {
+                this.dropResult = 'Insufficient free mode balance.';
+                this.showToast('Insufficient balance.', 'error');
+                return;
+            }
+            if (this.walletConnected && (this.walletBalance === null || this.walletBalance < stake)) {
+                this.dropResult = 'Insufficient SOL balance.';
+                this.showToast('Insufficient SOL balance.', 'error');
+                if (this.walletBalance === null) this.getWalletBalance(this.walletAddress); // Try fetching balance again
+                return;
+            }
+
+            this.dropping = true;
+            this.totalDrops++;
+            localStorage.setItem(LS_PREFIX + 'totalDrops', this.totalDrops.toString()); // Persist total drops
+
+            // Haptic feedback for drop start
+            this.triggerHaptic([30]);
+
+            // Update balance optimistically (or wait for backend confirmation)
+             if (!this.walletConnected) {
+                 this.faucetBalance -= stake;
+             } else {
+                 this.walletBalance -= stake; // Deduct optimistically
+             }
+
+            // --- Anticipation ---
+            const boardElement = this.$refs.plinkoBoardRef;
+            const anticipation = document.createElement('div');
+            anticipation.className = 'anticipation-glow';
+            boardElement.appendChild(anticipation);
+
+            // Play anticipation sound?
+            // playSound('anticipation');
+
+            await new Promise(resolve => setTimeout(resolve, 700)); // Anticipation build-up time
+            anticipation.remove();
+
+            // --- Create Orb ---
+            this.orbElement = document.createElement('div');
+            this.orbElement.id = 'orb'; // Use ID for styling if needed
+            // Initial position slightly above board center top
+            let orbX = (boardElement.clientWidth || this.BOARD_WIDTH) / 2;
+            let orbY = -10; // Start above the board
+            this.orbElement.style.left = `${orbX - 8}px`; // Adjust for orb width (16px)
+            this.orbElement.style.top = `${orbY}px`;
+            boardElement.appendChild(this.orbElement);
+
+
+            // --- Physics Simulation (Simplified) ---
+            let velocityX = (Math.random() - 0.5) * 2; // Initial horizontal nudge
+            let velocityY = 1; // Initial downward speed
+            const gravity = 0.2;
+            const bounceFactor = 0.6; // Energy loss on bounce
+            let rotation = 0; // For orb rotation
+
+            // Cancel previous animation if any
+            if (this.currentAnimationId) cancelAnimationFrame(this.currentAnimationId);
+
+             const animate = (timestamp) => {
+                 if (!this.dropping || !this.orbElement) return; // Stop if drop finished or orb removed
+
+                 // Update velocity and position
+                 velocityY += gravity;
+                 orbY += velocityY;
+                 orbX += velocityX;
+
+                 // Kinetic Rotation
+                 rotation += velocityX * 3; // Rotate based on horizontal speed
+                 this.orbElement.style.transform = `translateX(-50%) rotate(${rotation}deg)`; // Centered rotation
+
+                  // --- Orb Trail ---
+                 this.createOrbTrail(orbX, orbY);
+
+                 // Collision Detection (Simple Peg Check)
+                 this.pegElements.forEach(peg => {
+                     const dx = orbX - peg.x;
+                     const dy = orbY - peg.y;
+                     const distance = Math.sqrt(dx * dx + dy * dy);
+                     const combinedRadius = (this.orbElement.offsetWidth / 2) + peg.radius;
+
+                     if (distance < combinedRadius) {
+                         // Simple collision response: invert velocity slightly randomized
+                         const overlap = combinedRadius - distance;
+                         const nx = dx / distance; // Normal x
+                         const ny = dy / distance; // Normal y
+
+                         // Move orb out of collision
+                         orbX += nx * overlap * 0.5; // Move less aggressively
+                         orbY += ny * overlap * 0.5;
+
+                         // Reflect velocity (basic)
+                         const dotProduct = velocityX * nx + velocityY * ny;
+                         velocityX -= 2 * dotProduct * nx;
+                         velocityY -= 2 * dotProduct * ny;
+
+                         // Apply bounce factor and slight random angle change
+                         velocityX *= bounceFactor * (0.9 + Math.random() * 0.2);
+                         velocityY *= bounceFactor * (0.9 + Math.random() * 0.2);
+                         velocityX += (Math.random() - 0.5) * 0.5; // Add slight random horizontal push
+
+                         // Limit excessive vertical bounce
+                         if (velocityY < -5) velocityY = -5;
+
+                         // Play peg hit sound?
+                         // playSound('pegHit');
+                         // Haptic feedback for peg hit
+                         this.triggerHaptic([10]);
+                     }
+                 });
+
+
+                 // Update orb element position
+                 this.orbElement.style.left = `${orbX - this.orbElement.offsetWidth / 2}px`;
+                 this.orbElement.style.top = `${orbY}px`;
+
+
+                 // Check if orb reached bottom slots
+                 if (orbY >= this.BOARD_HEIGHT - this.SLOT_HEIGHT) { // Check against board height minus slot height
+                      // Determine winning slot based on final X position
+                      const slotIndex = this.getSlotIndex(orbX);
+                      this.finishDrop(slotIndex); // Call finishDrop with the determined slot index
+                      return; // Stop animation
+                 }
+
+                 // Check if out of bounds (prevent infinite fall)
+                 if (orbY > this.BOARD_HEIGHT + 50) {
+                      console.warn("Orb fell out of bounds.");
+                      this.finishDrop(this.getSlotIndex(orbX)); // Assign to nearest slot even if out of bounds
+                      return;
+                 }
+
+                this.currentAnimationId = requestAnimationFrame(animate);
+             };
+
+            this.currentAnimationId = requestAnimationFrame(animate);
+
+            // --- Progressive Glow Logic ---
+            this.consecutivePlays++;
+            this.updateBoardGlow();
+
+            // --- Inform Backend (Optional: Could wait until finish) ---
+            // const username = this.walletAddress ? this.walletAddress.slice(0, 4) + '...' + this.walletAddress.slice(-4) : 'Guest';
+            // this.socket.emit('dropStart', { username, betAmount: stake, board: this.selectedBoard });
+        },
+
+        createOrbTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'orb-trail';
+            trail.style.left = `${x - 6}px`; // Center trail element
+            trail.style.top = `${y + this.orbElement.offsetHeight / 2 - 6}px`; // Position relative to orb center
+            this.$refs.plinkoBoardRef.appendChild(trail);
+
+            // Force reflow to apply initial state before transition
+            trail.offsetHeight;
+
+            // Apply fade-out and shrink effect
+            trail.style.opacity = '0';
+            trail.style.transform = 'scale(0.2)';
+
+            // Remove after animation
+            setTimeout(() => trail.remove(), 800); // Match transition duration
+        },
+
+        getSlotIndex(finalX) {
+            // Calculate which slot the final X position falls into
+             const boardWidth = this.$refs.plinkoBoardRef.clientWidth || this.BOARD_WIDTH;
+             const totalSlotWidth = this.outcomes.length * this.SLOT_WIDTH;
+             const totalSpacing = boardWidth - totalSlotWidth;
+             const spacing = totalSpacing / (this.outcomes.length + 1);
+             let currentX = spacing;
+             for (let i = 0; i < this.outcomes.length; i++) {
+                 const slotStartX = currentX;
+                 const slotEndX = currentX + this.SLOT_WIDTH;
+                 if (finalX >= slotStartX && finalX <= slotEndX) {
+                     return i;
+                 }
+                 currentX += this.SLOT_WIDTH + spacing;
+             }
+             // If slightly out of bounds, snap to nearest edge slot
+             return finalX < boardWidth / 2 ? 0 : this.outcomes.length - 1;
+        },
+
+        async finishDrop(slotIndex) {
+            if (!this.dropping) return; // Avoid finishing multiple times
+
+            // Stop animation loop
+            if (this.currentAnimationId) cancelAnimationFrame(this.currentAnimationId);
+            this.currentAnimationId = null;
+
+            const winningSlotData = this.slotElements[slotIndex];
+            const result = winningSlotData.outcome;
+            const rewardValue = this.betAmount * result.rewardMult;
+
+            // --- Reward Reveal Delay ---
+            await new Promise(resolve => setTimeout(resolve, 600)); // Delay before showing result
+
+             // Remove orb element
+            if (this.orbElement) {
+                 this.orbElement.remove();
+                 this.orbElement = null;
+            }
+
+            // --- Visual Feedback for Win/Loss ---
+            const slotElement = winningSlotData.element;
+            slotElement.classList.add('winning'); // Add bounce/glow animation class
+            setTimeout(() => slotElement.classList.remove('winning'), 800); // Remove after animation
+
+            // Play win/loss sound?
+             // playSound(rewardValue > 0 ? 'win' : 'loss');
+
+            // Haptic feedback for win/loss
+             this.triggerHaptic(rewardValue > 0 ? [50, 30, 50] : [20]);
+
+             // --- Reward Explosion ---
+             if (rewardValue > 0) {
+                 const explosion = document.createElement('div');
+                 explosion.className = 'reward-explosion';
+                 // Position at the center of the winning slot
+                 const slotRect = slotElement.getBoundingClientRect();
+                 const boardRect = this.$refs.plinkoBoardRef.getBoundingClientRect();
+                 const explosionX = slotRect.left + slotRect.width / 2 - boardRect.left;
+                 const explosionY = slotRect.top + slotRect.height / 2 - boardRect.top;
+
+                 explosion.style.left = `${explosionX - 50}px`; // Offset by half explosion size
+                 explosion.style.top = `${explosionY - 50}px`;
+                 explosion.style.background = `radial-gradient(circle, ${result.color} 20%, transparent 70%)`;
+                 this.$refs.plinkoBoardRef.appendChild(explosion);
+                 setTimeout(() => explosion.remove(), 800); // Match animation duration
+             }
+
+             // --- Update Balances ---
+             if (rewardValue > 0) {
+                 if (!this.walletConnected) {
+                     this.faucetBalance += rewardValue;
+                 } else {
+                      // Instead of adding optimistically, wait for backend confirmation or update after tx
+                      // For now, we add it back optimistically IF we deducted optimistically earlier.
+                      this.walletBalance += rewardValue;
+                      // A more robust approach involves waiting for a confirmed transaction
+                      // or a balance update message from the backend/socket.
+                      // Example: Fetch balance again after a short delay
+                      // setTimeout(() => this.getWalletBalance(this.walletAddress), 2000);
+                 }
+             }
+
+            // Update Drop Result Text
+            this.dropResult = `Landed on <span style="color:${result.color}; font-weight: bold;">${result.slot}</span>! Won ${rewardValue.toFixed(5)} SOL`;
+
+            // --- Win Streak Logic ---
+            if (rewardValue > 0.00001) { // Consider near-zero wins as wins for streak
+                this.consecutiveWins++;
+                this.lastWinTime = Date.now();
+                this.consecutivePlays = 0; // Reset non-win plays on a win
+
+                // Show Win Streak Notification
+                if (this.consecutiveWins > 1) { // Show only for streaks > 1
+                    const streak = document.createElement('div');
+                    streak.className = 'win-streak';
+                    streak.innerHTML = `WIN STREAK! <span class="text-xl ml-1">x${this.consecutiveWins}</span>`; // Larger streak number
+                    document.body.appendChild(streak);
+                    setTimeout(() => streak.remove(), 2500); // Show for longer
+                }
+                 this.showToast(`Won ${rewardValue.toFixed(5)} SOL!`, 'success');
+
+            } else {
+                this.consecutiveWins = 0; // Reset streak on loss
+                this.showToast(`Landed on ${result.slot}`, 'info'); // Simple notification for loss/0x
+            }
+
+             // --- Fake Progress Bar Update ---
+             this.progress = (this.progress + Math.random() * 5 + 1) % 100; // Increment progress randomly
+
+            // Reset board glow immediately after win, or keep for non-win
+            this.updateBoardGlow();
+
+            // Send final result to backend/socket if needed
+            const username = this.walletAddress ? this.walletAddress.slice(0, 4) + '...' + this.walletAddress.slice(-4) : 'Guest';
+            if(this.socket?.connected) {
+                this.socket.emit('dropResult', {
+                    username,
+                    board: this.selectedBoard,
+                    betAmount: this.betAmount,
+                    slot: result.slot,
+                    reward: rewardValue,
+                    timestamp: Date.now()
+                });
+            } else {
+                // Fallback if socket is down - add to local feed directly
+                 const message = { id: Date.now(), username: 'You', text: `landed on ${result.slot}!`, reward: rewardValue > 0 ? rewardValue.toFixed(5) : null };
+                 this.communityMessages = [message, ...this.communityMessages.slice(0, 19)];
+                 this.scrollToChatBottom();
+            }
+
+
+            // Re-enable drop button
+            this.dropping = false;
+
+             // Re-fetch balance after a short delay to sync? (Optional, depends on backend flow)
+             // if (this.walletConnected) setTimeout(() => this.getWalletBalance(this.walletAddress), 1500);
+        },
+
+        updateBoardGlow() {
+            const boardElement = document.getElementById('plinko-board');
+            if (!boardElement) return;
+
+            if (this.consecutivePlays > 0) {
+                const intensity = Math.min(0.2 + (this.consecutivePlays * 0.05), 0.8); // Cap intensity
+                const spread = Math.min(15 + (this.consecutivePlays * 4), 40); // Cap spread
+                boardElement.style.boxShadow = `0 0 ${spread}px rgba(123, 97, 255, ${intensity})`;
+                // Could also change color based on streak, e.g., shift towards red/orange
+            } else {
+                 // Reset glow if consecutivePlays is 0 (after a win)
+                 boardElement.style.boxShadow = 'none'; // Or a default subtle shadow
+                 // boardElement.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)'; // Example default shadow
+            }
+        },
+
+         // === Utility Functions ===
+         triggerHaptic(pattern) {
+            if ("vibrate" in navigator) {
+                try {
+                    navigator.vibrate(pattern);
+                } catch (e) {
+                    console.warn("Haptic feedback failed:", e);
                 }
             }
-            return result; // Return result for potential further handling
-        } catch (err) {
-            console.error('Submit slip network error:', err);
-            showToast('Network error during submission.', 'error');
-            return { success: false }; // Indicate failure
+        },
+
+        scrollToChatBottom() {
+             this.$nextTick(() => {
+                 const chatFeed = this.$refs.chatFeed;
+                 if (chatFeed) {
+                     chatFeed.scrollTop = 0; // Scroll to top since it uses flex-col-reverse
+                 }
+             });
+        },
+
+        // === Toast Notification System ===
+        showToast(message, type = 'info', duration = 3000) {
+            const toastContainer = document.body; // Append directly to body
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.setAttribute('role', 'alert'); // Accessibility
+
+            toastContainer.appendChild(toast);
+
+            // Auto remove toast
+            setTimeout(() => {
+                toast.style.animation = 'toastFadeOut 0.4s ease-out forwards'; // Add a fade-out animation if desired
+                setTimeout(() => toast.remove(), 400); // Remove after fade-out
+            }, duration);
         }
-    }
 
+        // Add Web Audio API integration here for sounds
+        // loadSounds() { ... }
+        // playSound(soundName) { ... }
 
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Content injection now handled within Alpine's init via nextTick
+      }));
     });
-
   </script>
+
+  <style>
+    @keyframes toastFadeOut {
+        from { opacity: 1; transform: translate(-50%, 0); }
+        to { opacity: 0; transform: translate(-50%, -10px); }
+    }
+  </style>
 </body>
 </html>
