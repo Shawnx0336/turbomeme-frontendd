@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>MemePicks – Meme Coin Prop Betting</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
@@ -14,7 +16,8 @@
   <style>
     /* Base styles */
     body {
-      font-family: 'Inter', sans-serif;
+      /* Task 3: Updated font */
+      font-family: 'Sora', sans-serif;
       background: linear-gradient(180deg, #1A1A1A 0%, #121212 100%);
       color: #FFFFFF;
       min-height: 100vh;
@@ -28,11 +31,13 @@
 
     .card {
       background: #1E1E1E;
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 12px; /* Slightly larger radius */
+      padding: 16px; /* Reverted padding for consistency */
       margin-bottom: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      /* Task 3: Softer shadow */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      /* Task 3: Enhanced transition */
+      transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -41,7 +46,8 @@
       position: relative;
     }
     .card:hover {
-      box-shadow: 0 6px 16px rgba(123, 97, 255, 0.3);
+      /* Task 3: Brighter glow on hover */
+      box-shadow: 0 4px 16px rgba(147, 51, 234, 0.3); /* Purple glow */
       transform: scale(1.02);
     }
     .card:active {
@@ -57,20 +63,26 @@
       touch-action: manipulation;
       font-weight: 600;
       border-radius: 8px;
-      transition: all 0.2s ease;
+      /* Task 3: Enhanced transition */
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
-      display: inline-flex; /* Ensure alignment */
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      /* Task 3: Subtle shadow */
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
     }
 
     .button-primary {
-      background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%);
+      /* Task 3: Brighter gradient */
+      background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%); /* Brighter Purple to Blue */
       color: #FFFFFF;
+      border: none;
     }
     .button-primary:hover:not(:disabled) {
-      box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
-      transform: scale(1.03);
+      /* Task 3: Enhanced hover */
+      box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4); /* Brighter purple shadow */
+      transform: scale(1.03) translateY(-1px);
     }
     .button-primary:active:not(:disabled) {
       transform: scale(0.97);
@@ -80,18 +92,19 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
+      color: #9CA3AF; /* Lighter text for disabled */
     }
 
     .button-secondary {
       background: transparent;
-      border: 1px solid #7B61FF;
-      color: #FFFFFF;
+      border: 1px solid #6D28D9; /* Darker Purple border */
+      color: #A78BFA; /* Lighter Purple text */
     }
     .button-secondary:hover:not(:disabled) {
-      background: #7B61FF;
+      background: #6D28D9;
       color: #FFFFFF;
-      transform: scale(1.03);
-      box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
+      transform: scale(1.03) translateY(-1px);
+      box-shadow: 0 4px 10px rgba(109, 40, 217, 0.4);
     }
     .button-secondary:active:not(:disabled) {
       transform: scale(0.97);
@@ -105,25 +118,27 @@
       background: transparent;
     }
     .button-secondary.active {
-      background: #7B61FF;
+      background: #6D28D9;
       color: #FFFFFF;
       border-color: transparent;
-      box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
+      box-shadow: 0 4px 10px rgba(109, 40, 217, 0.4);
     }
 
     .button-auth {
-      background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%);
+      /* Task 3: Updated gradient */
+      background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
       color: #FFFFFF;
       font-weight: 600;
       padding: 8px 16px;
       border-radius: 8px;
-      transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       min-height: 44px;
       cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
     }
     .button-auth:hover {
-      box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
-      transform: scale(1.03);
+      box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4);
+      transform: scale(1.03) translateY(-1px);
     }
     .button-auth:active {
       transform: scale(0.97);
@@ -142,8 +157,8 @@
     }
     .input-field:focus {
       outline: none;
-      border-color: #7B61FF;
-      box-shadow: 0 0 0 2px rgba(123, 97, 255, 0.3);
+      border-color: #8B5CF6; /* Brighter purple focus */
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
     }
 
     .tab-button {
@@ -153,7 +168,7 @@
       font-weight: 600;
       padding: 8px 16px;
       border-radius: 12px;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
       display: flex;
       align-items: center;
@@ -163,9 +178,10 @@
       min-height: 48px;
     }
     .tab-button.active {
-      background: #7B61FF;
+      /* Task 3: Updated active color */
+      background: #7C3AED; /* Vibrant purple */
       color: #FFFFFF;
-      box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
       transform: scale(1.05);
       opacity: 1;
     }
@@ -206,7 +222,8 @@
     .slip-tray .button-primary {
       position: sticky;
       bottom: 0;
-      background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%);
+      /* Task 3: Updated gradient */
+      background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
       z-index: 20;
       width: 100%;
       margin-top: 16px;
@@ -221,8 +238,8 @@
       width: 100%;
       max-width: 100%;
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
-      transform: translateY(100%);
-      transition: transform 0.3s ease-in-out;
+      /* Task 3: Smoother modal transition */
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       position: fixed;
       bottom: 0;
       left: 0;
@@ -256,11 +273,13 @@
       max-width: 300px;
       height: 100%;
       background: #1E1E1E;
+      /* Task 3: Smoother drawer transition */
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       transform: translateX(-100%);
-      transition: transform 0.3s ease-in-out;
       z-index: 50;
       padding: 16px;
       box-sizing: border-box;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.2); /* Add shadow to drawer */
     }
     .drawer.open {
       transform: translateX(0);
@@ -279,9 +298,9 @@
       pointer-events: auto;
     }
 
-    .fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; } /* Smoother fade */
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px) scale(0.95); }
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
@@ -295,8 +314,8 @@
       display: inline-block;
     }
     .badge-hot { background: #FF4D4D; }
-    .badge-new { background: #7B61FF; }
-    .badge-expiring { background: #FFD700; color: #1A1A1A; }
+    .badge-new { background: #7C3AED; } /* Updated purple */
+    .badge-expiring { background: #FBBF24; color: #1F2937; } /* Updated yellow */
 
     /* Risk Level Badge Styles */
     .badge-risk {
@@ -308,7 +327,7 @@
         margin-left: 8px;
     }
     .badge-risk-low { background-color: #10B981; color: white; } /* Tailwind green-500 */
-    .badge-risk-medium { background-color: #F59E0B; color: white; } /* Tailwind yellow-500 */
+    .badge-risk-medium { background-color: #F59E0B; color: white; } /* Tailwind amber-500 */
     .badge-risk-high { background-color: #EF4444; color: white; } /* Tailwind red-500 */
 
     /* Odds Multiplier Style */
@@ -319,10 +338,10 @@
     }
 
 
-    .glow { animation: glow 2s ease-in-out infinite; }
+    .glow { animation: glow 1.8s ease-in-out infinite; } /* Slightly faster glow */
     @keyframes glow {
-      0%, 100% { box-shadow: 0 4px 12px rgba(123, 97, 255, 0.2); }
-      50% { box-shadow: 0 4px 16px rgba(123, 97, 255, 0.4); }
+      0%, 100% { box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2); } /* Use active purple */
+      50% { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
     }
 
     .slip-preview {
@@ -342,92 +361,46 @@
       opacity: 1;
     }
 
-    /* Toggle Switch Styles (for 2FA placeholder) */
+    /* Toggle Switch Styles */
     .toggle-switch {
         position: relative;
         display: inline-block;
-        width: 40px; /* Smaller width */
-        height: 20px; /* Smaller height */
+        width: 40px;
+        height: 20px;
     }
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #4A4A4A; /* Darker gray */
-        transition: .4s;
-        border-radius: 20px; /* Fully rounded */
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #4A4A4A; transition: .4s; border-radius: 20px;
     }
     .toggle-slider:before {
-        position: absolute;
-        content: "";
-        height: 14px; /* Smaller circle */
-        width: 14px; /* Smaller circle */
-        left: 3px; /* Adjusted position */
-        bottom: 3px; /* Adjusted position */
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
+        position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+        background-color: white; transition: .4s; border-radius: 50%;
     }
-    input:checked + .toggle-slider {
-        background-color: #7B61FF; /* Purple when checked */
-    }
-    input:checked + .toggle-slider:before {
-        transform: translateX(20px); /* Adjusted translation */
-    }
+    input:checked + .toggle-slider { background-color: #7C3AED; } /* Updated purple */
+    input:checked + .toggle-slider:before { transform: translateX(20px); }
 
     /* Chat Styles Placeholder */
     .chat-feed {
-        height: 200px; /* Example height */
-        background-color: #2A2A2A;
-        border-radius: 8px;
-        padding: 8px;
-        overflow-y: scroll;
-        margin-bottom: 8px;
-        display: flex;
-        flex-direction: column-reverse; /* Show latest messages at bottom */
+        height: 200px; background-color: #2A2A2A; border-radius: 8px; padding: 8px;
+        overflow-y: scroll; margin-bottom: 8px; display: flex; flex-direction: column-reverse;
     }
-    .chat-message {
-        margin-bottom: 6px;
-        font-size: 12px;
-    }
-    .chat-message .username {
-        font-weight: 600;
-        color: #A0AEC0; /* Lighter gray */
-        margin-right: 4px;
-    }
-    .chat-input-area {
-        display: flex;
-        gap: 8px;
-    }
+    .chat-message { margin-bottom: 6px; font-size: 12px; }
+    .chat-message .username { font-weight: 600; color: #A0AEC0; margin-right: 4px; }
+    .chat-input-area { display: flex; gap: 8px; }
 
 
     /* Mobile Specific Adjustments */
     @media (max-width: 767px) {
       .header {
-        padding: 0 16px;
-        border-bottom: 1px solid #2A2A2A;
-        height: 56px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: #1A1A1A;
-        z-index: 20;
+        padding: 0 16px; border-bottom: 1px solid #2A2A2A; height: 56px; display: flex;
+        align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0;
+        width: 100%; background: #1A1A1A; z-index: 20;
       }
       .header-left { display: flex; align-items: center; gap: 8px; }
       .hamburger {
-        width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #B0B0B0;
+        width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+        font-size: 24px; color: #B0B0B0;
       }
       .hamburger:hover { color: #FFFFFF; }
       .logo { flex: 1; text-align: center; font-size: 20px; font-weight: 700; color: #FFFFFF; }
@@ -435,116 +408,71 @@
       .button-auth { padding: 8px 12px; font-size: 14px; }
 
       .sticky-tabs {
-        position: sticky;
-        top: 56px;
-        z-index: 10;
-        background: #1A1A1A;
-        padding: 0 16px;
-        border-bottom: 1px solid #2A2A2A;
+        position: sticky; top: 56px; z-index: 10; background: #1A1A1A;
+        padding: 0 16px; border-bottom: 1px solid #2A2A2A;
       }
       .tabs {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        scroll-padding: 0 16px;
-        scroll-behavior: smooth;
-        gap: 8px;
-        padding: 8px 0;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
-        width: 100%;
-        box-sizing: border-box;
-        scrollbar-width: none;
+        display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px;
+        scroll-behavior: smooth; gap: 8px; padding: 8px 0; -webkit-overflow-scrolling: touch;
+        white-space: nowrap; width: 100%; box-sizing: border-box; scrollbar-width: none;
         -ms-overflow-style: none;
       }
       .tabs::-webkit-scrollbar { display: none; }
 
+      /* Task 1 Fix: Adjusted main content top padding */
       .main-content {
         padding: 16px;
-        padding-top: calc(56px + 48px + 16px + 24px); /* Added space for price display */
+        /* Header(56) + Price(approx 24) + Tabs(48) + Spacing(8) */
+        /* Let's try removing the price height calculation for now */
+        padding-top: calc(56px + 48px + 8px);
         padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
-        transition: padding-bottom 0.3s ease-in-out;
-        box-sizing: border-box;
-        width: 100%;
+        transition: padding-bottom 0.3s ease-in-out; box-sizing: border-box; width: 100%;
         max-width: 100vw;
       }
 
       .card .prop-content { display: flex; align-items: flex-start; gap: 12px; }
       .card img { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; flex-shrink: 0; }
       .card .separator { border-top: 1px solid #2A2A2A; margin: 8px 0; }
-      .card h3 {
-        font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;
-      }
+      .card h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
       .card p.text-sm { font-size: 14px; margin-top: 4px; color: #E0E0E0; line-height: 1.4; }
       .card p.text-xs { font-size: 12px; margin-top: 4px; color: #B0B0B0; }
       .card .stats { border-top: 1px solid #2A2A2A; padding-top: 8px; margin-top: 8px; }
 
       .fab {
-        background: linear-gradient(90deg, #7B61FF 0%, #00B0FF 100%);
-        color: #FFFFFF;
-        padding: 12px 20px;
-        border-radius: 24px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        position: fixed;
-        bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
-        right: 16px;
-        z-index: 20;
-        min-height: 44px;
+        /* Task 3: Updated gradient */
+        background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
+        color: #FFFFFF; padding: 12px 20px; border-radius: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;
+        position: fixed; bottom: calc(56px + env(safe-area-inset-bottom) + 16px); right: 16px;
+        z-index: 20; min-height: 44px;
       }
       .fab .badge {
-        background: #FFFFFF;
-        color: #1A1A1A;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 12px;
-        line-height: 1;
-        margin-left: 0;
-        border: 1px solid rgba(0, 0, 0, 0.2);
+        background: #FFFFFF; color: #1A1A1A; border-radius: 50%; width: 20px; height: 20px;
+        display: flex; justify-content: center; align-items: center; font-size: 12px;
+        line-height: 1; margin-left: 0; border: 1px solid rgba(0, 0, 0, 0.2);
       }
 
+      /* Task 6: Ensure Bottom Nav is always visible and styled */
       .bottom-nav {
-        background: #1A1A1A;
-        border-top: 1px solid #2A2A2A;
-        height: 56px;
-        padding-bottom: env(safe-area-inset-bottom);
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        z-index: 60;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        box-sizing: border-box;
+        background: #1A1A1A; border-top: 1px solid #2A2A2A; height: 56px;
+        padding-bottom: env(safe-area-inset-bottom); position: fixed; bottom: 0; left: 0;
+        width: 100%; z-index: 60; display: flex; justify-content: space-around;
+        align-items: center; box-sizing: border-box;
+        /* Add backdrop filter for slight blur effect if desired */
+        /* backdrop-filter: blur(5px); */
+        /* -webkit-backdrop-filter: blur(5px); */
       }
       /* Adjust button width for 5 items */
       .bottom-nav button {
-        min-height: 48px;
-        width: 20%; /* Equal width for 5 items */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        font-size: 10px; /* Slightly smaller label */
-        color: #B0B0B0;
-        transition: color 0.2s ease, transform 0.2s ease;
-        padding: 4px 0;
+        min-height: 48px; width: 20%; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 4px; font-size: 10px;
+        color: #B0B0B0; transition: color 0.2s ease, transform 0.2s ease; padding: 4px 0;
       }
       .bottom-nav button.active { color: #FFFFFF; transform: scale(1.05); }
       .bottom-nav button:hover { color: #FFFFFF; }
-      .bottom-nav .icon { font-size: 20px; } /* Slightly smaller icon */
-      .bottom-nav .label { font-size: 10px; } /* Smaller label */
+      .bottom-nav .icon { font-size: 20px; }
+      .bottom-nav .label { font-size: 10px; }
     }
   </style>
 </head>
@@ -560,7 +488,8 @@
   modals: {
     helpModal: false,
     modal: false, // Generic modal
-    walletChoiceModal: false
+    walletChoiceModal: false,
+    profileModal: false // Added for Task 4
   },
   slip: { picks: [], wager: 0 },
   multipliers: { 2: 2, 3: 5, 4: 10, 5: 20 },
@@ -572,6 +501,14 @@
   selectedChatRoom: 'global',
   tipRecipient: '',
   tipAmount: 0.1,
+  // Profile State (Example)
+  userProfile: {
+      username: '',
+      avatar: 'https://placehold.co/64x64/7B61FF/FFFFFF?text=MP',
+      badge: 'Newbie',
+      totalWins: 0,
+      totalLosses: 0
+  },
 
   toggleBodyScroll(enabled) {
     document.body.classList.toggle('modal-open', !enabled);
@@ -608,9 +545,17 @@
     element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   },
 
-  showHelpModal() {
-    this.openModal('helpModal');
+  // showHelpModal() { // Replaced by bottom nav button
+  //   this.openModal('helpModal');
+  // },
+
+  // Task 4: Function to open profile (can be modal or new tab view)
+  openProfile() {
+      this.tab = 'profile';
+      this.showDrawer = false; // Close drawer if open
+      console.log('Switched to Profile tab');
   },
+
 
   toggleSlipTray() {
     this.showSlipTray = !this.showSlipTray;
@@ -788,7 +733,6 @@
       });
   },
 
-  // Placeholder for sending tip
   sendTip() {
       if (!this.walletAddress) {
           showToast('Connect wallet to send tips.', 'error');
@@ -799,38 +743,33 @@
           return;
       }
       console.log(`Placeholder: Sending ${this.tipAmount} SOL tip from ${this.walletAddress} to ${this.tipRecipient}`);
-      // TODO: Integrate with backend /tip endpoint
       showToast(`Simulating tip of ${this.tipAmount} SOL to ${this.tipRecipient.slice(0,6)}...`, 'success');
-      this.tipRecipient = ''; // Clear fields after simulated send
+      this.tipRecipient = '';
       this.tipAmount = 0.1;
   },
 
-  // Placeholder for sending chat message
   sendChatMessage(event) {
       const input = event.target.elements.messageInput;
       const message = input.value.trim();
       if (!message) return;
 
       console.log(`Placeholder: Sending chat message to room ${this.selectedChatRoom}: ${message}`);
-      // TODO: Integrate with Socket.io backend
-      // Example: socket.emit('chatMessage', { room: this.selectedChatRoom, message: message });
 
-      // Add message locally for demo purposes
       const chatFeed = document.getElementById(`${this.selectedChatRoom}-chat-feed`);
       if (chatFeed) {
            const msgDiv = document.createElement('div');
            msgDiv.className = 'chat-message';
-           // Use textContent to prevent XSS
            const usernameSpan = document.createElement('span');
            usernameSpan.className = 'username';
            usernameSpan.textContent = 'You:';
-           const messageText = document.createTextNode(` ${message}`); // Create text node
+           const messageText = document.createTextNode(` ${message}`);
            msgDiv.appendChild(usernameSpan);
            msgDiv.appendChild(messageText);
-           chatFeed.prepend(msgDiv); // Prepend to show at bottom (due to flex-direction: column-reverse)
+           chatFeed.prepend(msgDiv);
+           chatFeed.scrollTop = 0;
       }
 
-      input.value = ''; // Clear input
+      input.value = '';
   },
 
 
@@ -852,7 +791,6 @@
                  localStorage.setItem('referrerAddress', refAddress);
                  this.referrerAddress = refAddress;
                  showToast(`Referral code ${refAddress.slice(0,4)}...${refAddress.slice(-4)} applied!`);
-                 // window.history.replaceState({}, document.title, window.location.pathname);
               } else {
                   console.warn('Invalid referral code format ignored.');
               }
@@ -891,9 +829,10 @@
       <div x-show="!walletAddress" class="space-y-2">
         <button class="button-auth w-full text-sm" @click="showDrawer = false; openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
       </div>
-      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
+      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="openProfile()" aria-label="My Profile">My Profile</button>
       <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button>
-      <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; showHelpModal()" aria-label="Help Center">Help Center</a>
+      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
+
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
       <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Telegram">Telegram</a>
       <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Terms & Privacy">Terms & Privacy</a>
@@ -921,7 +860,7 @@
     </div>
   </header>
 
-  <div class="text-center text-xs text-gray-400 pt-16"> Live SOL Price: $<span id="price-display">Loading...</span>
+  <div class="text-center text-xs text-gray-400 pt-[calc(56px+8px)]"> Live SOL Price: $<span id="price-display">Loading...</span>
   </div>
 
   <div class="sticky-tabs" role="tablist" aria-label="Game Categories">
@@ -1012,23 +951,38 @@
          </div>
     </div>
 
+    <div x-show="tab === 'profile'" role="tabpanel" id="profile-panel" aria-labelledby="profile-tab" class="fade-in">
+        <div class="max-w-xl mx-auto space-y-6">
+             <div class="card p-4">
+                <h2 class="text-lg font-semibold mb-3">My Profile</h2>
+                <div class="flex items-center space-x-4">
+                    <img :src="userProfile.avatar || 'https://placehold.co/64x64/7B61FF/FFFFFF?text=MP'" alt="User Avatar" class="w-16 h-16 rounded-full object-cover flex-shrink-0">
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold" x-text="userProfile.username || (walletAddress ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4) : 'Not Connected')"></p>
+                        <div class="flex space-x-1 mt-1">
+                            <span class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-medium" x-text="userProfile.badge || 'Newbie'"></span>
+                            </div>
+                    </div>
+                     <button class="button-secondary text-xs py-1 px-3" @click="openModal('profileEditModal')">Edit</button> </div>
+                <div class="mt-4 border-t border-gray-700 pt-3 space-y-1 text-sm">
+                    <p>Total Wins: <span class="font-semibold text-green-400" x-text="userProfile.totalWins">0</span></p>
+                    <p>Total Losses: <span class="font-semibold text-red-400" x-text="userProfile.totalLosses">0</span></p>
+                    <p>Win Rate: <span class="font-semibold" x-text="((userProfile.totalWins / (userProfile.totalWins + userProfile.totalLosses || 1)) * 100).toFixed(1) + '%'">N/A</span></p>
+                </div>
+            </div>
+            <div class="card p-4">
+                <h3 class="text-md font-semibold mb-2">Recent Activity</h3>
+                <p class="text-sm text-gray-400 italic">Your recent picks and results will appear here.</p>
+                </div>
+        </div>
+    </div>
+
     <div x-show="tab === 'community'" role="tabpanel" id="community-panel" aria-labelledby="community-tab" class="fade-in">
         <div class="max-w-xl mx-auto space-y-6">
 
             <div class="card p-4">
-                <h2 class="text-lg font-semibold mb-3">My Profile</h2>
-                <div class="flex items-center space-x-4">
-                    <img src="https://placehold.co/64x64/7B61FF/FFFFFF?text=MP" alt="User Avatar" class="w-16 h-16 rounded-full object-cover flex-shrink-0">
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold" x-text="walletAddress ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4) : 'Not Connected'"></p>
-                        <div class="flex space-x-1 mt-1">
-                            <span class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-medium">Tier 1</span>
-                            <span class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-medium">Top 10%</span>
-                            <span class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-medium">OG</span>
-                        </div>
-                    </div>
-                     <button class="button-secondary text-xs py-1 px-3" @click="showToast('Edit Profile - Coming Soon!', 'info')">Edit</button>
-                </div>
+                <h2 class="text-lg font-semibold mb-3">Community Hub</h2>
+                <p class="text-sm text-gray-400">Connect with other players, get tips, and more!</p>
             </div>
 
              <div class="card p-4" x-show="walletAddress">
@@ -1067,25 +1021,6 @@
                         <span class="text-gray-400">0/1</span>
                     </li>
                 </ul>
-            </div>
-
-            <div class="card p-4" x-data="{ selectedChatRoom: 'global' }">
-                <h3 class="text-md font-semibold mb-2">Coin Chat Rooms</h3>
-                <select x-model="selectedChatRoom" class="input-field text-sm mb-2">
-                    <option value="global"># General Chat</option>
-                    <option value="$WIF">$WIF Chat</option>
-                    <option value="$BONK">$BONK Chat</option>
-                    <option value="$POPCAT">$POPCAT Chat</option>
-                </select>
-                <div :id="selectedChatRoom + '-chat-feed'" class="chat-feed">
-                    <div class="chat-message"><span class="username">TraderJoe:</span> $WIF to the moon! 🚀</div>
-                    <div class="chat-message"><span class="username">WhaleWatcher:</span> Careful, looks like resistance at $3.50</div>
-                    <div class="chat-message"><span class="username">MemeLord:</span> Popcat is popping!</div>
-                </div>
-                <form class="chat-input-area" @submit.prevent="sendChatMessage">
-                    <input type="text" name="messageInput" placeholder="Type message..." class="input-field text-sm flex-1">
-                    <button type="submit" class="button-primary text-sm px-4">Send</button>
-                </form>
             </div>
 
             <div class="card p-4">
@@ -1197,7 +1132,7 @@
   </nav>
 
   <div id="helpModal" x-show="modals.helpModal" x-ref="helpModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
-    <div class="modal-container" :class="{'open': modals.helpModal}" @click="closeModal('helpModal')"></div> <div class="modal" :class="{'open': modals.helpModal}"> <div class="flex justify-between items-center mb-4">
+     <div class="modal-container" :class="{'open': modals.helpModal}" @click="closeModal('helpModal')"></div> <div class="modal" :class="{'open': modals.helpModal}"> <div class="flex justify-between items-center mb-4">
         <h3 id="help-modal-title" class="text-base font-semibold">Help & Support</h3>
         <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('helpModal')" aria-label="Close help modal">✕</button>
       </div>
@@ -1246,7 +1181,8 @@
 
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl text-white text-sm z-[1000] shadow-lg ${
+      // Task 5 Fix: Adjusted toast position using bottom-20 (80px approx)
+      toast.className = `fixed bottom-20 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl text-white text-sm z-[1000] shadow-lg ${
         type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-gray-700'
       }`;
       toast.textContent = message;
@@ -1307,6 +1243,7 @@
         }
     }
 
+    // Task 2 Fix: Removed window.location.reload(), rely on event dispatch
     async function connectWallet(walletType) {
       let provider = null;
       console.log(`Attempting to connect with ${walletType}...`);
@@ -1345,8 +1282,12 @@
         const publicKeyString = publicKey.toString();
         console.log(`Connected to ${walletType}:`, publicKeyString);
         showToast(`Connected: ${publicKeyString.slice(0,6)}...${publicKeyString.slice(-4)}`, 'success');
+
         localStorage.setItem('walletAddress', publicKeyString);
+
+        // Dispatch event for Alpine to handle state update and balance fetch
         document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: publicKeyString } }));
+
       } catch (err) {
         console.error(`Connection error with ${walletType}:`, err);
         let errorMessage = 'Connection failed. Please try again.';
@@ -1483,7 +1424,7 @@
       if (!displayElement) return;
       try {
         console.log(`Fetching price for ${coin}...`);
-        const res = await fetch(`${BASE_URL}/api/price/${coin}`); // Use BASE_URL
+        const res = await fetch(`${BASE_URL}/api/price/${coin}`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
         console.log(`Price data for ${coin}:`, data);
@@ -1509,7 +1450,7 @@
                 walletAddress: actualWalletAddress,
                 picks: picksData.map(p => ({ propId: p.propId, choice: p.choice, token: p.token, description: p.description })),
                 wager: wagerAmount,
-                duration: '1h', // TODO: Make duration selectable
+                duration: '1h',
                 multiplier: multiplierVal,
                 referrerWallet: referrerAddr
             };
@@ -1528,38 +1469,33 @@
             console.log('Submitting TEST slip data:', payload);
         }
 
-        const token = localStorage.getItem('authToken'); // Example: retrieve token
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+        const token = localStorage.getItem('authToken');
+        const headers = { 'Content-Type': 'application/json' };
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         } else if (actualWalletAddress) {
              console.warn("No JWT found, but wallet connected. Ensure backend handles this if needed.");
         }
 
-
         try {
-            const res = await fetch(`${BASE_URL}/api/submit-slip`, { // Use BASE_URL and correct path
+            const res = await fetch(`${BASE_URL}/api/submit-slip`, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(payload)
             });
-
             const result = await res.json();
-
             if (!res.ok) {
                 console.error('Slip submission failed:', result);
                 showToast(`Error: ${result.message || 'Submission failed'}`, 'error');
             } else {
                 console.log('Slip submitted successfully:', result);
                 showToast(`Slip submitted! ID: ${result.slipId?.slice(-6) || 'N/A'}`, 'success');
-                const alpineData = document.querySelector('[x-data]').__x.$data; // Re-read Alpine data
+                const alpineData = document.querySelector('[x-data]').__x.$data;
                 if (alpineData.referrerAddress && !alpineData.firstSlipSubmitted) {
                     const shortRef = alpineData.referrerAddress.slice(0, 4) + '...' + alpineData.referrerAddress.slice(-4);
                     showToast(`Referral from ${shortRef} tracked!`, 'success');
                     localStorage.setItem('firstSlipSubmitted', 'true');
-                    alpineData.firstSlipSubmitted = true; // Update Alpine state
+                    alpineData.firstSlipSubmitted = true;
                 }
             }
         } catch (err) {
