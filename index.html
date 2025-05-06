@@ -8,17 +8,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
-  <script>
-    // Base URL for backend API calls
-    const BASE_URL = 'https://memepicks-backend.onrender.com';
-  </script>
-  <style>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer integrity="sha384-..." crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js" defer integrity="sha384-..." crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer integrity="sha384-..." crossorigin="anonymous"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer integrity="sha384-..." crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js" defer integrity="sha384-..." crossorigin="anonymous"></script>
+
+  <link rel="manifest" href="/manifest.json"> <link rel="apple-touch-icon" href="/icons/apple-icon.png"> <style>
     /* Base styles */
     body {
       font-family: 'Sora', sans-serif;
@@ -834,6 +832,31 @@
         0%, 100% { transform: translate(-50%, -50%) scale(1); }
         50% { transform: translate(-50%, -50%) scale(1.2); }
      }
+    /* Skeleton Loading Styles */
+    .skeleton {
+        background-color: #3A3A3A; /* Dark gray */
+        animation: pulse 1.5s infinite ease-in-out;
+        border-radius: 4px;
+        color: transparent; /* Hide text */
+    }
+    .skeleton-text {
+        height: 0.8em; /* Approximate line height */
+        width: 80%; /* Example width */
+    }
+    .skeleton-image {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+    }
+    .card .skeleton {
+        background: linear-gradient(-90deg, #3A3A3A 0%, #4A4A4A 50%, #3A3A3A 100%);
+        background-size: 400% 400%;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 0.8; }
+        50% { opacity: 0.5; }
+    }
+
 
     /* Mystery Box as Slot Machine */
     #mysteryBoxModal img {
@@ -890,7 +913,8 @@
         .card.slot-reel, .progress-meter, .button-primary::before, .particle,
         .almost-won-card, .animate-shake, .badge-spots, .bets-ticker span,
         .chat-message.hot, .countdown-timer.low-time, .modal,
-        .button-primary.idle, .chat-feed.idle-scroll { /* Added idle animations */
+        .button-primary.idle, .fab.idle, .chat-feed.idle-scroll,
+        .skeleton { /* Added skeleton animation */
             animation: none !important;
             transition: none !important;
         }
@@ -1169,9 +1193,10 @@
 
   <header class="header">
     <div class="header-left">
-      <button 
+      <button
   class="hamburger"
-  @click="showDrawer = true"
+  @click.stop="showDrawer = !showDrawer"
+  @touchstart.prevent
   aria-label="Open menu"
   aria-controls="drawer-menu"
   :aria-expanded="showDrawer.toString()"
@@ -1537,7 +1562,7 @@
           <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('helpModal')" aria-label="Close help modal">✕</button>
       </div>
       <div class="space-y-3 text-sm">
-          <a href="#" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Help Center">Help Center / FAQs</a> <a href="#" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Responsible Betting">Responsible Betting</a> <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Join Telegram">Join our Telegram</a> <a href="mailto:support@memepicks.fun" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Contact Support">Contact Support</a> </div>
+          <a href="#" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Help Center">Help Center / FAQs</a> <a href="#" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Responsible Betting">Responsible Betting</a> <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Join Telegram">Join our Telegram</a> <a href="mailto:support@memepicks.fun" class="block text-sm text-[#B0B0B0] hover:underline" aria-label="Contact Support">Contact Support</a> </div>
       <button class="button-primary w-full text-sm mt-6" @click="closeModal('helpModal')" aria-label="Close help modal">Close</button>
       </div>
   </div>
@@ -1591,7 +1616,7 @@
     <div id="winModal" x-show="modals.winModal" class="fixed inset-0 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="win-modal-title">
         <div class="modal-container" :class="{'open': modals.winModal}"></div>
         <div class="modal text-center">
-            <h3 class="text-lg font-bold text-[#FFD700] animate-pulse">Epic Win!</h3> <p class="text-[#FF1A1A] text-sm mb-4" x-text="`You won ${(lastSlip.wager * multipliers[lastSlip.picks.length]).toFixed(2)} SOL!`"></p> <button class="button-primary w-full" @click="closeModal('winModal')">Claim Now!</button>
+            <h3 class="text-lg font-bold text-[#FFD700] animate-pulse">Epic Win!</h3> <p class="text-[#FF1A1A] text-sm mb-4" x-text="`You won ${(lastSlip?.wager * multipliers[lastSlip?.picks?.length]).toFixed(2)} SOL!`"></p> <button class="button-primary w-full" @click="closeModal('winModal')">Claim Now!</button>
         </div>
     </div>
 
@@ -1643,7 +1668,7 @@
     </div>
 
      <div id="ageGateModal" x-show="modals.ageGateModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="age-gate-title">
-      <div class="modal-container" :class="{'open': modals.ageGateModal}"></div> <div class="modal text-center" :class="{'open': modals.ageGateModal}">
+      <div class="modal-container" :class="{'open': modals.ageGateModal}" @click="closeModal('ageGateModal')"></div> <div class="modal text-center" :class="{'open': modals.ageGateModal}">
         <h3 id="age-gate-title" class="text-base font-semibold mb-3">Age Verification</h3>
         <p class="text-[#B0B0B0] text-sm mb-4">You must be 18 or older to use this platform.</p>
         <label class="flex items-center justify-center space-x-2 mb-4">
@@ -1659,130 +1684,179 @@
     // Initialize sounds on first user interaction to comply with mobile autoplay policies
     const sounds = {};
     // Randomized win sounds
-    const winSounds = ['/sounds/win1.mp3', '/sounds/win2.mp3', '/sounds/win3.mp3']; // Placeholder paths
+    const winSounds = [
+      '/sounds/win1.mp3', // Placeholder path
+      '/sounds/win2.mp3', // Placeholder path
+      '/sounds/win3.mp3' // Placeholder path
+    ];
+
+    // Flag to ensure sounds are only initialized once after user interaction
+    let soundsInitialized = false;
 
     function initializeSounds() {
-        const soundFiles = {
-            pick: ['/sounds/pick-ding.mp3', 'https://assets.codepen.io/t-1/pick-ding.mp3'],
-            submit: ['/sounds/slot-pull.mp3', 'https://assets.codepen.io/t-1/slot-pull.mp3'],
-            lossThud: ['/sounds/loss-thud.mp3', 'https://assets.codepen.io/t-1/loss-thud.mp3'],
-            sadTrombone: ['/sounds/sad-trombone.mp3', 'https://assets.codepen.io/t-1/sad-trombone.mp3'],
-            ambient: ['/sounds/casino-ambience.mp3', 'https://assets.codepen.io/t-1/casino-ambience.mp3']
-        };
+      // Only initialize sounds once
+      if (soundsInitialized) return;
+      soundsInitialized = true;
 
-        Object.keys(soundFiles).forEach(key => {
-            try {
-                sounds[key] = new Howl({
-                    src: soundFiles[key],
-                    loop: key === 'ambient',
-                    volume: key === 'ambient' ? 0.2 : 1.0,
-                    onloaderror: (id, err) => {
-                        console.warn(`Failed to load sound ${key}: ${err}`);
-                        // showToast(`Sound ${key} unavailable.`, 'warning'); // Avoid spamming toasts
-                    },
-                    onplayerror: (id, err) => {
-                        console.warn(`Cannot play sound ${key}: ${err}`);
-                    }
-                });
-            } catch (e) {
-                console.error(`Error initializing sound ${key}:`, e);
+      console.log('Initializing sounds...');
+      const soundFiles = {
+        pick: ['/sounds/pick-ding.mp3', 'https://assets.codepen.io/t-1/pick-ding.mp3'], // Example placeholder URL
+        submit: ['/sounds/slot-pull.mp3', 'https://assets.codepen.io/t-1/slot-pull.mp3'], // Example placeholder URL
+        lossThud: ['/sounds/loss-thud.mp3', 'https://assets.codepen.io/t-1/loss-thud.mp3'], // Example placeholder URL
+        sadTrombone: ['/sounds/sad-trombone.mp3', 'https://assets.codepen.io/t-1/sad-trombone.mp3'], // Example placeholder URL
+        ambient: ['/sounds/casino-ambience.mp3', 'https://assets.codepen.io/t-1/casino-ambience.mp3'] // Example placeholder URL
+      };
+
+      Object.keys(soundFiles).forEach(key => {
+        try {
+          sounds[key] = new Howl({
+            src: soundFiles[key],
+            loop: key === 'ambient',
+            volume: key === 'ambient' ? 0.1 : 1.0, // Reduced ambient volume
+            onloaderror: (id, err) => {
+              console.warn(`Failed to load sound ${key}: ${err}`);
+            },
+            onplayerror: (id, err) => {
+              console.warn(`Cannot play sound ${key}: ${err}`);
             }
-        });
+          });
+        } catch (e) {
+          console.error(`Error initializing sound ${key}:`, e);
+        }
+      });
 
-        // Initialize randomized win sounds
-         winSounds.forEach((src, index) => {
-             try {
-                 sounds[`win${index + 1}`] = new Howl({
-                     src: [src],
-                     onloaderror: (id, err) => console.warn(`Failed to load win sound ${index + 1}: ${err}`),
-                     onplayerror: (id, err) => console.warn(`Cannot play win sound ${index + 1}: ${err}`)
-                 });
-             } catch (e) {
-                 console.error(`Error initializing win sound ${index + 1}:`, e);
+      // Initialize randomized win sounds
+      winSounds.forEach((src, index) => {
+        try {
+          sounds[`win${index + 1}`] = new Howl({
+            src: [src],
+            onloaderror: (id, err) => console.warn(`Failed to load win sound ${index + 1}: ${err}`),
+            onplayerror: (id, err) => console.warn(`Cannot play win sound ${index + 1}: ${err}`)
+          });
+        } catch (e) {
+          console.error(`Error initializing win sound ${index + 1}:`, e);
+        }
+      });
+
+      // Play ambient sound after a short delay if not reduced motion
+      if (!document.body.classList.contains('reduced-motion')) {
+         setTimeout(() => {
+             if (sounds.ambient && sounds.ambient.state() === 'unloaded') {
+                 sounds.ambient.once('load', () => { sounds.ambient.play(); });
+             } else if (sounds.ambient) {
+                  sounds.ambient.play();
              }
-         });
+         }, 1000); // Delay ambient sound start
+      }
 
 
-        // Remove the event listener after sounds are initialized
-        document.removeEventListener('click', initializeSounds, { once: true });
-         console.log('Sounds initialized.');
-         // Optionally start ambient sound after initialization
-         if (sounds.ambient && sounds.ambient.state() === 'unloaded') {
-             sounds.ambient.once('load', () => { sounds.ambient.play(); });
-         } else if (sounds.ambient) {
-              sounds.ambient.play();
-         }
+      console.log('Sounds initialized.');
     }
 
-     // Add event listener to initialize sounds on first user interaction
+    // Add event listener to initialize sounds on first user interaction (click or touch)
+    // Use { once: true } to ensure it only runs once
     document.addEventListener('click', initializeSounds, { once: true });
+    document.addEventListener('touchstart', initializeSounds, { once: true });
 
 
-    // Play sound using Howler.js
+    // Play sound using Howler.js with error handling
     function playSound(type) {
-       if (sounds[type]?.play) { // Use optional chaining for safety
-           sounds[type].play();
-       } else {
-           console.warn(`Sound ${type} not available or not loaded`);
-       }
+      try {
+        if (sounds[type]?.play) {
+          sounds[type].play();
+        } else {
+          console.warn(`Sound ${type} not available or not loaded`);
+        }
+      } catch (e) {
+        console.error(`Error playing sound ${type}:`, e);
+      }
     }
-     // Play a random win sound
-     function playRewardSound() {
-         const randomIndex = Math.floor(Math.random() * winSounds.length);
-         const soundKey = `win${randomIndex + 1}`;
-         if (sounds[soundKey]?.play) {
-             sounds[soundKey].play();
-         } else {
-             console.warn(`Random win sound ${soundKey} not available.`);
-         }
-     }
+    // Play a random win sound
+    function playRewardSound() {
+      try {
+        const randomIndex = Math.floor(Math.random() * winSounds.length);
+        const soundKey = `win${randomIndex + 1}`;
+        if (sounds[soundKey]?.play) {
+          sounds[soundKey].play();
+        } else {
+          console.warn(`Random win sound ${soundKey} not available.`);
+        }
+      } catch (e) {
+        console.error('Error playing random reward sound:', e);
+      }
+    }
 
 
     // --- Global Helper Functions ---
 
     function showToast(message, type = 'info') {
+      const toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+          const container = document.createElement('div');
+          container.id = 'toast-container';
+          // Added aria-live="polite" for accessibility
+          container.className = 'fixed bottom-24 md:bottom-8 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-col items-center space-y-2';
+          container.setAttribute('aria-live', 'polite'); // ARIA live region for dynamic updates
+          document.body.appendChild(container);
+      }
+
       const toast = document.createElement('div');
-      toast.className = `fixed bottom-24 md:bottom-8 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl text-white text-sm z-[1000] shadow-lg ${
+      // Added role="alert" for accessibility
+      toast.className = `px-4 py-2 rounded-xl text-white text-sm shadow-lg ${
         type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-gray-700'
       }`;
+      // Using textContent to prevent XSS from message
       toast.textContent = message;
-      // Prevent multiple toasts stacking weirdly
-      const existingToasts = document.querySelectorAll('.fixed.bottom-24');
-      existingToasts.forEach(t => t.remove());
-      document.body.appendChild(toast);
+      toast.setAttribute('role', 'alert'); // ARIA role for alerts
+
+      document.getElementById('toast-container').appendChild(toast);
+
+      // Fade out and remove after 3 seconds
       setTimeout(() => {
-          toast.style.opacity = '0';
-          toast.style.transition = 'opacity 0.3s ease-out';
-          setTimeout(() => toast.remove(), 300);
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
 
-    // Trigger vibration using patterns
+    // Trigger vibration using patterns with navigator check
     function triggerVibration(type) {
       if ('vibrate' in navigator) {
         const patterns = {
           pick: [20, 10, 20],
           submit: [50, 20, 50],
           win: [100, 50, 100, 50, 100],
-          loss: [50, 50, 50], // Added loss pattern
-          almostWon: [50, 100, 50] // Added almost won pattern
+          loss: [50, 50, 50],
+          almostWon: [50, 100, 50]
         };
-        navigator.vibrate(patterns[type] || 20); // Default to 20ms if type not found
+        // Use a default pattern if type is not found, or just a simple vibration
+        navigator.vibrate(patterns[type] || 20);
+      } else {
+          console.warn('Vibration API not supported.');
       }
     }
 
-    // Trigger confetti effect
+    // Trigger confetti effect with reduced motion check
     function triggerConfetti(intensity = 1) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.body.classList.contains('reduced-motion')) {
+         console.log('Reduced motion enabled, skipping confetti.');
+         return;
+      }
       confetti({
         particleCount: 150 * intensity,
         spread: 80,
         colors: ['#FFD700', '#FF4D4D', '#7C3AED'], // Gold, Red, Purple confetti
-        origin: { y: 0.6 }
+        origin: { y: 0.6 },
+        disableForReducedMotion: true // Ensure confetti respects the standard flag
       });
     }
 
-     // Trigger sparkle effect (for modal close)
+     // Trigger sparkle effect (for modal close) with reduced motion check
      function triggerSparkles(originX, originY) {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.body.classList.contains('reduced-motion')) {
+           console.log('Reduced motion enabled, skipping sparkles.');
+           return;
+        }
          confetti({
              particleCount: 50,
              spread: 60,
@@ -1800,9 +1874,11 @@
             if (typeof solanaWeb3 === 'undefined') throw new Error('Solana Web3 library not loaded.');
             const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
             const publicKey = new solanaWeb3.PublicKey(address);
+            // Use getBalanceAndContext for potentially more info, or just getBalance
             const balance = await connection.getBalance(publicKey);
             const balanceInSol = balance / solanaWeb3.LAMPORTS_PER_SOL;
             console.log('Balance fetched:', balanceInSol, 'SOL');
+            // Dispatch event for Alpine to react
             document.body.dispatchEvent(new CustomEvent('balance-updated', { detail: { balance: balanceInSol } }));
             return balanceInSol;
         } catch (error) {
@@ -1812,6 +1888,26 @@
             return null;
         }
     }
+
+    // Implement balance polling
+    let balancePollingInterval = null;
+    function startBalancePolling(address) {
+        if (!address) return;
+        stopBalancePolling(); // Stop any existing polling
+        balancePollingInterval = setInterval(() => {
+            getWalletBalance(address);
+        }, 60000); // Poll every 60 seconds
+        console.log('Started balance polling.');
+    }
+
+    function stopBalancePolling() {
+        if (balancePollingInterval) {
+            clearInterval(balancePollingInterval);
+            balancePollingInterval = null;
+            console.log('Stopped balance polling.');
+        }
+    }
+
 
     async function connectWallet(walletType) {
       let provider = null;
@@ -1832,20 +1928,26 @@
       if (!provider) {
         showToast(`${walletType.charAt(0).toUpperCase() + walletType.slice(1)} Wallet not found. Install it and try again.`, 'error');
         console.error(`${walletType} provider not found.`);
+        // Updated mobile deep links using window.open for better handling
         if (/Mobi|Android/i.test(navigator.userAgent)) {
             const appUrl = encodeURIComponent(window.location.href);
             const redirectLink = encodeURIComponent(window.location.href + '?connected=true');
-            if (walletType === 'phantom') window.location.href = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectLink}`;
-            else if (walletType === 'solflare') window.location.href = `https://solflare.com/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectLink}`;
+            if (walletType === 'phantom') window.open(`https://phantom.app/ul/v2/connect?app_url=${appUrl}&redirect_link=${redirectLink}`, '_blank'); // Use window.open for v2
+            else if (walletType === 'solflare') window.open(`https://solflare.com/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectLink}`, '_blank');
         }
         return;
       }
 
       try {
         console.log(`Connecting to ${walletType} provider...`);
-        if (!provider.isConnected) {
+        // Attempt auto-reconnect first
+        if (provider.isConnected) {
+             console.log('Provider already connected.');
+        } else {
+            // Use { onlyIfTrusted: false } for explicit connect button click
             await provider.connect({ onlyIfTrusted: false });
         }
+
         const publicKey = provider.publicKey;
         if (!publicKey) throw new Error('Could not get public key.');
         const publicKeyString = publicKey.toString();
@@ -1854,6 +1956,8 @@
 
         localStorage.setItem('walletAddress', publicKeyString);
         document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: publicKeyString } }));
+
+        startBalancePolling(publicKeyString); // Start balance polling after connection
 
       } catch (err) {
         console.error(`Connection error with ${walletType}:`, err);
@@ -1864,8 +1968,51 @@
         showToast(errorMessage, 'error');
         localStorage.removeItem('walletAddress');
         document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: null } }));
+        stopBalancePolling(); // Stop polling on disconnection/failure
       }
     }
+
+    // Handle potential auto-reconnect on page load
+    async function autoReconnectWallet() {
+        const storedAddress = localStorage.getItem('walletAddress');
+        if (!storedAddress) return;
+
+        console.log('Attempting auto-reconnect...');
+        let provider = null;
+
+        // Check for Phantom
+        if ('phantom' in window) {
+            const phantomProvider = window.phantom?.solana;
+            if (phantomProvider?.isPhantom) provider = phantomProvider;
+        }
+        // Check for Solflare (add other wallets as needed)
+        if (!provider && 'solflare' in window) {
+             const solflareProvider = window.solflare;
+             if (solflareProvider) provider = solflareProvider;
+        }
+
+        if (provider) {
+            try {
+                // Use { onlyIfTrusted: true } for silent auto-reconnect
+                await provider.connect({ onlyIfTrusted: true });
+                const publicKey = provider.publicKey;
+                 if (publicKey && publicKey.toString() === storedAddress) {
+                    console.log('Auto-reconnected successfully:', storedAddress);
+                    document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: storedAddress } }));
+                    startBalancePolling(storedAddress); // Start polling after auto-reconnect
+                 } else {
+                     console.log('Auto-reconnect failed or connected to different wallet.');
+                     localStorage.removeItem('walletAddress'); // Clear storage if auto-reconnect fails or mismatch
+                 }
+            } catch (err) {
+                console.log('Auto-reconnect attempt failed:', err);
+                 localStorage.removeItem('walletAddress'); // Clear storage on auto-reconnect failure
+            }
+        } else {
+             console.log('No wallet provider found for auto-reconnect.');
+        }
+    }
+
 
     // --- Content Injection & Tagging ---
 
@@ -2299,6 +2446,8 @@
         isIdle: false, // Added for Idle detection
         longPressTimer: null, // Added for Long Press detection
         longPressThreshold: 500, // 500ms for long press
+        tipRecipient: '', // Initialize tipRecipient
+        tipAmount: 0.1, // Initialize tipAmount
 
 
         // Initialization
@@ -2789,9 +2938,9 @@
 
 
                       // Trigger "Almost Won" if applicable and show Retry Modal
-                     if ((this.lastSlip.picks.length === 5 && result.correctPicks === 4) ||
-                         (this.lastSlip.picks.length === 4 && result.correctPicks === 3) ||
-                         (this.lastSlip.picks.length === 3 && result.correctPicks === 2)) { // Added 3/4 and 2/3 checks
+                     if ((this.lastSlip?.picks?.length === 5 && result.correctPicks === 4) || // Added null checks
+                         (this.lastSlip?.picks?.length === 4 && result.correctPicks === 3) || // Added null checks
+                         (this.lastSlip?.picks?.length === 3 && result.correctPicks === 2)) { // Added 3/4 and 2/3 checks + null checks
                          const slipTray = document.getElementById('slip-tray');
                          if (slipTray) {
                              slipTray.classList.add('almost-won-card');
@@ -2855,7 +3004,7 @@
         // Added retrySlip method
         retrySlip() {
              console.log('Attempting to retry slip:', this.lastSlip);
-            if (this.lastSlip && this.lastSlip.picks.length >= 2 && this.lastSlip.picks.length <= 5) {
+            if (this.lastSlip?.picks?.length >= 2 && this.lastSlip?.picks?.length <= 5) { // Added null checks
                  // Calculate new wager (1.5x, capped at 10 SOL)
                  const newWager = Math.min(this.lastSlip.wager * 1.5, 10);
 
@@ -3181,15 +3330,20 @@
                  if (submitButton) submitButton.classList.remove('idle');
                  if (fabButton) fabButton.classList.remove('idle');
                  this.isIdle = false; // Set Alpine state
+                 this.stopChatAutoScroll(); // Stop chat auto-scroll on activity
 
                 idleTimeout = setTimeout(() => {
                      console.log('User is idle. Triggering hot prop alert and idle pulse.');
-                     this.modals.hotPropModal = true;
-                     triggerVibration('pick'); // Vibrate on nudge
+                     // Only show hot prop modal if no other modals are open
+                     if (!this.activeModal && !Object.values(this.modals).some(isOpen => isOpen)) {
+                        this.modals.hotPropModal = true;
+                        triggerVibration('pick'); // Vibrate on nudge
+                     }
                      // Add idle class to buttons
                      if (submitButton) submitButton.classList.add('idle');
                      if (fabButton) fabButton.classList.add('idle');
                      this.isIdle = true; // Set Alpine state
+                     this.startChatAutoScroll(); // Start chat auto-scroll when idle
                 }, 20000); // Trigger after 20 seconds of inactivity (Updated)
             };
 
