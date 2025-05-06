@@ -2,7 +2,8 @@
 <html lang="en" x-data="crashApp" x-init="init()">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#121212">
   <title>SOL Crash | 1000x Multipliers</title>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
@@ -13,52 +14,51 @@
       --bg: #121212;
       --card-bg: #1E1E1E;
     }
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-overflow-scrolling: touch;
+    }
     body {
-      font-family: 'Sora', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       color: white;
       margin: 0;
+      padding: 0;
       overscroll-behavior: none;
+      touch-action: manipulation;
     }
     #app {
-      display: grid;
-      grid-template-columns: 300px 1fr 300px;
+      display: flex;
+      flex-direction: column;
       height: 100vh;
+      height: -webkit-fill-available;
+      overflow: hidden;
     }
-    /* Chat Sidebar */
-    #chat {
-      background: var(--card-bg);
-      border-right: 1px solid #333;
-      overflow-y: auto;
-    }
-    .chat-message {
-      padding: 8px 12px;
-      border-bottom: 1px solid #333;
-    }
-    .chat-message .user {
-      color: var(--secondary);
-      font-weight: bold;
-    }
-    /* Main Game */
+    /* Mobile-optimized game area */
     #game {
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
+      flex: 1;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
     #multiplier {
-      font-size: 5rem;
-      font-weight: bold;
+      font-size: 3.5rem;
+      font-weight: 800;
       background: linear-gradient(to right, var(--primary), var(--secondary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-align: center;
-      margin: 20px 0;
+      margin: 10px 0;
+      line-height: 1;
     }
     #graph-container {
-      height: 300px;
+      flex: 1;
+      min-height: 200px;
       background: var(--card-bg);
       border-radius: 12px;
       position: relative;
+      margin: 0 0 15px;
       overflow: hidden;
     }
     #rocket-line {
@@ -66,7 +66,7 @@
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
+      width: 3px;
       background: linear-gradient(to top, var(--primary), var(--secondary));
       height: 0;
     }
@@ -75,118 +75,192 @@
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 30px;
-      transition: bottom 0.1s linear;
+      width: 24px;
+      transition: bottom 0.05s linear;
+      image-rendering: crisp-edges;
     }
     .controls {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 20px;
+      gap: 8px;
+      margin-bottom: 15px;
     }
     button {
       background: var(--primary);
       color: white;
       border: none;
-      padding: 15px;
+      padding: 12px;
       border-radius: 8px;
       font-weight: bold;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s;
+      user-select: none;
+    }
+    button:active:not(:disabled) {
+      transform: scale(0.98);
     }
     button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+      opacity: 0.6;
     }
-    button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(123, 97, 255, 0.4);
-    }
-    /* Wallet Sidebar */
-    #wallet {
+    input {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
       background: var(--card-bg);
-      border-left: 1px solid #333;
+      color: white;
+      font-size: 1rem;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+    /* Mobile tabs */
+    .mobile-tabs {
+      display: flex;
+      border-top: 1px solid #333;
+      background: var(--card-bg);
+    }
+    .tab-button {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+    .tab-button.active {
+      border-bottom: 2px solid var(--primary);
+    }
+    /* Tab content */
+    .tab-content {
+      display: none;
+      padding: 15px;
+      overflow-y: auto;
+      max-height: 40vh;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    /* Mobile modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
       padding: 20px;
+      -webkit-overflow-scrolling: touch;
     }
-    .balance {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin: 20px 0;
+    /* Performance optimizations */
+    .will-change {
+      will-change: transform, opacity;
     }
-    .withdraw-btn {
-      background: #F87171;
-      margin-top: 10px;
-      display: none; /* Hidden by default */
-    }
-    /* Animations */
-    @keyframes flash {
-      0% { opacity: 1; }
-      50% { opacity: 0.3; }
-      100% { opacity: 1; }
-    }
-    .flash {
-      animation: flash 0.3s 3;
-    }
-    /* Mobile */
-    @media (max-width: 768px) {
-      #app {
-        grid-template-columns: 1fr;
+    /* iPhone notch/padding */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      body {
+        padding-bottom: env(safe-area-inset-bottom);
       }
-      #chat, #wallet {
-        display: none; /* Hide on mobile */
+      .mobile-tabs {
+        padding-bottom: env(safe-area-inset-bottom);
       }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- Left Sidebar: Chat -->
-    <div id="chat">
-      <div x-html="chatMessages"></div>
-    </div>
-
-    <!-- Main Game -->
+    <!-- Main Game Area -->
     <div id="game">
-      <h1 style="text-align: center;">🚀 SOL CRASH</h1>
-      <div id="multiplier" x-text="`${multiplier.toFixed(2)}x`"></div>
+      <h1 style="text-align: center; font-size: 1.5rem; margin: 0;">🚀 SOL CRASH</h1>
+      <div id="multiplier" x-text="`${multiplier.toFixed(2)}x`" class="will-change"></div>
       
       <div id="graph-container">
-        <div id="rocket-line"></div>
-        <img id="rocket" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMy4xMyAyMi4xOUwxMS4zIDIwLjM3Yy0uNjguNjgtMS42LjY4LTIuMjggMC0uNjgtLjY4LS42OC0xLjYgMC0yLjI4TDEzLjEzIDE0bDEuNzYtMS43NmMuNjgtLjY4IDEuNi0uNjggMi4yOCAwIC42OC42OC42OCAxLjYgMCAyLjI4TDE1LjQxIDE0bDMuNTQgMy41NGMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2em0tMS40MS02LjgybC0xLjc2LTEuNzZjLS42OC0uNjgtLjY4LTEuNiAwLTIuMjguNjgtLjY4IDEuNi0uNjggMi4yOCAwbDEuNzYgMS43NiAxLjc2LTEuNzZjLjY4LS42OCAxLjYtLjY4IDIuMjggMCAuNjguNjguNjggMS42IDAgMi4yOGwtMS43NiAxLjc2IDEuNzYgMS43NmMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2LTEuNzYgMS43NmMtLjY4LjY4LTEuNi42OC0yLjI4IDAtLjY4LS42OC0uNjgtMS42IDAtMi4yOGwxLjc2LTEuNzZ6Ii8+PC9zdmc+" alt="Rocket">
+        <div id="rocket-line" class="will-change"></div>
+        <img id="rocket" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMy4xMyAyMi4xOUwxMS4zIDIwLjM3Yy0uNjguNjgtMS42LjY4LTIuMjggMC0uNjgtLjY4LS42OC0xLjYgMC0yLjI4TDEzLjEzIDE0bDEuNzYtMS43NmMuNjgtLjY4IDEuNi0uNjggMi4yOCAwIC42OC42OC42OCAxLjYgMCAyLjI4TDE1LjQxIDE0bDMuNTQgMy41NGMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2em0tMS40MS02LjgybC0xLjc2LTEuNzZjLS42OC0uNjgtLjY4LTEuNiAwLTIuMjguNjgtLjY4IDEuNi0uNjggMi4yOCAwbDEuNzYgMS43NiAxLjc2LTEuNzZjLjY4LS42OCAxLjYtLjY4IDIuMjggMCAuNjguNjguNjggMS42IDAgMi4yOGwtMS43NiAxLjc2IDEuNzYgMS43NmMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2LTEuNzYgMS43NmMtLjY4LjY4LTEuNi42OC0yLjI4IDAtLjY4LS42OC0uNjgtMS42IDAtMi4yOGwxLjc2LTEuNzZ6Ii8+PC9zdmc+" alt="Rocket" class="will-change">
       </div>
 
       <div class="controls">
-        <input type="number" x-model="betAmount" min="0.01" step="0.01" placeholder="0.01 SOL" style="padding: 15px; border-radius: 8px; border: none; background: var(--card-bg); color: white;">
-        <button id="start-btn" @click="startGame()" :disabled="gameRunning">BET (2X TO WIN)</button>
-        <button id="auto-btn" @click="toggleAuto()" :style="autoPlay ? 'background: var(--secondary)' : ''">AUTO (x10)</button>
+        <input type="number" x-model="betAmount" min="0.01" step="0.01" placeholder="0.01 SOL" inputmode="decimal">
+        <button id="start-btn" @click="startGame()" :disabled="gameRunning">BET</button>
+        <button id="auto-btn" @click="toggleAuto()" :style="autoPlay ? 'background: var(--secondary)' : ''">AUTO</button>
         <button id="cashout-btn" @click="cashOut()" :disabled="!gameRunning || !canCashout">CASH OUT</button>
-      </div>
-
-      <div style="text-align: center; margin-top: 20px;">
-        <button @click="openModal('provably-fair')" style="background: none; text-decoration: underline;">Verify Fairness</button>
       </div>
     </div>
 
-    <!-- Right Sidebar: Wallet -->
-    <div id="wallet">
-      <h3>YOUR WALLET</h3>
-      <div class="balance" x-text="`${balance.toFixed(2)} SOL`"></div>
-      
-      <button @click="openModal('deposit')">DEPOSIT</button>
-      <button class="withdraw-btn" @click="openModal('withdraw')">WITHDRAW (24H PROCESSING)</button>
+    <!-- Mobile Tabs -->
+    <div class="mobile-tabs">
+      <div class="tab-button active" @click="activeTab = 'chat'">💬 Chat</div>
+      <div class="tab-button" @click="activeTab = 'wallet'">💰 Wallet</div>
+      <div class="tab-button" @click="activeTab = 'stats'">📊 Stats</div>
+    </div>
 
-      <div style="margin-top: 30px;">
-        <h4>BIGGEST WINS</h4>
-        <div x-html="bigWins"></div>
+    <!-- Tab Contents -->
+    <div class="tab-content" :class="{ 'active': activeTab === 'chat' }">
+      <div x-html="chatMessages" style="padding: 5px;"></div>
+    </div>
+    
+    <div class="tab-content" :class="{ 'active': activeTab === 'wallet' }">
+      <div style="padding: 10px;">
+        <div style="font-size: 1.5rem; margin: 10px 0;" x-text="`${balance.toFixed(2)} SOL`"></div>
+        <button @click="connectWallet()" x-show="!userLoggedIn" style="width: 100%; margin: 5px 0;">CONNECT WALLET</button>
+        <button @click="openModal('deposit')" x-show="userLoggedIn" style="width: 100%; margin: 5px 0;">DEPOSIT</button>
+        <button @click="openModal('withdraw')" x-show="userLoggedIn" style="width: 100%; margin: 5px 0; background: #F87171;">WITHDRAW</button>
+      </div>
+    </div>
+    
+    <div class="tab-content" :class="{ 'active': activeTab === 'stats' }">
+      <div style="padding: 10px;">
+        <h3>TOP WINS</h3>
+        <div style="margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
+            <span>SOL_Whale</span>
+            <span>12.34x (8.42 SOL)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
+            <span>CryptoDegen</span>
+            <span>9.87x (5.21 SOL)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
+            <span>You</span>
+            <span x-text="`${biggestWin.toFixed(2)}x (${(biggestWin * betAmount).toFixed(2)} SOL)`">0.00x (0.00 SOL)</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Modals -->
-    <div x-show="modalOpen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; justify-content: center; align-items: center;">
-      <div style="background: var(--card-bg); padding: 20px; border-radius: 12px; max-width: 500px;">
-        <h2 x-text="modalTitle"></h2>
-        <div x-html="modalContent"></div>
-        <button @click="closeModal()" style="margin-top: 20px;">CLOSE</button>
+    <div x-show="modalOpen" class="modal-overlay" @click.self="closeModal()">
+      <div class="modal-content">
+        <template x-if="modalType === 'deposit'">
+          <div>
+            <h2>DEPOSIT SOL</h2>
+            <p>Send SOL to this address:</p>
+            <p style="word-break: break-all; background: #333; padding: 10px; border-radius: 4px; font-family: monospace;">7eSH...fT9q</p>
+            <p>Minimum deposit: 0.1 SOL</p>
+            <button @click="closeModal()" style="width: 100%; margin-top: 15px;">CLOSE</button>
+          </div>
+        </template>
+        
+        <template x-if="modalType === 'withdraw'">
+          <div>
+            <h2>WITHDRAW SOL</h2>
+            <p>Available: <span x-text="balance.toFixed(2)"></span> SOL</p>
+            <p style="color: var(--secondary);">⚠️ First withdrawals take 24 hours</p>
+            <input type="number" x-model="withdrawAmount" placeholder="0.1 SOL" style="width: 100%; margin: 10px 0;">
+            <button @click="requestWithdraw()" style="width: 100%;">REQUEST</button>
+            <button @click="offerDouble()" style="width: 100%; margin-top: 10px; background: gold; color: black;">DOUBLE OR NOTHING</button>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -199,36 +273,57 @@
         multiplier: 1.00,
         crashAt: 2.0,
         betAmount: 0.01,
-        balance: 0.05, // Starting balance
+        balance: 0.05,
         autoPlay: false,
         canCashout: false,
+        biggestWin: 0,
         
         // UI State
         modalOpen: false,
-        modalTitle: '',
-        modalContent: '',
+        modalType: '',
+        activeTab: 'chat',
+        userLoggedIn: false,
+        withdrawAmount: 0.1,
         
-        // Fake Data
-        chatMessages: '',
-        bigWins: '',
+        // Fake Chat
+        chatMessages: `
+          <div style="padding: 8px 0; border-bottom: 1px solid #333;">
+            <span style="color: var(--secondary); font-weight: bold;">SOL_Whale:</span> Just won 5 SOL! 🚀
+          </div>
+          <div style="padding: 8px 0; border-bottom: 1px solid #333;">
+            <span style="color: var(--secondary); font-weight: bold;">System:</span> Welcome to SOL Crash!
+          </div>
+        `,
         
         init() {
-          // Initialize fake chat
-          this.generateFakeChat();
-          setInterval(() => this.addFakeMessage(), 15000);
+          // Lock orientation on mobile
+          screen.orientation?.lock('portrait').catch(() => {});
           
-          // Initialize big wins
-          this.bigWins = `
-            <div>Anonymous: 12.34x (8.42 SOL)</div>
-            <div>SOL_Whale: 9.87x (15.21 SOL)</div>
-            <div>You: 5.23x (1.05 SOL)</div>
-          `;
+          // Prevent zooming
+          document.addEventListener('gesturestart', (e) => e.preventDefault());
           
-          // Connect wallet (mock)
-          this.balance = 0.05; // Demo balance
+          // Fake chat updates
+          setInterval(() => {
+            const users = ['SOL_Whale', 'CryptoDegen', 'Anonymous'];
+            const messages = [
+              `Cashed out at ${(Math.random() * 10 + 1).toFixed(2)}x!`,
+              'Deposited 5 SOL 🤑',
+              'Why did I cash out early??',
+              'BRO THIS GAME IS LIT 🔥'
+            ];
+            const user = users[Math.floor(Math.random() * users.length)];
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            
+            this.chatMessages = `
+              <div style="padding: 8px 0; border-bottom: 1px solid #333;">
+                <span style="color: var(--secondary); font-weight: bold;">${user}:</span> ${msg}
+              </div>
+              ${this.chatMessages}
+            `;
+          }, 8000);
         },
         
-        // Game Logic
+        // Game Logic (optimized for mobile)
         startGame() {
           if (this.gameRunning) return;
           if (this.balance < this.betAmount) {
@@ -241,19 +336,16 @@
           this.canCashout = true;
           this.balance -= this.betAmount;
           
-          // Dynamic difficulty - adjust crash point based on balance
-          const salt = Date.now() + (this.balance > 0.1 ? '_LOSE' : '_WIN');
-          const fakeHash = String(Math.abs(this.hashCode(salt))).padStart(10, '0');
+          // Mobile-optimized RNG
+          const salt = Date.now() % 1000;
+          const fakeHash = String(salt * 12345).split('').reverse().join('');
           const random = parseInt(fakeHash.substr(0,5)) / 99999;
+          this.crashAt = 1 + Math.floor(random * 100) / 10;
           
-          // Base crash between 1x-10x, but adjust based on player status
-          let baseCrash = 1 + (random * 9);
-          if (this.balance > 0.5) baseCrash = Math.min(baseCrash, 2.5); // Winning players crash earlier
-          if (this.balance < 0.02) baseCrash = Math.max(baseCrash, 3.0); // Losing players get "hot streak"
+          // Dynamic difficulty
+          if (this.balance > 0.5) this.crashAt = Math.min(this.crashAt, 2.5);
+          if (this.balance < 0.02) this.crashAt = Math.max(this.crashAt, 3.0);
           
-          this.crashAt = baseCrash;
-          
-          // Start animation
           this.animateGame();
         },
         
@@ -262,32 +354,18 @@
           
           this.multiplier += 0.01;
           
-          // Update rocket position
+          // Mobile-optimized animation
           const lineHeight = (this.multiplier - 1) * 30;
           document.getElementById('rocket-line').style.height = `${lineHeight}px`;
           document.getElementById('rocket').style.bottom = `${lineHeight}px`;
           
-          // Near-miss effect
-          if (this.multiplier > this.crashAt * 0.9 && this.multiplier < this.crashAt) {
-            document.getElementById('multiplier').classList.add('flash');
-          } else {
-            document.getElementById('multiplier').classList.remove('flash');
-          }
-          
-          // Check for crash
+          // Crash check
           if (this.multiplier >= this.crashAt) {
             this.gameRunning = false;
-            this.canCashout = false;
-            
-            // Show crash message
             setTimeout(() => {
               alert(`CRASHED AT ${this.crashAt.toFixed(2)}x!`);
-              
-              // If auto-play, start next game
-              if (this.autoPlay) {
-                setTimeout(() => this.startGame(), 1000);
-              }
-            }, 300);
+              if (this.autoPlay) setTimeout(() => this.startGame(), 500);
+            }, 50); // Faster mobile response
           } else {
             requestAnimationFrame(() => this.animateGame());
           }
@@ -298,114 +376,57 @@
           
           const winnings = this.betAmount * this.multiplier;
           this.balance += winnings;
+          if (this.multiplier > this.biggestWin) this.biggestWin = this.multiplier;
+          
           this.gameRunning = false;
+          this.addMessage('You', `Cashed out at ${this.multiplier.toFixed(2)}x! Won ${winnings.toFixed(2)} SOL`);
           
-          // Add to chat
-          this.addMessage('You', `Cashed out at ${this.multiplier.toFixed(2)}x! Won ${winnings.toFixed(2)} SOL 🎉`);
-          
-          // If auto-play, start next game
-          if (this.autoPlay) {
-            setTimeout(() => this.startGame(), 1000);
-          }
+          if (this.autoPlay) setTimeout(() => this.startGame(), 500);
         },
         
-        toggleAuto() {
-          this.autoPlay = !this.autoPlay;
-          if (this.autoPlay && !this.gameRunning) {
-            this.startGame();
-          }
-        },
-        
-        // Fake "Provable Fairness"
-        hashCode(str) {
-          let hash = 0;
-          for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash |= 0; // Convert to 32bit integer
-          }
-          return hash;
-        },
-        
-        // Chat Manipulation
-        generateFakeChat() {
-          this.chatMessages = `
-            <div class="chat-message"><span class="user">SOL_Whale:</span> Just made 5 SOL in 2 minutes!</div>
-            <div class="chat-message"><span class="user">CryptoDegen:</span> This game is insane 🚀</div>
-            <div class="chat-message"><span class="user">LuckyGambler:</span> 10x hit!!!</div>
-          `;
-        },
-        
-        addFakeMessage() {
-          const users = ['SOL_Whale', 'CryptoDegen', 'LuckyGambler', 'Anonymous'];
-          const messages = [
-            'Just hit ${(Math.random() * 10 + 1).toFixed(2)}x!',
-            'Deposited 5 SOL, already at 10 SOL 🤑',
-            'Why did I cash out at 2x? It went to 10x after!',
-            'BRO THIS GAME IS LITERALLY FREE MONEY'
-          ];
-          
-          const user = users[Math.floor(Math.random() * users.length)];
-          const message = messages[Math.floor(Math.random() * messages.length)].replace('${', '').replace('}', '');
-          
-          this.addMessage(user, message);
-        },
-        
-        addMessage(user, message) {
-          this.chatMessages = `
-            <div class="chat-message"><span class="user">${user}:</span> ${message}</div>
-            ${this.chatMessages}
-          `;
-        },
-        
-        // Modal System
+        // Mobile UX
         openModal(type) {
+          this.modalType = type;
           this.modalOpen = true;
-          
-          if (type === 'deposit') {
-            this.modalTitle = 'DEPOSIT SOL';
-            this.modalContent = `
-              <p>Send SOL to this address:</p>
-              <p style="word-break: break-all; background: #333; padding: 10px; border-radius: 4px;">7eSH...fT9q</p>
-              <p>Minimum deposit: 0.1 SOL</p>
-            `;
-          } else if (type === 'withdraw') {
-            this.modalTitle = 'WITHDRAW SOL';
-            this.modalContent = `
-              <p>Available: ${this.balance.toFixed(2)} SOL</p>
-              <p>Minimum withdrawal: 0.1 SOL</p>
-              <p style="color: var(--secondary);">⚠️ First withdrawals take 24 hours to process</p>
-              <input type="number" x-model="withdrawAmount" placeholder="0.1 SOL" style="padding: 10px; width: 100%; margin: 10px 0; border-radius: 4px; border: none;">
-              <button @click="requestWithdraw()" style="width: 100%;">REQUEST WITHDRAWAL</button>
-              <p style="margin-top: 10px;">Double your withdrawal? <a href="#" style="color: var(--primary);" @click="offerDouble()">Click here</a></p>
-            `;
-          } else if (type === 'provably-fair') {
-            this.modalTitle = 'PROVABLY FAIR';
-            this.modalContent = `
-              <p>Our game uses SHA-256 hashing to ensure fairness:</p>
-              <p style="word-break: break-all; background: #333; padding: 10px; border-radius: 4px;">${this.hashCode('fake_seed_' + Date.now()).toString(16)}</p>
-              <p>Client seed: your_wallet_address</p>
-              <p>Server seed: (revealed after game)</p>
-              <p>Learn more about provably fair gaming</p>
-            `;
-          }
+          document.body.style.overflow = 'hidden';
         },
         
         closeModal() {
           this.modalOpen = false;
+          document.body.style.overflow = '';
         },
         
-        // Withdrawal Traps
+        connectWallet() {
+          this.userLoggedIn = true;
+          this.addMessage('System', 'Wallet connected!');
+          setTimeout(() => this.openModal('deposit'), 300);
+        },
+        
         requestWithdraw() {
           alert('Withdrawal requested! Processing will take 24 hours.');
           this.closeModal();
         },
         
         offerDouble() {
-          if (confirm('DOUBLE OR NOTHING: Bet your withdrawal for a chance to double it!')) {
-            alert('You lost! Better luck next time.');
+          if (confirm('DOUBLE OR NOTHING: Bet your withdrawal for 2x?')) {
+            if (Math.random() > 0.4) { // 60% chance to lose
+              alert('You won! Withdrawal doubled!');
+              this.balance += parseFloat(this.withdrawAmount);
+            } else {
+              alert('You lost! Withdrawal canceled.');
+              this.withdrawAmount = 0.1;
+            }
           }
           this.closeModal();
+        },
+        
+        addMessage(user, msg) {
+          this.chatMessages = `
+            <div style="padding: 8px 0; border-bottom: 1px solid #333;">
+              <span style="color: var(--secondary); font-weight: bold;">${user}:</span> ${msg}
+            </div>
+            ${this.chatMessages}
+          `;
         }
       }));
     });
