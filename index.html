@@ -301,7 +301,7 @@
     /* Task 7: Updated fade-in animation */
     .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px) scale(0.99); } /* Start slightly lower and smaller */
+      from { opacity: 0; transform: translateY(8px) scale(0.99); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
@@ -420,7 +420,7 @@
       /* Task 1 Fix: Adjusted main content top padding */
       .main-content {
         padding: 16px;
-        /* Header(56) + Tabs(48) + Spacing(8) - Removed price display height */
+        /* Header(56) + Tabs(48) + Spacing(8) */
         padding-top: calc(56px + 48px + 8px);
         padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
         transition: padding-bottom 0.3s ease-in-out; box-sizing: border-box; width: 100%;
@@ -546,7 +546,6 @@
   //   this.openModal('helpModal');
   // },
 
-  // Task 4: Function to open profile (can be modal or new tab view)
   openProfile() {
       this.tab = 'profile';
       this.showDrawer = false; // Close drawer if open
@@ -812,9 +811,6 @@
    @keydown.escape.window="if(activeModal) closeAllModals(); else if(showSlipTray) showSlipTray = false; else if(showDrawer) showDrawer = false"
    x-init="init()">
 
-   <div x-show="!walletAddress" class="fixed top-4 left-4 bg-indigo-700 text-white text-sm font-bold py-1 px-3 rounded-full z-50 animate-pulse">
-      Free Mode: <span x-text="faucetBalance.toFixed(1)"></span> SOL
-   </div>
 
   <div class="overlay" :class="{ 'open': showDrawer }" @click="showDrawer = false" aria-hidden="true"></div>
   <aside class="drawer p-4" :class="{ 'open': showDrawer }" x-show="showDrawer" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
@@ -861,8 +857,10 @@
     </div>
   </header>
 
-  <div class="text-center text-xs text-gray-400 pt-[calc(56px+8px)]"> Live SOL Price: $<span id="price-display">Loading...</span>
+  <div class="text-center text-xs text-gray-400 pt-1 fixed top-14 left-0 right-0 z-[5] bg-gradient-to-b from-[#1A1A1A] to-transparent pb-2">
+       Live SOL Price: $<span id="price-display">Loading...</span>
   </div>
+
 
   <div class="sticky-tabs" role="tablist" aria-label="Game Categories">
     <div class="tabs" x-ref="tabs">
@@ -1173,17 +1171,14 @@
     </div>
   </div>
 
-  <div class="fixed bottom-20 left-4 z-50">
-      <button class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-2 rounded" onclick="submitSlipToBackend()">Test Submit Slip (DOGE)</button>
-  </div>
 
   <script>
     // --- Global Helper Functions ---
 
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      // Task 8 Fix: Adjusted toast position using bottom-20 (approx 80px)
-      toast.className = `fixed bottom-20 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl text-white text-sm z-[1000] shadow-lg ${
+      // Task 8 Fix: Adjusted toast position using bottom-24 (approx 96px)
+      toast.className = `fixed bottom-24 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl text-white text-sm z-[1000] shadow-lg ${
         type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-gray-700'
       }`;
       toast.textContent = message;
@@ -1244,7 +1239,7 @@
         }
     }
 
-    // Task 2 Fix: Removed window.location.reload(), rely on event dispatch
+    // Task 4 Fix: Ensure event dispatch happens after saving to localStorage
     async function connectWallet(walletType) {
       let provider = null;
       console.log(`Attempting to connect with ${walletType}...`);
@@ -1284,7 +1279,7 @@
         console.log(`Connected to ${walletType}:`, publicKeyString);
         showToast(`Connected: ${publicKeyString.slice(0,6)}...${publicKeyString.slice(-4)}`, 'success');
 
-        // Task 2 Fix: Ensure localStorage is set and event is dispatched
+        // Task 4 Fix: Save to localStorage *before* dispatching event
         localStorage.setItem('walletAddress', publicKeyString);
         document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: publicKeyString } }));
 
