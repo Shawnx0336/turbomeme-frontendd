@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="cryptoDropApp" x-init="init()" :class="{ 'modal-open': modalOpen || walletModalOpen }">
+<html lang="en" x-data="cryptoDropApp" x-init="init()" :class="{ 'modal-open': modalOpen || walletModalOpen || challengeModalOpen || depositModalOpen }">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -74,6 +74,7 @@
     }
     .button-primary:active:not(:disabled), .button-secondary:active:not(:disabled), .button-auth:active:not(:disabled) {
       @apply scale-[0.97] transform-none shadow-md;
+      animation: buttonSquash 0.2s ease-out;
     }
     .button-primary:disabled, .button-secondary:disabled, .button-auth:disabled {
       @apply bg-gray-600 text-gray-400 border-gray-600;
@@ -81,6 +82,11 @@
     .button-primary:focus-visible, .button-secondary:focus-visible, .button-auth:focus-visible {
       outline: 2px solid #7B61FF;
       outline-offset: 2px;
+    }
+    @keyframes buttonSquash {
+      0% { transform: scale(1, 1); }
+      50% { transform: scale(0.95, 0.85); }
+      100% { transform: scale(1, 1); }
     }
     .modal {
       @apply bg-gray-900 rounded-t-xl p-4 w-full max-w-full shadow-[-4px_0px_12px_rgba(0,0,0,0.3)] transition-transform duration-350 ease-out fixed bottom-0 left-0 z-[80] box-border max-h-[90vh] overflow-y-auto;
@@ -96,7 +102,7 @@
     .modal-container.open { @apply opacity-100 pointer-events-auto; }
     .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     @keyframes fadeIn {
-      from { opacity: 0; transform: ugyanlateY(8px) scale(0.99); }
+      from { opacity: 0; transform: translateY(8px) scale(0.99); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
     .glow { animation: glow 1.8s ease-in-out infinite; }
@@ -112,6 +118,14 @@
       margin: 0 auto;
       border-radius: 8px;
       overflow: hidden;
+      transition: box-shadow 0.5s ease-out;
+    }
+    .board-pulse {
+      animation: boardPulse 2s ease-in-out infinite;
+    }
+    @keyframes boardPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(123, 97, 255, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(244, 114, 182, 0.8); }
     }
     #orb {
       position: absolute;
@@ -121,10 +135,14 @@
       border-radius: 50%;
       box-shadow: 0 0 10px #f472b6, 0 0 5px white;
       z-index: 10;
-      left: 50%;
-      top: 10px;
-      transform: translateX(-50%);
       will-change: top, left, transform;
+    }
+    #orb.explode {
+      animation: orbExplode 0.6s ease-out forwards;
+    }
+    @keyframes orbExplode {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
     }
     .peg {
       position: absolute;
@@ -135,7 +153,14 @@
       box-shadow: 0 0 4px rgba(167,139,250,0.7);
       transition: background-color 0.2s ease;
     }
-    .peg:hover { background-color: #c4b5fd; }
+    .peg.hit {
+      animation: pegHit 0.3s ease-out;
+    }
+    @keyframes pegHit {
+      0% { transform: scale(1); background-color: #c4b5fd; }
+      50% { transform: scale(1.5); background-color: #ffffff; }
+      100% { transform: scale(1); background-color: #a78bfa; }
+    }
     .slot-container {
       position: absolute;
       bottom: 0;
@@ -168,7 +193,14 @@
     }
     @keyframes slotBounce {
       0%, 100% { transform: translateY(0) scale(1); }
-      50% { transform: translateY(-8px) scale(1.1); }
+      50% { transform: translateY(-12px) scale(1.2); }
+    }
+    .slot-glow {
+      animation: slotGlow 0.5s ease-in-out 2;
+    }
+    @keyframes slotGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
     }
     .slot-label {
       @apply text-xs font-semibold text-center mt-1;
@@ -203,17 +235,31 @@
       position: fixed;
       inset: 0;
       z-index: -1;
-      animation: backgroundFlow 20s linear infinite;
+      animation: backgroundFlow 10s linear infinite;
       background: linear-gradient(
         45deg,
-        rgba(123,97,255,0.1),
-        rgba(255,105,180,0.1),
-        rgba(52,211,153,0.1),
-        rgba(123,97,255,0.1)
+        rgba(123,97,255,0.3),
+        rgba(255,105,180,0.3),
+        rgba(52,211,153,0.3),
+        rgba(123,97,255,0.3)
       );
-      background-size: 400% 400%;
+      background-size: 600% 600%;
     }
     @keyframes backgroundFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .dynamic-background.celebrate {
+      background: linear-gradient(
+        45deg,
+        rgba(255,215,0,0.5),
+        rgba(255,165,0,0.5),
+        rgba(255,215,0,0.5)
+      );
+      animation: celebrateFlow 2s linear infinite;
+    }
+    @keyframes celebrateFlow {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
@@ -236,8 +282,6 @@
       50% { opacity: 1; box-shadow: 0 0 35px rgba(123,97,255,0.7); transform: scale(1.05); }
     }
     .reward-explosion {
-ற
-
       position: absolute;
       width: 100px;
       height: 100px;
@@ -294,6 +338,11 @@
     .sticky-drop-button {
       @apply fixed bottom-[70px] right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full px-5 py-3 shadow-lg z-[70] text-sm font-semibold transition-all duration-300 ease-out opacity-0 pointer-events-none;
       transform: translateY(20px);
+      animation: pulseSticky 2s ease-in-out infinite;
+    }
+    @keyframes pulseSticky {
+      0%, 100% { transform: translateY(20px) scale(1); }
+      50% { transform: translateY(20px) scale(1.1); }
     }
     .sticky-drop-button.visible {
       opacity: 1;
@@ -408,17 +457,78 @@
       50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
+    .vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.7) 100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+      transition: opacity 0.5s ease-out;
+    }
+    .vignette.active {
+      opacity: 1;
+    }
+    .coin-shower {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #FFD700;
+      border-radius: 50%;
+      animation: coinFall 1.5s linear forwards;
+      pointer-events: none;
+      z-index: 20;
+    }
+    @keyframes coinFall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+    .crypto-mascot {
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 60px;
+      height: 60px;
+      background: url('/assets/mascot.png') no-repeat center;
+      background-size: cover;
+      animation: mascotFloat 3s ease-in-out infinite;
+      z-index: 30;
+    }
+    @keyframes mascotFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    .crypto-mascot.win {
+      animation: mascotCelebrate 1s ease-out;
+    }
+    @keyframes mascotCelebrate {
+      0% { transform: scale(1) rotate(0); }
+      50% { transform: scale(1.5) rotate(15deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+    .screen-shake {
+      animation: shake 0.5s ease-in-out;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-5px, 2px); }
+      50% { transform: translate(5px, -2px); }
+      75% { transform: translate(-2px, 1px); }
+    }
   </style>
 </head>
 <body class="text-white"
-      @click.outside="if(modalOpen || walletModalOpen) closeModals()"
-      @keydown.escape.window="if(modalOpen || walletModalOpen) closeModals()"
+      @click.outside="if(modalOpen || walletModalOpen || challengeModalOpen || depositModalOpen) closeModals()"
+      @keydown.escape.window="if(modalOpen || walletModalOpen || challengeModalOpen || depositModalOpen) closeModals()"
       @mousemove="updateMousePos($event)"
-      @scroll  @scroll="handleScroll()">
-  <div class="dynamic-background"></div>
+      @scroll="handleScroll()">
+  <div class="dynamic-background" :class="{ 'celebrate': celebrating }"></div>
   <canvas id="particle-canvas"></canvas>
-  <div x-show="!walletConnected" class="fixed top-4 left-4 bg-indigo-700 text-white text-sm font-bold py-1 px-3 rounded-full z-[90] animate-pulse" aria  aria-live="polite">
+  <div x-show="!walletConnected" class="fixed top-4 left-4 bg-indigo-700 text-white text-sm font-bold py-1 px-3 rounded-full z-[90] animate-pulse" aria-live="polite">
     Free Mode: <span x-text="faucetBalance.toFixed(3)"></span> SOL
+  </div>
+  <div class="fixed top-14 left-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 z-[90] animate-pulse">
+    <span>Global Jackpot: <span x-text="jackpotAmount.toFixed(3)"></span> SOL</span>
   </div>
   <header class="fixed top-0 left-0 w-full z-[70] h-14 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700/50 flex items-center justify-between px-4" data-component="header">
     <div class="text-lg font-semibold text-[#7B61FF]">MemePicks</div>
@@ -430,9 +540,12 @@
   </header>
   <main class="container mx-auto px-4 pt-20 pb-24 flex flex-col md:flex-row gap-6 relative z-10" data-component="main-content">
     <section class="flex-grow md:w-2/3" data-component="game-board">
-      <div id="plinko-board" class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl relative overflow-visible" :class="{ 'addiction-glow': consecutivePlays > 0 }">
-        <div x-ref="plinkoBoardRef" class="w-full h-[450px] relative"></div>
+      <div id="plinko-board" class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl relative overflow-visible board-pulse" :class="{ 'addiction-glow': consecutivePlays > 0 }">
+        <div x-ref="plinkoBoardRef" class="w-full h-[450px] relative">
+          <div class="crypto-mascot" :class="{ 'win': celebrating }"></div>
+        </div>
         <div class="slot-container"></div>
+        <div class="vignette" :class="{ 'active': dropping || celebrating }"></div>
       </div>
       <section id="controls" class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl mt-4 fade-in" data-component="controls">
         <div class="flex justify-between items-center mb-3">
@@ -441,13 +554,28 @@
         </div>
         <div class="mb-3">
           <label for="bet-amount" class="block text-xs text-gray-400 mb-1">Bet Amount (SOL)</label>
-          <input type="number" id="bet-amount" step="0.001" min="0.001" max="1" x-model.number="betAmount"
-                 class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                 :disabled="dropping"
-                 aria-label="Bet amount in SOL">
+          <div class="flex items-center gap-2">
+            <input type="number" id="bet-amount" step="0.001" min="0.001" max="1" x-model.number="betAmount"
+                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                   :disabled="dropping"
+                   aria-label="Bet amount in SOL">
+            <button class="button-secondary text-xs px-2 py-1" @click="betAmount = Math.max(0.001, betAmount - 0.001)" :disabled="dropping" aria-label="Decrease bet">-</button>
+            <button class="button-secondary text-xs px-2 py-1" @click="betAmount = Math.min(1, betAmount + 0.001)" :disabled="dropping" aria-label="Increase bet">+</button>
+          </div>
+        </div>
+        <div class="flex gap-2 mb-3">
+          <button class="button-secondary text-xs px-3 py-1" @click="betAmount = 0.001" :disabled="dropping" aria-label="Set minimum bet">Min</button>
+          <button class="button-secondary text-xs px-3 py-1" @click="betAmount = walletConnected ? Math.min(walletBalance, 1) : Math.min(faucetBalance, 1)" :disabled="dropping" aria-label="Set maximum bet">Max</button>
+          <button class="button-secondary text-xs px-3 py-1" @click="betAmount *= 2" :disabled="dropping || (walletConnected ? betAmount * 2 > walletBalance : betAmount * 2 > faucetBalance)" aria-label="Double bet">2x</button>
+          <button class="button-secondary text-xs px-3 py-1" @click="betAmount /= 2" :disabled="dropping || betAmount / 2 < 0.001" aria-label="Half bet">½</button>
+        </div>
+        <div class="flex gap-2 mb-3">
+          <button class="button-primary text-sm px-3 py-2 flex-1" @click="toggleAutoDrop()" :class="{ 'bg-red-500': autoDrop }" x-text="autoDrop ? 'Stop Auto-Drop' : 'Auto-Drop'" :disabled="dropping && !autoDrop" aria-label="Toggle auto-drop"></button>
+          <button class="button-primary text-sm px-3 py-2 flex-1" @click="dropMultiple(10)" :disabled="dropping || (walletConnected ? walletBalance < betAmount * 10 : faucetBalance < betAmount * 10)" aria-label="Drop 10 times">Drop x10</button>
+          <button class="button-primary text-sm px-3 py-2 flex-1" @click="fastMode = !fastMode" :class="{ 'bg-green-500': fastMode }" x-text="fastMode ? 'Normal Mode' : 'Fast Mode'" aria-label="Toggle fast mode"></button>
         </div>
         <button id="drop-button" class="orb-drop-trigger button-primary w-full text-lg font-bold py-4 glow" @click="dropOrb()" :disabled="dropping || (!walletConnected && faucetBalance < betAmount) || (walletConnected && (walletBalance === null || walletBalance < betAmount))">
-          <span x-show="!dropping">INSTANT WIN! 0.001 SOL 🎰</span>
+          <span x-show="!dropping">INSTANT WIN! <span x-text="betAmount.toFixed(3)"></span> SOL 🎰</span>
           <span x-show="dropping">Dropping...</span>
         </button>
         <div class="flex justify-between items-center mt-3 text-xs text-gray-400">
@@ -459,15 +587,15 @@
           <span>Total Drops: <span class="font-semibold text-white" x-text="totalDrops"></span></span>
         </div>
         <div class="mt-3">
-          <span class="text-xs text-gray-400 block mb-1">Session Progress</span>
+          <span class="text-xs text-gray-400 block mb-1">XP to Level <span x-text="level + 1"></span></span>
           <div class="progress-bar-container">
-            <div class="progress-bar faux-progress" :style="`width: ${progress}%`"></div>
+            <div class="progress-bar" :style="`width: ${(xp % 100)}%`"></div>
           </div>
         </div>
         <div class="text-xs text-gray-400 mt-2">
-          <span>Today's Spent: <span x-text="(plays * 0.001).toFixed(3)"></span> SOL</span>
+          <span>Today's Spent: <span x-text="(plays * betAmount).toFixed(3)"></span> SOL</span>
           <span class="mx-2">•</span>
-          <span>Potential Wins: <span x-text="(plays * 0.005).toFixed(3)"></span> SOL</span>
+          <span>Potential Wins: <span x-text="(plays * betAmount * 2).toFixed(3)"></span> SOL</span>
         </div>
       </section>
     </section>
@@ -475,6 +603,17 @@
       <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="last-drop">
         <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Last Drop</h2>
         <div class="text-sm text-gray-300 min-h-[20px]" x-html="dropResult" aria-live="polite">No drop yet.</div>
+      </section>
+      <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="leaderboard">
+        <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Top Droppers</h2>
+        <ul class="text-xs text-gray-300" role="list">
+          <template x-for="player in leaderboard" :key="player.id">
+            <li class="flex justify-between py-1">
+              <span x-text="player.username"></span>
+              <span x-text="player.wins + ' SOL'"></span>
+            </li>
+          </template>
+        </ul>
       </section>
       <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="community-feed">
         <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Recent Wins</h2>
@@ -530,9 +669,36 @@
       <button class="button-secondary w-full text-sm mt-4 min-h-[44px]" @click="closeModals" aria-label="Cancel wallet connection">Cancel</button>
     </div>
   </div>
+  <div id="challengeModal" class="fixed inset-0 z-[80]" x-show="challengeModalOpen" role="dialog" aria-modal="true" aria-labelledby="challenge-modal-title">
+    <div class="modal-container" :class="{ 'open': challengeModalOpen }" @click="challengeModalOpen = false"></div>
+    <div class="modal" :class="{ 'open': challengeModalOpen }">
+      <h2 id="challenge-modal-title" class="text-base font-semibold text-[#7B61FF] mb-4">Daily Challenges</h2>
+      <ul class="space-y-3">
+        <li class="flex justify-between text-sm">
+          <span>Drop 10 Orbs</span>
+          <span x-text="challenges.drop10 ? '✅ Completed' : '0.01 SOL'"></span>
+        </li>
+        <li class="flex justify-between text-sm">
+          <span>Win 0.005 SOL</span>
+          <span x-text="challenges.win005 ? '✅ Completed' : '0.02 SOL'"></span>
+        </li>
+      </ul>
+      <button class="button-primary w-full mt-4" @click="challengeModalOpen = false" aria-label="Close challenges">Claim Later</button>
+    </div>
+  </div>
+  <div id="depositModal" class="fixed inset-0 z-[80]" x-show="depositModalOpen" role="dialog" aria-modal="true" aria-labelledby="deposit-modal-title">
+    <div class="modal-container" :class="{ 'open': depositModalOpen }" @click="depositModalOpen = false"></div>
+    <div class="modal" :class="{ 'open': depositModalOpen }">
+      <h2 id="deposit-modal-title" class="text-base font-semibold text-[#7B61FF] mb-4">Low Balance!</h2>
+      <p class="text-sm text-gray-300 mb-4">Deposit SOL to keep dropping and win big!</p>
+      <button class="button-primary w-full" @click="depositSOL" aria-label="Deposit SOL">Deposit Now</button>
+      <button class="button-secondary w-full mt-2" @click="depositModalOpen = false" aria-label="Continue in free mode">Continue Free</button>
+    </div>
+  </div>
   <footer class="fixed bottom-0 left-0 w-full bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 text-center text-xs text-gray-400 py-2 z-[50]" style="padding-bottom: calc(8px + env(safe-area-inset-bottom))" data-component="footer">
     3% staking fee | <a href="/bet" class="text-purple-500 hover:underline" aria-label="Try MemePicks Betting">Try MemePicks Betting</a> | Powered by MemePicks
   </footer>
+  <audio id="bgMusic" loop preload="auto" src="/assets/sounds/casino-ambience.mp3" x-ref="bgMusic"></audio>
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.data('cryptoDropApp', () => ({
@@ -561,6 +727,8 @@
         loginStreak: 0,
         modalOpen: false,
         walletModalOpen: false,
+        challengeModalOpen: false,
+        depositModalOpen: false,
         communityMessages: [],
         socket: null,
         showStickyButton: false,
@@ -570,11 +738,26 @@
         mouseY: window.innerHeight / 2,
         audioContext: null,
         sounds: {},
+        celebrating: false,
+        jackpotAmount: 10.0,
+        autoDrop: false,
+        fastMode: false,
+        username: 'Guest',
+        leaderboard: [
+          { id: 1, username: 'CryptoKing', wins: 5.123 },
+          { id: 2, username: 'NFTWhale', wins: 3.456 },
+          { id: 3, username: 'SolSniper', wins: 2.789 },
+          { id: 4, username: 'DropMaster', wins: 1.234 },
+          { id: 5, username: 'LuckyStar', wins: 0.987 }
+        ],
+        challenges: { drop10: false, win005: false },
+        showTutorial: !localStorage.getItem(LS_PREFIX + 'tutorialSeen'),
         BOARD_WIDTH: 400,
         BOARD_HEIGHT: 450,
         PEG_ROWS: 12,
         PEG_SIZE: 8,
         SLOT_COUNT: 9,
+       _clockwise: true,
         SLOT_WIDTH: 30,
         SLOT_HEIGHT: 30,
         outcomes: [
@@ -590,25 +773,42 @@
           fakeLuckyStreak: 0,
           timeSpent: 0,
           forcedFOMO: null,
-          calculateReward() {
-            if (Math.random() < 0.4) {
+          calculateReward(betAmount, lossesInRow) {
+            const baseChance = 0.15;
+            const lossAdjustment = lossesInRow > 3 ? 0.05 * Math.min(lossesInRow - 3, 5) : 0;
+            const addictionFactor = 1 + (this.timeSpent * 0.01);
+            let winChance = baseChance * addictionFactor + lossAdjustment;
+            if (Math.random() < 0.5) {
               const nearMissSlot = this.outcomes[Math.floor(Math.random() * (this.outcomes.length - 3)) + 3];
               this.showToast(`So close to ${nearMissSlot.slot}! Try again!`, 'error');
               const slotElement = document.querySelector(`.slot[data-tooltip*="${nearMissSlot.slot}"]`);
               if (slotElement) {
                 slotElement.classList.add('near-miss-flash');
                 setTimeout(() => slotElement.classList.remove('near-miss-flash'), 800);
+                this.playSound('near-miss');
               }
+              const adjacentSlots = [
+                this.slotElements[Math.max(0, slotIndex - 1)],
+                this.slotElements[Math.min(this.slotElements.length - 1, slotIndex + 1)]
+              ].filter(s => s && s.outcome.rewardMult >= 2);
+              adjacentSlots.forEach(s => {
+                s.element.classList.add('slot-glow');
+                setTimeout(() => s.element.classList.remove('slot-glow'), 1000);
+              });
             }
-            const addictionFactor = 1 + (this.timeSpent * 0.01);
-            return Math.random() < (0.15 * addictionFactor) ? this.forceWin() : this.generateLoss();
+            if (Math.random() < winChance) {
+              return this.forceWin(betAmount);
+            }
+            return this.generateLoss();
           },
-          forceWin() {
+          forceWin(betAmount) {
             this.fakeLuckyStreak++;
-            if (this.fakeLuckyStreak > 2) {
-              setTimeout(() => this.showToast('So close! Deposit to continue streak!', 'error'), 3000);
+            if (this.fakeLuckyStreak > 2 && !this.walletConnected) {
+              setTimeout(() => this.depositModalOpen = true, 3000);
             }
-            return { slot: '2x', reward: '0.002 SOL' };
+            const winOutcomes = this.outcomes.filter(o => o.rewardMult >= 0.5 && o.rewardMult <= 5);
+            const outcome = winOutcomes[Math.floor(Math.random() * winOutcomes.length)];
+            return { slot: outcome.slot, reward: (betAmount * outcome.rewardMult).toFixed(5) + ' SOL' };
           },
           generateLoss() {
             this.fakeLuckyStreak = 0;
@@ -616,12 +816,13 @@
           },
           startFOMO() {
             this.forcedFOMO = setInterval(() => {
-              const fakeUsers = ['ProGambler42', 'CryptoWhale', 'NFTKingpin'];
+              const fakeUsers = ['ProGambler42', 'CryptoWhale', 'NFTKingpin', 'SolCelebrity'];
               const fakeWin = this.outcomes[Math.floor(Math.random() * (this.outcomes.length - 2)) + 2];
               this.communityMessages = [{
                 id: Date.now(),
                 username: fakeUsers[Math.floor(Math.random() * fakeUsers.length)],
-                text: `just won ${fakeWin.rewardMult}x on ${fakeWin.slot}!`
+                text: `just won ${fakeWin.rewardMult}x on ${fakeWin.slot}!`,
+                reward: (this.betAmount * fakeWin.rewardMult).toFixed(5)
               }, ...this.communityMessages.slice(0, 9)];
             }, 4000);
           }
@@ -629,6 +830,9 @@
         init() {
           console.log('Initializing CryptoDrop App...');
           this.showLoader();
+          if (!this.walletAddress) {
+            this.showToast('Playing in Free Mode! Connect wallet for real rewards.', 'info', 5000);
+          }
           try {
             this.walletAddress = localStorage.getItem(LS_PREFIX + 'walletAddress') || null;
             this.walletConnected = !!this.walletAddress;
@@ -641,6 +845,7 @@
                 console.error('Initial balance fetch failed:', err);
                 this.showToast('Failed to load balance.', 'error');
               });
+              this.username = this.walletAddress.slice(0, 4) + '...' + this.walletAddress.slice(-4);
             }
           } catch (err) {
             console.error('Wallet init failed:', err);
@@ -665,6 +870,17 @@
           setInterval(() => this.timeSpent += 10, 10000);
           setInterval(() => this.triggerJackpotEvent(), 900000);
           setInterval(() => this.triggerMultiplierBoost(), 300000);
+          setInterval(() => this.jackpotAmount += 0.001, 1000);
+          if (this.showTutorial) localStorage.setItem(LS_PREFIX + 'tutorialSeen', '1');
+          let lastInteraction = Date.now();
+          setInterval(() => {
+            if (Date.now() - lastInteraction > 30000 && !this.dropping) {
+              this.showToast('Keep dropping to climb the leaderboard!', 'info');
+            }
+          }, 10000);
+          document.addEventListener('click', () => lastInteraction = Date.now());
+          this.$refs.bgMusic.volume = 0.2;
+          this.$refs.bgMusic.play().catch(() => console.log('Autoplay blocked'));
           console.log('CryptoDrop App Initialized.');
         },
         showLoader() {
@@ -717,6 +933,9 @@
                 reward: w.reward > 0 ? w.reward.toFixed(5) : null
               })).slice(0, 20);
             });
+            this.socket.on('leaderboardUpdate', (topPlayers) => {
+              this.leaderboard = topPlayers.slice(0, 5);
+            });
           } catch (error) {
             console.error("Socket initialization failed:", error);
             this.showToast("Cannot connect to live feed.", "error");
@@ -725,7 +944,7 @@
         initBoard() {
           const boardContainer = this.$refs.plinkoBoardRef;
           if (!boardContainer) return;
-          boardContainer.innerHTML = '';
+          boardContainer.innerHTML = '<div class="crypto-mascot"></div>';
           this.pegElements = [];
           this.slotElements = [];
           const boardWidth = boardContainer.clientWidth || this.BOARD_WIDTH;
@@ -780,6 +999,13 @@
             slotContainer.appendChild(slot);
             this.slotElements.push({ element: slot, outcome: outcome, index: i });
           });
+          for (let i = 0; i < 20; i++) {
+            const orb = document.createElement('div');
+            orb.className = 'floating-orb';
+            orb.style.left = `${Math.random() * 100}vw`;
+            orb.style.animationDelay = `${Math.random() * 10}s`;
+            document.body.appendChild(orb);
+          }
         },
         initParticles() {
           const canvas = document.getElementById('particle-canvas');
@@ -804,8 +1030,15 @@
             const ctx = this.particleCtx;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             this.particles.forEach(p => {
-              const dx = this.mouseX - p.x;
-              const dy = this.mouseY - p.y;
+              let dx = this.mouseX - p.x;
+              let dy = this.mouseY - p.y;
+              if (this.celebrating) {
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                dx = centerX - p.x;
+                dy = centerY - p.y;
+                p.color = '#FFD700';
+              }
               const distance = Math.sqrt(dx * dx + dy * dy);
               const maxDist = 150;
               if (distance < maxDist) {
@@ -850,21 +1083,36 @@
               this.sounds[name] = audioBuffer;
             };
             Promise.all([
-              loadSound('https://example.com/sounds/plink.mp3', 'plink'),
-              loadSound('https://example.com/sounds/win.mp3', 'win'),
-              loadSound('https://example.com/sounds/loss.mp3', 'loss'),
-              loadSound('https://example.com/sounds/bigwin.mp3', 'bigwin'),
-              loadSound('https://example.com/sounds/click.mp3', 'click')
+              loadSound('/assets/sounds/plink.mp3', 'plink'),
+              loadSound('/assets/sounds/win.mp3', 'win'),
+              loadSound('/assets/sounds/loss.mp3', 'loss'),
+              loadSound('/assets/sounds/bigwin.mp3', 'bigwin'),
+              loadSound('/assets/sounds/jackpot.mp3', 'jackpot'),
+              loadSound('/assets/sounds/click.mp3', 'click'),
+              loadSound('/assets/sounds/near-miss.mp3', 'near-miss'),
+              loadSound('/assets/sounds/coin-shower.mp3', 'coin-shower'),
+              loadSound('/assets/sounds/crowd-cheer.mp3', 'cheer'),
+              loadSound('/assets/sounds/0.5x.mp3', '0.5x'),
+              loadSound('/assets/sounds/1x.mp3', '1x'),
+              loadSound('/assets/sounds/2x.mp3', '2x'),
+              loadSound('/assets/sounds/5x.mp3', '5x'),
+              loadSound('/assets/sounds/10x.mp3', '10x')
             ]).catch(err => console.error('Sound loading failed:', err));
           } catch (err) {
             console.error('AudioContext initialization failed:', err);
           }
         },
-        playSound(name) {
+        playSound(name, volume = 1.0) {
           if (!this.audioContext || !this.sounds[name]) return;
           const source = this.audioContext.createBufferSource();
           source.buffer = this.sounds[name];
-          source.connect(this.audioContext.destination);
+          const gainNode = this.audioContext.createGain();
+          gainNode.gain.value = volume;
+          source.connect(gainNode);
+          gainNode.connect(this.audioContext.destination);
+          if (name === 'plink') {
+            source.playbackRate.value = 0.8 + Math.random() * 0.4;
+          }
           source.start(0);
         },
         updateMousePos(event) {
@@ -882,6 +1130,7 @@
         },
         async connectWallet(walletType) {
           this.showToast('Connecting wallet...', 'info');
+          this.playSound('click');
           try {
             let provider;
             if (walletType === 'phantom' && ('phantom' in window) && window.phantom.solana) {
@@ -901,6 +1150,7 @@
             localStorage.setItem(LS_PREFIX + 'walletAddress', address);
             this.walletAddress = address;
             this.walletConnected = true;
+            this.username = address.slice(0, 4) + '...' + address.slice(-4);
             this.connection = new SolanaWeb3.Connection(
               SolanaWeb3.clusterApiUrl(BASE_URL.includes('localhost') ? 'devnet' : 'mainnet-beta'),
               'confirmed'
@@ -951,15 +1201,25 @@
           this.walletConnected = false;
           this.walletBalance = null;
           this.connection = null;
+          this.username = 'Guest';
           this.showToast('Wallet disconnected.', 'info');
           this.closeModals();
           this.initBoard();
         },
-        openBoardModal() { this.modalOpen = true; },
-        openWalletModal() { this.walletModalOpen = true; },
+        openBoardModal() {
+          this.modalOpen = true;
+          this.playSound('click');
+        },
+        openWalletModal() {
+          this.walletModalOpen = true;
+          this.playSound('click');
+        },
         closeModals() {
           this.modalOpen = false;
           this.walletModalOpen = false;
+          this.challengeModalOpen = false;
+          this.depositModalOpen = false;
+          this.playSound('click');
         },
         selectBoard(board) {
           this.selectedBoard = board;
@@ -977,6 +1237,8 @@
             localStorage.setItem(LS_PREFIX + 'lastLogin', today);
             localStorage.setItem(LS_PREFIX + 'loginStreak', this.loginStreak.toString());
             this.showToast(`Day ${this.loginStreak} of 7 – Claim your bonus drop tomorrow!`, 'success');
+            this.challengeModalOpen = true;
+            localStorage.setItem(LS_PREFIX + 'lastChallengeDate', today);
           }
         },
         triggerJackpotEvent() {
@@ -993,339 +1255,39 @@
               clearInterval(interval);
               countdown.remove();
               this.showToast('Jackpot Round Active!', 'success');
-              setTimeout(() => this.showToast('Jackpot Round Ended!', 'info'), 60000);
+              this.outcomes = this.outcomes.map(o => {
+                if (o.slot === 'Jackpot') {
+                  return { ...o, weight: o.weight * 2 };
+                }
+                return o;
+              });
+              this.initBoard();
+              setTimeout(() => {
+                this.showToast('Jackpot Round Ended!', 'info');
+                this.outcomes = this.outcomes.map(o => {
+                  if (o.slot === 'Jackpot') {
+                    return { ...o, weight: 0.01 };
+                  }
+                  return o;
+                });
+                this.initBoard();
+              }, 60000);
             }
           }, 1000);
         },
         triggerMultiplierBoost() {
-          this.showToast('Jackpot odds doubled for the next 60s!', 'success');
-          const board = document.getElementById('plinko-board');
-          board.classList.add('addiction-glow');
-          setTimeout(() => board.classList.remove('addiction-glow'), 60000);
-        },
-        async dropOrb() {
-          if (this.dropping) return;
-          const stake = this.betAmount;
-          if (stake < 0.001) {
-            this.showToast('Minimum bet is 0.001 SOL.', 'error');
-            return;
-          }
-          if (!this.walletConnected && this.faucetBalance < stake) {
-            this.dropResult = 'Insufficient free mode balance.';
-            this.showToast('Insufficient balance.', 'error');
-            return;
-          }
-          if (this.walletConnected && (this.walletBalance === null || this.walletBalance < stake)) {
-            this.dropResult = 'Insufficient SOL balance.';
-            this.showToast('Insufficient SOL balance.', 'error');
-            if (this.walletBalance === null) this.getWalletBalance(this.walletAddress);
-            return;
-          }
-          this.dropping = true;
-          this.totalDrops++;
-          this.plays++;
-          this.xp += 10;
-          if (this.xp >= this.level * 100) {
-            this.level++;
-            this.showToast(`Level Up! You're now Level ${this.level}!`, 'success');
-          }
-          localStorage.setItem(LS_PREFIX + 'totalDrops', this.totalDrops.toString());
-          localStorage.setItem(LS_PREFIX + 'plays', this.plays.toString());
-          localStorage.setItem(LS_PREFIX + 'xp', this.xp.toString());
-          this.triggerHaptic([30]);
-          if (!this.walletConnected) {
-            this.faucetBalance -= stake;
-          } else {
-            this.walletBalance -= stake;
-          }
+          this.showToast('2x Rewards for 60s!', 'success');
           const timer = document.createElement('div');
           timer.className = 'addiction-timer';
-          timer.textContent = 'QUICK PLAY! BONUS ACTIVE!';
+          timer.textContent = '2x Rewards: 1:00';
           document.body.appendChild(timer);
-          setTimeout(() => timer.remove(), 2000);
-          const progressBar = document.createElement('div');
-          progressBar.className = 'faux-progress';
-          this.$refs.plinkoBoardRef.appendChild(progressBar);
-          setTimeout(() => progressBar.remove(), 2000);
-          const boardElement = this.$refs.plinkoBoardRef;
-          const anticipation = document.createElement('div');
-          anticipation.className = 'anticipation-glow';
-          boardElement.appendChild(anticipation);
-          this.playSound('plink');
-          await new Promise(resolve => setTimeout(resolve, 700));
-          anticipation.remove();
-          this.orbElement = document.createElement('div');
-          this.orbElement.id = 'orb';
-          let orbX = (boardElement.clientWidth || this.BOARD_WIDTH) / 2;
-          let orbY = -10;
-          this.orbElement.style.left = `${orbX - 8}px`;
-          this.orbElement.style.top = `${orbY}px`;
-          boardElement.appendChild(this.orbElement);
-          let velocityX = (Math.random() - 0.5) * 2;
-          let velocityY = 1;
-          const gravity = 0.2;
-          const bounceFactor = 0.6;
-          let rotation = 0;
-          if (this.currentAnimationId) cancelAnimationFrame(this.currentAnimationId);
-          const animate = (timestamp) => {
-            if (!this.dropping || !this.orbElement) return;
-            velocityY += gravity;
-            orbY += velocityY;
-            orbX += velocityX;
-            rotation += velocityX * 3;
-            this.orbElement.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-            this.createOrbTrail(orbX, orbY);
-            this.pegElements.forEach(peg => {
-              const dx = orbX - peg.x;
-              const dy = orbY - peg.y;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              const combinedRadius = (this.orbElement.offsetWidth / 2) + peg.radius;
-              if (distance < combinedRadius) {
-                const overlap = combinedRadius - distance;
-                const nx = dx / distance;
-                const ny = dy / distance;
-                orbX += nx * overlap * 0.5;
-                orbY += ny * overlap * 0.5;
-                const dotProduct = velocityX * nx + velocityY * ny;
-                velocityX -= 2 * dotProduct * nx;
-                velocityY -= 2 * dotProduct * ny;
-                velocityX *= bounceFactor * (0.9 + Math.random() * 0.2);
-                velocityY *= bounceFactor * (0.9 + Math.random() * 0.2);
-                if (velocityY < -5) velocityY = -5;
-                this.playSound('plink');
-                this.triggerHaptic([10]);
-              }
-            });
-            this.orbElement.style.left = `${orbX - this.orbElement.offsetWidth / 2}px`;
-            this.orbElement.style.top = `${orbY}px`;
-            if (orbY >= this.BOARD_HEIGHT - this.SLOT_HEIGHT) {
-              const slotIndex = this.getSlotIndex(orbX);
-              this.finishDrop(slotIndex);
-              return;
-            }
-            if (orbY > this.BOARD_HEIGHT + 50) {
-              console.warn("Orb fell out of bounds.");
-              this.finishDrop(this.getSlotIndex(orbX));
-              return;
-            }
-            this.currentAnimationId = requestAnimationFrame(animate);
-          };
-          this.currentAnimationId = requestAnimationFrame(animate);
-          this.consecutivePlays++;
-          this.updateBoardGlow();
-        },
-        createOrbTrail(x, y) {
-          const trail = document.createElement('div');
-          trail.className = 'orb-trail';
-          trail.style.left = `${x - 6}px`;
-          trail.style.top = `${y + this.orbElement.offsetHeight / 2 - 6}px`;
-          this.$refs.plinkoBoardRef.appendChild(trail);
-          trail.offsetHeight;
-          trail.style.opacity = '0';
-          trail.style.transform = 'scale(0.2)';
-          setTimeout(() => trail.remove(), 800);
-        },
-        getSlotIndex(finalX) {
-          const boardWidth = this.$refs.plinkoBoardRef.clientWidth || this.BOARD_WIDTH;
-          const totalSlotWidth = this.outcomes.length * this.SLOT_WIDTH;
-          const totalSpacing = boardWidth - totalSlotWidth;
-          const spacing = totalSpacing / (this.outcomes.length + 1);
-          let currentX = spacing;
-          for (let i = 0; i < this.outcomes.length; i++) {
-            const slotStartX = currentX;
-            const slotEndX = currentX + this.SLOT_WIDTH;
-            if (finalX >= slotStartX && finalX <= slotEndX) {
-              return i;
-            }
-            currentX += this.SLOT_WIDTH + spacing;
-          }
-          return finalX < boardWidth / 2 ? 0 : this.outcomes.length - 1;
-        },
-        async finishDrop(slotIndex) {
-          if (!this.dropping) return;
-          if (this.currentAnimationId) cancelAnimationFrame(this.currentAnimationId);
-          this.currentAnimationId = null;
-          const winningSlotData = this.slotElements[slotIndex];
-          const result = winningSlotData.outcome;
-          const rewardValue = this.betAmount * result.rewardMult;
-          await new Promise(resolve => setTimeout(resolve, 600));
-          if (this.orbElement) {
-            this.orbElement.remove();
-            this.orbElement = null;
-          }
-          const slotElement = winningSlotData.element;
-          slotElement.classList.add('winning');
-          if (rewardValue > 0) {
-            slotElement.style.backgroundColor = '#FFD700';
-            setTimeout(() => slotElement.style.backgroundColor = result.color, 1200);
-          } else {
-            slotElement.style.opacity = '0.3';
-            setTimeout(() => slotElement.style.opacity = '1', 1200);
-          }
-          setTimeout(() => slotElement.classList.remove('winning'), 800);
-          if (rewardValue > 0) {
-            this.playSound(rewardValue >= this.betAmount * 5 ? 'bigwin' : 'win');
-            this.triggerHaptic([50, 30, 50]);
-            this.createConfetti();
-            if (rewardValue >= this.betAmount * 2) {
-              const winText = document.createElement('div');
-              winText.className = 'win-text';
-              winText.textContent = rewardValue >= this.betAmount * 10 ? 'YOU BROKE THE GAME!' :
-                                    rewardValue >= this.betAmount * 5 ? 'INSANE HIT!' : 'Let’s gooo!';
-              document.body.appendChild(winText);
-              setTimeout(() => winText.remove(), 1500);
-            }
-            if (!this.walletConnected) {
-              this.faucetBalance += rewardValue;
-            } else {
-              this.walletBalance += rewardValue;
-            }
-            const explosion = document.createElement('div');
-            explosion.className = 'reward-explosion';
-            const slotRect = slotElement.getBoundingClientRect();
-            const boardRect = this.$refs.plinkoBoardRef.getBoundingClientRect();
-            const explosionX = slotRect.left + slotRect.width / 2 - boardRect.left;
-            const explosionY = slotRect.top + slotRect.height / 2 - boardRect.top;
-            explosion.style.left = `${explosionX - 50}px`;
-            explosion.style.top = `${explosionY - 50}px`;
-            explosion.style.background = `radial-gradient(circle, ${result.color} 20%, transparent 70%)`;
-            this.$refs.plinkoBoardRef.appendChild(explosion);
-            setTimeout(() => explosion.remove(), 800);
-            if (rewardValue >= this.betAmount * 2) {
-              setTimeout(() => this.showReplay(slotIndex), 1000);
-            }
-          } else {
-            this.playSound('loss');
-            this.triggerHaptic([20]);
-          }
-          this.dropResult = `Landed on <span style="color:${result.color}; font-weight: bold;">${result.slot}</span>! Won ${rewardValue.toFixed(5)} SOL`;
-          if (rewardValue > 0.00001) {
-            this.consecutiveWins++;
-            this.lastWinTime = Date.now();
-            this.consecutivePlays = 0;
-            if (this.consecutiveWins > 1) {
-              const streak = document.createElement('div');
-              streak.className = 'win-streak';
-              streak.innerHTML = `WIN STREAK! <span class="text-xl ml-1">x${this.consecutiveWins}</span>`;
-              document.body.appendChild(streak);
-              setTimeout(() => streak.remove(), 2500);
-            }
-            this.showToast(`Won ${rewardValue.toFixed(5)} SOL!`, 'success');
-          } else {
-            this.consecutiveWins = 0;
-            this.showToast(`Landed on ${result.slot}`, 'info');
-          }
-          this.progress = (this.progress + Math.random() * 5 + 1) % 100;
-          this.updateBoardGlow();
-          const username = this.walletAddress ? this.walletAddress.slice(0, 4) + '...' + this.walletAddress.slice(-4) : 'Guest';
-          if (this.socket?.connected) {
-            this.socket.emit('dropResult', {
-              username,
-              board: this.selectedBoard,
-              betAmount: this.betAmount,
-              slot: result.slot,
-              reward: rewardValue,
-              timestamp: Date.now()
-            });
-          } else {
-            const message = { id: Date.now(), username: 'You', text: `landed on ${result.slot}!`, reward: rewardValue > 0 ? rewardValue.toFixed(5) : null };
-            this.communityMessages = [message, ...this.communityMessages.slice(0, 19)];
-            this.scrollToChatBottom();
-          }
-          this.dropping = false;
-          setTimeout(() => this.showAutoReplayPrompt(), 3000);
-        },
-        createConfetti() {
-          for (let i = 0; i < 20; i++) {
-            const confetti = document.createElement('div');
-            confetti.className = 'confetti';
-            confetti.style.left = `${Math.random() * window.innerWidth}px`;
-            confetti.style.backgroundColor = ['#f472b6', '#7b61ff', '#34d399'][Math.floor(Math.random() * 3)];
-            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-            document.body.appendChild(confetti);
-            setTimeout(() => confetti.remove(), 2000);
-          }
-        },
-        showReplay(slotIndex) {
-          const replay = document.createElement('div');
-          replay.className = 'reward-explosion';
-          const slotElement = this.slotElements[slotIndex].element;
-          const slotRect = slotElement.getBoundingClientRect();
-          const boardRect = this.$refs.plinkoBoardRef.getBoundingClientRect();
-          const replayX = slotRect.left + slotRect.width / 2 - boardRect.left;
-          const replayY = slotRect.top + slotRect.height / 2 - boardRect.top;
-          replay.style.left = `${replayX - 50}px`;
-          replay.style.top = `${replayY - 50}px`;
-          replay.style.background = `radial-gradient(circle, ${this.slotElements[slotIndex].outcome.color} 20%, transparent 70%)`;
-          replay.style.animationDuration = '1.5s';
-          this.$refs.plinkoBoardRef.appendChild(replay);
-          setTimeout(() => replay.remove(), 1500);
-        },
-        showAutoReplayPrompt() {
-          if (this.dropping) return;
-          const prompt = document.createElement('div');
-          prompt.className = 'addiction-timer';
-          prompt.textContent = 'Drop again? 5...';
-          document.body.appendChild(prompt);
-          let countdown = 5;
+          let timeLeft = 60;
           const interval = setInterval(() => {
-            countdown--;
-            prompt.textContent = `Drop again? ${countdown}...`;
-            if (countdown <= 0) {
+            timeLeft--;
+            timer.textContent = `2x Rewards: 0:${timeLeft.toString().padStart(2, '0')}`;
+            if (timeLeft <= 0) {
               clearInterval(interval);
-              prompt.remove();
-              if (!this.dropping) this.dropOrb();
+              timer.remove();
             }
           }, 1000);
-        },
-        updateBoardGlow() {
-          const boardElement = document.getElementById('plinko-board');
-          if (!boardElement) return;
-          if (this.consecutivePlays > 0) {
-            const intensity = Math.min(0.2 + (this.consecutivePlays * 0.05), 0.8);
-            const spread = Math.min(15 + (this.consecutivePlays * 4), 40);
-            boardElement.style.boxShadow = `0 0 ${spread}px rgba(123, 97, 255, ${intensity})`;
-          } else {
-            boardElement.style.boxShadow = 'none';
-          }
-        },
-        triggerHaptic(pattern) {
-          if ("vibrate" in navigator) {
-            try {
-              navigator.vibrate(pattern);
-            } catch (e) {
-              console.warn("Haptic feedback failed:", e);
-            }
-          }
-        },
-        scrollToChatBottom() {
-          this.$nextTick(() => {
-            const chatFeed = this.$refs.chatFeed;
-            if (chatFeed) {
-              chatFeed.scrollTop = 0;
-            }
-          });
-        },
-        showToast(message, type = 'info', duration = 3000) {
-          const toastContainer = document.body;
-          const toast = document.createElement('div');
-          toast.className = `toast toast-${type}`;
-          toast.textContent = message;
-          toast.setAttribute('role', 'alert');
-          toastContainer.appendChild(toast);
-          setTimeout(() => {
-            toast.style.animation = 'toastFadeOut 0.4s ease-out forwards';
-            setTimeout(() => toast.remove(), 400);
-          }, duration);
-        }
-      }));
-    });
-  </script>
-  <style>
-    @keyframes toastFadeOut {
-      from { opacity: 1; transform: translate(-50%, 0); }
-      to { opacity: 0; transform: translate(-50%, -10px); }
-    }
-  </style>
-</body>
-</html>
+          this.outcomes = this
