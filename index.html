@@ -15,6 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
   <script>
+    // Base URL for backend API calls
     const BASE_URL = 'https://memepicks-backend.onrender.com';
   </script>
   <style>
@@ -113,15 +114,15 @@
       50% { transform: scale(1.1); }
     }
 
-    /* Slot-Machine Card Entry Animation */
-    @keyframes slotReel {
+    /* Slot-Machine Card Entry Animation (CSS version - replaced by GSAP) */
+    /* @keyframes slotReel {
       0% { transform: translateY(-150%) rotateX(120deg); opacity: 0; filter: blur(10px); }
       50% { transform: translateY(30%) rotateX(-20deg); opacity: 0.6; }
       100% { transform: translateY(0) rotateX(0); opacity: 1; filter: blur(0); }
-    }
-    .card.slot-reel {
-      animation: slotReel 0.6s cubic-bezier(0.5, 0, 0.5, 1) forwards; /* Apply animation */
-    }
+    } */
+    /* .card.slot-reel {
+      animation: slotReel 0.6s cubic-bezier(0.5, 0, 0.5, 1) forwards;
+    } */
 
 
     /* Buttons as Click Magnets */
@@ -175,11 +176,12 @@
       width: 100%;
       height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-      transition: left 0.4s ease;
+      /* GSAP animation will control this */
+      /* transition: left 0.4s ease; */
     }
-    .button-primary:hover::before {
+    /* .button-primary:hover::before { // GSAP will handle hover effect
       left: 100%;
-    }
+    } */
 
 
     .button-secondary {
@@ -596,7 +598,7 @@
     /* Live Global Bets Ticker as FOMO Engine */
     .bets-ticker {
       position: fixed;
-      top: 56px; /* Below header on mobile */
+      /* top: 56px; /* Below header on mobile - Adjusted below */
       left: 0;
       right: 0;
       background: rgba(0, 0, 0, 0.9); /* Darker background */
@@ -608,6 +610,8 @@
       z-index: 15;
       overflow: hidden;
       white-space: nowrap;
+      /* Adjusted top position for mobile to be below tabs */
+      top: calc(56px + 48px); /* Header (56px) + Tabs (48px) */
     }
     .bets-ticker span {
       display: inline-block;
@@ -872,6 +876,22 @@
         display: inline-block;
     }
 
+    /* Added CSS for Reduced Motion */
+    @media (prefers-reduced-motion: reduce), .reduced-motion {
+        .card.slot-reel, .progress-meter, .button-primary::before, .particle,
+        .almost-won-card, .animate-shake, .badge-spots, .bets-ticker span,
+        .chat-message.hot, .countdown-timer.low-time, .modal {
+            animation: none !important;
+            transition: none !important;
+        }
+        /* Also remove GSAP animations */
+    }
+
+    /* Added CSS for will-change optimization */
+    .card.slot-reel, .particle, .progress-meter, .button-primary::before,
+    .almost-won-card, .bets-ticker span, .chat-message.hot, .countdown-timer.low-time {
+        will-change: transform, opacity;
+    }
 
     /* Mobile Specific Adjustments */
     @media (max-width: 767px) {
@@ -891,7 +911,8 @@
       .button-auth { padding: 8px 12px; font-size: 14px; }
 
       .sticky-tabs {
-        position: sticky; top: 56px; z-index: 10; background: #1A1A1A;
+        position: sticky; top: 56px; z-index: 20; /* Increased z-index to be above ticker */
+        background: #1A1A1A;
         padding: 0 16px; border-bottom: 1px solid #2A2A2A;
       }
       .tabs {
@@ -905,8 +926,8 @@
       /* Adjusted main content top padding considering ticker */
       .main-content {
         padding: 16px;
-        /* Header(56) + Ticker(~) + Tabs(48) + Spacing(8) */
-        padding-top: calc(56px + 24px + 48px + 8px); /* Adjust 24px for ticker height */
+        /* Header(56) + Tabs(48) + Ticker (~24px) + Spacing(8) */
+        padding-top: calc(56px + 48px + 24px + 8px); /* Adjust 24px for ticker height */
         padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
         transition: padding-bottom 0.3s ease-in-out; box-sizing: border-box; width: 100%;
         max-width: 100vw;
@@ -1105,13 +1126,23 @@
       </div>
       <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="openProfile()" aria-label="My Profile">My Profile</button> <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button> <button class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="showDrawer = false; openModal('limitModal')" aria-label="Set Wager Limit">Set Wager Limit</button> <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-red-500" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button> <div class="mt-6 border-t border-gray-700 pt-4">
            <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Help & Support</h3>
-            <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="showDrawer = false; tab = 'help'" aria-label="Help Center">Help Center / FAQs</a> <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Responsible Betting">Responsible Betting</a> <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Telegram">Telegram</a> <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Terms & Privacy">Terms & Privacy</a> </div>
+            <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="showDrawer = false; tab = 'help'" aria-label="Help Center">Help Center / FAQs</a> <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Responsible Betting">Responsible Betting</a> <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Telegram">Telegram</a> <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Terms & Privacy">Terms & Privacy</a>
+            <div class="mt-4">
+                <label class="flex items-center justify-between text-sm text-gray-300">
+                    Reduced Motion
+                    <label class="toggle-switch">
+                        <input type="checkbox" @change="toggleReducedMotion($event.target.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </label>
+            </div>
+         </div>
     </nav>
   </aside>
 
   <header class="header">
     <div class="header-left">
-      <button class="hamburger" @click="showDrawer = true" aria-label="Open menu" aria-controls="drawer-menu" :aria-expanded="showDrawer.toString()">☰</button>
+      <button class="hamburger" @click.debounce.500="showDrawer = true; console.log('Hamburger clicked, showDrawer:', showDrawer)" @touchstart="showDrawer = true" onclick="document.querySelector('.drawer').classList.add('open'); console.log('Fallback: Drawer opened')" aria-label="Open menu" aria-controls="drawer-menu" :aria-expanded="showDrawer.toString()">☰</button>
     </div>
     <h1 class="logo text-[#FFD700]">MemePicks</h1> <div class="header-right">
       <p class="text-xs text-[#B0B0B0] cursor-pointer hover:text-white mr-4"
@@ -1121,7 +1152,7 @@
          title="Copy address">
       </p>
        <div class="flex items-center gap-2">
-            <p class="text-xs text-gray-400"><span class="hidden sm:inline">Balance:</span> <span x-text="walletAddress ? (walletBalance !== null ? walletBalance.toFixed(2) + ' SOL' : 'Loading...') : (faucetBalance.toFixed(1) + ' (Free)')"></span></p>
+            <p class="text-xs text-gray-400"><span class="hidden sm:inline">Balance:</span> <span x-text="walletAddress ? (walletBalance !== null ? walletBalance.toFixed(2) + ' SOL' : 'Loading...') : ''"></span></p>
        </div>
       <div class="flex items-center gap-2" x-show="!walletAddress">
           <button class="button-auth text-sm" @click="openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
@@ -1210,12 +1241,10 @@
                           </div>
                           <div>
                             <p class="text-xs text-[#E0E0E0] font-semibold">Q: How are winnings calculated?</p>
-                            <p class="text-xs text-[#B0B0B0]">A: Winnings = Wager × Multiplier. Multipliers: 2 picks = 2x, 3 picks = 5x, 4 picks = 10x, 5 picks = 20x.</p>
-                          </div>
+                            <p class="text-xs text-[#B0B0B0]">A: Winnings = Wager × Multiplier. Multipliers: 2 picks = 1.5x, 3 picks = 2x, 4 picks = 3x, 5 picks = 5x.</p> </div>
                            <div>
                             <p class="text-xs text-[#E0E0E0] font-semibold">Q: Can I play without a wallet?</p>
-                            <p class="text-xs text-[#B0B0B0]">A: Yes! You can use the free faucet balance (starting at 5.0 SOL) to try out the game without connecting a real wallet.</p>
-                          </div>
+                            <p class="text-xs text-[#B0B0B0]">A: Yes! You can use the free faucet balance (starting at 10.0 SOL) to try out the game without connecting a real wallet.</p> </div>
                         </div>
                       </div>
                       <div>
@@ -1523,6 +1552,16 @@
         </div>
     </div>
 
+    <div id="retryModal" x-show="modals.retryModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="retry-modal-title">
+        <div class="modal-container" :class="{'open': modals.retryModal}" @click="closeModal('retryModal')"></div>
+        <div class="modal text-center" :class="{'open': modals.retryModal}">
+            <h3 id="retry-modal-title" class="text-lg font-bold text-[#FFD700] animate-pulse">SO CLOSE!</h3>
+            <p class="text-[#FF1A1A] text-sm mb-4">Retry with 1.5x multiplier?</p>
+            <button class="button-primary w-full text-sm" @click="retrySlip()">Retry Now!</button>
+            <button class="button-secondary w-full text-sm mt-2" @click="closeModal('retryModal')">Cancel</button>
+        </div>
+    </div>
+
 
     <div id="teaserModal" x-show="modals.teaserModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="teaser-modal-title">
       <div class="modal-container" :class="{'open': modals.teaserModal}"></div> <div class="modal text-center" :class="{'open': modals.teaserModal}">
@@ -1535,7 +1574,7 @@
     <div id="hotPropModal" x-show="modals.hotPropModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="hot-prop-modal-title">
       <div class="modal-container" :class="{'open': modals.hotPropModal}" @click="closeModal('hotPropModal')"></div>
       <div class="modal text-center" :class="{'open': modals.hotPropModal}">
-        <h3 id="hot-prop-modal-title" class="text-base font-semibold mb-3">Hot Prop Alert! 🔥</h3>
+        <h3 id="hot-prop-modal-title" class="text-base font-semibold mb-3 animate-shake">Hot Prop Alert! 🔥</h3>
         <p class="text-[#B0B0B0] text-sm mb-4">Bet on $WIF now for a chance to win big!</p> <button class="button-primary w-full text-sm py-2" @click="closeModal('hotPropModal')">Check It Out</button>
       </div>
     </div>
@@ -1544,7 +1583,7 @@
       <div class="modal-container" :class="{'open': modals.exitIntentModal}" @click="closeModal('exitIntentModal')"></div>
       <div class="modal text-center" :class="{'open': modals.exitIntentModal}">
         <h3 id="exit-intent-modal-title" class="text-base font-semibold mb-3">Don’t Leave!</h3>
-        <p class="text-[#B0B0B0] text-sm mb-4">Claim 0.1 SOL to keep betting!</p>
+        <p class="text-[#B0B0B0] text-sm mb-4">Claim 0.2 SOL to keep betting!</p>
         <button class="button-primary w-full text-sm py-2" @click="claimExitBonus(); closeModal('exitIntentModal')">Claim Now</button>
       </div>
     </div>
@@ -1793,9 +1832,10 @@
             const container = document.getElementById(containerId);
             if (container) {
                 container.innerHTML = ''; // Clear loading text
-                propContainers[containerId].forEach(prop => {
+                propContainers[containerId].forEach((prop, index) => { // Added index for staggered animation
                     // Add Limited Spots Badges randomly
-                    const spotsBadge = Math.random() < 0.3 ? `<span class="badge badge-spots animate-pulse">3 Spots Left!</span>` : '';
+                    const spots = Math.floor(Math.random() * 5) + 1; // Random spots (1-5)
+                    const spotsBadge = Math.random() < 0.3 ? `<span class="badge badge-spots animate-pulse">${spots} Spots Left!</span>` : '';
 
                     const cardHTML = `
                         <div class="card" data-risk="${prop.risk}" data-prop-id="${prop.id}">
@@ -1824,15 +1864,24 @@
                             </div>
                         </div>
                     `;
-                     // Simulate Visual Load Delay for Props
+                     // Simulate Visual Load Delay for Props with GSAP animation
                     setTimeout(() => {
                          if(container) {
                              container.insertAdjacentHTML('beforeend', cardHTML);
-                             // Apply slot-machine entry animation
                              const newCard = container.lastElementChild;
-                             if(newCard) newCard.classList.add('slot-reel'); // Use the defined animation class
+                             if(newCard) {
+                                 // Apply GSAP slot-machine entry animation
+                                 gsap.from(newCard, {
+                                     y: -150,
+                                     rotateX: 120,
+                                     opacity: 0,
+                                     filter: 'blur(10px)',
+                                     duration: 0.6,
+                                     ease: 'power2.out'
+                                 });
+                             }
                          }
-                    }, Math.random() * 500 + 200); // Random delay between 200ms and 700ms
+                    }, index * 150 + Math.random() * 100); // Staggered delay + small random variation
 
                 });
             }
@@ -1896,11 +1945,14 @@
     }
 
     function injectCountdownTimers() {
-         // This is a basic example. A real implementation needs to handle time zones,
-         // server-side expiry times, and potentially a dedicated ticking library.
          document.querySelectorAll('.countdown-timer').forEach(timerElement => {
              const expiryTimestamp = parseInt(timerElement.dataset.expires, 10);
              if (isNaN(expiryTimestamp)) return;
+
+             // Clear any existing interval for this element
+             if (timerElement.dataset.intervalId) {
+                 clearInterval(parseInt(timerElement.dataset.intervalId, 10));
+             }
 
              const updateTimer = () => {
                  const now = Date.now();
@@ -1909,6 +1961,7 @@
                  if (timeLeft <= 0) {
                      timerElement.textContent = 'Expired';
                       timerElement.classList.remove('badge-expiring', 'low-time'); // Remove low-time class
+                     clearInterval(parseInt(timerElement.dataset.intervalId, 10)); // Clear interval
                      // Optionally hide or disable the related prop card
                  } else {
                      const minutes = Math.floor(timeLeft / (60 * 1000));
@@ -1921,17 +1974,22 @@
                           timerElement.classList.remove('low-time');
                       }
                       timerElement.classList.add('badge-expiring'); // Keep badge class for styling
-
-                      // Optional: Trigger subtle ticking sound if implemented
-                      // if (timeLeft > 0 && timeLeft <= 60000 && seconds % 10 === 0) playSound('countdownTick'); // Play tick every 10 seconds in last minute
                  }
              };
 
              updateTimer(); // Initial display
              const intervalId = setInterval(updateTimer, 1000); // Update every second
+             timerElement.dataset.intervalId = intervalId.toString(); // Store interval ID
 
-             // Clean up interval when element is removed (requires MutationObserver or similar)
-             // For this example, intervals will keep running for demo
+             // Cleanup on element removal using MutationObserver
+             const observer = new MutationObserver(() => {
+                 if (!document.contains(timerElement)) {
+                     console.log(`Cleaning up interval ${timerElement.dataset.intervalId} for removed timer.`);
+                     clearInterval(parseInt(timerElement.dataset.intervalId, 10));
+                     observer.disconnect();
+                 }
+             });
+             observer.observe(document.body, { childList: true, subtree: true });
          });
     }
 
@@ -1967,14 +2025,22 @@
       if (!displayElement) return;
       try {
         console.log(`Fetching price for ${coin}...`);
-        const res = await fetch(`${BASE_URL}/api/price/${coin}`);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        console.log(`Price data for ${coin}:`, data);
-        const price = data.price;
+        // Replace with actual backend API call
+        // const res = await fetch(`${BASE_URL}/api/price/${coin}`);
+        // if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        // const data = await res.json();
+        // console.log(`Price data for ${coin}:`, data);
+        // const price = data.price;
+
+        // Simulate fake data for demo
+        const price = (Math.random() * 0.00005 + 0.00001).toFixed(5); // Simulate small price movements
+
         let formattedPrice = 'N/A';
-        if (typeof price === 'number') {
-            formattedPrice = price < 1 ? price.toFixed(4) : price.toFixed(2);
+        if (typeof price === 'string' || typeof price === 'number') {
+             const numPrice = parseFloat(price);
+             if (!isNaN(numPrice)) {
+                formattedPrice = numPrice < 0.001 ? numPrice.toFixed(6) : numPrice.toFixed(4); // Show more decimals for very small prices
+             }
         }
         displayElement.innerText = formattedPrice;
       } catch (e) {
@@ -1982,6 +2048,44 @@
         displayElement.innerText = 'Error';
       }
     }
+
+    // Mock API call to check slip result
+    async function checkSlipResult(picks) {
+        console.log('Simulating backend slip check for:', picks);
+        // In a real app, this would be an API call
+        // try {
+        //     const res = await fetch(`${BASE_URL}/api/check-slip-result`, {
+        //         method: 'POST',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({ picks })
+        //     });
+        //     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        //     return await res.json(); // Should return { correctPicks: N, didWin: boolean }
+        // } catch (error) {
+        //     console.error('Error fetching slip result from API, using fallback:', error);
+            // Fallback to simulation if API fails
+            const didWin = Math.random() > 0.4; // 60% chance to lose for testing near-miss
+            let correctPicks = 0;
+            if (didWin) {
+                correctPicks = picks.length; // Simulate all correct on win
+            } else {
+                // Simulate random correct picks on loss, with a chance of near-misses
+                if (picks.length === 5 && Math.random() < 0.5) { // 50% chance of 4/5 near-miss on loss for 5-pick slips
+                     correctPicks = 4;
+                } else if (picks.length === 4 && Math.random() < 0.5) { // 50% chance of 3/4 near-miss on loss for 4-pick slips
+                     correctPicks = 3;
+                } else if (picks.length === 3 && Math.random() < 0.5) { // 50% chance of 2/3 near-miss on loss for 3-pick slips
+                     correctPicks = 2;
+                }
+                 else {
+                     correctPicks = Math.floor(Math.random() * picks.length); // Random correct picks otherwise
+                }
+            }
+            console.log('Simulated slip result:', { didWin, correctPicks });
+            return { didWin, correctPicks };
+        // }
+    }
+
 
     async function submitSlipToBackend(picksData = null, wagerAmount = null, walletAddr = null, multiplierVal = null, referrerAddr = null) {
         let payload;
@@ -2023,17 +2127,18 @@
         }
 
         try {
-            const res = await fetch(`${BASE_URL}/api/submit-slip`, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-            if (!res.ok) {
-                console.error('Slip submission failed:', result);
-                showToast(`Error: ${result.message || 'Submission failed'}`, 'error');
-            } else {
-                console.log('Slip submitted successfully:', result);
+            // Mock API call for submission
+            // const res = await fetch(`${BASE_URL}/api/submit-slip`, {
+            //     method: 'POST',
+            //     headers: headers,
+            //     body: JSON.stringify(payload)
+            // });
+            // const result = await res.json();
+            // if (!res.ok) {
+            //     console.error('Slip submission failed:', result);
+            //     showToast(`Error: ${result.message || 'Submission failed'}`, 'error');
+            // } else {
+            //     console.log('Slip submitted successfully:', result);
                 // showToast(`Slip submitted! ID: ${result.slipId?.slice(-6) || 'N/A'}`, 'success'); // Replaced by win/loss toast
                 const alpineData = document.querySelector('[x-data]').__x.$data;
                 if (alpineData.referrerAddress && !alpineData.firstSlipSubmitted) {
@@ -2043,33 +2148,11 @@
                     alpineData.firstSlipSubmitted = true;
                 }
                 // Handle simulated win/loss after successful *submission* (see submitSlipAction)
-            }
+            // }
         } catch (err) {
             console.error('Submit slip network error:', err);
             showToast('Network error during submission.', 'error');
         }
-    }
-
-     // Placeholder backend call to check slip result
-    async function checkSlipResult(picks) {
-        console.log('Simulating backend slip check for:', picks);
-        // In a real app, this would be an API call
-        // const response = await fetch(`${BASE_URL}/api/check-slip-result`, { ... });
-        // return response.json(); // Should return { correctPicks: N, didWin: boolean }
-        const didWin = Math.random() > 0.4; // 60% chance to lose for testing near-miss
-        let correctPicks = 0;
-        if (didWin) {
-            correctPicks = picks.length; // Simulate all correct on win
-        } else {
-            // Simulate random correct picks on loss, with a chance of near-miss (4/5)
-            if (picks.length === 5 && Math.random() < 0.5) { // 50% chance of 4/5 near-miss on loss for 5-pick slips
-                 correctPicks = 4;
-            } else {
-                 correctPicks = Math.floor(Math.random() * picks.length); // Random correct picks otherwise
-            }
-        }
-        console.log('Simulated slip result:', { didWin, correctPicks });
-        return { didWin, correctPicks };
     }
 
 
@@ -2079,7 +2162,7 @@
         // State variables
         walletAddress: localStorage.getItem('walletAddress') || null,
         walletBalance: parseFloat(localStorage.getItem('walletBalance')) || 0,
-        faucetBalance: parseFloat(localStorage.getItem('faucetBalance')) || 10,
+        faucetBalance: parseFloat(localStorage.getItem('faucetBalance')) || 10, // Initial faucet balance 10
         slip: { picks: [], wager: 0 },
         lastSlip: null,
         showSlipTray: false,
@@ -2098,6 +2181,7 @@
           mysteryBoxModal: false, // Ensure it's included
           limitModal: false, // Added for Wager Limits
           winModal: false, // Added for Win Modal
+          retryModal: false, // Added for Retry Modal
         },
         teaserCountdown: 0,
         isOver18: localStorage.getItem('ageVerified') === 'true' || false, // Use ageVerified
@@ -2117,7 +2201,11 @@
         referrerAddress: localStorage.getItem('referrerAddress') || null,
         firstSlipSubmitted: localStorage.getItem('firstSlipSubmitted') === 'true' || false,
         liveBetFeed: '',
-        spotsLeft: {}, // Placeholder for fake limited spots
+        spotsLeft: { // Initial spotsLeft for dynamic badges
+             'wif-001': Math.floor(Math.random() * 5) + 1,
+             'pop-002': Math.floor(Math.random() * 5) + 1,
+             'slerf-006': Math.floor(Math.random() * 5) + 1
+        },
         rewardMeter: 0, // Placeholder for reward meter progress
         vipProgress: 0, // Placeholder for VIP progress
         currentHunchScore: 50, // Placeholder for Hunch Score (0-100)
@@ -2144,6 +2232,10 @@
           this.userProfile.totalWins = parseInt(localStorage.getItem('totalWins') || '0', 10);
           this.userProfile.totalLosses = parseInt(localStorage.getItem('totalLosses') || '0', 10);
           this.isOver18 = localStorage.getItem('ageVerified') === 'true' || false;
+          // Initialize reduced motion state
+          if (localStorage.getItem('reducedMotion') === 'true') {
+              document.body.classList.add('reduced-motion');
+          }
 
 
           if (this.walletAddress) {
@@ -2189,19 +2281,27 @@
               this.updateVIPProgress();
               this.updateBetFeed();
               this.updateChallengeFeed(); // Start challenge feed updates
+              this.updateScarcity(); // Start scarcity updates
+              this.updateTopPicks(); // Start top picks updates
+              this.initGSAPAnimations(); // Initialize GSAP animations
+
 
               // Initialize Slot Particles
               const particleContainer = document.createElement('div');
               particleContainer.id = 'slot-particles';
               document.body.appendChild(particleContainer);
               function createParticle() {
-                  const particle = document.createElement('div');
-                  particle.className = 'particle';
-                  particle.style.left = Math.random() * 100 + '%';
-                  particle.style.top = Math.random() * 100 + '%';
-                  particle.style.animationDelay = Math.random() * 3 + 's';
-                  particleContainer.appendChild(particle);
-                  setTimeout(() => particle.remove(), 4000);
+                  const particleContainer = document.getElementById('slot-particles');
+                   // Limit active particles
+                  if (particleContainer && particleContainer.childElementCount < 20) { // Cap particles at 20
+                      const particle = document.createElement('div');
+                      particle.className = 'particle';
+                      particle.style.left = Math.random() * 100 + '%';
+                      particle.style.top = Math.random() * 100 + '%';
+                      particle.style.animationDelay = Math.random() * 3 + 's';
+                      particleContainer.appendChild(particle);
+                      setTimeout(() => particle.remove(), 4000);
+                  }
               }
               setInterval(createParticle, 300); // Create a new particle every 300ms
 
@@ -2233,6 +2333,37 @@
 
           console.log('Alpine initialized.');
         },
+
+        // Method to toggle reduced motion class
+        toggleReducedMotion(enabled) {
+            document.body.classList.toggle('reduced-motion', enabled);
+            localStorage.setItem('reducedMotion', enabled);
+             // If enabling reduced motion, kill any ongoing GSAP animations
+            if (enabled) {
+                gsap.globalTimeline.clear();
+            } else {
+                // If disabling, re-initialize GSAP animations (might need more specific targeting)
+                this.initGSAPAnimations();
+            }
+        },
+
+        // Method to initialize GSAP animations
+        initGSAPAnimations() {
+            // Button Shimmer Animation
+            document.querySelectorAll('.button-primary').forEach(btn => {
+                const shimmer = btn.querySelector('::before');
+                 if (shimmer) {
+                     gsap.to(shimmer, {
+                         xPercent: 200,
+                         duration: 0.4,
+                         ease: 'linear',
+                         repeat: -1
+                     });
+                 }
+            });
+             // Add other GSAP animations here if needed
+        },
+
         // Methods
         toggleBodyScroll(enabled) {
           document.body.classList.toggle('modal-open', !enabled);
@@ -2478,7 +2609,7 @@
             if (sufficientBalance) {
                 console.log(`Submitting slip in ${submissionMode} mode:`, JSON.stringify(this.slip));
 
-                // Store slip before clearing for Double Wager
+                // Store slip before clearing for Double Wager and Retry
                 this.lastSlip = { picks: [...this.slip.picks], wager: this.slip.wager };
 
                 // Deduct wager immediately
@@ -2497,7 +2628,7 @@
 
 
                 // Check slip result (placeholder - replace with actual API call result)
-                const result = await this.checkSlipResult(this.lastSlip.picks); // Call the checkSlipResult function
+                const result = await checkSlipResult(this.lastSlip.picks); // Call the checkSlipResult function
 
                 // ** Trigger Win/Loss Effects **
                 if (result.didWin) {
@@ -2550,8 +2681,10 @@
                      localStorage.setItem('lossCount', this.lossCount);
 
 
-                      // Trigger "Almost Won" if applicable (Placeholder Logic: 4/5 correct)
-                     if (this.lastSlip.picks.length === 5 && result.correctPicks === 4) { // Check if 5 picks and 4 correct
+                      // Trigger "Almost Won" if applicable and show Retry Modal
+                     if ((this.lastSlip.picks.length === 5 && result.correctPicks === 4) ||
+                         (this.lastSlip.picks.length === 4 && result.correctPicks === 3) ||
+                         (this.lastSlip.picks.length === 3 && result.correctPicks === 2)) { // Added 3/4 and 2/3 checks
                          const slipTray = document.getElementById('slip-tray');
                          if (slipTray) {
                              slipTray.classList.add('almost-won-card');
@@ -2560,12 +2693,14 @@
                              showToast('SO CLOSE! One more pick could’ve won!', 'info');
                              setTimeout(() => slipTray.classList.remove('almost-won-card'), 5000); // Remove class after animation
                          }
+                         this.modals.retryModal = true; // Show retry modal for near-misses
+                     } else {
+                         // Trigger Fake Win Teaser on regular loss (Placeholder - random chance on loss)
+                         if (Math.random() < 0.3) { // 30% chance
+                             await this.triggerTeaserModal(); // Wait for teaser modal to close
+                         }
                      }
 
-                      // Trigger Fake Win Teaser (Placeholder - random chance on loss)
-                     if (Math.random() < 0.3) { // 30% chance
-                         await this.triggerTeaserModal(); // Wait for teaser modal to close
-                     }
 
                      // Loss Alerts (Placeholder)
                      if (this.lossCount >= 5) {
@@ -2610,6 +2745,69 @@
           }
         },
 
+        // Added retrySlip method
+        retrySlip() {
+             console.log('Attempting to retry slip:', this.lastSlip);
+            if (this.lastSlip && this.lastSlip.picks.length >= 2 && this.lastSlip.picks.length <= 5) {
+                 // Calculate new wager (1.5x, capped at 10 SOL)
+                 const newWager = Math.min(this.lastSlip.wager * 1.5, 10);
+
+                 // Check if new wager exceeds daily limit
+                 if (this.dailyWagerLimit > 0 && newWager > this.dailyWagerLimit) {
+                    showToast('Retry wager exceeds daily limit.', 'error');
+                    triggerVibration('loss');
+                    this.modals.retryModal = false; // Close modal
+                    return;
+                 }
+
+                 // Check if sufficient balance for new wager
+                 let sufficientBalance = false;
+                 if (this.walletAddress) {
+                     sufficientBalance = this.walletBalance >= newWager;
+                 } else {
+                     sufficientBalance = this.faucetBalance >= newWager;
+                 }
+                  if (!sufficientBalance) {
+                     showToast(`Insufficient balance for retry wager.`, 'error');
+                     triggerVibration('loss');
+                     this.modals.retryModal = false; // Close modal
+                     return;
+                  }
+
+
+                // Set the current slip to the last slip with the new wager
+                this.slip = { picks: [...this.lastSlip.picks], wager: newWager };
+
+                // Visually select the picks in the UI
+                this.slip.picks.forEach(pick => {
+                    const button = document.querySelector(`.button-secondary[data-prop='${pick.propId}'][data-option='${pick.choice}']`);
+                    if (button) {
+                        button.classList.add('active');
+                    }
+                });
+
+                this.updateOddsDisplay(); // Update odds display
+
+                // Submit the slip
+                this.submitSlipAction();
+
+                // Close the retry modal
+                this.modals.retryModal = false;
+
+                 // Open slip tray on mobile after retry
+                 if (window.innerWidth < 768) {
+                     this.showSlipTray = true;
+                     this.toggleBodyScroll(false);
+                 }
+
+            } else {
+                console.warn('No valid last slip to retry.');
+                showToast('No valid slip to retry.', 'error');
+                this.modals.retryModal = false; // Close modal even if invalid
+            }
+        },
+
+
         doubleWager() {
             if (!this.showDoubleWagerButton || !this.lastSlip) {
                 showToast('No valid slip to double.', 'error');
@@ -2634,13 +2832,22 @@
                 }
                  if (!sufficientBalance) {
                     showToast(`Insufficient balance for doubled wager.`, 'error');
-                    triggerVibration('loss');
                     return;
                  }
 
 
                 // Restore the last slip with doubled wager
                 this.slip = { picks: [...this.lastSlip.picks], wager: doubledWager };
+
+                 // Visually select the picks in the UI for the doubled slip
+                this.slip.picks.forEach(pick => {
+                    const button = document.querySelector(`.button-secondary[data-prop='${pick.propId}'][data-option='${pick.choice}']`);
+                    if (button) {
+                        button.classList.add('active');
+                    }
+                });
+                 this.updateOddsDisplay(); // Update odds display
+
                 this.submitSlipAction(); // Resubmit
                 showToast('Wager doubled for next slip!', 'success');
             } else {
@@ -2736,7 +2943,8 @@
             const chatFeed = document.getElementById(`global-chat-feed`); // Assuming global chat feed
             if (chatFeed) {
                  const msgDiv = document.createElement('div');
-                 msgDiv.className = 'chat-message';
+                 // Randomly add 'hot' class (20% chance)
+                 msgDiv.className = 'chat-message' + (Math.random() < 0.2 ? ' hot' : '');
                  const usernameSpan = document.createElement('span');
                  usernameSpan.className = 'username';
                  usernameSpan.textContent = 'You:'; // In real app, use connected username
@@ -2863,7 +3071,7 @@
                      console.log('User is idle. Triggering hot prop alert.');
                      this.modals.hotPropModal = true;
                      triggerVibration('pick'); // Vibrate on nudge
-                }, 30000); // Trigger after 30 seconds of inactivity
+                }, 20000); // Trigger after 20 seconds of inactivity (Updated)
             };
 
             // Reset timer on user activity
@@ -2887,16 +3095,16 @@
                    this.modals.exitIntentModal = true;
                 }
               }
-            }, { once: true }); // Only trigger once per page load
+            }); // Removed { once: true } to allow multiple triggers
           }
         },
 
 
         // Placeholder function to claim the Exit Intent bonus
         claimExitBonus() {
-            this.faucetBalance += 0.1; // Add to faucet balance (placeholder)
+            this.faucetBalance += 0.2; // Add 0.2 SOL to faucet balance (Updated)
             localStorage.setItem('faucetBalance', this.faucetBalance.toFixed(2)); // Save faucet balance
-            showToast('0.1 SOL added to your balance!', 'success');
+            showToast('0.2 SOL added to your balance!', 'success'); // Updated toast message
         },
 
         // Placeholder function to request browser notifications
@@ -3025,9 +3233,12 @@
 
         // Placeholder function to update Live Bet Feed
         updateBetFeed() {
+          // Diversified bet actions
           const betActions = [
-            `User${Math.floor(Math.random() * 1000)} bet ${Math.random() * 10 + 1} SOL on $WIF!`,
-            `User${Math.floor(Math.random() * 1000)} won ${Math.random() * 15 + 5} SOL on $POPCAT!`
+            `User${Math.floor(Math.random() * 1000)} bet ${(Math.random() * 10 + 0.1).toFixed(2)} SOL on $WIF!`, // Bet action
+            `User${Math.floor(Math.random() * 1000)} won ${(Math.random() * 15 + 5).toFixed(2)} SOL on $POPCAT!`, // Win action
+            `User${Math.floor(Math.random() * 1000)} lost big on $BONK!`, // Loss action
+            `User${Math.floor(Math.random() * 1000)} almost won 10 SOL on $SLERF!` // Near-miss action
           ];
           this.liveBetFeed = betActions[Math.floor(Math.random() * betActions.length)];
           setTimeout(() => this.updateBetFeed(), 10000); // Update every 10 seconds
@@ -3035,22 +3246,41 @@
 
         // Placeholder function to update Scarcity indicators
         updateScarcity() {
-          // Simulate spots left for a specific prop (e.g., wif-001)
-          this.spotsLeft = { 'wif-001': Math.floor(Math.random() * 5) + 1 }; // Random spots left (1-5)
-           // You would need to update the UI elements displaying spotsLeft based on this data
+          // Update badge text for all props with limited spots
+          Object.keys(this.spotsLeft).forEach(propId => {
+              const badge = document.querySelector(`.card[data-prop-id="${propId}"] .badge-spots`);
+              if (badge) {
+                  badge.textContent = `${this.spotsLeft[propId]} Spots Left!`;
+                  // Simulate spots decreasing randomly
+                  if (this.spotsLeft[propId] > 1 && Math.random() < 0.5) {
+                      this.spotsLeft[propId]--;
+                  } else if (this.spotsLeft[propId] === 1 && Math.random() < 0.8) {
+                       this.spotsLeft[propId]--; // Make the last spot disappear faster
+                  }
+                   if (this.spotsLeft[propId] <= 0) {
+                       // Handle prop expiring/closing when spots run out (placeholder)
+                       const card = document.querySelector(`.card[data-prop-id="${propId}"]`);
+                       if (card) {
+                           card.classList.add('lose-effect'); // Use a visual effect for removal
+                           setTimeout(() => card.remove(), 1000); // Remove card after animation
+                       }
+                   }
+              }
+          });
+          setTimeout(() => this.updateScarcity(), 10000); // Update every 10 seconds
         },
 
         // Placeholder function to check Leaderboard Rank and trigger Almost Top 10 effect
         checkLeaderboardRank() {
-          // Simulate user's rank
-          const rank = Math.floor(Math.random() * 30) + 1; // Rank between 1 and 30
-          console.log('Simulated Leaderboard Rank:', rank);
-          if (rank >= 11 && rank <= 15) { // If rank is between 11 and 15
-            const userRow = document.querySelector('.leaderboard-user-row');
-            if (userRow) userRow.classList.add('almost-top-10'); // Add the CSS class
-            showToast(`Rank ${rank}! So close to Top 10!`, 'info');
-            triggerVibration('almostWon'); // Add vibration
-          }
+          // Simulate user's rank (using the placeholderRank data attribute)
+           document.querySelectorAll('.leaderboard-user-row').forEach(userRow => {
+               const rank = parseInt(userRow.dataset.simulatedRank, 10);
+               if (!isNaN(rank) && rank >= 11 && rank <= 15) { // If rank is between 11 and 15
+                 userRow.classList.add('almost-top-10'); // Add the CSS class
+                 showToast(`Rank ${rank}! So close to Top 10!`, 'info');
+                 triggerVibration('almostWon'); // Add vibration
+               }
+           });
         },
 
         // Placeholder function to save the daily wager limit
