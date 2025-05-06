@@ -16,7 +16,7 @@
   <style>
     /* Base styles */
     body {
-      /* Task 3: Updated font */
+      /* Task 6: Ensure Sora font is applied globally */
       font-family: 'Sora', sans-serif;
       background: linear-gradient(180deg, #1A1A1A 0%, #121212 100%);
       color: #FFFFFF;
@@ -31,12 +31,12 @@
 
     .card {
       background: #1E1E1E;
-      border-radius: 12px; /* Slightly larger radius */
-      padding: 16px; /* Reverted padding for consistency */
+      border-radius: 12px;
+      padding: 16px;
       margin-bottom: 16px;
-      /* Task 3: Softer shadow */
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      /* Task 3: Enhanced transition */
+      /* Task 5: Enhanced shadow */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      /* Task 7: Enhanced transition */
       transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
@@ -46,9 +46,9 @@
       position: relative;
     }
     .card:hover {
-      /* Task 3: Brighter glow on hover */
-      box-shadow: 0 4px 16px rgba(147, 51, 234, 0.3); /* Purple glow */
-      transform: scale(1.02);
+      /* Task 5: Brighter purple glow on hover */
+      box-shadow: 0 6px 20px rgba(147, 51, 234, 0.35);
+      transform: scale(1.02) translateY(-1px); /* Add slight lift */
     }
     .card:active {
       transform: scale(0.98);
@@ -63,25 +63,25 @@
       touch-action: manipulation;
       font-weight: 600;
       border-radius: 8px;
-      /* Task 3: Enhanced transition */
+      /* Task 7: Enhanced transition */
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      /* Task 3: Subtle shadow */
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      /* Task 5: Subtle base shadow */
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
 
     .button-primary {
-      /* Task 3: Brighter gradient */
-      background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%); /* Brighter Purple to Blue */
+      /* Task 5: Vibrant gradient */
+      background: linear-gradient(90deg, #A78BFA 0%, #3B82F6 100%); /* Lighter Purple to Blue */
       color: #FFFFFF;
       border: none;
     }
     .button-primary:hover:not(:disabled) {
-      /* Task 3: Enhanced hover */
-      box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4); /* Brighter purple shadow */
+      /* Task 5: Enhanced hover with glow */
+      box-shadow: 0 6px 15px rgba(167, 139, 250, 0.4); /* Lighter purple glow */
       transform: scale(1.03) translateY(-1px);
     }
     .button-primary:active:not(:disabled) {
@@ -92,19 +92,19 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
-      color: #9CA3AF; /* Lighter text for disabled */
+      color: #9CA3AF;
     }
 
     .button-secondary {
       background: transparent;
-      border: 1px solid #6D28D9; /* Darker Purple border */
+      border: 1px solid #7C3AED; /* Vibrant Purple border */
       color: #A78BFA; /* Lighter Purple text */
     }
     .button-secondary:hover:not(:disabled) {
-      background: #6D28D9;
+      background: #7C3AED;
       color: #FFFFFF;
       transform: scale(1.03) translateY(-1px);
-      box-shadow: 0 4px 10px rgba(109, 40, 217, 0.4);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4); /* Vibrant purple shadow */
     }
     .button-secondary:active:not(:disabled) {
       transform: scale(0.97);
@@ -118,14 +118,14 @@
       background: transparent;
     }
     .button-secondary.active {
-      background: #6D28D9;
+      background: #7C3AED; /* Vibrant purple active */
       color: #FFFFFF;
       border-color: transparent;
-      box-shadow: 0 4px 10px rgba(109, 40, 217, 0.4);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
     }
 
     .button-auth {
-      /* Task 3: Updated gradient */
+      /* Task 5: Updated gradient */
       background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
       color: #FFFFFF;
       font-weight: 600;
@@ -151,13 +151,14 @@
       padding: 12px;
       border-radius: 8px;
       width: 100%;
-      font-size: 16px;
+      font-size: 16px; /* Ensure font size consistency */
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
       box-sizing: border-box;
+      font-family: 'Sora', sans-serif; /* Task 6: Ensure font */
     }
     .input-field:focus {
       outline: none;
-      border-color: #8B5CF6; /* Brighter purple focus */
+      border-color: #8B5CF6;
       box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
     }
 
@@ -176,10 +177,10 @@
       scroll-snap-align: start;
       opacity: 1;
       min-height: 48px;
+      font-family: 'Sora', sans-serif; /* Task 6: Ensure font */
     }
     .tab-button.active {
-      /* Task 3: Updated active color */
-      background: #7C3AED; /* Vibrant purple */
+      background: #7C3AED;
       color: #FFFFFF;
       box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
       transform: scale(1.05);
@@ -222,7 +223,6 @@
     .slip-tray .button-primary {
       position: sticky;
       bottom: 0;
-      /* Task 3: Updated gradient */
       background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
       z-index: 20;
       width: 100%;
@@ -238,7 +238,7 @@
       width: 100%;
       max-width: 100%;
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
-      /* Task 3: Smoother modal transition */
+      /* Task 7: Smoother modal transition */
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       position: fixed;
       bottom: 0;
@@ -273,13 +273,13 @@
       max-width: 300px;
       height: 100%;
       background: #1E1E1E;
-      /* Task 3: Smoother drawer transition */
+      /* Task 7: Smoother drawer transition */
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       transform: translateX(-100%);
       z-index: 50;
       padding: 16px;
       box-sizing: border-box;
-      box-shadow: 4px 0 15px rgba(0,0,0,0.2); /* Add shadow to drawer */
+      box-shadow: 4px 0 15px rgba(0,0,0,0.2);
     }
     .drawer.open {
       transform: translateX(0);
@@ -298,9 +298,10 @@
       pointer-events: auto;
     }
 
-    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; } /* Smoother fade */
+    /* Task 7: Updated fade-in animation */
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      from { opacity: 0; transform: translateY(8px) scale(0.99); } /* Start slightly lower and smaller */
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
@@ -326,21 +327,21 @@
         text-transform: uppercase;
         margin-left: 8px;
     }
-    .badge-risk-low { background-color: #10B981; color: white; } /* Tailwind green-500 */
-    .badge-risk-medium { background-color: #F59E0B; color: white; } /* Tailwind amber-500 */
-    .badge-risk-high { background-color: #EF4444; color: white; } /* Tailwind red-500 */
+    .badge-risk-low { background-color: #10B981; color: white; }
+    .badge-risk-medium { background-color: #F59E0B; color: white; }
+    .badge-risk-high { background-color: #EF4444; color: white; }
 
     /* Odds Multiplier Style */
     .odds-multiplier {
         font-size: 10px;
-        color: #a0aec0; /* gray-500 */
+        color: #a0aec0;
         margin-left: 4px;
     }
 
 
-    .glow { animation: glow 1.8s ease-in-out infinite; } /* Slightly faster glow */
+    .glow { animation: glow 1.8s ease-in-out infinite; }
     @keyframes glow {
-      0%, 100% { box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2); } /* Use active purple */
+      0%, 100% { box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2); }
       50% { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
     }
 
@@ -363,10 +364,7 @@
 
     /* Toggle Switch Styles */
     .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 40px;
-        height: 20px;
+        position: relative; display: inline-block; width: 40px; height: 20px;
     }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
@@ -377,7 +375,7 @@
         position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
         background-color: white; transition: .4s; border-radius: 50%;
     }
-    input:checked + .toggle-slider { background-color: #7C3AED; } /* Updated purple */
+    input:checked + .toggle-slider { background-color: #7C3AED; }
     input:checked + .toggle-slider:before { transform: translateX(20px); }
 
     /* Chat Styles Placeholder */
@@ -422,8 +420,7 @@
       /* Task 1 Fix: Adjusted main content top padding */
       .main-content {
         padding: 16px;
-        /* Header(56) + Price(approx 24) + Tabs(48) + Spacing(8) */
-        /* Let's try removing the price height calculation for now */
+        /* Header(56) + Tabs(48) + Spacing(8) - Removed price display height */
         padding-top: calc(56px + 48px + 8px);
         padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px);
         transition: padding-bottom 0.3s ease-in-out; box-sizing: border-box; width: 100%;
@@ -459,9 +456,9 @@
         padding-bottom: env(safe-area-inset-bottom); position: fixed; bottom: 0; left: 0;
         width: 100%; z-index: 60; display: flex; justify-content: space-around;
         align-items: center; box-sizing: border-box;
-        /* Add backdrop filter for slight blur effect if desired */
-        /* backdrop-filter: blur(5px); */
-        /* -webkit-backdrop-filter: blur(5px); */
+        /* Task 3: Add subtle backdrop blur */
+        /* backdrop-filter: blur(8px); */ /* Uncomment if desired */
+        /* -webkit-backdrop-filter: blur(8px); */
       }
       /* Adjust button width for 5 items */
       .bottom-nav button {
@@ -833,9 +830,13 @@
       <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button>
       <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
 
-      <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
-      <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Telegram">Telegram</a>
-      <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Terms & Privacy">Terms & Privacy</a>
+      <div class="mt-6 border-t border-gray-700 pt-4">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Help & Support</h3>
+             <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; tab = 'help'" aria-label="Help Center">Help Center / FAQs</a>
+             <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
+             <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Telegram">Telegram</a>
+             <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Terms & Privacy">Terms & Privacy</a>
+       </div>
     </nav>
   </aside>
 
@@ -1181,7 +1182,7 @@
 
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      // Task 5 Fix: Adjusted toast position using bottom-20 (80px approx)
+      // Task 8 Fix: Adjusted toast position using bottom-20 (approx 80px)
       toast.className = `fixed bottom-20 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl text-white text-sm z-[1000] shadow-lg ${
         type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-gray-700'
       }`;
@@ -1283,9 +1284,8 @@
         console.log(`Connected to ${walletType}:`, publicKeyString);
         showToast(`Connected: ${publicKeyString.slice(0,6)}...${publicKeyString.slice(-4)}`, 'success');
 
+        // Task 2 Fix: Ensure localStorage is set and event is dispatched
         localStorage.setItem('walletAddress', publicKeyString);
-
-        // Dispatch event for Alpine to handle state update and balance fetch
         document.body.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address: publicKeyString } }));
 
       } catch (err) {
