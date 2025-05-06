@@ -21,56 +21,110 @@
     /* Base styles */
     body {
       font-family: 'Sora', sans-serif;
-      background: linear-gradient(180deg, #1A1A1A 0%, #121212 100%);
+      /* Updated background gradient for hypnotic pulse */
+      background: linear-gradient(180deg, #0F0F2A 0%, #05051A 100%);
+      /* Dark, cosmic gradient to draw focus */
+      animation: bgPulse 10s infinite ease-in-out;
+      transition: filter 0.3s ease;
       color: #FFFFFF;
       min-height: 100vh;
       margin: 0;
       overscroll-behavior: none;
-      /* Subtle color shift base */
-      transition: background-color 0.5s ease;
+    }
+
+    /* Keyframes for Hypnotic Background Pulse */
+    @keyframes bgPulse {
+      0%, 100% { filter: brightness(1) saturate(1); }
+      50% { filter: brightness(1.1) saturate(1.2); }
+    }
+
+    /* Mood-based background shifts */
+    body.mood-win {
+      background: linear-gradient(180deg, #3A2A0F 0%, #2A1F05 100%);
+      filter: brightness(1.2) saturate(1.5);
+      /* Euphoric gold rush */
+    }
+    body.mood-loss {
+      background: linear-gradient(180deg, #2A0F0F 0%, #1A0505 100%);
+      filter: brightness(0.8) saturate(1.4);
+      /* Urgent red tension */
     }
 
     body.modal-open {
       overflow: hidden;
     }
 
-    /* Subtle Color Shift based on Mood (placeholder classes) */
-    body.mood-gold { background: linear-gradient(180deg, #3A351A 0%, #2A2512 100%); } /* Simulating winning */
-    body.mood-red { background: linear-gradient(180deg, #3A1A1A 0%, #2A1212 100%); } /* Simulating losing */
-
+    /* Cards as Dopamine Triggers */
     .card {
-      background: #1E1E1E;
+      background: linear-gradient(145deg, #1A1A3A, #2A2A5A); /* Gradient for depth */
+      border: 2px solid rgba(255, 77, 77, 0.5); /* Reddish initial border */
+      box-shadow: 0 4px 20px rgba(255, 77, 77, 0.3); /* Initial red shadow */
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      overflow: hidden; /* For the radial gradient effect */
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 16px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-      transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
       gap: 8px;
       width: 100%;
       box-sizing: border-box;
-      position: relative;
-      /* Slot-Machine Visual Entry placeholder */
-      /* animation: slideInFromRandom 0.8s ease-out forwards; */
-      /* Add this class via JS when props load */
     }
     .card:hover {
-      box-shadow: 0 6px 20px rgba(147, 51, 234, 0.35);
-      transform: scale(1.02) translateY(-1px);
+      transform: scale(1.08) translateY(-6px); /* Lift and enlarge on hover */
+      box-shadow: 0 10px 40px rgba(255, 215, 0, 0.6); /* Gold shadow on hover */
+      border-color: #FFD700; /* Gold border on hover */
     }
-    .card:active {
-      transform: scale(0.98);
+    /* Radial gradient flash on hover */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.4), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none; /* Ensure clicks go through */
+    }
+    .card:hover::after {
+      opacity: 1;
+      animation: dopamineFlash 1s infinite; /* Pulsing flash animation */
+    }
+    /* Keyframes for Dopamine Flash */
+    @keyframes dopamineFlash {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.5; }
+    }
+    /* Image styling for token pulse */
+    .card img {
+      border: 3px solid #FFD700; /* Gold border around image */
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); /* Gold shadow around image */
+      transition: transform 0.3s ease;
+      animation: tokenPulse 2s infinite; /* Subtle pulse animation for image */
+      border-radius: 50%; /* Ensure images are round */
+      object-fit: contain; /* Maintain aspect ratio */
+    }
+    /* Keyframes for Token Pulse */
+    @keyframes tokenPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
 
-    /* Animated entrance (placeholder) */
-    @keyframes slotSpin {
-      0% { transform: translateY(-100%) rotateX(90deg); opacity: 0; }
-      50% { transform: translateY(20%) rotateX(-10deg); opacity: 0.7; }
-      100% { transform: translateY(0) rotateX(0); opacity: 1; }
+    /* Slot-Machine Card Entry Animation */
+    @keyframes slotReel {
+      0% { transform: translateY(-150%) rotateX(120deg); opacity: 0; filter: blur(10px); }
+      50% { transform: translateY(30%) rotateX(-20deg); opacity: 0.6; }
+      100% { transform: translateY(0) rotateX(0); opacity: 1; filter: blur(0); }
+    }
+    .card.slot-reel {
+      animation: slotReel 0.6s cubic-bezier(0.5, 0, 0.5, 1) forwards; /* Apply animation */
     }
 
 
+    /* Buttons as Click Magnets */
     .button-primary,
     .button-secondary {
       padding: 12px 16px;
@@ -86,16 +140,20 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      position: relative; /* For shimmer effect */
+      overflow: hidden; /* For shimmer effect */
     }
 
     .button-primary {
-      background: linear-gradient(90deg, #A78BFA 0%, #3B82F6 100%);
+      background: linear-gradient(90deg, #FF1A1A, #FFD700); /* Red-to-gold gradient */
       color: #FFFFFF;
       border: none;
+      box-shadow: 0 6px 20px rgba(255, 26, 26, 0.6); /* Red shadow */
+      text-shadow: 0 0 5px rgba(255, 215, 0, 0.7); /* Gold text shadow */
     }
     .button-primary:hover:not(:disabled) {
-      box-shadow: 0 6px 15px rgba(167, 139, 250, 0.4);
-      transform: scale(1.03) translateY(-1px);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.8); /* Enhanced gold shadow on hover */
+      transform: scale(1.1) translateY(-3px); /* Lift and enlarge more on hover */
     }
     .button-primary:active:not(:disabled) {
       transform: scale(0.97);
@@ -106,39 +164,57 @@
       transform: none;
       box-shadow: none;
       color: #9CA3AF;
+      text-shadow: none;
     }
+    /* Shimmer effect for primary buttons */
+    .button-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+      transition: left 0.4s ease;
+    }
+    .button-primary:hover::before {
+      left: 100%;
+    }
+
 
     .button-secondary {
       background: transparent;
-      border: 1px solid #7C3AED;
-      color: #A78BFA;
+      border: 3px solid #FF1A1A; /* Red border */
+      color: #FFD700; /* Gold text */
+      text-shadow: 0 0 5px rgba(255, 26, 26, 0.7); /* Red text shadow */
     }
     .button-secondary:hover:not(:disabled) {
-      background: #7C3AED;
+      background: linear-gradient(90deg, #FF1A1A, #FFD700); /* Red-to-gold on hover */
       color: #FFFFFF;
+      border: none; /* Remove border on hover */
       transform: scale(1.03) translateY(-1px);
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+      box-shadow: 0 4px 12px rgba(255, 26, 26, 0.4); /* Red shadow on hover */
+      text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
     }
     .button-secondary:active:not(:disabled) {
       transform: scale(0.97);
     }
     .button-secondary.active {
-      background: #7C3AED;
+      background: linear-gradient(90deg, #FF1A1A, #FFD700); /* Red-to-gold when active */
       color: #FFFFFF;
-      border-color: transparent;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+      border: none;
+      box-shadow: 0 6px 20px rgba(255, 26, 26, 0.6); /* Red shadow when active */
+      animation: activePulse 1.5s infinite; /* Pulsing animation when active */
+      text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
     }
-    .button-secondary:disabled {
-      border-color: #4A4A4A;
-      color: #4A4A4A;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-      background: transparent;
+    /* Keyframes for Active Pulse */
+    @keyframes activePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
 
     .button-auth {
-      background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
+      background: linear-gradient(90deg, #FF1A1A 0%, #FFD700 100%); /* Red-to-gold */
       color: #FFFFFF;
       font-weight: 600;
       padding: 8px 16px;
@@ -149,12 +225,13 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
     }
     .button-auth:hover {
-      box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4);
+      box-shadow: 0 6px 12px rgba(255, 26, 26, 0.4); /* Red shadow on hover */
       transform: scale(1.03) translateY(-1px);
     }
     .button-auth:active {
       transform: scale(0.97);
     }
+
 
     .input-field {
       background: #1E1E1E;
@@ -170,23 +247,23 @@
     }
     .input-field:focus {
       outline: none;
-      border-color: #8B5CF6;
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+      border-color: #FFD700; /* Gold focus */
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3); /* Gold glow */
     }
 
-    /* Wager Suggestion Tooltip (placeholder) */
+    /* Wager Suggestion Tooltip */
     .wager-tooltip-container {
       position: relative;
-      display: inline-block; /* or block, depending on layout */
+      display: inline-block;
       width: 100%;
     }
     .wager-tooltip {
       position: absolute;
-      bottom: calc(100% + 5px); /* Adjust as needed */
+      bottom: calc(100% + 5px);
       left: 50%;
       transform: translateX(-50%);
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
+      background-color: rgba(255, 26, 26, 0.9); /* Reddish background */
+      color: #FFD700; /* Gold text */
       padding: 5px 10px;
       border-radius: 4px;
       font-size: 12px;
@@ -195,8 +272,8 @@
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.2s ease-in-out;
+      text-shadow: 0 0 3px rgba(255, 215, 0, 0.5);
     }
-     /* Add a subtle arrow */
     .wager-tooltip::after {
       content: "";
       position: absolute;
@@ -205,10 +282,8 @@
       margin-left: -5px;
       border-width: 5px;
       border-style: solid;
-      border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+      border-color: rgba(255, 26, 26, 0.9) transparent transparent transparent;
     }
-    /* Tooltip visibility handled by JS/Alpine */
-    /* .wager-tooltip.show { opacity: 1; } */
 
 
     .tab-button {
@@ -229,9 +304,9 @@
       font-family: 'Sora', sans-serif;
     }
     .tab-button.active {
-      background: #7C3AED;
+      background: linear-gradient(90deg, #FF1A1A, #FFD700); /* Red-to-gold active tab */
       color: #FFFFFF;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+      box-shadow: 0 4px 12px rgba(255, 26, 26, 0.4); /* Red shadow */
       transform: scale(1.05);
       opacity: 1;
     }
@@ -272,21 +347,23 @@
     .slip-tray .button-primary {
       position: sticky;
       bottom: 0;
-      background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
+      background: linear-gradient(90deg, #FF1A1A, #FFD700); /* Red-to-gold */
       z-index: 20;
       width: 100%;
       margin-top: 16px;
     }
 
     .modal {
-      background: #1E1E1E;
+      background: linear-gradient(145deg, #1A1A3A, #2A2A5A); /* Gradient */
+      border: 3px solid #FFD700; /* Gold border */
+      box-shadow: 0 10px 40px rgba(255, 26, 26, 0.7); /* Red shadow */
+      animation: rewardPop 0.5s ease-out; /* Pop-in animation */
       border-top-left-radius: 12px;
       border-top-right-radius: 12px;
       padding: 16px;
       padding-bottom: calc(16px + env(safe-area-inset-bottom));
       width: 100%;
       max-width: 100%;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       position: fixed;
       bottom: 0;
@@ -296,11 +373,13 @@
       max-height: 90vh;
       overflow-y: auto;
     }
-    .modal.open {
-      transform: translateY(0);
+     /* Keyframes for Modal Pop-in */
+    @keyframes rewardPop {
+      0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
     .modal-container {
-      background: rgba(0, 0, 0, 0.6);
+      background: radial-gradient(circle, rgba(255, 26, 26, 0.4), rgba(0, 0, 0, 0.9)); /* Radial gradient overlay */
       transition: opacity 0.3s ease-in-out;
       opacity: 0;
       pointer-events: none;
@@ -384,39 +463,46 @@
         margin-left: 4px;
     }
 
-    /* Leaderboard Glow */
-    .glow { animation: glow 1.8s ease-in-out infinite; }
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2); }
-      50% { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
+    /* Leaderboard as Trophy Case */
+    .glow {
+      animation: trophyGlow 1.5s infinite; /* Trophy glow animation */
+    }
+    /* Keyframes for Trophy Glow */
+    @keyframes trophyGlow {
+      0%, 100% { box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4); } /* Gold shadow */
+      50% { box-shadow: 0 10px 40px rgba(255, 215, 0, 0.8); } /* Stronger gold shadow */
     }
 
-    /* Almost Won Highlighting (placeholder) */
+    /* Near-Miss Explosion */
     .almost-won-card {
-        border: 2px solid #FFD700; /* Or animated glow/border */
-        box-shadow: 0 0 15px #FFD700, 0 0 5px #FFD700 inset; /* Pulsing glow */
-        position: relative;
-        animation: pulseGlow 1.5s ease-in-out infinite; /* Apply animation */
+      border: 4px solid #FFD700; /* Gold border */
+      box-shadow: 0 0 30px #FF1A1A, 0 0 15px #FFD700 inset; /* Red outer, gold inner shadow */
+      background: linear-gradient(145deg, rgba(255, 26, 26, 0.2), rgba(255, 215, 0, 0.2)); /* Subtle red/gold gradient */
+      animation: nearMissExplosion 1.2s infinite; /* Pulsing explosion animation */
     }
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 15px #FFD700, 0 0 5px #FFD700 inset; }
-      50% { box-shadow: 0 0 25px #FFD700, 0 0 10px #FFD700 inset; }
+    /* Keyframes for Near-Miss Explosion */
+    @keyframes nearMissExplosion {
+      0%, 100% { box-shadow: 0 0 30px #FF1A1A, 0 0 15px #FFD700 inset; }
+      50% { box-shadow: 0 0 50px #FFD700, 0 0 25px #FF1A1A inset; } /* Swap intensity */
     }
-     /* Animated flames (placeholder) */
+    /* "SO CLOSE!" badge */
     .almost-won-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        /* background: url('/path/to/flame-animation.gif') repeat-x bottom; */
-        /* background-size: contain; */
-        z-index: -1; /* Behind content */
-        opacity: 0.3; /* Subtle effect */
+      content: 'SO CLOSE!';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #FF1A1A; /* Red background */
+      color: #FFD700; /* Gold text */
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 800;
+      animation: shakeText 0.5s infinite; /* Shaking text animation */
+      z-index: 1; /* Ensure it's above content */
     }
-    .almost-won-card h3, .almost-won-card p {
-        color: #FFFACD; /* Lighter gold text */
+    /* Keyframes for Shake Text */
+    @keyframes shakeText {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-3px); }
     }
 
 
@@ -450,48 +536,89 @@
         position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
         background-color: white; transition: .4s; border-radius: 50%;
     }
-    input:checked + .toggle-slider { background-color: #7C3AED; }
+    input:checked + .toggle-slider { background-color: #FFD700; } /* Gold when checked */
     input:checked + .toggle-slider:before { transform: translateX(20px); }
 
-    /* Chat Styles Placeholder */
+    /* Chat as Social Casino */
     .chat-feed {
         height: 200px; background-color: #2A2A2A; border-radius: 8px; padding: 8px;
         overflow-y: scroll; margin-bottom: 8px; display: flex; flex-direction: column-reverse;
     }
-    .chat-message { margin-bottom: 6px; font-size: 12px; }
+    .chat-message {
+        margin-bottom: 6px;
+        font-size: 12px;
+        animation: socialSlide 0.4s ease-out; /* Slide in animation */
+    }
+    /* Keyframes for Social Slide */
+    @keyframes socialSlide {
+      0% { transform: translateX(30px); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
     .chat-message .username { font-weight: 600; color: #A0AEC0; margin-right: 4px; }
-    .chat-input-area { display: flex; gap: 8px; }
-
-    /* Countdown Clock (placeholder) */
-    .countdown-timer {
-      font-size: 10px;
-      font-weight: bold;
-      color: #FF4D4D; /* Red color for urgency */
-      margin-left: auto; /* Push to the right */
-      flex-shrink: 0;
-      min-width: 50px; /* Give it space */
-      text-align: right;
+    /* Hot Chat Message Style */
+    .chat-message.hot {
+      background: linear-gradient(145deg, #FF1A1A, #FFD700); /* Red-to-gold gradient */
+      box-shadow: 0 0 15px #FF1A1A; /* Red glow */
+      animation: hotMessage 1.5s infinite; /* Pulsing animation */
+      padding: 4px 8px; /* Add padding for hot message */
+      border-radius: 4px; /* Rounded corners for hot message */
+    }
+    /* Keyframes for Hot Message Pulse */
+    @keyframes hotMessage {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
 
-    /* Live Global Bets Ticker (placeholder) */
+    .chat-input-area { display: flex; gap: 8px; }
+
+    /* Countdown Timer with Heartbeat */
+    .countdown-timer {
+      color: #FF1A1A; /* Red color */
+      text-shadow: 0 0 10px #FF1A1A; /* Red glow */
+      font-weight: 800;
+      font-size: 10px; /* Ensure size is small */
+      margin-left: auto;
+      flex-shrink: 0;
+      min-width: 50px;
+      text-align: right;
+    }
+    /* Heartbeat animation for low time */
+    .countdown-timer.low-time {
+      animation: heartbeat 0.8s infinite;
+    }
+    /* Keyframes for Heartbeat */
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); text-shadow: 0 0 10px #FF1A1A; }
+      50% { transform: scale(1.15); text-shadow: 0 0 20px #FF1A1A; }
+    }
+
+
+    /* Live Global Bets Ticker as FOMO Engine */
     .bets-ticker {
       position: fixed;
       top: 56px; /* Below header on mobile */
       left: 0;
       right: 0;
-      background: rgba(0, 0, 0, 0.6);
-      color: #FFFFFF;
+      background: rgba(0, 0, 0, 0.9); /* Darker background */
+      border: 2px solid #FFD700; /* Gold border */
+      box-shadow: 0 0 20px rgba(255, 26, 26, 0.7); /* Red shadow */
+      color: #FFD700; /* Gold text */
       font-size: 12px;
-      padding: 4px 0;
-      z-index: 15; /* Above main content, below sticky tabs */
+      padding: 8px 0; /* Increased padding */
+      z-index: 15;
       overflow: hidden;
       white-space: nowrap;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     .bets-ticker span {
       display: inline-block;
       padding-left: 100%; /* Start off-screen */
-      animation: marquee 15s linear infinite; /* Adjust duration as needed */
+      animation: marquee 10s linear infinite, fomoFlicker 2s infinite; /* Marquee and flicker */
+      text-shadow: 0 0 10px #FF1A1A; /* Red text shadow */
+    }
+    /* Keyframes for FOMO Flicker */
+    @keyframes fomoFlicker {
+      0%, 100% { opacity: 1; text-shadow: 0 0 10px #FF1A1A; }
+      50% { opacity: 0.9; text-shadow: 0 0 15px #FFD700; } /* Swap intensity */
     }
     @keyframes marquee {
       0% { transform: translateX(0); }
@@ -502,7 +629,7 @@
      }
 
 
-    /* Screen Shake (placeholder) */
+    /* Screen Shake */
     @keyframes screenShake {
       0% { transform: translate(1px, 1px) rotate(0deg); }
       10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -529,33 +656,56 @@
         100% { opacity: 0; transform: translateY(20px); /* Fade and drop slightly */ display: none; }
     }
 
-    /* Coin Burst (placeholder - could be particle system JS) */
-    /* Add a div and apply particle effect library */
-
-    /* Dopamine Progress Meter (placeholder SVG) */
+    /* Dopamine Progress Meter (SVG) */
     .progress-meter {
         position: absolute;
         top: -10px; /* Adjust position */
         left: -10px; /* Adjust position */
-        width: 64px; /* Adjust size */
-        height: 64px; /* Adjust size */
-        z-index: 25; /* Above FAB */
-        transform: translate(-50%, -50%); /* Center over FAB? Depends on desired location */
+        width: 80px; /* Increased size */
+        height: 80px; /* Increased size */
+        z-index: 25;
+        transform: translate(-50%, -50%);
+        filter: drop-shadow(0 0 15px #FFD700); /* Gold drop shadow */
+        animation: wheelSpin 10s infinite linear; /* Spinning animation */
+    }
+     /* Keyframes for Wheel Spin */
+    @keyframes wheelSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
      .progress-meter circle {
         fill: none;
         stroke: #4A4A4A; /* Background color */
-        stroke-width: 4;
+        stroke-width: 8; /* Increased stroke width */
         transition: stroke-dashoffset 0.3s ease-in-out;
         transform: rotate(-90deg);
         transform-origin: 50% 50%;
+        r: 30; /* Radius */
      }
     .progress-meter .progress-circle {
-        stroke: #7C3AED; /* Progress color */
+        stroke: url(#rewardGradient); /* Use gradient for stroke */
+        stroke-width: 8;
         stroke-dasharray: 188.5; /* Circumference for a radius of 30 */
         stroke-dashoffset: 188.5; /* Start hidden */
+        animation: rewardGlow 1.5s infinite; /* Pulsing glow animation */
     }
-    /* Update stroke-dashoffset via JS/Alpine based on progress */
+     /* Keyframes for Reward Glow */
+    @keyframes rewardGlow {
+      0%, 100% { filter: drop-shadow(0 0 10px #FFD700); } /* Gold glow */
+      50% { filter: drop-shadow(0 0 20px #FF1A1A); } /* Red glow */
+    }
+    /* SVG Gradient Definition */
+    svg defs {
+      /* Reward gradient */
+    }
+    #rewardGradient stop:first-child {
+      stop-color: #FF1A1A; /* Red start */
+      offset: 0%;
+    }
+    #rewardGradient stop:last-child {
+      stop-color: #FFD700; /* Gold end */
+      offset: 100%;
+    }
 
     /* Glow Trails on Active Slips (placeholder) */
     .fab.glow-green { box-shadow: 0 0 10px green, 0 0 20px green inset; }
@@ -563,24 +713,48 @@
     .fab.glow-red { box-shadow: 0 0 10px red, 0 0 20px red inset; }
 
 
-    /* Exit-Intent Modal (placeholder) */
-     /* Modal structure and visibility handled by JS/Alpine */
+    /* Exit-Intent Modal with Urgency */
+     #exitIntentModal .modal {
+        background: linear-gradient(145deg, #FF1A1A, #FFD700); /* Red-to-gold gradient */
+        border: 3px solid #FFD700; /* Gold border */
+        box-shadow: 0 10px 40px rgba(255, 26, 26, 0.7); /* Red shadow */
+     }
+     /* Spinning Coin Icon */
+     #exitIntentModal .modal::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        width: 80px;
+        height: 80px;
+        background: url('https://placehold.co/80x80/FFD700/000000?text=COIN'); /* Gold coin placeholder */
+        background-size: cover;
+        transform: translateX(-50%);
+        animation: urgentSpin 1.5s infinite; /* Spinning animation */
+        z-index: 1; /* Above modal content */
+     }
+     /* Keyframes for Urgent Spin */
+     @keyframes urgentSpin {
+        0% { transform: translateX(-50%) rotateY(0deg); }
+        100% { transform: translateX(-50%) rotateY(360deg); }
+     }
 
 
-    /* Leaderboard "Almost Top 10" Trigger (placeholder) */
+    /* Leaderboard "Almost Top 10" Trigger */
     .almost-top-10 {
         border: 2px dashed #FBBF24; /* Yellow dashed border */
         background-color: rgba(251, 191, 36, 0.1); /* Subtle yellow background */
         position: relative;
         overflow: hidden;
     }
+    /* "SO CLOSE!" badge for leaderboard */
     .almost-top-10::after {
         content: 'SO CLOSE!';
         position: absolute;
         top: -5px;
         right: -5px;
-        background-color: #FBBF24;
-        color: #1F2937;
+        background-color: #FF1A1A; /* Red background */
+        color: #FFD700; /* Gold text */
         font-size: 10px;
         font-weight: bold;
         padding: 2px 8px;
@@ -588,24 +762,47 @@
         transform: rotate(15deg);
         transform-origin: top right;
         z-index: 5;
+        animation: urgentFlash 1s infinite; /* Flashing animation */
+    }
+     /* Keyframes for Urgent Flash */
+    @keyframes urgentFlash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
     }
 
-    /* Fake "Hot Prop" Indicators (badge-hot already exists) */
 
-    /* "Hunch Score" Meter (placeholder) */
+    /* "Hunch Score" Meter as Confidence Booster */
     .hunch-meter {
         width: 100%;
         height: 10px;
-        background-color: #4A4A4A;
+        background-color: #1A1A3A; /* Dark background */
         border-radius: 5px;
         overflow: hidden;
         position: relative;
+        box-shadow: 0 0 15px rgba(255, 26, 26, 0.5); /* Red shadow */
     }
      .hunch-meter .hunch-fill {
         height: 100%;
-        background: linear-gradient(90deg, #3B82F6, #A78BFA); /* Blue to Purple gradient */
+        background: linear-gradient(90deg, #FF1A1A, #FFD700); /* Red-to-gold gradient */
         width: var(--hunch-percentage, 50%); /* Controlled by JS/Alpine */
         transition: width 0.3s ease-in-out;
+        position: relative; /* For shimmer effect */
+     }
+     /* Shimmer effect for hunch fill */
+     .hunch-meter .hunch-fill::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        animation: confidenceShimmer 1.5s infinite; /* Shimmer animation */
+     }
+     /* Keyframes for Confidence Shimmer */
+     @keyframes confidenceShimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
      }
      .hunch-score-label {
          position: absolute;
@@ -614,10 +811,66 @@
          transform: translate(-50%, -50%);
          font-size: 10px;
          font-weight: bold;
-         color: white;
-         text-shadow: 0 0 2px black;
+         color: #FFD700; /* Gold text */
+         text-shadow: 0 0 10px #FF1A1A; /* Red text shadow */
          z-index: 2;
+         animation: confidencePop 2s infinite; /* Pop animation */
      }
+     /* Keyframes for Confidence Pop */
+     @keyframes confidencePop {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -50%) scale(1.2); }
+     }
+
+    /* Mystery Box as Slot Machine */
+    #mysteryBoxModal img {
+        filter: drop-shadow(0 0 20px #FFD700); /* Gold glow */
+        animation: slotReveal 1.5s ease-out; /* Spinning reveal animation */
+    }
+    /* Keyframes for Slot Reveal */
+    @keyframes slotReveal {
+        0% { transform: rotateY(0deg) scale(0.5); opacity: 0; }
+        100% { transform: rotateY(720deg) scale(1); opacity: 1; }
+    }
+
+
+    /* Ambient Slot Machine Particles */
+    #slot-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; /* Behind everything */
+        pointer-events: none; /* Don't block clicks */
+    }
+    .particle {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: radial-gradient(circle, #FFD700, transparent); /* Gold gradient */
+        border-radius: 50%;
+        animation: particleFloat 4s infinite; /* Floating animation */
+    }
+    /* Keyframes for Particle Float */
+    @keyframes particleFloat {
+        0% { opacity: 0; transform: translateY(100vh) scale(0); }
+        50% { opacity: 0.8; }
+        100% { opacity: 0; transform: translateY(0) scale(1); }
+    }
+
+    /* Limited Spots Badge */
+    .badge-spots {
+        background: #FF1A1A; /* Red background */
+        color: #FFD700; /* Gold text */
+        animation: urgentFlash 1s infinite; /* Flashing animation */
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: bold;
+        margin-left: 4px;
+        display: inline-block;
+    }
 
 
     /* Mobile Specific Adjustments */
@@ -668,7 +921,7 @@
       .card .stats { border-top: 1px solid #2A2A2A; padding-top: 8px; margin-top: 8px; }
 
       .fab {
-        background: linear-gradient(90deg, #8B5CF6 0%, #3B82F6 100%);
+        background: linear-gradient(90deg, #FF1A1A 0%, #FFD700 100%); /* Red-to-gold */
         color: #FFFFFF; padding: 12px 20px; border-radius: 24px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
         display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;
@@ -693,8 +946,8 @@
       }
       .progress-meter {
            position: absolute;
-           width: 64px; /* Larger than FAB */
-           height: 64px; /* Larger than FAB */
+           width: 80px; /* Larger than FAB */
+           height: 80px; /* Larger than FAB */
            top: 50%;
            left: 50%;
            transform: translate(-50%, -50%);
@@ -839,28 +1092,20 @@
     @keydown.escape.window="if(activeModal && activeModal !== 'teaserModal' && activeModal !== 'ageGateModal') closeModal(activeModal); else if(showDrawer) showDrawer = false; else if(showSlipTray && window.innerWidth < 768) showSlipTray = false;"
     x-init="init()">
 
+  <div id="slot-particles"></div>
 
   <div class="overlay" :class="{ 'open': showDrawer || activeModal }" @click="if(activeModal !== 'teaserModal' && activeModal !== 'ageGateModal') closeAllModals(); else if(showDrawer) showDrawer = false;" aria-hidden="true"></div>
   <aside class="drawer p-4" :class="{ 'open': showDrawer }" x-show="showDrawer" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
     <div class="flex justify-between items-center mb-6">
-      <h2 id="drawer-title" class="text-lg font-semibold text-[#7B61FF]">MemePicks</h2>
-      <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="showDrawer = false" aria-label="Close menu">✕</button>
+      <h2 id="drawer-title" class="text-lg font-semibold text-[#FFD700]">MemePicks</h2> <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="showDrawer = false" aria-label="Close menu">✕</button>
     </div>
     <nav class="space-y-2">
       <div x-show="!walletAddress" class="space-y-2">
         <button class="button-auth w-full text-sm" @click="showDrawer = false; openModal('walletChoiceModal')" aria-label="Connect Wallet">Connect Wallet</button>
       </div>
-      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="openProfile()" aria-label="My Profile">My Profile</button>
-      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button>
-       <button class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; openModal('limitModal')" aria-label="Set Wager Limit">Set Wager Limit</button> <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button>
-
-      <div class="mt-6 border-t border-gray-700 pt-4">
+      <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="openProfile()" aria-label="My Profile">My Profile</button> <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="getInviteLink()" aria-label="Get Invite Link">Get Invite Link</button> <button class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="showDrawer = false; openModal('limitModal')" aria-label="Set Wager Limit">Set Wager Limit</button> <button x-show="walletAddress" class="block w-full text-left py-2 text-sm text-[#E0E0E0] hover:text-red-500" @click="showDrawer = false; disconnectWallet()" aria-label="Disconnect Wallet">Disconnect Wallet</button> <div class="mt-6 border-t border-gray-700 pt-4">
            <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Help & Support</h3>
-            <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" @click="showDrawer = false; tab = 'help'" aria-label="Help Center">Help Center / FAQs</a>
-            <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
-            <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Telegram">Telegram</a>
-            <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#7B61FF]" aria-label="Terms & Privacy">Terms & Privacy</a>
-       </div>
+            <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" @click="showDrawer = false; tab = 'help'" aria-label="Help Center">Help Center / FAQs</a> <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Responsible Betting">Responsible Betting</a> <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Telegram">Telegram</a> <a href="#" class="block py-2 text-sm text-[#E0E0E0] hover:text-[#FFD700]" aria-label="Terms & Privacy">Terms & Privacy</a> </div>
     </nav>
   </aside>
 
@@ -868,8 +1113,7 @@
     <div class="header-left">
       <button class="hamburger" @click="showDrawer = true" aria-label="Open menu" aria-controls="drawer-menu" :aria-expanded="showDrawer.toString()">☰</button>
     </div>
-    <h1 class="logo">MemePicks</h1>
-    <div class="header-right">
+    <h1 class="logo text-[#FFD700]">MemePicks</h1> <div class="header-right">
       <p class="text-xs text-[#B0B0B0] cursor-pointer hover:text-white mr-4"
          x-show="walletAddress"
          x-text="walletAddress ? walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4) : ''"
@@ -959,8 +1203,7 @@
                     <h2 class="text-lg font-semibold mb-4">Help & Support</h2>
                     <div class="space-y-6">
                       <div>
-                        <h3 class="text-sm font-semibold mb-2 text-[#7B61FF]">FAQs</h3>
-                        <div class="space-y-4">
+                        <h3 class="text-sm font-semibold mb-2 text-[#FFD700]">FAQs</h3> <div class="space-y-4">
                           <div>
                             <p class="text-xs text-[#E0E0E0] font-semibold">Q: How do I place a bet?</p>
                             <p class="text-xs text-[#B0B0B0]">A: Select 2–5 picks from the tabs, open the slip using the button at the bottom right (or view on desktop), set a wager (0.1–10 SOL), and submit your slip.</p>
@@ -976,10 +1219,7 @@
                         </div>
                       </div>
                       <div>
-                        <h3 class="text-sm font-semibold mb-2 text-[#7B61FF]">Get in Touch</h3>
-                        <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-sm text-[#7B61FF] hover:underline mb-2" aria-label="Join Telegram">Join our Telegram</a>
-                        <a href="mailto:support@memepicks.fun" class="block text-sm text-[#7B61FF] hover:underline" aria-label="Contact Support">Contact Support</a>
-                      </div>
+                        <h3 class="text-sm font-semibold mb-2 text-[#FFD700]">Get in Touch</h3> <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-sm text-[#FFD700] hover:underline mb-2" aria-label="Join Telegram">Join our Telegram</a> <a href="mailto:support@memepicks.fun" class="block text-sm text-[#FFD700] hover:underline" aria-label="Contact Support">Contact Support</a> </div>
                     </div>
                   </div>
                </div>
@@ -990,8 +1230,7 @@
                    <div class="card p-4">
                        <h2 class="text-lg font-semibold mb-3">My Profile</h2>
                        <div class="flex items-center space-x-4">
-                           <img :src="userProfile.avatar || 'https://placehold.co/64x64/7B61FF/FFFFFF?text=MP'" alt="User Avatar" class="w-16 h-16 rounded-full object-cover flex-shrink-0">
-                           <div class="flex-1">
+                           <img :src="userProfile.avatar || 'https://placehold.co/64x64/FFD700/000000?text=MP'" alt="User Avatar" class="w-16 h-16 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'"> <div class="flex-1">
                                <p class="text-sm font-semibold" x-text="userProfile.username || (walletAddress ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4) : 'Not Connected')"></p>
                                <div class="flex space-x-1 mt-1">
                                    <span class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-medium" x-text="userProfile.badge || 'Newbie'"></span>
@@ -1004,11 +1243,10 @@
                            <p>Total Wins: <span class="font-semibold text-green-400" x-text="userProfile.totalWins">0</span></p>
                            <p>Total Losses: <span class="font-semibold text-red-400" x-text="userProfile.totalLosses">0</span></p>
                            <p>Win Rate: <span class="font-semibold" x-text="((userProfile.totalWins / (userProfile.totalWins + userProfile.totalLosses || 1)) * 100).toFixed(1) + '%'">N/A</span></p>
-                           <p>Slip Streak: <span class="font-semibold text-[#7B61FF]" x-text="userProfile.streak">0</span> 🔥</p> <div x-show="getVIPLevel() !== 'Diamond'">
+                           <p>Slip Streak: <span class="font-semibold text-[#FFD700]" x-text="userProfile.streak">0</span> 🔥</p> <div x-show="getVIPLevel() !== 'Diamond'">
                                 <p>Progress to <span class="font-semibold" x-text="getVIPLevel() === 'Bronze' ? 'Silver' : getVIPLevel() === 'Silver' ? 'Gold' : 'Diamond'"></span>:</p>
                                 <div class="h-2 bg-gray-700 rounded-full mt-1">
-                                    <div class="h-full bg-[#7C3AED] rounded-full transition-all duration-500" :style="{ width: vipProgress + '%' }"></div>
-                                </div>
+                                    <div class="h-full bg-gradient-to-r from-[#FF1A1A] to-[#FFD700] rounded-full transition-all duration-500" :style="{ width: vipProgress + '%' }"></div> </div>
                                 <p class="text-xs text-gray-400 mt-1" x-text="`Wagered: ${userProfile.totalWagers.toFixed(2)} SOL`"></p>
                             </div>
                        </div>
@@ -1037,7 +1275,8 @@
                        <p class="text-xs text-gray-400 mt-1">Share your link to earn rewards!</p>
                        </div>
 
-                   <div class="card p-4" x-show="tab === 'community'"> <p x-text="challengeMessage"></p>
+                   <div class="card p-4" x-show="tab === 'community'">
+                       <p x-text="challengeMessage"></p>
                        <button class="button-primary" @click="acceptChallenge()">Accept</button>
                        <button class="button-secondary" @click="tauntUser()">Decline</button>
                    </div>
@@ -1075,8 +1314,7 @@
                        <h3 class="text-md font-semibold mb-2">Live Chat (Global)</h3>
                        <div id="global-chat-feed" class="chat-feed">
                            <div class="chat-message"><span class="username">AdminBot:</span> Welcome to MemePicks! Play responsibly.</div>
-                           <div class="chat-message"><span class="username">User123:</span> Anyone betting on $MYRO?</div>
-                           <div class="chat-message"><span class="username">DegenerateApe:</span> All in $PONKE expiring soon!</div>
+                           <div class="chat-message hot"><span class="username">User123:</span> Anyone betting on $MYRO?</div> <div class="chat-message"><span class="username">DegenerateApe:</span> All in $PONKE expiring soon!</div>
                        </div>
                         <form class="chat-input-area" @submit.prevent="sendChatMessage">
                            <input type="text" name="messageInput" placeholder="Type message..." class="input-field text-sm flex-1">
@@ -1124,8 +1362,7 @@
                            <div class="flex-1 mr-2">
                                <p class="text-xs font-semibold" x-text="pick.token"></p>
                                <p class="text-xs text-[#B0B0B0] truncate" x-text="pick.description"></p>
-                               <p class="text-xs text-[#7B61FF]" x-text="pick.choice"></p>
-                           </div>
+                               <p class="text-xs text-[#FFD700]" x-text="pick.choice"></p> </div>
                            <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center flex-shrink-0" @click="removePick(pick.propId)" :aria-label="'Remove ' + pick.token + ' prediction from slip'">✕</button>
                        </div>
                    </template>
@@ -1156,8 +1393,7 @@
                            <div class="flex items-center">
                                <p class="text-[#B0B0B0]">Multiplier:</p>
                                </div>
-                           <p class="text-[#7B61FF] font-semibold" x-text="multipliers[slip.picks.length] || 0"></p>
-                       </div>
+                           <p class="text-[#FFD700] font-semibold" x-text="multipliers[slip.picks.length] || 0"></p> </div>
                          <div class="flex justify-between items-center text-xs mb-4" x-show="slip.picks.length >= 2">
                            <div class="flex items-center">
                                <p class="text-[#B0B0B0]">Potential Payout:</p>
@@ -1189,7 +1425,13 @@
   <button id="slip-tray-trigger" class="fab md:hidden" @click="toggleSlipTray()" aria-label="Open entry slip" aria-controls="slip-tray" :aria-expanded="showSlipTray.toString()" :class="{ 'glow-green': slip.picks.length > 0 && slip.picks.length < 3, 'glow-yellow': slip.picks.length >= 3 && slip.picks.length < 5, 'glow-red': slip.picks.length === 5 }">
     <svg class="progress-meter" viewBox="0 0 64 64">
         <circle cx="32" cy="32" r="30"></circle>
-        <circle class="progress-circle" cx="32" cy="32" r="30" :style="{ 'stroke-dashoffset': 188.5 - (188.5 * (betCount / 5)) }"></circle> </svg>
+        <circle class="progress-circle" cx="32" cy="32" r="30" :style="{ 'stroke-dashoffset': 188.5 - (188.5 * (betCount % 5 / 5)) }"></circle> <defs>
+            <linearGradient id="rewardGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#FF1A1A;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
     <span>Slip</span>
     <span id="pick-count" class="badge" x-text="slip.picks.length"></span>
   </button>
@@ -1211,7 +1453,7 @@
       <span class="icon"></span>
       <span class="label">Leaders</span>
     </button>
-    <button :class="{ 'active': tab === 'help' }" @click="tab = 'help'; showSlipTray = false; closeAllModals()" aria-label="Help" aria-controls="help-panel" :aria-selected="tab === 'help'">
+    <button :class="{ 'active': tab === 'help' }" @click="tab === 'help'; showSlipTray = false; closeAllModals()" aria-label="Help" aria-controls="help-panel" :aria-selected="tab === 'help'">
       <span class="icon"></span>
       <span class="label">Help</span>
     </button>
@@ -1223,11 +1465,7 @@
           <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('helpModal')" aria-label="Close help modal">✕</button>
       </div>
       <div class="space-y-3 text-sm">
-          <a href="#" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Help Center">Help Center / FAQs</a>
-          <a href="#" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Responsible Betting">Responsible Betting</a>
-          <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Join Telegram">Join our Telegram</a>
-          <a href="mailto:support@memepicks.fun" class="block text-[#B0B0B0] hover:text-[#7B61FF]" aria-label="Contact Support">Contact Support</a>
-      </div>
+          <a href="#" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Help Center">Help Center / FAQs</a> <a href="#" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Responsible Betting">Responsible Betting</a> <a href="https://t.me/+7dSkZ_j-i5tlMTNh" target="_blank" rel="noopener noreferrer" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Join Telegram">Join our Telegram</a> <a href="mailto:support@memepicks.fun" class="block text-[#B0B0B0] hover:text-[#FFD700]" aria-label="Contact Support">Contact Support</a> </div>
       <button class="button-primary w-full text-sm mt-6" @click="closeModal('helpModal')" aria-label="Close help modal">Close</button>
       </div>
   </div>
@@ -1266,8 +1504,7 @@
                 <h3 id="mystery-box-title" class="text-base font-semibold" x-text="boxTier ? boxTier + ' Mystery Box!' : 'Mystery Box!'">Mystery Box!</h3>
                 <button class="text-[#B0B0B0] hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModal('mysteryBoxModal')" aria-label="Close mystery box">✕</button>
            </div>
-           <img :src="boxImage || 'https://placehold.co/80x80/FFD700/000000?text=BOX'" alt="Mystery Box" class="mx-auto mb-4 animate-bounce">
-           <p class="text-[#B0B0B0] text-sm mb-4">You unlocked a Mystery Box!</p>
+           <img :src="boxImage || 'https://placehold.co/80x80/FFD700/000000?text=BOX'" alt="Mystery Box" class="mx-auto mb-4 animate-bounce" onerror="this.src='https://placehold.co/80x80/707070/FFFFFF?text=ERR'"> <p class="text-[#B0B0B0] text-sm mb-4">You unlocked a Mystery Box!</p>
             <div x-data="{ revealed: false }">
                 <button x-show="!revealed" @click="revealed = true; revealReward()" class="button-primary w-full text-sm py-2">Open Box</button>
                 <div x-show="revealed" class="space-y-3 text-sm mt-4">
@@ -1279,9 +1516,18 @@
        </div>
    </div>
 
+    <div id="winModal" x-show="modals.winModal" class="fixed inset-0 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="win-modal-title">
+        <div class="modal-container" :class="{'open': modals.winModal}"></div>
+        <div class="modal text-center">
+            <h3 class="text-lg font-bold text-[#FFD700] animate-pulse">Epic Win!</h3> <p class="text-[#FF1A1A] text-sm mb-4" x-text="`You won ${(lastSlip.wager * multipliers[lastSlip.picks.length]).toFixed(2)} SOL!`"></p> <button class="button-primary w-full" @click="closeModal('winModal')">Claim Now!</button>
+        </div>
+    </div>
+
+
     <div id="teaserModal" x-show="modals.teaserModal" class="fixed inset-0 flex items-end justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="teaser-modal-title">
       <div class="modal-container" :class="{'open': modals.teaserModal}"></div> <div class="modal text-center" :class="{'open': modals.teaserModal}">
         <h3 id="teaser-modal-title" class="text-base font-semibold mb-3">Checking Your Slip...</h3>
+        <div class="slot-spinner" style="width: 80px; height: 80px; margin: 0 auto 16px auto; background: url('https://placehold.co/80x80/FFD700/000000?text=SPIN'); background-size: cover; animation: slotReel 0.8s infinite linear;"></div>
         <p class="text-[#B0B0B0] text-sm mb-4">Results in <span x-text="teaserCountdown"></span>...</p>
       </div>
     </div>
@@ -1319,8 +1565,7 @@
         <h3 id="age-gate-title" class="text-base font-semibold mb-3">Age Verification</h3>
         <p class="text-[#B0B0B0] text-sm mb-4">You must be 18 or older to use this platform.</p>
         <label class="flex items-center justify-center space-x-2 mb-4">
-            <input type="checkbox" x-model="isOver18" class="form-checkbox h-5 w-5 text-[#7C3AED] rounded">
-             <span class="text-sm text-[#E0E0E0]">I am 18 or older</span>
+            <input type="checkbox" x-model="isOver18" class="form-checkbox h-5 w-5 text-[#FFD700] rounded"> <span class="text-sm text-[#E0E0E0]">I am 18 or older</span>
         </label>
         <button class="button-primary w-full text-sm py-2" :disabled="!isOver18" @click="closeModal('ageGateModal')">Confirm</button>
       </div>
@@ -1350,7 +1595,7 @@
                     volume: key === 'ambient' ? 0.2 : 1.0,
                     onloaderror: (id, err) => {
                         console.warn(`Failed to load sound ${key}: ${err}`);
-                        showToast(`Sound ${key} unavailable.`, 'warning');
+                        // showToast(`Sound ${key} unavailable.`, 'warning'); // Avoid spamming toasts
                     },
                     onplayerror: (id, err) => {
                         console.warn(`Cannot play sound ${key}: ${err}`);
@@ -1423,7 +1668,7 @@
       confetti({
         particleCount: 150 * intensity,
         spread: 80,
-        colors: ['#FFD700', '#FF4D4D', '#7C3AED'],
+        colors: ['#FFD700', '#FF4D4D', '#7C3AED'], // Gold, Red, Purple confetti
         origin: { y: 0.6 }
       });
     }
@@ -1549,13 +1794,15 @@
             if (container) {
                 container.innerHTML = ''; // Clear loading text
                 propContainers[containerId].forEach(prop => {
+                    // Add Limited Spots Badges randomly
+                    const spotsBadge = Math.random() < 0.3 ? `<span class="badge badge-spots animate-pulse">3 Spots Left!</span>` : '';
+
                     const cardHTML = `
                         <div class="card" data-risk="${prop.risk}" data-prop-id="${prop.id}">
                             <div class="prop-content">
                                 <img src="https://placehold.co/64x64/333333/FFFFFF?text=${prop.token.substring(0,4)}" alt="${prop.token} logo" class="w-16 h-16 rounded-full object-cover flex-shrink-0" onerror="this.src='https://placehold.co/64x64/707070/FFFFFF?text=ERR'">
                                 <div class="flex-1">
-                                    <h3 class="text-base font-bold">${prop.token}</h3>
-                                    <p class="text-sm">${prop.desc}</p>
+                                    <h3 class="text-base font-bold">${prop.token} ${spotsBadge}</h3> <p class="text-sm">${prop.desc}</p>
                                 </div>
                             </div>
                              ${containerId === 'expiring-props' ? `<p class="text-xs text-gray-500 mt-1 flex justify-end items-center"><span class="countdown-timer" data-expires="${prop.expires}"></span></p>` : ''}
@@ -1579,12 +1826,12 @@
                     `;
                      // Simulate Visual Load Delay for Props
                     setTimeout(() => {
-                         if(container) container.insertAdjacentHTML('beforeend', cardHTML);
-                         // Apply slot-machine entry animation (placeholder - requires more complex JS to manage animation sequence)
-                         // const newCard = container.lastElementChild;
-                         // if(newCard) newCard.style.setProperty('--random-x', Math.random() * 2 - 1);
-                         // if(newCard) newCard.style.setProperty('--random-y', Math.random() * 2 - 1);
-                         // if(newCard) newCard.classList.add('animate-slotSpin'); // Use the defined animation class
+                         if(container) {
+                             container.insertAdjacentHTML('beforeend', cardHTML);
+                             // Apply slot-machine entry animation
+                             const newCard = container.lastElementChild;
+                             if(newCard) newCard.classList.add('slot-reel'); // Use the defined animation class
+                         }
                     }, Math.random() * 500 + 200); // Random delay between 200ms and 700ms
 
                 });
@@ -1661,14 +1908,18 @@
 
                  if (timeLeft <= 0) {
                      timerElement.textContent = 'Expired';
-                      timerElement.classList.remove('badge-expiring');
+                      timerElement.classList.remove('badge-expiring', 'low-time'); // Remove low-time class
                      // Optionally hide or disable the related prop card
                  } else {
                      const minutes = Math.floor(timeLeft / (60 * 1000));
                      const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
                      timerElement.textContent = `${minutes}m ${seconds}s`;
-                      // Color changes based on time left
-                      timerElement.style.color = timeLeft < 300000 ? '#FF4D4D' : timeLeft < 600000 ? '#FBBF24' : '#10B981';
+                      // Add low-time class for heartbeat animation
+                      if (timeLeft < 300000) { // Less than 5 minutes
+                          timerElement.classList.add('low-time');
+                      } else {
+                          timerElement.classList.remove('low-time');
+                      }
                       timerElement.classList.add('badge-expiring'); // Keep badge class for styling
 
                       // Optional: Trigger subtle ticking sound if implemented
@@ -1846,6 +2097,7 @@
           ageVerificationModal: !localStorage.getItem('ageVerified'), // Use ageVerified from localStorage
           mysteryBoxModal: false, // Ensure it's included
           limitModal: false, // Added for Wager Limits
+          winModal: false, // Added for Win Modal
         },
         teaserCountdown: 0,
         isOver18: localStorage.getItem('ageVerified') === 'true' || false, // Use ageVerified
@@ -1854,7 +2106,7 @@
         boxReward: null,
         userProfile: {
           username: '', // Placeholder
-          avatar: 'https://placehold.co/64x64/7B61FF/FFFFFF?text=MP', // Placeholder
+          avatar: 'https://placehold.co/64x64/FFD700/000000?text=MP', // Placeholder
           badge: 'Newbie', // Placeholder
           totalWins: parseInt(localStorage.getItem('totalWins') || '0', 10),
           totalLosses: parseInt(localStorage.getItem('totalLosses') || '0', 10),
@@ -1936,9 +2188,23 @@
               this.updateRewardMeter();
               this.updateVIPProgress();
               this.updateBetFeed();
-              this.updateScarcity();
-              this.updateTopPicks();
               this.updateChallengeFeed(); // Start challenge feed updates
+
+              // Initialize Slot Particles
+              const particleContainer = document.createElement('div');
+              particleContainer.id = 'slot-particles';
+              document.body.appendChild(particleContainer);
+              function createParticle() {
+                  const particle = document.createElement('div');
+                  particle.className = 'particle';
+                  particle.style.left = Math.random() * 100 + '%';
+                  particle.style.top = Math.random() * 100 + '%';
+                  particle.style.animationDelay = Math.random() * 3 + 's';
+                  particleContainer.appendChild(particle);
+                  setTimeout(() => particle.remove(), 4000);
+              }
+              setInterval(createParticle, 300); // Create a new particle every 300ms
+
               // Ambient sound is now initialized on first click via event listener
               // sounds.ambient.play(); // Needs to be called after sounds object is defined and loaded
             } catch (e) {
@@ -2248,6 +2514,9 @@
                      localStorage.setItem('streak', this.userProfile.streak);
                      localStorage.setItem('lossCount', '0');
 
+                     // Show Win Modal
+                     this.modals.winModal = true;
+
 
                     // Show Double Wager Button
                     this.showDoubleWagerButton = true;
@@ -2258,13 +2527,13 @@
                          const payout = this.lastSlip.wager * this.multipliers[this.lastSlip.picks.length];
                          this.faucetBalance += payout;
                          localStorage.setItem('faucetBalance', this.faucetBalance.toFixed(2)); // Save faucet balance
-                         showToast(`You won ${payout.toFixed(2)} SOL!`, 'success');
+                         // showToast(`You won ${payout.toFixed(2)} SOL!`, 'success'); // Toast is now handled by win modal
                      } else {
                           // Wallet payout (placeholder - needs actual transaction logic)
                           const payout = this.lastSlip.wager * this.multipliers[this.lastSlip.picks.length];
                           this.walletBalance += payout;
                           localStorage.setItem('walletBalance', this.walletBalance.toFixed(2)); // Save wallet balance
-                          showToast(`You won ${payout.toFixed(2)} SOL!`, 'success');
+                          // showToast(`You won ${payout.toFixed(2)} SOL!`, 'success'); // Toast is now handled by win modal
                      }
 
 
@@ -2464,7 +2733,7 @@
 
             console.log(`Placeholder: Sending chat message to room ${this.selectedChatRoom}: ${message}`);
 
-            const chatFeed = document.getElementById(`${this.selectedChatRoom}-chat-feed`);
+            const chatFeed = document.getElementById(`global-chat-feed`); // Assuming global chat feed
             if (chatFeed) {
                  const msgDiv = document.createElement('div');
                  msgDiv.className = 'chat-message';
@@ -2509,7 +2778,9 @@
                 gold: { image: 'https://placehold.co/80x80/FFD700/000000?text=GOLD', rewards: ['1 SOL', 'Exclusive Badge'] }
             };
              // Tier logic based on betCount or totalWagers? Let's use betCount for simplicity here (every 5 bets)
-             const tier = this.betCount % 10 === 0 ? 'gold' : (this.betCount % 5 === 0 ? 'silver' : 'bronze'); // Simplified logic
+             const tier = this.betCount > 0 && this.betCount % 10 === 0 ? 'gold' : (this.betCount > 0 && this.betCount % 5 === 0 ? 'silver' : 'bronze'); // Simplified logic
+             if (this.betCount === 0 || this.betCount % 5 !== 0) return; // Only trigger on every 5th bet (excluding bet 0)
+
             this.boxTier = tier.charAt(0).toUpperCase() + tier.slice(1); // Capitalize tier name
             this.boxImage = boxTiers[tier].image;
             this.boxReward = boxTiers[tier].rewards[Math.floor(Math.random() * boxTiers[tier].rewards.length)];
@@ -2540,7 +2811,8 @@
         updateRewardMeter() {
             // Progress based on 5 bets for a box
             const progress = Math.min(1, (this.betCount % 5) / 5); // Progress cycles every 5 bets
-            document.documentElement.style.setProperty('--progress', progress);
+            // document.documentElement.style.setProperty('--progress', progress); // This was for a different meter
+            // The SVG progress is updated directly in the FAB HTML using betCount % 5
             if (this.betCount > 0 && this.betCount % 5 === 0) { // Trigger box every 5 bets
                 this.triggerMysteryBox();
                 // Do NOT reset betCount here, let it keep counting for VIP etc.
