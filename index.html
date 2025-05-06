@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#1A1A1A" />
-  <meta name="description" content="Play CryptoDrop on MemePicks: Stake SOL, drop orbs, win NFTs and DropTokens!" />
+  <meta name="description" content="Play CryptoDrop: Stake SOL, drop orbs, win big!" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>CryptoDrop – MemePicks</title>
+  <title>CryptoDrop</title>
   <link rel="icon" href="/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -19,20 +19,25 @@
 
   <script>
     // --- Configuration ---
-    const LS_PREFIX = 'memepicks_'; // Local Storage prefix
+    // Updated Local Storage prefix
+    const LS_PREFIX = 'cryptodrop_';
     const BASE_URL = new URLSearchParams(window.location.search).get('env') === 'dev'
       ? 'http://localhost:5001' // Development backend URL
-      : 'https://memepicks-backend.onrender.com'; // Production backend URL
+      : 'https://memepicks-backend.onrender.com'; // Production backend URL (Keep for now, update if CryptoDrop has its own)
     console.log('Using BASE_URL:', BASE_URL);
 
     // Mapping for slot colors
     const colorMap = {
       '0x': '#9CA3AF', // Gray
+      '0.2x': '#60A5FA', // Blue (Added)
       '0.5x': '#60A5FA', // Blue
       '1x': '#34D399', // Green
       '2x': '#FBBF24', // Yellow
+      '3x': '#FBBF24', // Yellow (Added)
       '5x': '#F87171', // Red
+      '8x': '#A78BFA', // Purple (Added)
       '10x': '#A78BFA', // Purple
+      '20x': '#F472B6', // Pink (Added)
       'Jackpot': '#F472B6' // Pink
     };
 
@@ -41,16 +46,16 @@
     const BOARD_HEIGHT = 450; // px
     const PEG_ROWS = 14; // Number of rows of pegs
     const PEG_SIZE = 8; // px
-    const SLOT_COUNT = 11; // Number of outcome slots
+    const SLOT_COUNT = 11; // Number of outcome slots (Matches outcomes array size)
     const SLOT_WIDTH = 35; // px
     const SLOT_HEIGHT = 40; // px
     const ORB_SIZE = 16; // px
-    const GRAVITY = 0.2; // Affects orb vertical acceleration
-    const BOUNCE_FACTOR = 0.7; // Energy retained on collision (0 to 1)
-    const PEG_COLLISION_DAMPING = 0.9; // Damping factor for peg collisions
+    // Increased drop speed by adjusting GRAVITY and PEG_COLLISION_DAMPING
+    const GRAVITY = 0.24;
+    const BOUNCE_FACTOR = 0.7;
+    const PEG_COLLISION_DAMPING = 0.85;
 
     // Outcome definitions with weights (for mock data/frontend simulation)
-    // In a real game, these would come from the backend
     const outcomes = [
       { slot: '0x', rewardMult: 0, weight: 0.20, color: colorMap['0x'] },
       { slot: '0.2x', rewardMult: 0.2, weight: 0.15, color: colorMap['0.5x'] },
@@ -182,12 +187,19 @@
     }
     .svg-peg:hover { fill: #c4b5fd; } /* Lighter purple on hover */
 
+    /* Orb Physics & Animation Enhancements */
     .svg-orb {
       fill: url(#orb-gradient); /* Use defined gradient */
-      filter: drop-shadow(0 0 8px rgba(244, 114, 182, 0.8)); /* Pink glow */
+      filter: drop-shadow(0 0 8px rgba(255, 105, 180, 0.8));
+      animation: orbPulse 0.5s ease-in-out infinite alternate; /* Added pulse animation */
       transition: transform linear; /* Smooth movement */
       will-change: transform;
     }
+    @keyframes orbPulse { /* Added orb pulse animation */
+      from { filter: drop-shadow(0 0 8px rgba(255, 105, 180, 0.8)); }
+      to { filter: drop-shadow(0 0 12px rgba(255, 215, 0, 1)); } /* Glow to gold */
+    }
+
 
     .svg-slot-rect {
       /* Fill color set dynamically by JS */
@@ -202,6 +214,17 @@
       dominant-baseline: central;
       pointer-events: none; /* Don't block clicks */
     }
+
+    /* Slot Visual Enhancements */
+    .svg-slot-rect.high-value { /* Added high-value class for 10x and Jackpot */
+      animation: slotPulse 1s ease-in-out infinite;
+    }
+    @keyframes slotPulse { /* Added slot pulse animation */
+      0% { filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.5)); }
+      50% { filter: drop-shadow(0 0 10px rgba(255, 105, 180, 0.8)); }
+      100% { filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.5)); }
+    }
+
 
     .slot-tooltip {
       /* Tooltip styles */
@@ -355,13 +378,13 @@
     /* --- Orb Trail Animation --- */
     .orb-trail {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 16px; /* Increased size */
+      height: 16px; /* Increased size */
       border-radius: 50%;
-      background: rgba(244,114,182,0.5); /* Semi-transparent pink */
+      background: radial-gradient(circle, rgba(255,105,180,0.7), transparent); /* Sparkly gradient */
       opacity: 1;
       filter: blur(2px);
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+      transition: opacity 1s ease-out, transform 1s ease-out; /* Increased duration */
       z-index: 9; /* Below orb */
       pointer-events: none;
     }
@@ -378,6 +401,12 @@
       pointer-events: auto;
       transform: translateY(0);
     }
+    /* Added idle glow for sticky button */
+    .sticky-drop-button.visible.idle {
+      animation: craveAttention 1s infinite;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); /* Red glow */
+    }
+
 
     /* --- Progress Bar Styles --- */
     .progress-bar-container {
@@ -520,7 +549,65 @@
       .sticky-drop-button {
         display: none; /* Hide sticky button on desktop */
       }
+
+      /* Sticky Wallet Menu (Desktop) */
+      aside[data-component="wallet-menu"] {
+        position: fixed;
+        right: 0;
+        top: 80px; /* Below header */
+        width: 25%; /* md:w-1/4 */
+        max-width: 250px; /* Optional max-width */
+        z-index: 70;
+        background: rgba(31, 41, 55, 0.8); /* gray-800 with opacity */
+        backdrop-filter: blur(8px);
+        padding: 16px;
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+        border-left: 1px solid rgba(75, 85, 99, 0.5); /* gray-600 border */
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: calc(100vh - 100px); /* Adjust height */
+        overflow-y: auto;
+      }
+       /* Hide the original wallet section on desktop */
+      aside[data-component="wallet-sidebar"] {
+        display: none;
+      }
     }
+
+     /* Sticky Wallet Menu (Mobile) */
+    @media (max-width: 767px) {
+      aside[data-component="wallet-menu"] {
+        position: fixed;
+        right: 0;
+        bottom: 80px; /* Above sticky drop button */
+        width: 60px; /* Collapsed width */
+        z-index: 70;
+        background: rgba(31, 41, 55, 0.8);
+        backdrop-filter: blur(8px);
+        padding: 8px;
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+        border-left: 1px solid rgba(75, 85, 99, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Center items when collapsed */
+        gap: 8px;
+      }
+      aside[data-component="wallet-menu"] button {
+        width: 100%;
+        height: 44px;
+        font-size: 12px;
+        margin-bottom: 0; /* Remove mb-2 from desktop styles */
+        justify-content: center; /* Center text */
+      }
+       /* Show the original wallet section on mobile */
+       aside[data-component="wallet-sidebar"] {
+         display: flex; /* Or block, depending on original layout */
+       }
+    }
+
 
     /* --- Additional Styles for Polish --- */
     a { @apply text-purple-400 hover:underline; }
@@ -550,11 +637,11 @@
   </div>
 
   <header class="fixed top-0 left-0 w-full z-[70] h-14 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700/50 flex items-center justify-between px-4" data-component="header">
-    <div class="text-lg font-semibold text-[#7B61FF]">MemePicks</div>
-    <h1 class="text-xl font-bold text-white">CryptoDrop</h1>
+    <div class="text-lg font-semibold text-[#7B61FF]">CryptoDrop</div>
+    <h1 class="text-xl font-bold text-white">Plinko</h1>
     <div class="flex items-center space-x-2">
-      <a href="/" class="button-secondary text-sm min-h-[44px] px-3 py-2" aria-label="Back to MemePicks">Back</a>
-      <button class="button-auth text-sm min-h-[44px] px-3 py-2" @click="walletConnected ? disconnectWallet() : openWalletModal()" x-text="walletConnected ? 'Disconnect' : 'Connect'" :aria-label="walletConnected ? 'Disconnect Wallet' : 'Connect Wallet'"></button>
+       <button class="button-secondary text-xs px-3 py-1 min-h-[32px]" @click="toggleFullscreen()" aria-label="Toggle fullscreen">Fullscreen</button>
+       <button class="button-auth text-sm min-h-[44px] px-3 py-2" @click="walletConnected ? disconnectWallet() : openWalletModal()" x-text="walletConnected ? 'Disconnect' : 'Connect'" :aria-label="walletConnected ? 'Disconnect Wallet' : 'Connect Wallet'"></button>
     </div>
   </header>
 
@@ -565,10 +652,10 @@
         <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Recent Wins</h2>
         <div class="chat-feed" x-ref="chatFeed" role="log" aria-label="Recent CryptoDrop Wins">
           <template x-for="message in communityMessages" :key="message.id">
-            <div class="chat-message">
-              <span class="username" x-text="message.username"></span>
+             <div class="chat-message" :class="{ 'bg-yellow-500/20 animate-pulse': message.reward > 0.1 }">
+              <span class="username" x-text="message.username + (isHighRoller && message.username === (walletAddress ? walletAddress.slice(0,4)+'...'+walletAddress.slice(-4) : 'Guest') ? ' 💎' : '')"></span>
               <span x-text="message.text"></span>
-              <span class="win-amount" x-text="message.reward ? (+${message.reward} SOL) : ''"></span>
+              <span class="win-amount" x-text="message.reward ? (+${message.reward} SOL 🎉) : ''"></span>
             </div>
           </template>
           <div x-show="communityMessages.length === 0" class="text-center text-gray-500 text-xs mt-4">No recent wins yet.</div>
@@ -580,11 +667,9 @@
       <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="leaderboard">
         <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Leaderboard</h2>
         <ul>
-          <li class="text-sm text-gray-300 mb-1">CryptoWhale: 0.850 SOL 🔥</li>
-          <li class="text-sm text-gray-300 mb-1">NFTKingpin: 0.620 SOL 🔥</li>
-          <li class="text-sm text-gray-300 mb-1">SolDegen99: 0.410 SOL</li>
-          <li class="text-sm text-gray-300 mb-1">PlinkoPro: 0.350 SOL</li>
-          <li class="text-sm text-gray-300">LuckyLlama: 0.280 SOL</li>
+           <template x-for="winner in leaderboard" :key="winner.username">
+               <li class="text-sm text-gray-300 mb-1" x-text="winner.username + ': ' + winner.winnings.toFixed(3) + ' SOL ' + (winner.winnings >= 0.5 ? '🔥' : '')"></li>
+           </template>
         </ul>
       </section>
       <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="big-win-ticker">
@@ -593,16 +678,19 @@
           CryptoWhale won 0.5 SOL!
         </div>
       </section>
+       <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in">
+         <h2 class="text-sm font-semibold text-[#7B61FF] mb-2">Invite & Earn</h2>
+         <p class="text-xs text-gray-400 mb-2">Earn 0.002 SOL per friend!</p>
+         <button class="button-secondary w-full text-sm" @click="shareReferral()" aria-label="Share invite link">Share Invite</button>
+       </section>
     </aside>
 
     <section class="flex-grow md:w-2/3 order-1 md:order-2" data-component="game-board">
       <div id="plinko-board" class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl relative overflow-visible" :class="{ 'addiction-glow': consecutivePlays > 0 }">
         <svg id="plinko-svg" x-ref="plinkoSvgRef" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${BOARD_WIDTH} ${BOARD_HEIGHT}" preserveAspectRatio="xMidYMin meet">
           <defs>
-            <radialGradient id="orb-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-              <stop offset="0%" style="stop-color:#fecdd3; stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#f472b6; stop-opacity:1" />
-            </radialGradient>
+            <radialGradient id="orb-gradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" style="stop-color:#FFD700; stop-opacity:1" /> <stop offset="100%" style="stop-color:#FF69B4; stop-opacity:1" /> </radialGradient>
             <linearGradient id="jackpot-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style="stop-color:#ff6f00;" />
               <stop offset="33%" style="stop-color:#ff4081;" />
@@ -618,7 +706,7 @@
       <section id="controls" class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl mt-4 fade-in" data-component="controls">
         <div class="flex justify-between items-center mb-3">
           <h2 class="text-base font-semibold text-[#7B61FF]">Place Your Drop</h2>
-          <button class="button-secondary text-xs px-3 py-1 min-h-[32px]" @click="openBoardModal" x-text="'Board: ' + selectedBoard" aria-label="Change board type"></button>
+          <button class="button-secondary text-xs px-3 py-1 min-h-[32px]" @click="openBoardModal()" x-text="'Board: ' + selectedBoard" aria-label="Change board type"></button>
         </div>
         <div class="mb-3">
           <label for="bet-amount" class="block text-xs text-gray-400 mb-1">Bet Amount (SOL)</label>
@@ -652,11 +740,30 @@
              <div class="progress-bar" :style="'width: ' + (dailyDrops / 10 * 100) + '%'"></div>
            </div>
            <div class="text-xs text-gray-400 mt-1 text-right"><span x-text="dailyDrops"></span>/10 drops today</div>
+           <button class="button-secondary w-full text-sm mt-1" :disabled="dailyDrops < 10" @click="claimDailyReward()" aria-label="Claim daily reward">Claim Reward</button>
+        </div>
+         <div class="mt-3">
+          <span class="text-xs text-gray-400 block mb-1">Mystery Box (Drops until unlock: <span x-text="10 - (totalDrops % 10)"></span>)</span>
+          <button class="button-secondary w-full text-sm mt-1" :disabled="(totalDrops % 10 !== 0) || totalDrops === 0" @click="openMysteryBox()" aria-label="Unlock mystery box">Unlock Mystery Box</button>
         </div>
         <div class="mt-3">
-          <span class="text-xs text-gray-400 block mb-1">Mystery Box (Drops until unlock: <span x-text="10 - (totalDrops % 10)"></span>)</span>
-          <button class="button-secondary w-full text-sm mt-1" :disabled="(totalDrops % 10 !== 0) || totalDrops === 0" @click="openMysteryBox()">Unlock Mystery Box</button>
+          <span class="text-xs text-gray-400 block mb-1">Hot Streak</span>
+          <div class="progress-bar-container">
+            <div class="progress-bar" :style="'width: ' + (consecutivePlays * 20) + '%'"></div>
+          </div>
+          <div class="text-xs text-gray-400 mt-1" x-text="consecutivePlays >= 5 ? 'Win Imminent!' : 'Keep Dropping!'"></div>
         </div>
+         <div class="mt-3">
+           <span class="text-xs text-gray-400 block mb-1">Luck Meter 🔮</span>
+           <div class="progress-bar-container">
+             <div class="progress-bar" :style="'width: ' + (consecutivePlays * 20) + '%'"></div>
+           </div>
+           <div class="text-xs text-gray-400 mt-1" x-text="consecutivePlays >= 5 ? 'Luck Building!' : 'Drop More!'"></div>
+         </div>
+         <div class="flex items-center mt-2">
+           <input type="checkbox" id="auto-drop-toggle" x-model="autoDropEnabled" class="mr-2" aria-label="Enable auto drop">
+           <label for="auto-drop-toggle" class="text-xs text-gray-400">Enable Auto-Drop</label>
+         </div>
       </section>
     </section>
 
@@ -672,8 +779,8 @@
           <p class="font-mono text-xs break-all mb-2" x-text="walletAddress"></p>
           <p class="text-gray-400 mb-1">Balance:</p>
           <p class="text-lg font-bold text-green-400 mb-3" x-text="walletBalance !== null ? walletBalance.toFixed(5) + ' SOL' : 'Loading...'"></p>
-          <button class="button-primary w-full mb-2" aria-label="Deposit SOL">Deposit (Solana Pay)</button>
-          <button class="button-secondary w-full" :disabled="walletBalance === null || walletBalance < 0.1" aria-label="Withdraw SOL">Withdraw (Min 0.1 SOL)</button>
+          <button class="button-primary w-full mb-2" @click="deposit()" aria-label="Deposit SOL">Deposit (Solana Pay)</button>
+          <button class="button-secondary w-full" :disabled="walletBalance === null || walletBalance < 0.1" @click="withdraw()" aria-label="Withdraw SOL">Withdraw (Min 0.1 SOL)</button>
         </div>
       </section>
       <section class="card bg-gray-800/70 backdrop-blur-sm p-4 rounded-xl fade-in" data-component="referral">
@@ -681,7 +788,7 @@
         <p class="text-xs text-gray-400 mb-2">Share your code and earn 0.001 SOL per friend who deposits!</p>
         <div class="flex items-center gap-2 mb-2">
           <input type="text" readonly value="YOUR_REFERRAL_CODE" class="flex-grow bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white text-sm" aria-label="Your referral code">
-          <button class="button-secondary text-xs px-3 py-2 min-h-[38px]" @click="copyToClipboard('YOUR_REFERRAL_CODE')">Copy</button>
+          <button class="button-secondary text-xs px-3 py-2 min-h-[38px]" @click="copyToClipboard('YOUR_REFERRAL_CODE')" aria-label="Copy referral code">Copy</button>
         </div>
         <button class="button-secondary w-full text-sm" aria-label="Share referral code on X (Twitter)">Share on X</button>
       </section>
@@ -698,16 +805,24 @@
 
   </main>
 
-  <button class="sticky-drop-button" :class="{ 'visible': showStickyButton }" @click="dropOrb()" :disabled="dropping || (!walletConnected && faucetBalance < betAmount) || (walletConnected && (walletBalance === null || walletBalance < betAmount))">
-    Drop Again? ⏳
+  <aside class="fixed right-0 top-20 md:w-1/4 space-y-4 z-[70] bg-gray-900/80 backdrop-blur-sm p-4 rounded-l-xl" data-component="wallet-menu">
+    <button class="button-auth w-full mb-2" @click="walletConnected ? disconnectWallet() : openWalletModal()" x-text="walletConnected ? 'Disconnect' : 'Connect'" aria-label="Connect or disconnect wallet"></button>
+    <button class="button-primary w-full mb-2" x-show="walletConnected" @click="deposit()" aria-label="Deposit SOL">Deposit</button>
+    <button class="button-secondary w-full" x-show="walletConnected" :disabled="walletBalance === null || walletBalance < 0.1" @click="withdraw()" aria-label="Withdraw SOL">Withdraw (Min 0.1 SOL)</button>
+  </aside>
+
+
+  <button class="sticky-drop-button" :class="{ 'visible': showStickyButton, 'idle': Date.now() - (lastWinTime || Date.now()) > 30000 }" @click="autoDropCountdownActive ? stopAutoDrop() : dropOrb()" :disabled="dropping || (!walletConnected && faucetBalance < betAmount) || (walletConnected && (walletBalance === null || walletBalance < betAmount))" aria-label="Drop orb or stop auto drop">
+    <span x-show="!autoDropCountdownActive">Drop Again? ⏳</span>
+    <span x-show="autoDropCountdownActive">Stop Auto-Drop</span>
   </button>
 
   <div id="boardModal" class="fixed inset-0 z-[80]" x-show="modalOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" role="dialog" aria-modal="true" aria-labelledby="board-modal-title" data-component="board-modal">
-    <div class="modal-container" :class="{ 'open': modalOpen }" @click="closeModals"></div>
+    <div class="modal-container" :class="{ 'open': modalOpen }" @click="closeModals()"></div>
     <div class="modal" :class="{ 'open': modalOpen }" @click.stop>
       <div class="flex justify-between items-center mb-4">
         <h2 id="board-modal-title" class="text-base font-semibold text-[#7B61FF]">Choose Board</h2>
-        <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModals" aria-label="Close board selection modal">✕</button>
+        <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModals()" aria-label="Close board selection modal">✕</button>
       </div>
       <div class="grid grid-cols-2 gap-2">
         <button class="button-primary text-sm min-h-[44px]" :class="{ 'opacity-70': selectedBoard === 'Standard' }" @click="selectBoard('Standard')" aria-label="Select Standard Plinko Board">Standard</button>
@@ -715,16 +830,16 @@
         <button class="button-primary text-sm min-h-[44px]" :class="{ 'opacity-70': selectedBoard === 'NFT Boost' }" @click="selectBoard('NFT Boost')" aria-label="Select NFT Boost Plinko Board">NFT Boost</button>
         <button class="button-primary text-sm min-h-[44px]" :class="{ 'opacity-70': selectedBoard === 'Jackpot' }" @click="selectBoard('Jackpot')" aria-label="Select Jackpot Plinko Board">Jackpot</button>
       </div>
-      <button class="button-secondary w-full text-sm mt-4 min-h-[44px]" @click="closeModals" aria-label="Cancel board selection">Cancel</button>
+      <button class="button-secondary w-full text-sm mt-4 min-h-[44px]" @click="closeModals()" aria-label="Cancel board selection">Cancel</button>
     </div>
   </div>
 
   <div id="walletChoiceModal" class="fixed inset-0 z-[80]" x-show="walletModalOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" role="dialog" aria-modal="true" aria-labelledby="wallet-choice-modal-title" data-component="wallet-modal">
-    <div class="modal-container" :class="{ 'open': walletModalOpen }" @click="closeModals"></div>
+    <div class="modal-container" :class="{ 'open': walletModalOpen }" @click="closeModals()"></div>
     <div class="modal" :class="{ 'open': walletModalOpen }" @click.stop>
       <div class="flex justify-between items-center mb-4">
         <h3 id="wallet-choice-modal-title" class="text-base font-semibold text-[#7B61FF]">Choose Wallet</h3>
-        <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModals" aria-label="Close wallet choice modal">✕</button>
+        <button class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center text-2xl" @click="closeModals()" aria-label="Close wallet choice modal">✕</button>
       </div>
       <div class="space-y-3">
         <button class="button-primary w-full text-sm flex items-center justify-center gap-2 min-h-[44px]" @click="connectWallet('phantom')" aria-label="Connect with Phantom Wallet">
@@ -736,12 +851,12 @@
           Solflare
         </button>
       </div>
-      <button class="button-secondary w-full text-sm mt-4 min-h-[44px]" @click="closeModals" aria-label="Cancel wallet connection">Cancel</button>
+      <button class="button-secondary w-full text-sm mt-4 min-h-[44px]" @click="closeModals()" aria-label="Cancel wallet connection">Cancel</button>
     </div>
   </div>
 
   <footer class="fixed bottom-0 left-0 w-full bg-gray-900/80 backdrop-blur-sm border-t border-gray-700/50 text-center text-xs text-gray-400 py-2 z-[50]" style="padding-bottom: calc(8px + env(safe-area-inset-bottom))" data-component="footer">
-    3% staking fee | <a href="https://www.gamblinghelpline.org/" target="_blank" class="text-purple-500 hover:underline" aria-label="Responsible Gambling Information">Responsible Gambling</a> | <a href="/terms" class="text-purple-500 hover:underline">Terms</a> | <a href="/privacy" class="text-purple-500 hover:underline">Privacy</a> | Powered by MemePicks v1.0
+    3% staking fee | <a href="https://www.gamblinghelpline.org/" target="_blank" class="text-purple-500 hover:underline" aria-label="Responsible Gambling Information">Responsible Gambling</a> | <a href="/terms" class="text-purple-500 hover:underline">Terms</a> | <a href="/privacy" class="text-purple-500 hover:underline">Privacy</a> | Powered by CryptoDrop v1.0
   </footer>
 
   <script>
@@ -786,6 +901,18 @@
         audioContext: null, // Web Audio API context
         sounds: {}, // Loaded audio buffers
         onlineUsers: Math.floor(Math.random() * (5000 - 1000 + 1)) + 1000, // Fake online user count
+        autoDropEnabled: true, // Auto-drop toggle state
+        autoDropCountdownActive: false, // Is auto-drop countdown active?
+        autoDropInterval: null, // Interval ID for auto-drop countdown
+        isHighRoller: localStorage.getItem(LS_PREFIX + 'isHighRoller') === 'true', // High Roller status
+        leaderboard: [ // Initial mock leaderboard data
+           { username: 'CryptoWhale', winnings: 0.850 },
+           { username: 'NFTKingpin', winnings: 0.620 },
+           { username: 'SolDegen99', winnings: 0.410 },
+           { username: 'PlinkoPro', winnings: 0.350 },
+           { username: 'LuckyLlama', winnings: 0.280 }
+        ],
+
 
         // --- Addiction/Gamification Mechanics (Frontend Simulation) ---
         addictionMechanics: {
@@ -796,7 +923,6 @@
           multiplierBoostTimer: null, // Timer for Multiplier Boost countdown
 
           // Simulates a drop outcome based on weights
-          // In a real game, this would be determined by the backend
           calculateSimulatedOutcome() {
               const totalWeight = outcomes.reduce((sum, outcome) => sum + outcome.weight, 0);
               let random = Math.random() * totalWeight;
@@ -810,7 +936,7 @@
               return outcomes[outcomes.length - 1];
           },
 
-          // Frontend simulation of a "forced" win for engagement
+          // Frontend simulation of a "forced" win for engagement (simplified)
           forceFrontendWin() {
               // Simple logic: Force a win after a few losses in free mode
               if (!this.walletConnected && this.consecutivePlays >= 3 && Math.random() < 0.6) {
@@ -823,18 +949,20 @@
           // Starts the fake FOMO message generator
           startFOMO() {
             if (this.forcedFOMOInterval) clearInterval(this.forcedFOMOInterval);
+            // Increased frequency and chance of big wins for FOMO
             this.forcedFOMOInterval = setInterval(() => {
-              const fakeUsers = ['ProGambler42', 'CryptoWhale', 'NFTKingpin', 'SolanaMax', 'PlinkoWhale'];
-              const fakeWinOutcome = this.calculateSimulatedOutcome();
-              const fakeWinAmount = (Math.random() * 0.1 + 0.01).toFixed(5); // Simulate small to medium wins
+              const fakeUsers = ['CryptoWhale', 'SolanaMax', 'JackpotJunkie', 'Anon**123']; // Updated usernames
+              const isBigWin = Math.random() < 0.3; // 30% chance of a big win message
+              const outcome = isBigWin ? outcomes.find(o => ['10x', '20x', 'Jackpot'].includes(o.slot)) || this.addictionMechanics.calculateSimulatedOutcome() : this.addictionMechanics.calculateSimulatedOutcome(); // Pick a big win slot or a random one
+              const fakeWinAmount = isBigWin ? (Math.random() * 12 + 0.4).toFixed(5) : (Math.random() * 0.1 + 0.01).toFixed(5); // Simulate larger amounts for big wins
               this.communityMessages = [{
                 id: Date.now() + Math.random(), // Unique ID
                 username: fakeUsers[Math.floor(Math.random() * fakeUsers.length)],
-                text: `just won ${fakeWinOutcome.slot}!`,
-                reward: fakeWinOutcome.rewardMult > 0 ? fakeWinAmount : null // Only show reward if it's a win
+                text: `just hit ${outcome.slot}!`,
+                reward: outcome.rewardMult > 0 ? fakeWinAmount : null // Only show reward if it's a win
               }, ...this.communityMessages.slice(0, 19)]; // Keep last 20 messages
-              this.scrollToChatBottom();
-            }, Math.random() * (7000 - 4000) + 4000); // Random interval between 4-7 seconds
+              this.scrollToChatBottom(); // Scroll to show the new message
+            }, Math.random() * 10000 + 10000); // Random interval between 10-20 seconds
           },
 
           // Trigger a Jackpot event (frontend simulation)
@@ -864,7 +992,6 @@
 
           // Trigger a temporary multiplier boost (frontend simulation)
           triggerMultiplierBoost() {
-              // This would ideally affect backend odds, but here we'll add a visual cue
               const board = document.getElementById('plinko-board');
               if (board) {
                   board.classList.add('addiction-glow');
@@ -891,6 +1018,12 @@
             this.level = Math.floor(this.xp / 100) + 1; // Level based on XP
             this.loginStreak = parseInt(localStorage.getItem(LS_PREFIX + 'loginStreak') || '0');
             this.faucetBalance = parseFloat(localStorage.getItem(LS_PREFIX + 'faucetBalance') || '5.000');
+            this.isHighRoller = localStorage.getItem(LS_PREFIX + 'isHighRoller') === 'true'; // Load high roller status
+            this.sessionDrops = parseInt(localStorage.getItem(LS_PREFIX + 'sessionDrops') || '0'); // Load session stats
+            this.sessionWins = parseInt(localStorage.getItem(LS_PREFIX + 'sessionWins') || '0');
+            this.sessionSpent = parseFloat(localStorage.getItem(LS_PREFIX + 'sessionSpent') || '0.000');
+            this.sessionWon = parseFloat(localStorage.getItem(LS_PREFIX + 'sessionWon') || '0.000');
+
 
             // Check for daily reset for drops and login streak
             const lastDropDate = localStorage.getItem(LS_PREFIX + 'lastDropDate');
@@ -938,7 +1071,6 @@
           this.addictionMechanics.startFOMO(); // Start fake win messages
 
           // Set up timers for jackpot and multiplier boost events
-          // Use random initial delays to make it feel less predictable
           setTimeout(() => this.addictionMechanics.triggerJackpotEvent(), Math.random() * 600000 + 300000); // 5-15 mins
           setTimeout(() => this.addictionMechanics.triggerMultiplierBoost(), Math.random() * 300000 + 120000); // 2-7 mins
 
@@ -947,7 +1079,30 @@
           setTimeout(() => this.hideLoader(), 2000);
 
           // Timer to track time spent (for addiction mechanics)
-          setInterval(() => this.addictionMechanics.timeSpent += 1, 1000);
+          setInterval(() => {
+              this.addictionMechanics.timeSpent += 1;
+              // Show time played and bonus prompts
+              if (this.addictionMechanics.timeSpent % 180 === 0 && this.addictionMechanics.timeSpent > 0) {
+                 this.showToast(`Time Played: ${this.addictionMechanics.timeSpent / 60}m — Bonus in 3m!`, 'info');
+              }
+          }, 1000);
+
+           // Start sticky button idle glow check
+           setInterval(() => {
+             if (!this.dropping && !this.showStickyButton && Date.now() - (this.lastWinTime || Date.now()) > 30000) {
+               this.showStickyButton = true; // Ensure button is visible if idle
+             }
+           }, 1000);
+
+           // Request notification permission on init
+           if (Notification.permission === 'default') {
+             Notification.requestPermission().then(permission => {
+               if (permission === 'granted') {
+                 this.showToast('Notifications enabled!', 'success');
+               }
+             });
+           }
+
 
           console.log('CryptoDrop App Initialized.');
         },
@@ -983,6 +1138,14 @@
             this.showToast('Failed to copy.', 'error');
           });
         },
+        toggleFullscreen() {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+          } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        },
+
 
         // --- Socket.IO Integration ---
         initSocket() {
@@ -1058,21 +1221,9 @@
           const boardSvg = this.$refs.plinkoSvgRef;
           if (!boardSvg) return;
 
-          // Clear previous board elements
-          boardSvg.innerHTML = `
-             <defs>
-                <radialGradient id="orb-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                  <stop offset="0%" style="stop-color:#fecdd3; stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#f472b6; stop-opacity:1" />
-                </radialGradient>
-                <linearGradient id="jackpot-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" style="stop-color:#ff6f00;" />
-                  <stop offset="33%" style="stop-color:#ff4081;" />
-                  <stop offset="66%" style="stop-color:#7b61ff;" />
-                  <stop offset="100%" style="stop-color:#ff6f00;" />
-                </linearGradient>
-              </defs>
-          `; // Keep defs, clear rest
+          // Clear previous board elements, keep defs
+          const defs = boardSvg.querySelector('defs').outerHTML;
+          boardSvg.innerHTML = defs;
 
           this.pegElements = [];
           this.slotElements = [];
@@ -1103,9 +1254,16 @@
           const totalSlotWidth = outcomes.length * SLOT_WIDTH;
           const totalSpacing = boardWidth - totalSlotWidth;
           const spacing = totalSpacing / (outcomes.length + 1);
-          const slotContainer = document.createElement('div'); // Use a div for tooltips positioned relative to the SVG
-          slotContainer.className = 'slot-tooltip-container absolute bottom-0 left-0 w-full flex justify-around px-1'; // Tailwind classes for positioning
-          document.getElementById('plinko-board').appendChild(slotContainer); // Append to the parent div, not the SVG
+          // Find or create the slot tooltip container
+          let slotContainer = document.querySelector('.slot-tooltip-container');
+          if (!slotContainer) {
+              slotContainer = document.createElement('div');
+              slotContainer.className = 'slot-tooltip-container absolute bottom-0 left-0 w-full flex justify-around px-1';
+              document.getElementById('plinko-board').appendChild(slotContainer);
+          } else {
+              slotContainer.innerHTML = ''; // Clear existing tooltips
+          }
+
 
           outcomes.forEach((outcome, i) => {
             const slotX = spacing * (i + 1) + SLOT_WIDTH * i;
@@ -1127,6 +1285,11 @@
             } else {
                  slotRect.style.fill = outcome.color || '#4B5563'; // Use solid color
             }
+             // Apply high-value class for 10x and Jackpot slots
+             if (['10x', 'Jackpot'].includes(outcome.slot)) {
+               slotRect.classList.add('high-value');
+             }
+
             boardSvg.appendChild(slotRect);
 
             // Create SVG text for the slot label
@@ -1140,7 +1303,10 @@
             // Create a div for the tooltip (positioned relative to the parent div)
             const tooltip = document.createElement('div');
             tooltip.className = 'slot-tooltip';
-             tooltip.style.left = `${slotX + SLOT_WIDTH / 2}px`; // Position tooltip center above slot
+            // Position tooltip center above slot, relative to the board container
+            const boardParentRect = document.getElementById('plinko-board').getBoundingClientRect();
+            tooltip.style.left = `${slotX + SLOT_WIDTH / 2}px`;
+            tooltip.style.bottom = `${boardHeight - slotY + 10}px`; // Position above the slot rect
             tooltip.innerHTML = `
               Multiplier: ${outcome.slot}<br>
               Reward: ${(this.betAmount * outcome.rewardMult).toFixed(5)} SOL<br>
@@ -1236,9 +1402,17 @@
 
           camera.position.z = 100; // Move camera back
 
-          // Animation loop
-          const animate = () => {
-              requestAnimationFrame(animate);
+          // Animation loop with FPS throttling
+          let lastFrame = 0;
+          const animate = (timestamp) => {
+             requestAnimationFrame(animate); // Request next frame first
+
+             // Throttle FPS to ~60
+             if (timestamp - lastFrame < 16.67) {
+               return;
+             }
+             lastFrame = timestamp;
+
 
               // Particle movement and interaction (simplified)
               const positions = particleGeometry.attributes.position.array;
@@ -1317,9 +1491,11 @@
             Promise.all([
               loadSound('https://www.soundjay.com/mechanical/sounds/plink-1.mp3', 'plink'), // Placeholder plink
               loadSound('https://www.soundjay.com/money/sounds/coins-jingle-1.mp3', 'win'), // Placeholder win
-              loadSound('https://www.soundjay.com/misc/sounds/whoosh-2.mp3', 'loss'), // Placeholder loss/whoosh
+              loadSound('https://www.soundjay.com/misc/sounds/whoosh-2.mp3', 'loss'), // Placeholder loss/whoosh (used for near-miss)
               loadSound('https://www.soundjay.com/human/sounds/applause-1.mp3', 'bigwin'), // Placeholder bigwin (applause)
-              loadSound('https://www.soundjay.com/buttons/sounds/button-click-1.mp3', 'click') // Placeholder click
+              loadSound('https://www.soundjay.com/buttons/sounds/button-click-1.mp3', 'click'), // Placeholder click
+              loadSound('https://www.soundjay.com/misc/sounds/casino-ambience.mp3', 'ambient'), // Placeholder ambient casino hum
+              loadSound('https://www.soundjay.com/transport/sounds/whoosh-1.mp3', 'whoosh') // Placeholder whoosh for tension
             ]).then(() => {
                 console.log('All sounds attempted to load.');
                 // Optional: Enable a sound toggle button here
@@ -1327,17 +1503,24 @@
                  console.error('Error during sound loading promises:', err);
             });
 
-             // Background ambient sound (optional, requires user interaction to start)
-             // const bgMusic = new Audio('https://example.com/sounds/casino-ambience.mp3'); // Placeholder
-             // bgMusic.loop = true;
-             // bgMusic.volume = 0.1; // Low volume
-             // // Autoplay is often blocked, so you might need a button to start this
-             // document.body.addEventListener('click', () => {
-             //    if (this.audioContext.state === 'suspended') {
-             //        this.audioContext.resume();
-             //    }
-             //    // bgMusic.play().catch(() => console.log('Background music autoplay blocked'));
-             // }, { once: true }); // Only need to listen for first click
+             // Background ambient sound (requires user interaction to start)
+             const playAmbient = () => {
+               if (this.audioContext && this.sounds.ambient && this.audioContext.state !== 'suspended') {
+                 const source = this.audioContext.createBufferSource();
+                 source.buffer = this.sounds.ambient;
+                 source.loop = true;
+                 source.volume = 0.1; // Low volume
+                 source.connect(this.audioContext.destination);
+                 source.start(0);
+               }
+             };
+             // Start ambient sound on first user click anywhere on the body
+             document.body.addEventListener('click', () => {
+               if (this.audioContext && this.audioContext.state === 'suspended') {
+                   this.audioContext.resume();
+               }
+               playAmbient();
+             }, { once: true }); // Only need to listen for the first click
 
           } catch (err) {
             console.error('AudioContext initialization failed:', err);
@@ -1414,6 +1597,10 @@
             this.closeModals(); // Close wallet modal
             window.dispatchEvent(new CustomEvent('wallet-connected', { detail: { address } })); // Custom event
 
+            // Show deposit prompt after connection
+            setTimeout(() => this.showToast('Deposit now for a 5% bonus!', 'info', 5000), 1000);
+
+
             // Re-initialize board if needed (e.g., if different boards require wallet)
             // this.initBoard();
 
@@ -1477,6 +1664,50 @@
           // this.initBoard();
         },
 
+        // Placeholder deposit function with Solana Pay simulation
+        deposit() {
+           this.showToast('Processing deposit via Solana Pay...', 'info');
+           // Simulate a successful deposit after a delay
+           setTimeout(() => {
+             // In a real app, this would involve creating and sending a Solana transaction
+             // For simulation, we'll just update the balance and show a success message
+             const depositedAmount = 0.1; // Example deposit amount
+             if (this.walletBalance !== null) {
+                this.walletBalance += depositedAmount * 1.05; // Add deposit + 5% bonus
+             } else {
+                this.walletBalance = depositedAmount * 1.05;
+             }
+             localStorage.setItem(LS_PREFIX + 'walletBalance', this.walletBalance.toFixed(5)); // Save simulated balance
+             this.showToast('Deposit successful! +5% bonus added!', 'success');
+             this.getWalletBalance(this.walletAddress); // Refresh balance display
+
+             // Check for high roller status after deposit
+             if (this.sessionSpent >= 10 && !this.isHighRoller) {
+               this.isHighRoller = true;
+               localStorage.setItem(LS_PREFIX + 'isHighRoller', 'true');
+               this.showToast('Unlocked High Roller Mode! 💎', 'success');
+             }
+
+           }, 2000); // Simulate processing time
+        },
+
+        // Placeholder withdraw function with added friction
+        withdraw() {
+           if (this.walletBalance === null || this.walletBalance < 0.1) {
+               this.showToast('Minimum withdrawal is 0.1 SOL.', 'error');
+               return;
+           }
+           this.showToast('Processing withdrawal...', 'info');
+           // Simulate a delay before confirming withdrawal
+           setTimeout(() => {
+             // In a real app, this would involve creating and sending a Solana transaction
+             // For simulation, we'll just show a message
+             this.showToast('Withdrawal queued (Min 0.1 SOL).', 'success');
+             // Note: Actual balance deduction would happen on the backend after the transaction
+           }, Math.random() * 3000 + 2000); // Random delay between 2-5 seconds
+        },
+
+
         // --- Game Logic ---
         async dropOrb() {
           // Prevent dropping if already dropping or insufficient balance
@@ -1523,6 +1754,8 @@
           localStorage.setItem(LS_PREFIX + 'dailyDrops', this.dailyDrops.toString());
           localStorage.setItem(LS_PREFIX + 'xp', this.xp.toString());
           localStorage.setItem(LS_PREFIX + 'faucetBalance', this.faucetBalance.toFixed(3)); // Save faucet balance
+          localStorage.setItem(LS_PREFIX + 'sessionSpent', this.sessionSpent.toFixed(5)); // Save session spent
+
 
           // Deduct bet amount
           if (!this.walletConnected) {
@@ -1533,7 +1766,7 @@
             this.walletBalance -= stake;
           }
 
-          this.triggerHaptic([30]); // Basic haptic feedback
+          this.triggerHaptic([50]); // Haptic feedback on drop button press
 
           // Show temporary UI elements for anticipation
           const timer = document.createElement('div');
@@ -1644,6 +1877,16 @@
              // Create orb trail effect
             this.createOrbTrail(orbX, orbY);
 
+            // Add slow-motion effect near high-value slots
+            if (orbY > boardHeight - SLOT_HEIGHT * 2) {
+              const nearHighValueSlot = this.slotElements.some(s => ['10x', 'Jackpot'].includes(s.outcome.slot) && Math.abs(orbX - (s.x + s.width/2)) < 50);
+              if (nearHighValueSlot) {
+                velocityX *= 0.8; // Reduce velocity
+                velocityY *= 0.8;
+                this.playSound('whoosh'); // Play tension sound
+              }
+            }
+
 
             // Update orb position in the SVG
             this.orbElement.setAttribute('cx', orbX);
@@ -1683,18 +1926,19 @@
           trail.className = 'orb-trail';
            // Position relative to the board container
           const boardRect = this.$refs.plinkoSvgRef.parentElement.getBoundingClientRect();
-          trail.style.left = `${boardRect.left + x - 6}px`; // Center trail element
-          trail.style.top = `${boardRect.top + y - 6}px`; // Center trail element
+          // Use orb size for trail positioning
+          trail.style.left = `${boardRect.left + x - ORB_SIZE / 2}px`;
+          trail.style.top = `${boardRect.top + y - ORB_SIZE / 2}px`;
           document.body.appendChild(trail); // Append to body to avoid SVG clipping
 
           // Animate fade out and scale down
           setTimeout(() => {
               trail.style.opacity = '0';
-              trail.style.transform = 'scale(0.2)';
+              trail.style.transform = 'scale(0.3)'; // Scale down
           }, 10); // Small delay to ensure initial render
 
           // Remove trail element after animation
-          setTimeout(() => trail.remove(), 800);
+          setTimeout(() => trail.remove(), 1000); // Increased duration
         },
 
 
@@ -1754,10 +1998,20 @@
            const originalFill = slotElement.style.fill;
            slotElement.style.fill = '#FFD700'; // Gold color for win
 
-          // Play win/loss sound
+          // Play win/loss sound and trigger haptics
+          if (rewardValue >= this.betAmount * 10) { // Big win (10x or more)
+             this.playSound('bigwin'); // Crowd cheer
+             this.triggerHaptic([100, 50, 100, 50, 100]); // Triple pulse
+          } else if (rewardValue > 0) { // Regular win
+            this.playSound('win'); // Coin explosion
+            this.triggerHaptic([50, 30, 50]);
+          } else { // Loss
+            this.playSound('loss'); // Soft click
+            this.triggerHaptic([20]);
+          }
+
+
           if (rewardValue > 0) {
-            this.playSound(rewardValue >= this.betAmount * 5 ? 'bigwin' : 'win'); // Play big win or regular win sound
-            this.triggerHaptic([50, 30, 50]); // Stronger haptic feedback for wins
             this.createConfetti(winningSlotData.x + winningSlotData.width / 2, winningSlotData.y + winningSlotData.height / 2); // Create confetti at slot position
             this.sessionWins++; // Increment session wins
             this.sessionWon += rewardValue; // Add to session won amount
@@ -1779,7 +2033,6 @@
             } else {
               this.walletBalance += rewardValue;
               // In a real app, the backend confirms the win and updates balance via transaction
-              // We might need to refetch balance here or rely on a socket update from backend
                this.getWalletBalance(this.walletAddress); // Refresh balance
             }
 
@@ -1789,7 +2042,7 @@
             // Update consecutive wins and reset consecutive plays
             this.consecutiveWins++;
             this.lastWinTime = Date.now();
-            this.consecutivePlays = 0;
+            this.consecutivePlays = 0; // Reset consecutive plays on a win
 
             // Show win streak indicator
             if (this.consecutiveWins > 1) {
@@ -1802,20 +2055,35 @@
 
             this.showToast(`Won ${rewardValue.toFixed(5)} SOL!`, 'success'); // Show win toast
 
+             // Update leaderboard for significant wins
+             if (rewardValue > 0.1) {
+                const username = this.walletAddress ? this.walletAddress.slice(0, 4) + '...' + this.walletAddress.slice(-4) : 'Guest';
+                this.updateLeaderboard(username, rewardValue);
+             }
+
+
           } else { // Loss
-            this.playSound('loss'); // Play loss sound
-            this.triggerHaptic([20]); // Shorter haptic pulse
             this.consecutiveWins = 0; // Reset win streak
+            this.consecutivePlays++; // Increment consecutive plays on loss
 
              // Add near-miss flash effect to the slot
             slotElement.classList.add('near-miss-flash');
 
+            // Flash adjacent high-value slot on near-miss (if applicable)
+            if (slotIndex < this.slotElements.length - 1) {
+                 const adjacentSlotData = this.slotElements[slotIndex + 1];
+                 if (['10x', 'Jackpot'].includes(adjacentSlotData.outcome.slot)) {
+                     adjacentSlotData.element.classList.add('near-miss-flash');
+                     setTimeout(() => adjacentSlotData.element.classList.remove('near-miss-flash'), 800);
+                 }
+            }
+
 
             // Trigger near-miss message/UI based on chance
-            if (Math.random() < 0.6) { // 60% chance for near miss message on loss
-                const nearMissOutcomes = outcomes.filter(o => o.rewardMult > 0); // Consider any winning slot a 'near miss' possibility
+            if (Math.random() < 0.8) { // 80% chance for near miss message on loss
+                const nearMissOutcomes = outcomes.filter(o => o.rewardMult >= 5); // Consider 5x or more a 'near miss' possibility
                 const nearMissSlot = nearMissOutcomes[Math.floor(Math.random() * nearMissOutcomes.length)];
-                 this.showToast(`So close to ${nearMissSlot.slot}! Try again!`, 'error');
+                 this.showToast(`So Close to ${nearMissSlot.slot}! Try Again!`, 'error');
                  // Optionally highlight the 'near miss' slot visually
                  const nearMissSlotElement = this.slotElements.find(s => s.outcome.slot === nearMissSlot.slot)?.element;
                  if(nearMissSlotElement) {
@@ -1826,10 +2094,25 @@
                  this.showToast(`Landed on ${result.slot}`, 'info'); // Standard loss toast
             }
 
-             // Show Loss Recovery Meter/Prompt after 5 consecutive losses
-            if (this.consecutiveWins === 0 && this.consecutivePlays >= 5) {
+             // Show Loss Recovery Meter/Prompt after 5 consecutive losses (Free Drop Trap)
+            if (this.consecutivePlays >= 5) { // Check after incrementing
                  this.showLossRecoveryPrompt();
             }
+
+            // Add spent vs. break-even nudge after significant spending
+            if (this.sessionSpent >= 2 && this.sessionWon < this.sessionSpent) {
+               this.showToast(`You've spent ${this.sessionSpent.toFixed(1)} SOL — Only ${(this.sessionSpent - this.sessionWon).toFixed(1)} to break even!`, 'info', 5000);
+            }
+
+             // Loss Rebate System (Frontend Simulation - requires backend for real SOL)
+             // This logic is for free mode simulation based on prompt, but noted for real SOL
+             if (this.sessionSpent >= 5 && !this.walletConnected) {
+                this.faucetBalance += 0.1;
+                localStorage.setItem(LS_PREFIX + 'faucetBalance', this.faucetBalance.toFixed(3));
+                this.showToast('0.1 SOL added to keep playing!', 'success');
+                this.sessionSpent = 0; // Reset session spent after rebate in free mode
+             }
+
           }
 
           // Update the drop result display
@@ -1842,8 +2125,8 @@
           }, 1200);
 
 
-          // Update progress bar (example: random increase)
-          this.progress = (this.progress + Math.random() * 5 + 1) % 100;
+          // Update progress bar (example: random increase, maybe tie to XP gain?)
+          // this.progress = (this.progress + Math.random() * 5 + 1) % 100; // Original random progress
 
           // Update board glow based on consecutive plays
           this.updateBoardGlow();
@@ -1869,7 +2152,7 @@
           // Reset dropping state
           this.dropping = false;
 
-          // Prompt for auto-replay after a short delay
+          // Prompt for auto-replay after a short delay, respecting auto-drop toggle
           setTimeout(() => this.showAutoReplayPrompt(), 3000);
 
            // Update session stats display
@@ -1923,9 +2206,14 @@
           setTimeout(() => explosion.remove(), 800);
         },
 
-        // Shows a prompt to drop again after a delay
+        // Shows a prompt to drop again after a delay, respecting auto-drop toggle
         showAutoReplayPrompt() {
-          if (this.dropping) return; // Don't show if dropping starts independently
+          if (this.dropping || !this.autoDropEnabled) return; // Only show if auto-drop is enabled
+
+          this.autoDropCountdownActive = true; // Activate countdown state
+
+          // Remove any existing countdown timer
+          document.querySelector('.addiction-timer')?.remove();
 
           const prompt = document.createElement('div');
           prompt.className = 'addiction-timer';
@@ -1933,32 +2221,42 @@
           document.body.appendChild(prompt);
 
           let countdown = 5;
-          const interval = setInterval(() => {
+          this.autoDropInterval = setInterval(() => {
             countdown--;
             prompt.textContent = `Drop again? ${countdown}...`;
             if (countdown <= 0) {
-              clearInterval(interval);
+              clearInterval(this.autoDropInterval);
               prompt.remove();
-              // Auto-drop if not already dropping and user hasn't interacted
+              this.autoDropCountdownActive = false; // Deactivate countdown state
+              // Auto-drop if not already dropping
               if (!this.dropping) {
                   this.dropOrb();
               }
             }
           }, 1000);
 
-           // Remove prompt if user interacts (e.g., clicks drop button)
+           // Remove prompt and stop countdown if user interacts (e.g., clicks drop button)
            const dropButton = document.getElementById('drop-button');
            const removePrompt = () => {
-               clearInterval(interval);
+               clearInterval(this.autoDropInterval);
                if (prompt.parentElement) prompt.remove();
+               this.autoDropCountdownActive = false; // Deactivate countdown state
                dropButton.removeEventListener('click', removePrompt);
            };
            dropButton.addEventListener('click', removePrompt);
         },
 
+        // Stops the auto-drop countdown
+        stopAutoDrop() {
+           clearInterval(this.autoDropInterval);
+           document.querySelector('.addiction-timer')?.remove(); // Remove the countdown display
+           this.autoDropCountdownActive = false; // Deactivate countdown state
+           this.showToast('Auto-drop stopped.', 'info');
+        },
+
         // Shows a prompt for loss recovery (free drop)
         showLossRecoveryPrompt() {
-             if (this.walletConnected) return; // Only for free mode
+             if (this.walletConnected || this.consecutivePlays < 5) return; // Only for free mode and after 5 losses
 
              this.showToast('Lost 5 times in a row in Free Mode! Here\'s a free drop.', 'info', 5000);
 
@@ -1968,6 +2266,7 @@
 
              // Reset consecutive plays after providing recovery
              this.consecutivePlays = 0;
+             this.updateBoardGlow(); // Update glow since consecutive plays reset
         },
 
 
@@ -2048,7 +2347,14 @@
 
           const rect = controlsElement.getBoundingClientRect();
           // Show sticky button if the controls section is scrolled out of view (its bottom is above the viewport)
-          this.showStickyButton = rect.bottom < 0;
+          // Also show if idle for 30 seconds
+          this.showStickyButton = rect.bottom < 0 || (Date.now() - (this.lastWinTime || Date.now()) > 30000);
+
+          // Toggle idle class for animation
+          const stickyButton = document.querySelector('.sticky-drop-button');
+          if(stickyButton) {
+             stickyButton.classList.toggle('idle', Date.now() - (this.lastWinTime || Date.now()) > 30000);
+          }
         },
 
         // --- Gamification Functions ---
@@ -2104,6 +2410,35 @@
                 }
                  this.showToast(rewardMessage, rewardType, 5000);
             }, 1500); // Simulate opening delay
+        },
+
+        // Claim daily mission reward
+        claimDailyReward() {
+           if (this.dailyDrops < 10) {
+               this.showToast(`Complete ${10 - this.dailyDrops} more drops to claim!`, 'info');
+               return;
+           }
+           // Claim reward
+           this.faucetBalance += 0.01; // Add reward to faucet balance
+           localStorage.setItem(LS_PREFIX + 'faucetBalance', this.faucetBalance.toFixed(3));
+           this.showToast('Claimed 0.01 SOL + NFT Shard!', 'success');
+           this.dailyDrops = 0; // Reset daily drops
+           localStorage.setItem(LS_PREFIX + 'dailyDrops', this.dailyDrops.toString());
+        },
+
+        // Share referral link on X (Twitter)
+        shareReferral() {
+           const tweet = `Join CryptoDrop & get 0.005 SOL free! 🎰 Use my code: YOUR_REFERRAL_CODE https://cryptodrop.app`; // Replace YOUR_REFERRAL_CODE and URL
+           window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`, '_blank');
+        },
+
+        // Update leaderboard data (frontend simulation)
+        updateLeaderboard(username, winnings) {
+           // Add the new winner and sort by winnings (descending)
+           const updatedLeaderboard = [{ username, winnings }, ...this.leaderboard.filter(l => l.username !== username)];
+           updatedLeaderboard.sort((a, b) => b.winnings - a.winnings);
+           // Keep only the top 5
+           this.leaderboard = updatedLeaderboard.slice(0, 5);
         }
 
 
