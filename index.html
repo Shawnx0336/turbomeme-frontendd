@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DegenJack</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -20,6 +20,12 @@
             /* Ensure full coverage on mobile */
             width: 100%;
             box-sizing: border-box;
+
+            /* Apply safe area insets */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
 
         /* Custom Scrollbar for Chat */
@@ -55,6 +61,9 @@
             border-bottom-right-radius: 8px;
             width: 100%; /* Ensure full width */
             box-sizing: border-box;
+            /* Ensure content is within safe areas if body padding is not enough */
+            /* padding-left: calc(20px + env(safe-area-inset-left)); */
+            /* padding-right: calc(20px + env(safe-area-inset-right)); */
         }
 
         #game-table {
@@ -83,20 +92,39 @@
             border-top-right-radius: 8px;
             width: 100%; /* Ensure full width */
             box-sizing: border-box;
+            /* Ensure content is within safe areas if body padding is not enough */
+            /* padding-left: calc(10px + env(safe-area-inset-left)); */
+            /* padding-right: calc(10px + env(safe-area-inset-right)); */
         }
 
         /* Top Bar Styles */
-        .wallet-info, .xp-progress, .recent-plays {
+        .top-bar-section { /* Use a class for flex items in top bar */
             display: flex;
             align-items: center;
+            /* Allow sections to shrink/grow */
+            flex-shrink: 1;
+            flex-grow: 0;
+            /* Add some spacing between sections */
+            margin: 0 10px;
         }
+
+         .top-bar-section:first-child { margin-left: 0; }
+         .top-bar-section:last-child { margin-right: 0; }
+
 
         .wallet-info span {
             margin-right: 10px;
+            white-space: nowrap; /* Prevent wrapping */
+        }
+
+        .xp-progress {
+             flex-grow: 1; /* Allow XP progress to take available space */
+             justify-content: center; /* Center content within its section */
         }
 
         .xp-bar-container {
-            width: 150px;
+            width: 150px; /* Default width, will be fluid on mobile */
+            max-width: 100%; /* Ensure it doesn't exceed container width */
             height: 8px;
             background-color: #333;
             border-radius: 4px;
@@ -112,12 +140,14 @@
         }
 
         .recent-plays-ticker {
-            width: 200px;
+            width: 200px; /* Default width, will be fluid on mobile */
+            max-width: 100%; /* Ensure it doesn't exceed container width */
             overflow: hidden;
             white-space: nowrap;
             font-style: italic;
             color: #aaa;
             font-size: 0.8em;
+            text-overflow: ellipsis; /* Add ellipsis for overflow */
         }
 
         .recent-play-item {
@@ -133,6 +163,10 @@
             height: 24px;
             cursor: pointer;
             fill: #eee;
+            min-width: 44px; /* Touch target */
+            min-height: 44px;
+            padding: 10px; /* Add padding for easier tapping */
+            box-sizing: border-box;
         }
 
         /* Game Table Styles */
@@ -140,6 +174,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+            flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
         }
 
         .card {
@@ -158,6 +193,8 @@
             position: relative;
             transform-style: preserve-3d;
             transition: transform 0.6s;
+             /* Promote to hardware layer for smoother animation */
+            will-change: transform;
         }
 
         .card-back {
@@ -166,6 +203,7 @@
              /* Optional: Add a simple pattern or logo on the back */
              background-image: url('/assets/card_back.png'); /* Placeholder */
              background-size: cover;
+             background-position: center;
         }
 
         .card.flipped {
@@ -176,11 +214,13 @@
             display: flex;
             justify-content: center;
             width: 100%;
+            flex-wrap: wrap; /* Allow player seats to wrap */
         }
 
         .player-seat {
-            width: 150px;
-            margin: 0 10px;
+            width: 150px; /* Default width */
+            max-width: 95%; /* Ensure it doesn't overflow on narrow screens */
+            margin: 10px; /* Add margin for spacing */
             padding: 10px;
             background-color: #2a2a2a;
             border-radius: 8px;
@@ -189,6 +229,7 @@
             align-items: center;
             border: 2px solid transparent;
             transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
         }
 
         .player-seat.active {
@@ -218,6 +259,9 @@
             font-size: 0.9em;
             font-weight: bold;
             color: #fff;
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .xp-badge {
@@ -227,22 +271,32 @@
             padding: 2px 6px;
             border-radius: 10px;
             margin-left: 5px;
+            white-space: nowrap; /* Prevent wrapping */
         }
 
         .action-buttons {
             margin-top: 10px;
+            display: flex; /* Use flex for button layout */
+            justify-content: center;
+            width: 100%; /* Ensure buttons take full width of seat */
         }
 
         .action-buttons button {
-            padding: 8px 15px;
+            padding: 12px 20px; /* Increased padding for touch */
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em; /* Increased font size */
             font-weight: bold;
             transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            min-width: 44px; /* Ensure touch target size */
-            min-height: 44px;
+            min-width: 48px; /* Ensure touch target size (Android guideline) */
+            min-height: 48px; /* Ensure touch target size */
+            flex-grow: 1; /* Allow buttons to grow */
+            margin: 0 5px; /* Add spacing between buttons */
+             /* Remove 300ms click delay */
+            touch-action: manipulation;
+             /* Optional: Disable tap highlight */
+            -webkit-tap-highlight-color: transparent;
         }
 
         .action-buttons button:disabled {
@@ -253,7 +307,6 @@
         .hit-button {
             background-color: #10b981; /* Green */
             color: #0a0a0a;
-            margin-right: 5px;
         }
 
         .hit-button:hover:not(:disabled) {
@@ -327,29 +380,67 @@
 
 
         /* Bottom Bar Styles */
+        .bottom-bar-section { /* Use a class for flex items in bottom bar */
+            display: flex;
+            align-items: center;
+            /* Allow sections to shrink/grow */
+            flex-shrink: 1;
+            flex-grow: 1; /* Allow both sections to grow */
+            /* Add some spacing between sections */
+            margin: 0 10px;
+        }
+
+         .bottom-bar-section:first-child { margin-left: 0; justify-content: flex-start; }
+         .bottom-bar-section:last-child { margin-right: 0; justify-content: flex-end; }
+
+
         .betting-controls {
             display: flex;
             align-items: center;
+            flex-wrap: wrap; /* Allow controls to wrap */
+            justify-content: center; /* Center controls */
+        }
+
+        .betting-controls > span {
+            white-space: nowrap; /* Prevent wrapping */
+            margin-right: 10px;
         }
 
         .betting-controls input[type="range"] {
-            width: 150px;
+            width: 150px; /* Default width */
+            max-width: 100%; /* Ensure it doesn't exceed container */
             margin: 0 10px;
             accent-color: #10b981; /* Green accent */
+             min-height: 48px; /* Ensure touch target */
+             box-sizing: border-box;
+        }
+
+        .quick-bet-buttons {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
         }
 
         .quick-bet-buttons button {
-            padding: 5px 10px;
+            padding: 10px 15px; /* Increased padding */
             border: none;
             border-radius: 4px;
             background-color: #333;
             color: #eee;
             cursor: pointer;
-            font-size: 0.8em;
-            margin-right: 5px;
+            font-size: 0.9em;
+            margin-right: 8px; /* Increased margin */
             transition: background-color 0.3s ease-in-out;
-            min-width: 44px; /* Ensure touch target size */
-            min-height: 44px;
+            min-width: 48px; /* Ensure touch target size */
+            min-height: 48px;
+             /* Remove 300ms click delay */
+            touch-action: manipulation;
+             /* Optional: Disable tap highlight */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .quick-bet-buttons button:last-child {
+            margin-right: 0;
         }
 
         .quick-bet-buttons button:hover {
@@ -357,16 +448,20 @@
         }
 
         .join-leave-button {
-             padding: 8px 15px;
+             padding: 12px 25px; /* Increased padding */
              border: none;
-             border-radius: 5px;
+             border-radius: 8px;
              cursor: pointer;
-             font-size: 0.9em;
+             font-size: 1em; /* Increased font size */
              font-weight: bold;
              transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
              margin-left: 20px;
-             min-width: 44px; /* Ensure touch target size */
-             min-height: 44px;
+             min-width: 48px; /* Ensure touch target size */
+             min-height: 48px;
+              /* Remove 300ms click delay */
+            touch-action: manipulation;
+             /* Optional: Disable tap highlight */
+            -webkit-tap-highlight-color: transparent;
          }
 
          .join-button {
@@ -390,14 +485,16 @@
          }
 
         .chat-container {
-            width: 300px;
-            height: 120px;
+            width: 300px; /* Default width */
+            max-width: 100%; /* Ensure it doesn't overflow */
+            height: 120px; /* Default height */
             background-color: #1a1a1a;
             border-radius: 8px;
             padding: 10px;
             display: flex;
             flex-direction: column;
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
         }
 
         .chat-feed {
@@ -406,10 +503,12 @@
             font-size: 0.8em;
             color: #bbb;
             margin-bottom: 5px;
+            padding-right: 5px; /* Add padding to prevent scrollbar overlaying text */
         }
 
         .chat-message {
             margin-bottom: 3px;
+            word-break: break-word; /* Break long words */
         }
 
         .chat-sender {
@@ -425,31 +524,38 @@
 
         .chat-input-area {
             display: flex;
+            align-items: center;
+            margin-top: 5px;
         }
 
         .chat-input-area input[type="text"] {
             flex-grow: 1;
-            padding: 5px 10px;
+            padding: 10px; /* Increased padding */
             border: none;
             border-radius: 4px 0 0 4px;
             background-color: #333;
             color: #eee;
-            font-size: 0.9em; /* Adjust for mobile keyboard */
+            font-size: 1em; /* Increased font size */
             outline: none;
-             min-height: 34px; /* Adjust for touch */
+             min-height: 48px; /* Ensure touch target size */
+             box-sizing: border-box;
         }
 
         .chat-input-area button {
-            padding: 5px 10px;
+            padding: 10px 15px; /* Increased padding */
             border: none;
-            border-radius: 0 4px 44px 0;
+            border-radius: 0 4px 4px 0;
             background-color: #3b82f6; /* Blue */
             color: #fff;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em; /* Increased font size */
             transition: background-color 0.3s ease-in-out;
-            min-width: 44px; /* Ensure touch target size */
-            min-height: 44px;
+            min-width: 48px; /* Ensure touch target size */
+            min-height: 48px;
+             /* Remove 300ms click delay */
+            touch-action: manipulation;
+             /* Optional: Disable tap highlight */
+            -webkit-tap-highlight-color: transparent;
         }
 
         .chat-input-area button:hover {
@@ -476,6 +582,10 @@
             cursor: pointer;
             animation: bounce 1s infinite;
             margin-left: 10px;
+             min-width: 44px; /* Touch target */
+             min-height: 44px;
+             padding: 10px; /* Add padding for easier tapping */
+             box-sizing: border-box;
         }
 
         /* Placeholder for Confetti Canvas */
@@ -492,7 +602,7 @@
         /* Hot Table Banner Placeholder */
         #hot-table-banner {
             position: fixed;
-            top: 60px; /* Below top bar */
+            top: calc(60px + env(safe-area-inset-top)); /* Position below top bar, accounting for safe area */
             left: 50%;
             transform: translateX(-50%);
             background-color: #ff6bec; /* Pink accent */
@@ -508,7 +618,7 @@
          /* Next Hand Button Placeholder */
          #next-hand-button {
              position: absolute;
-             bottom: 150px; /* Above bottom bar */
+             bottom: calc(150px + env(safe-area-inset-bottom)); /* Position above bottom bar, accounting for safe area */
              left: 50%;
              transform: translateX(-50%);
              padding: 12px 25px;
@@ -523,6 +633,12 @@
              display: none; /* Hidden by default */
              box-shadow: 0 0 15px #10b981;
              transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+             min-width: 48px; /* Ensure touch target size */
+             min-height: 48px;
+              /* Remove 300ms click delay */
+            touch-action: manipulation;
+             /* Optional: Disable tap highlight */
+            -webkit-tap-highlight-color: transparent;
          }
 
          #next-hand-button:hover {
@@ -544,10 +660,14 @@
                 height: auto;
             }
 
-            .wallet-info, .xp-progress, .recent-plays {
+            .top-bar-section { /* Adjust flex for mobile stacking */
                 width: 100%;
                 justify-content: space-between;
-                margin-bottom: 8px;
+                margin: 5px 0; /* Adjust margin */
+            }
+
+            .wallet-info span {
+                 margin-right: 5px; /* Reduce margin */
             }
 
             .xp-bar-container {
@@ -609,6 +729,12 @@
                 padding: 10px;
             }
 
+            .bottom-bar-section { /* Adjust flex for mobile stacking */
+                 width: 100%;
+                 margin: 5px 0; /* Adjust margin */
+                 justify-content: center; /* Center content */
+            }
+
             .betting-controls {
                 width: 100%;
                 flex-direction: column;
@@ -654,6 +780,8 @@
                 z-index: 20; /* Above other content */
                 box-sizing: border-box;
                  padding-bottom: 50px; /* Space for input */
+                 /* Account for safe area bottom */
+                 padding-bottom: calc(50px + env(safe-area-inset-bottom));
             }
 
             .chat-container.active {
@@ -668,7 +796,7 @@
 
             .chat-input-area {
                 position: absolute; /* Position relative to chat container */
-                bottom: 0;
+                bottom: env(safe-area-inset-bottom); /* Position above safe area */
                 left: 0;
                 width: 100%;
                 padding: 5px;
@@ -696,8 +824,8 @@
                 font-weight: bold;
                 cursor: pointer;
                 margin-top: 10px;
-                min-width: 44px; /* Ensure touch target size */
-                min-height: 44px;
+                min-width: 48px; /* Ensure touch target size */
+                min-height: 48px;
             }
 
             .player-seat .player-hand {
@@ -720,6 +848,8 @@
                  background-color: #555;
                  color: #eee;
                  cursor: pointer;
+                 min-width: 48px; /* Touch target */
+                 min-height: 48px;
              }
         }
 
@@ -728,12 +858,20 @@
             display: none;
         }
 
+        /* Ensure elements are within safe areas even if not fixed */
+        .wallet-info, .xp-progress, .recent-plays,
+        .betting-controls, .chat-container {
+            padding-left: env(safe-area-inset-left, 0);
+            padding-right: env(safe-area-inset-right, 0);
+        }
+
+
     </style>
 </head>
 <body>
 
     <div id="top-bar">
-        <div class="wallet-info">
+        <div class="top-bar-section wallet-info">
             <span id="wallet-address">Not Connected</span>
             <span id="wallet-balance">-- SOL</span>
             <button id="connect-wallet-button">Connect Wallet</button>
@@ -741,7 +879,7 @@
              <a id="phantom-deeplink" href="#" style="display: none; color: #a78bfa; font-size: 0.8em; margin-left: 10px;">Open in Phantom App</a>
              <span id="wallet-guidance" style="display: none; color: #facc15; font-size: 0.8em; margin-left: 10px;"></span>
         </div>
-        <div class="xp-progress">
+        <div class="top-bar-section xp-progress">
             <span id="user-level">Level 1</span>
             <div class="xp-bar-container">
                 <div id="xp-bar-fill" class="xp-bar-fill"></div>
@@ -751,7 +889,7 @@
                 <path fill-rule="evenodd" d="M7.293 2.293a1 1 0 011.414 0L10 3.586l1.293-1.293a1 1 0 111.414 1.414L11.414 5l1.293 1.293a1 1 0 11-1.414 1.414L10 6.414l-1.293 1.293a1 1 0 01-1.414-1.414L8.586 5l-1.293-1.293a1 1 0 010-1.414zM10 14a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2zM5 10a1 1 0 11-2 0 1 1 0 012 0zm10 0a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path>
             </svg>
         </div>
-        <div class="recent-plays">
+        <div class="top-bar-section recent-plays">
             <div id="recent-plays-ticker" class="recent-plays-ticker">
                 <span>No recent plays...</span>
             </div>
@@ -785,7 +923,7 @@
     </div>
 
     <div id="bottom-bar">
-        <div class="betting-controls">
+        <div class="bottom-bar-section betting-controls">
             <span id="current-bet-display">Bet: 0.00 SOL</span>
             <input type="range" id="bet-slider" min="0" max="10" step="0.01" value="0">
             <div class="quick-bet-buttons">
@@ -795,9 +933,9 @@
             </div>
             <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
              <span id="spectator-status" style="display: none; color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
-             <button id="refer-friends-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #5b21b6; color: #fff; font-weight: bold; cursor: pointer;">Refer Friends</button>
+             <button id="refer-friends-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #5b21b6; color: #fff; font-weight: bold; cursor: pointer; min-width: 48px; min-height: 48px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">Refer Friends</button>
         </div>
-        <div class="chat-container">
+        <div class="bottom-bar-section chat-container">
             <div id="chat-feed" class="chat-feed custom-scrollbar">
                 </div>
             <div class="chat-input-area">
@@ -1244,7 +1382,7 @@
 
         function updateLeaderboard(leaderboardData) {
              dom.leaderboard.innerHTML = ''; // Clear current leaderboard
-             if (leaderboardData.length === 0) {
+             if (!leaderboardData || leaderboardData.length === 0) {
                  dom.leaderboard.textContent = 'Leaderboard: --';
                  return;
              }
@@ -1346,7 +1484,7 @@
                 // Action Buttons (Hit/Stand)
                 const actionButtons = document.createElement('div');
                 actionButtons.classList.add('action-buttons');
-                actionButtons.style.display = (player.id === gameState.walletAddress && player.id === gameState.activePlayerId && !gameState.isSpectator) ? 'block' : 'none';
+                actionButtons.style.display = (player.id === gameState.walletAddress && player.id === gameState.activePlayerId && !gameState.isSpectator) ? 'flex' : 'none'; // Use flex for buttons
 
                 const hitButton = document.createElement('button');
                 hitButton.classList.add('hit-button');
@@ -1707,7 +1845,7 @@
             }
 
             function updateConfetti() {
-                dom.confettiCtx.clearRect(0, 0, dom.confettiCanvas.width, dom.confettiCanvas.height);
+                dom.confettiCtx.clearRect(0, 0, dom.confettiCanvas.width, dom.confettiCtx.canvas.height); // Use canvas height
 
                 particles.forEach(p => {
                     p.speedY += p.gravity;
