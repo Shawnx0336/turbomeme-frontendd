@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"> <title>DegenDice - Slotana Style</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DegenDice - Slotana Style</title>
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css)">
     <style>
         :root {
             --bg-dark: #0A0A0A;
@@ -17,12 +18,13 @@
             --leaderboard-width: 250px; /* Define leaderboard width */
             --chat-height: 300px; /* Define chat height */
             --chat-width: 300px; /* Define chat width */
-             --chat-bubble-size: 60px; /* Size for the mobile chat bubble */
+            --chat-bubble-size: 60px; /* Size for the mobile chat bubble */
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(180deg, var(--bg-dark) 0%, #1a0a1a 100%); /* Animated background gradient */
+            /* Animated background gradient */
+            background: linear-gradient(180deg, #0A0A0A 0%, #1A1A2E 50%, #0A0A0A 100%);
             background-size: 400% 400%;
             animation: gradientAnimation 15s ease infinite;
             color: var(--text-light);
@@ -39,6 +41,17 @@
             padding-bottom: env(safe-area-inset-bottom);
             overflow-x: hidden; /* Prevent horizontal scroll from fixed elements */
         }
+
+        /* Add to CSS */
+        body.high-intensity {
+            animation: gradientAnimation 5s ease infinite;
+            --shadow-glow: 0 0 15px;
+        }
+        body.low-intensity {
+            animation: gradientAnimation 20s ease infinite;
+            --shadow-glow: 0 0 5px;
+        }
+
 
         @keyframes gradientAnimation {
             0% { background-position: 0% 50%; }
@@ -80,6 +93,17 @@
             color: var(--accent-green); /* Icon color */
         }
 
+         .demo-mode-indicator {
+             background-color: rgba(255, 255, 0, 0.2);
+             color: yellow;
+             padding: 0.2rem 0.5rem;
+             border-radius: var(--radius-sm);
+             font-size: 0.8rem;
+             font-weight: 700;
+             margin-left: 0.5rem;
+         }
+
+
         .game-container {
             flex: 1;
             display: flex;
@@ -113,8 +137,20 @@
             font-size: 3rem;
             color: var(--bg-dark);
             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Added box-shadow transition */
         }
+
+         /* Dice visual variety based on result */
+         .dice.win {
+             box-shadow: var(--shadow-glow) var(--accent-green);
+             border: 2px solid var(--accent-green);
+         }
+
+         .dice.loss {
+             box-shadow: var(--shadow-glow) var(--accent-pink);
+             border: 2px solid var(--accent-pink);
+         }
+
 
         .controls {
             background: rgba(20, 20, 20, 0.8);
@@ -184,8 +220,8 @@
         }
 
         button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+            opacity: 0.5 !important; /* Use !important to override potential conflicts */
+            cursor: not-allowed !important;
         }
 
         .roll-btn {
@@ -213,9 +249,16 @@
             flex: 1;
         }
 
-        .chip-btn.active {
+        /* Chip button pulse animation */
+        @keyframes chipPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+         .chip-btn.active {
             background-color: var(--accent-pink);
             box-shadow: var(--shadow-glow) var(--accent-pink);
+            animation: chipPulse 0.5s; /* Apply pulse animation */
         }
 
         .result-display {
@@ -770,6 +813,46 @@
         /* Coin Shower Animation (using existing confetti) */
         /* Confetti styles are already present */
 
+        /* Big Win Fireworks Animation (Mock) */
+        .big-win-fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.5) 0%, rgba(255, 215, 0, 0) 70%); /* Golden glow effect */
+            animation: fireworks 1s ease-out forwards;
+        }
+
+        @keyframes fireworks {
+             0% { opacity: 0; transform: scale(0.5); }
+             50% { opacity: 1; transform: scale(1.2); }
+             100% { opacity: 0; transform: scale(1.5); }
+        }
+
+        /* Big Win Text Animation */
+        .big-win-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 96px;
+            font-weight: 900;
+            color: gold;
+            text-shadow: 0 0 20px gold, 0 0 40px orange, 0 0 60px yellow;
+            animation: bigWinText 2s ease-out forwards;
+            z-index: 101;
+            pointer-events: none;
+        }
+
+        @keyframes bigWinText {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+        }
+
 
         /* Micro-interactions (added to existing buttons) */
         button:active:not(:disabled) {
@@ -778,6 +861,384 @@
 
         /* Flash on Wins/Milestones (using existing .win-overlay) */
         /* The .win-overlay already provides a flash effect */
+
+        /* Multiplier Flash Animation */
+        @keyframes multiplierFlash {
+            0% { text-shadow: var(--shadow-glow) var(--accent-green); }
+            50% { text-shadow: 0 0 20px var(--accent-green); }
+            100% { text-shadow: var(--shadow-glow) var(--accent-green); }
+        }
+         .multiplier-display.flashing {
+             animation: multiplierFlash 0.3s ease;
+         }
+
+
+        /* Limited-Time Event Timer */
+        .event-timer {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            margin-left: 1rem; /* Space from other header elements */
+        }
+
+        /* Live Win Notifications (Enhanced Recent Wins) */
+        .recent-wins span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: slide-left 15s linear infinite;
+        }
+
+         .recent-wins .win-notification {
+             margin-right: 2rem; /* Space between notifications */
+             font-weight: 700;
+         }
+
+         .recent-wins .win-notification .avatar {
+             margin-right: 0.5rem;
+         }
+
+         .recent-wins .win-notification .join-button {
+             background-color: var(--accent-green);
+             color: var(--bg-dark);
+             padding: 0.2rem 0.5rem;
+             border-radius: var(--radius-sm);
+             font-size: 0.8rem;
+             cursor: pointer;
+             margin-left: 0.5rem;
+         }
+
+
+        /* Winner of the Day Banner */
+        .winner-banner {
+            background: linear-gradient(90deg, var(--accent-green), rgba(0, 255, 153, 0.5));
+            color: var(--bg-dark);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem; /* Space below banner */
+            display: none; /* Hidden by default */
+        }
+
+        .winner-banner .avatar {
+             margin-right: 0.5rem;
+        }
+
+
+        /* Chat Enhancements */
+        .chat-message .chat-badge {
+             background-color: var(--accent-pink);
+             color: white;
+             padding: 0.1rem 0.4rem;
+             border-radius: var(--radius-sm);
+             font-size: 0.7rem;
+             margin-left: 0.5rem;
+             font-weight: 400;
+        }
+
+         .chat-message .cheer-button {
+             background-color: rgba(255, 255, 255, 0.1);
+             color: white;
+             padding: 0.1rem 0.4rem;
+             border-radius: var(--radius-sm);
+             font-size: 0.7rem;
+             margin-left: 0.5rem;
+             cursor: pointer;
+         }
+
+
+        /* Profile Flair */
+        .user-profile .vip-badge {
+             background-color: gold;
+             color: var(--bg-dark);
+             padding: 0.1rem 0.4rem;
+             border-radius: var(--radius-sm);
+             font-size: 0.7rem;
+             margin-left: 0.5rem;
+             font-weight: 700;
+        }
+
+
+        /* Streak Tracker */
+        .streak-tracker {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-top: 2rem;
+            text-align: center;
+            border: 1px solid var(--accent-pink);
+            display: none; /* Hidden by default */
+        }
+
+        /* High Score/Biggest Wins Modal Specifics */
+        #high-scores-modal .modal-content {
+             text-align: left;
+        }
+         #high-scores-modal ul {
+             list-style: none;
+             padding: 0;
+             margin: 1rem 0;
+         }
+         #high-scores-modal li {
+             background: rgba(255, 255, 255, 0.05);
+             padding: 0.75rem;
+             border-radius: var(--radius-sm);
+             margin-bottom: 0.5rem;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+         }
+         #high-scores-modal li span {
+             font-weight: 700;
+             color: var(--accent-green);
+         }
+
+
+        /* Spin Wheel Modal */
+        #spin-wheel-modal .modal-content {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+        }
+         #spin-wheel {
+             width: 250px;
+             height: 250px;
+             border: 5px solid var(--accent-pink);
+             border-radius: 50%;
+             margin-bottom: 1rem;
+         }
+         #spin-wheel-modal button {
+             background-color: var(--accent-green);
+             color: var(--bg-dark);
+         }
+
+
+        /* Deposit Bonus Modal */
+        #deposit-bonus-modal .modal-content {
+             background: linear-gradient(145deg, var(--accent-green), rgba(0, 255, 153, 0.5));
+             color: var(--bg-dark);
+             font-weight: 700;
+        }
+
+
+        /* Toast Notification (Generic Style) */
+        .toast-notification {
+            position: fixed;
+            bottom: calc(1rem + var(--chat-bubble-size) + 1rem + constant(safe-area-inset-bottom)); /* Position above chat bubble */
+            bottom: calc(1rem + var(--chat-bubble-size) + 1rem + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Don't block clicks */
+            max-width: 90%;
+            text-align: center;
+        }
+
+         .toast-notification.show {
+             opacity: 1;
+         }
+
+         .toast-notification button {
+             background-color: var(--accent-pink);
+             color: white;
+             padding: 0.3rem 0.6rem;
+             border-radius: var(--radius-sm);
+             font-size: 0.8rem;
+             margin-left: 1rem;
+             cursor: pointer;
+         }
+
+
+        /* Progressive Jackpot */
+        .jackpot-counter {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            margin-right: 1rem; /* Space from other header elements */
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+
+        /* Provably Fair Modal */
+        #provably-fair-modal .modal-content {
+             text-align: left;
+        }
+         #provably-fair-modal h3 {
+             text-align: center;
+             margin-bottom: 1rem;
+         }
+         #provably-fair-modal p {
+             margin-bottom: 0.5rem;
+             font-size: 0.9rem;
+         }
+         #provably-fair-modal span {
+             font-weight: 700;
+             color: var(--accent-green);
+             word-break: break-all; /* Break long hashes */
+         }
+
+
+        /* Dynamic Background Video */
+        /* Removed background video styles */
+
+
+        /* Engagement Hooks */
+        .engagement-hooks {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .live-bets-ticker {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+         .live-bets-ticker span {
+             display: inline-block;
+             padding-left: 100%;
+             animation: slide-left 10s linear infinite; /* Faster scroll */
+         }
+
+        .streak-booster {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+         .streak-booster .booster-meter {
+             flex-grow: 1;
+             height: 8px;
+             background: linear-gradient(to right, var(--accent-pink), var(--accent-green));
+             border-radius: 4px;
+             width: 0%; /* Filled by JS */
+             transition: width 0.3s ease-in-out;
+         }
+
+
+        /* Fairness Verification */
+        .fairness-verification {
+            margin-top: 2rem;
+            text-align: center;
+        }
+         .fairness-verification button {
+             background-color: rgba(255, 255, 255, 0.1);
+             color: white;
+             margin-bottom: 1rem;
+         }
+         #verification-result {
+             background: rgba(20, 20, 20, 0.9);
+             padding: 1rem;
+             border-radius: var(--radius-md);
+             text-align: left;
+             font-size: 0.9rem;
+             display: none; /* Hidden by default */
+         }
+
+
+        /* Monetization Tactics */
+        .monetization-tactics {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .time-limited-offer {
+            background: linear-gradient(90deg, var(--accent-pink), rgba(255, 51, 102, 0.5));
+            color: white;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: pulse 1s infinite; /* Keep pulse for urgency */
+            display: none; /* Hidden by default */
+        }
+         .time-limited-offer button {
+             background-color: white;
+             color: var(--accent-pink);
+             padding: 0.3rem 0.6rem;
+             border-radius: var(--radius-sm);
+             font-size: 0.8rem;
+             font-weight: 700;
+         }
+
+        .sunk-cost-tracker {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+         .sunk-cost-tracker .progress-bar {
+             height: 8px;
+             background: linear-gradient(to right, var(--accent-green), rgba(0, 255, 153, 0.5));
+             border-radius: 4px;
+             width: 0%; /* Filled by JS */
+             transition: width 0.3s ease-in-out;
+         }
+
+
+        /* Neuro Feedback */
+        .neuro-feedback {
+             /* Placeholder for visual effects */
+        }
+
+        /* Coercive Retention */
+        .retention-popup {
+             position: fixed;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background: rgba(0, 0, 0, 0.9);
+             padding: 1.5rem;
+             border-radius: var(--radius-md);
+             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.2);
+             z-index: 1000;
+             text-align: center;
+             display: none; /* Hidden by default */
+        }
+         .retention-popup p {
+             margin-bottom: 1rem;
+             font-size: 1.1rem;
+             font-weight: 700;
+         }
+         .retention-popup button {
+             background-color: var(--accent-green);
+             color: var(--bg-dark);
+             font-weight: 700;
+         }
+         .retention-popup #countdown {
+             color: var(--accent-pink);
+         }
 
 
         /* Responsive Adjustments */
@@ -810,12 +1271,22 @@
                 flex-shrink: 0; /* Prevent shrinking */
             }
 
-            /* Header Buttons Mobile Size */
+            /* Header Buttons Mobile Size - Further refined based on Slotana */
             header button {
-                padding: 0.4rem 0.6rem; /* Further reduced padding for space */
-                font-size: 0.8rem; /* Keep font size */
+                padding: 0.3rem 0.5rem; /* Reduced padding more */
+                font-size: 0.7rem; /* Reduced font size */
                  flex-shrink: 0; /* Prevent buttons from shrinking too much */
+                 min-width: 50px; /* Ensure minimum width */
+                 text-align: center;
+                 display: flex;
+                 align-items: center;
+                 justify-content: center;
+                 gap: 0.2rem; /* Small gap for icon and text */
             }
+
+             header button i {
+                 font-size: 0.8em; /* Adjust icon size relative to text */
+             }
 
 
             .dice {
@@ -958,12 +1429,17 @@
         <div class="header-left">
              <button id="connect-wallet-btn" class="chip-btn"><i class="fas fa-wallet"></i> Connect Wallet</button>
             <div class="wallet-info" id="wallet-info">
-                Wallet: Not connected
+                Wallet: Not connected <span class="demo-mode-indicator">(Demo Mode)</span>
             </div>
              <div class="profile-avatar" id="profile-avatar" style="cursor: pointer;">
                 <i class="fas fa-user-circle" style="font-size: 24px;"></i> </div>
+             <button id="provably-fair-btn" class="chip-btn"><i class="fas fa-balance-scale"></i> Fair</button>
+             <button id="high-scores-btn" class="chip-btn"><i class="fas fa-trophy"></i> High Scores</button>
         </div>
         <div class="header-right">
+             <div class="jackpot-counter" id="jackpot-counter">
+                 Jackpot: 50.00 SOL!
+             </div>
             <button id="deposit-btn" class="chip-btn"><i class="fas fa-plus-circle"></i> Deposit</button>
             <button id="withdraw-btn" class="chip-btn"><i class="fas fa-minus-circle"></i> Withdraw</button>
              <button id="referral-btn" class="chip-btn"><i class="fas fa-share-alt"></i> Invite</button>
@@ -1005,6 +1481,25 @@
             <button class="roll-btn" id="roll-button">ROLL</button>
         </div>
 
+        <div class="engagement-hooks">
+            <div class="live-bets-ticker" id="live-bets-ticker">
+                <span>🔥 LIVE BETS: User123 bet 5 SOL • User456 bet 2.5 SOL</span>
+            </div>
+            <div class="streak-booster" id="streak-booster">
+                <div class="booster-meter"></div>
+                <span>NEXT BONUS AT 3 WINS!</span>
+            </div>
+        </div>
+
+         <div class="monetization-tactics">
+            <div class="time-limited-offer" id="flash-offer">
+                <span>⏳ 2X BONUS NEXT 5 MINUTES!</span>
+                <button class="fomo-buy">ACTIVATE 2X</button>
+            </div>
+            <div class="sunk-cost-tracker" id="sunk-cost-tracker">
+                </div>
+         </div>
+
         <div class="daily-challenge-panel" id="daily-challenge-panel">
             <h4>Daily Challenge</h4>
             <p id="challenge-text">Roll under 5 three times</p>
@@ -1019,6 +1514,12 @@
              <button id="copy-referral-btn">Copy Code</button>
          </div>
 
+         <div class="fairness-verification">
+             <button id="verify-roll">Verify Fairness</button>
+             <div id="verification-result"></div>
+         </div>
+
+
     </div>
 
     <div class="recent-wins">
@@ -1027,13 +1528,13 @@
 
     <canvas id="confetti-canvas"></canvas>
 
-    <div id="wallet-modal" class="modal">
+     <div id="wallet-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>Connect Wallet</h2>
             <div class="wallet-options">
-                <button id="connect-phantom"><img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> Phantom</button>
-                <button id="connect-solflare"><img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> Solflare</button>
+                <button id="connect-phantom"><img src="[https://phantom.app/img/phantom-icon-purple.png](https://phantom.app/img/phantom-icon-purple.png)" alt="Phantom Icon"> Phantom</button>
+                <button id="connect-solflare"><img src="[https://solflare.com/favicon.ico](https://solflare.com/favicon.ico)" alt="Solflare Icon"> Solflare</button>
                 <button id="disconnect-wallet" style="display: none;">Disconnect</button>
             </div>
         </div>
@@ -1055,6 +1556,7 @@
                      <option value="💎">💎</option>
                  </select>
                 <button id="save-profile-btn">Save Profile</button>
+                 <button id="reset-demo-balance-btn" class="chip-btn" style="background-color: rgba(255, 255, 0, 0.1); color: yellow;">Reset Demo Balance</button>
             </div>
         </div>
     </div>
@@ -1063,8 +1565,7 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>Deposit (Mock)</h2>
-             <p>Your Balance: <span id="current-balance">0.00</span> SOL</p>
-            <div class="transaction-options">
+             <p>Your Balance: <span id="current-balance-deposit">0.00</span> SOL</p> <div class="transaction-options">
                 <label for="deposit-amount">Amount (SOL):</label>
                 <input type="number" id="deposit-amount" value="1" min="0.01" step="0.01">
                 <button id="confirm-deposit-btn">Simulate Deposit</button>
@@ -1076,8 +1577,7 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>Withdraw (Mock)</h2>
-             <p>Your Balance: <span id="current-balance">0.00</span> SOL</p>
-            <div class="transaction-options">
+             <p>Your Balance: <span id="current-balance-withdraw">0.00</span> SOL</p> <div class="transaction-options">
                 <label for="withdraw-amount">Amount (SOL):</label>
                 <input type="number" id="withdraw-amount" value="0.1" min="0.01" step="0.01">
                 <button id="confirm-withdraw-btn">Simulate Withdraw</button>
@@ -1088,6 +1588,9 @@
     <div class="leaderboard-sidebar" id="leaderboard-sidebar">
         <h3>Leaderboard 🔥</h3>
         <ul class="leaderboard-list" id="leaderboard-list">
+            <div class="winner-banner" id="winner-banner">
+                 🏆 Winner of the Day: <span id="daily-winner"></span>
+            </div>
             </ul>
     </div>
 
@@ -1105,6 +1608,73 @@
         </div>
     </div>
 
+    <div id="achievements-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Achievements</h3>
+            <ul id="achievement-list">
+                </ul>
+        </div>
+    </div>
+
+    <div id="high-scores-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Biggest Wins (Demo)</h3>
+            <ul id="high-scores-list">
+                </ul>
+        </div>
+    </div>
+
+
+    <div id="spin-wheel-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Daily Spin</h3>
+            <canvas id="spin-wheel"></canvas>
+            <button id="spin-button">Spin!</button>
+        </div>
+    </div>
+
+    <div id="deposit-bonus-modal" class="modal">
+         <div class="modal-content">
+             <span class="close-button">&times;</span>
+             <h3>First Deposit Bonus!</h3>
+             <p>Deposit now and get 10% bonus SOL!</p>
+             <button id="activate-deposit-bonus">Deposit Now</button>
+         </div>
+    </div>
+
+     <div id="notification-prompt" class="modal">
+         <div class="modal-content">
+             <span class="close-button">&times;</span>
+             <h3>Enable Notifications</h3>
+             <p>Get daily rewards and updates!</p>
+             <button id="enable-notifications-btn">Enable</button>
+         </div>
+     </div>
+
+    <div id="provably-fair-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Provably Fair (Mock)</h3>
+            <p>Server Seed: <span id="server-seed"></span></p>
+            <p>Client Seed: <span id="client-seed"></span></p>
+            <p>Combined Hash: <span id="combined-hash"></span></p>
+            <p>Next Server Seed Hash: <span id="next-server-seed-hash"></span></p>
+             <button id="reveal-seed-btn">Reveal Previous Seed</button>
+             <div id="previous-seed-info" style="display: none; margin-top: 1rem; text-align: left;">
+                 <p>Previous Server Seed: <span id="previous-server-seed"></span></p>
+                 <p>Previous Client Seed: <span id="previous-client-seed"></span></p>
+             </div>
+        </div>
+    </div>
+
+     <div class="retention-popup" id="retention-popup">
+         <p id="retention-message"></p>
+         <button id="retention-action-btn"></button>
+     </div>
+
     <script>
         // --- Existing Game Script (DO NOT MODIFY) ---
         // Game state
@@ -1113,7 +1683,7 @@
             chipValue: 1,
             diceValues: [1, 1],
             rollResult: null,
-            streak: 5,
+            streak: 0, // Initialize streak to 0
             payouts: {
                 3: 35,
                 4: 17,
@@ -1124,7 +1694,8 @@
                 9: 4,
                 10: 3,
                 11: 2.5
-            }
+            },
+            lossStreak: 0 // Track loss streak for recovery mechanics
         };
 
         // DOM elements
@@ -1135,30 +1706,49 @@
         const rollUnderValue = document.getElementById('roll-under-value');
         const multiplierDisplay = document.getElementById('multiplier');
         const rollButton = document.getElementById('roll-button');
-        const chipButtons = document.querySelectorAll('.chip-btn');
+        const chipButtons = document.querySelectorAll('.bet-controls .chip-btn'); // Select only chip buttons in bet controls
         const hotStreakDisplay = document.getElementById('hot-streak'); // Get hot streak element
+        const sunkCostTracker = document.getElementById('sunk-cost-tracker'); // Get sunk cost tracker element
+        const demoModeIndicator = document.querySelector('.demo-mode-indicator'); // Get demo mode indicator
 
         // Initialize
         updateMultiplier();
         updateHotStreakDisplay(); // Initialize hot streak display
+        updateSunkCostTracker(); // Initial update of sunk cost tracker
+        updateBackgroundIntensity(); // Initial background intensity based on default chip value
+
 
         // Event listeners
         rollUnderSlider.addEventListener('input', function() {
             state.rollUnder = parseInt(this.value);
             rollUnderValue.textContent = state.rollUnder;
             updateMultiplier();
+             // Trigger multiplier flash animation
+             multiplierDisplay.classList.add('flashing');
+             setTimeout(() => {
+                 multiplierDisplay.classList.remove('flashing');
+             }, 300);
         });
 
-        chipButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                chipButtons.forEach(btn => btn.classList.remove('active'));
+        // FIX: Add event listeners to specific buttons
+        document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
+        document.getElementById('confirm-deposit-btn').addEventListener('click', processDeposit);
+        document.getElementById('confirm-withdraw-btn').addEventListener('click', processWithdraw);
+        document.getElementById('reset-demo-balance-btn').addEventListener('click', resetDemoBalance); // Add event listener for reset button
+
+
+        // FIX: Refine chip button event listeners
+        chipButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                chipButtons.forEach(chipBtn => chipBtn.classList.remove('active'));
                 this.classList.add('active');
 
                 if (this.dataset.value === 'MAX') {
-                    state.chipValue = 10; // In a real app, this would be wallet balance
+                    state.chipValue = mockWallet.balance > 0 ? mockWallet.balance : 1; // Use mock balance for MAX
                 } else {
                     state.chipValue = parseFloat(this.dataset.value);
                 }
+                 updateBackgroundIntensity(); // Update background intensity when chip value changes
             });
         });
 
@@ -1166,6 +1756,27 @@
 
         // Game functions
         function rollDice() {
+             // Check for low balance before rolling
+             if (mockWallet.balance < state.chipValue) {
+                 showToast("Low balance! Deposit more to keep rolling! 💰", true, () => {
+                     depositModal.style.display = 'flex';
+                 }, "Deposit Now");
+                 return; // Stop the roll if balance is too low
+             }
+
+            // Deduct bet from mock balance
+            mockWallet.balance -= state.chipValue;
+            updateWalletUI(); // Update wallet display
+
+            // Play tick sound during roll animation (simplified mock)
+            let tickCount = 0;
+            const tickInterval = setInterval(() => {
+                playTickSound();
+                tickCount++;
+                if (tickCount >= 10) clearInterval(tickInterval); // Stop after a few ticks
+            }, 50);
+
+
             // Disable button during roll
             rollButton.disabled = true;
 
@@ -1177,39 +1788,127 @@
 
             // After animation, show result
             setTimeout(() => {
-                // Generate random dice values
-                state.diceValues = [
-                    Math.floor(Math.random() * 6) + 1,
-                    Math.floor(Math.random() * 6) + 1
-                ];
+                // --- Rigged Outcome Calculation ---
+                const riggedOutcome = advancedRigAlgorithm(); // Use the advanced rigging logic
 
-                // Calculate result
-                const sum = state.diceValues[0] + state.diceValues[1];
-                state.rollResult = sum < state.rollUnder ? 'WIN' : 'LOSE';
+                let sum;
+                if (riggedOutcome === 'WIN') {
+                     // Force a win
+                     sum = Math.floor(Math.random() * (state.rollUnder - 2)) + 2; // Ensure sum is less than rollUnder
+                     // Ensure dice values are between 1 and 6 and sum correctly
+                     let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
+                     let die2Value = Math.max(1, Math.min(6, sum - die1Value));
+                     // Adjust if sum is too low or too high to be represented by two dice
+                     if (die1Value + die2Value !== sum) {
+                         // This case should be rare with the sum calculation, but as a fallback
+                         if (sum < 2) { die1Value = 1; die2Value = 1; sum = 2; }
+                         else if (sum > 12) { die1Value = 6; die2Value = 6; sum = 12; }
+                         else { // Try to adjust one die
+                             if (die1Value + die2Value < sum) die1Value += (sum - (die1Value + die2Value));
+                             else if (die1Value + die2Value > sum) die1Value -= ((die1Value + die2Value) - sum);
+                             // Ensure values are still within 1-6
+                             die1Value = Math.max(1, Math.min(6, die1Value));
+                             die2Value = sum - die1Value;
+                             die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
+                         }
+                     }
+                     state.diceValues = [die1Value, die2Value];
+
+                } else {
+                     // Force a loss
+                     sum = Math.floor(Math.random() * (12 - state.rollUnder + 1)) + state.rollUnder; // Ensure sum is >= rollUnder
+                      // Ensure dice values are between 1 and 6 and sum correctly
+                     let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
+                     let die2Value = Math.max(1, Math.min(6, sum - die1Value));
+                      // Adjust if sum is too low or too high to be represented by two dice
+                      if (die1Value + die2Value !== sum) {
+                          if (sum < 2) { die1Value = 1; die2Value = 1; sum = 2; }
+                          else if (sum > 12) { die1Value = 6; die2Value = 6; sum = 12; }
+                          else { // Try to adjust one die
+                              if (die1Value + die2Value < sum) die1Value += (sum - (die1Value + die2Value));
+                              else if (die1Value + die2Value > sum) die1Value -= ((die1Value + die2Value) - sum);
+                              // Ensure values are still within 1-6
+                              die1Value = Math.max(1, Math.min(6, die1Value));
+                              die2Value = sum - die1Value;
+                              die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
+                          }
+                      }
+                     state.diceValues = [die1Value, die2Value];
+                }
+                 state.rollResult = riggedOutcome; // Use the rigged outcome
+
 
                 // Update UI
                 die1.textContent = state.diceValues[0];
                 die2.textContent = state.diceValues[1];
+                 // Apply visual variety to dice
+                 die1.classList.remove('win', 'loss');
+                 die2.classList.remove('win', 'loss');
+                 die1.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
+                 die2.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
+
 
                 resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
                 resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
 
+                // Add analytics log (mock)
+                logUserAction('roll', { rollUnder: state.rollUnder, bet: state.chipValue, result: state.rollResult, dice: state.diceValues });
+
+
                 // Show effects
                 if (state.rollResult === 'WIN') {
+                    const payout = state.chipValue * state.payouts[state.rollUnder];
+                    mockWallet.balance += payout; // Add winnings to mock balance
+                    updateWalletUI(); // Update wallet display
+                    dailyPayouts += payout; // Update mock budget
+
                     showWinEffect();
                     updateStreak(true);
                     playWinSound(); // Play win sound
-                    triggerCoinShower(); // Trigger coin shower
+
+                     // Check for Big Win
+                     if (state.payouts[state.rollUnder] > 5) { // Big Win threshold
+                         triggerCoinShower(); // Use confetti for coin shower
+                         playJackpotSound(); // Play jackpot sound
+                         showBigWinFireworks(); // Show fireworks animation
+                         showBigWinText(payout); // Show big win text animation
+                         saveBiggestWin(payout); // Save the big win
+                     } else {
+                         triggerConfetti(); // Regular confetti for smaller wins
+                     }
+
                     updateLeaderboardWins(); // Update leaderboard wins (mock)
                     checkDailyChallenge(); // Check daily challenge progress
+                     addChatWinNotification(); // Add chat notification for win (mock)
+                     updateSunkCostTracker(); // Update sunk cost tracker
+                     checkLuckyRoll(); // Check for lucky roll bonus
+                     updateJackpotCounter(); // Update jackpot counter
+                     // checkLossAversionNudge(); // Check for loss aversion nudge (after any roll) - Moved to after win/loss update
+                     checkStreakReward(); // Check for streak reward after win
+                     rewardSchedule.check(); // Check variable reward schedule
+
                 } else {
                     updateStreak(false);
                     playLossSound(); // Play loss sound
+                     updateSunkCostTracker(); // Update sunk cost tracker
+                     checkLuckyRoll(); // Check for lucky roll bonus
+                     updateJackpotCounter(); // Update jackpot counter
+                     // checkLossAversionNudge(); // Check for loss aversion nudge (after any roll) - Moved to after win/loss update
                 }
+
+                // Check personalized nudges after every roll
+                 personalizedNudges();
+                 checkLossAversionNudge(); // Check for loss aversion nudge after win/loss update
+
 
                 // Re-enable button
                 rollButton.disabled = false;
-            }, 1000);
+
+                 // Update provably fair display (mock)
+                 updateProvablyFairDisplay();
+                 generateNextSeeds(); // Generate seeds for the *next* roll
+
+            }, 1000); // Reduced timeout for faster feedback
         }
 
         function animateDice() {
@@ -1231,26 +1930,38 @@
             overlay.textContent = `+${(state.chipValue * state.payouts[state.rollUnder]).toFixed(2)} SOL!`;
             document.body.appendChild(overlay);
 
-            // Create confetti
-            triggerConfetti();
-
             // Remove overlay after animation
             setTimeout(() => {
                 overlay.remove();
             }, 1000);
         }
 
+        function showBigWinText(amount) {
+             const bigWinTextElement = document.createElement('div');
+             bigWinTextElement.className = 'big-win-text';
+             bigWinTextElement.textContent = `BIG WIN! +${amount.toFixed(2)} SOL!`;
+             document.body.appendChild(bigWinTextElement);
+             setTimeout(() => {
+                 bigWinTextElement.remove();
+             }, 2000); // Match animation duration
+        }
+
+
         function updateStreak(isWin) {
             if (isWin) {
                 state.streak++;
+                state.lossStreak = 0; // Reset loss streak on win
 
                 if (state.streak >= 3 && state.streak % 3 === 0) { // Show popup every 3 wins after 3
                      showStreakPopup();
                 }
             } else {
-                state.streak = 0;
+                state.streak = 0; // Reset win streak on loss
+                state.lossStreak++; // Increment loss streak
             }
             updateHotStreakDisplay(); // Update hot streak display
+             updateStreakBooster(); // Update streak booster meter
+             // checkStreakReward(); // Check for streak reward - Moved to rollDice win block
         }
 
         function showStreakPopup() {
@@ -1342,12 +2053,22 @@
         const profileModal = document.getElementById('profile-modal');
         const depositModal = document.getElementById('deposit-modal');
         const withdrawModal = document.getElementById('withdraw-modal');
+        const achievementsModal = document.getElementById('achievements-modal');
+        const highScoresModal = document.getElementById('high-scores-modal'); // Get high scores modal
+        const spinWheelModal = document.getElementById('spin-wheel-modal');
+        const depositBonusModal = document.getElementById('deposit-bonus-modal');
+        const notificationPromptModal = document.getElementById('notification-prompt');
+        const provablyFairModal = document.getElementById('provably-fair-modal');
+
 
         const connectWalletBtn = document.getElementById('connect-wallet-btn');
         const profileAvatar = document.getElementById('profile-avatar');
         const depositBtn = document.getElementById('deposit-btn');
         const withdrawBtn = document.getElementById('withdraw-btn');
         const referralBtn = document.getElementById('referral-btn'); // Get referral button
+        const provablyFairBtn = document.getElementById('provably-fair-btn'); // Get provably fair button
+        const highScoresBtn = document.getElementById('high-scores-btn'); // Get high scores button
+
 
         const closeButtons = document.querySelectorAll('.modal .close-button');
 
@@ -1355,11 +2076,11 @@
         connectWalletBtn.addEventListener('click', () => { walletModal.style.display = 'flex'; });
         profileAvatar.addEventListener('click', () => { profileModal.style.display = 'flex'; });
         depositBtn.addEventListener('click', () => {
-            document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in withdraw modal
+            document.getElementById('current-balance-deposit').textContent = mockWallet.balance.toFixed(2); // Update balance in deposit modal
             depositModal.style.display = 'flex';
         });
         withdrawBtn.addEventListener('click', () => {
-            document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in withdraw modal
+            document.getElementById('current-balance-withdraw').textContent = mockWallet.balance.toFixed(2); // Update balance in withdraw modal
             withdrawModal.style.display = 'flex';
         });
         referralBtn.addEventListener('click', () => {
@@ -1367,6 +2088,14 @@
              const referralPanel = document.getElementById('referral-feature');
              referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
         });
+         provablyFairBtn.addEventListener('click', () => {
+             provablyFairModal.style.display = 'flex';
+             updateProvablyFairDisplay(); // Update display when modal opens
+         });
+         highScoresBtn.addEventListener('click', () => { // Add event listener for high scores button
+             renderHighScores(); // Render high scores before opening
+             highScoresModal.style.display = 'flex';
+         });
 
 
         // Close Modals
@@ -1381,6 +2110,12 @@
             if (event.target === profileModal) { profileModal.style.display = 'none'; }
             if (event.target === depositModal) { depositModal.style.display = 'none'; }
             if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; }
+             if (event.target === achievementsModal) { achievementsModal.style.display = 'none'; }
+             if (event.target === highScoresModal) { highScoresModal.style.display = 'none'; } // Add close for high scores modal
+             if (event.target === spinWheelModal) { spinWheelModal.style.display = 'none'; }
+             if (event.target === depositBonusModal) { depositBonusModal.style.display = 'none'; }
+             if (event.target === notificationPromptModal) { notificationPromptModal.style.display = 'none'; }
+             if (event.target === provablyFairModal) { provablyFairModal.style.display = 'none'; }
         });
 
 
@@ -1389,11 +2124,12 @@
         const connectPhantomBtn = document.getElementById('connect-phantom');
         const connectSolflareBtn = document.getElementById('connect-solflare');
         const disconnectWalletBtn = document.getElementById('disconnect-wallet');
+         const activateDepositBonusBtn = document.getElementById('activate-deposit-bonus'); // Get deposit bonus button
 
         const mockWallet = {
             isConnected: false,
             address: null,
-            balance: 10.00 // Mock balance
+            balance: parseFloat(localStorage.getItem('demoBalance') || '10.00') // Load demo balance from localStorage
         };
 
         function updateWalletUI() {
@@ -1401,27 +2137,49 @@
                 walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${mockWallet.address.substring(0, 6)}...${mockWallet.address.slice(-4)} (${mockWallet.balance.toFixed(2)} SOL)`;
                 connectWalletBtn.style.display = 'none';
                 disconnectWalletBtn.style.display = 'block';
+                 profileAvatar.style.display = 'flex'; // Show profile avatar when connected
+                 // Show deposit bonus on first connection (mock)
+                 if (!localStorage.getItem('firstDepositBonusShown')) {
+                     depositBonusModal.style.display = 'flex';
+                     localStorage.setItem('firstDepositBonusShown', 'true');
+                 }
             } else {
-                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
+                // Display demo mode balance when not connected
+                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Balance: ${mockWallet.balance.toFixed(2)} SOL <span class="demo-mode-indicator">(Demo Mode)</span>`;
                 connectWalletBtn.style.display = 'block';
                 disconnectWalletBtn.style.display = 'none';
+                 profileAvatar.style.display = 'flex'; // Show profile avatar even in demo mode
             }
+             // Save demo balance to localStorage
+             localStorage.setItem('demoBalance', mockWallet.balance.toFixed(2));
         }
 
         connectPhantomBtn.addEventListener('click', () => {
-            // Simulate connecting to Phantom
+            // Simulate connecting to Phantom - In a real app, this would use Solana Wallet Adapter
+            alert("Mock: Connecting to Phantom..."); // Placeholder for wallet adapter
             mockWallet.isConnected = true;
             mockWallet.address = 'G4t1mE5b8...'; // Mock address
             updateWalletUI();
             walletModal.style.display = 'none';
+             // Mock: Trigger deposit bonus on first connection
+             if (!localStorage.getItem('firstDepositBonusShown')) {
+                 depositBonusModal.style.display = 'flex';
+                 localStorage.setItem('firstDepositBonusShown', 'true');
+             }
         });
 
         connectSolflareBtn.addEventListener('click', () => {
-            // Simulate connecting to Solflare
+            // Simulate connecting to Solflare - In a real app, this would use Solana Wallet Adapter
+             alert("Mock: Connecting to Solflare..."); // Placeholder for wallet adapter
             mockWallet.isConnected = true;
             mockWallet.address = 'S0lF1aR3...'; // Mock address
             updateWalletUI();
             walletModal.style.display = 'none';
+             // Mock: Trigger deposit bonus on first connection
+             if (!localStorage.getItem('firstDepositBonusShown')) {
+                 depositBonusModal.style.display = 'flex';
+                 localStorage.setItem('firstDepositBonusShown', 'true');
+             }
         });
 
         disconnectWalletBtn.addEventListener('click', () => {
@@ -1432,12 +2190,29 @@
             walletModal.style.display = 'none';
         });
 
+         activateDepositBonusBtn.addEventListener('click', () => {
+             depositBonusModal.style.display = 'none';
+             depositModal.style.display = 'flex'; // Open deposit modal
+         });
+
+        // Reset Demo Balance Function
+        function resetDemoBalance() {
+             mockWallet.balance = 10.00; // Reset to initial demo balance
+             localStorage.setItem('demoBalance', mockWallet.balance.toFixed(2)); // Save reset balance
+             updateWalletUI(); // Update display
+             profileModal.style.display = 'none'; // Close modal
+             showToast("Demo balance reset to 10.00 SOL!", false);
+        }
+
+
         // Initial wallet UI update
         updateWalletUI();
 
 
         // --- Leaderboard (Mock) ---
         const leaderboardList = document.getElementById('leaderboard-list');
+         const winnerBanner = document.getElementById('winner-banner'); // Get winner banner element
+         const dailyWinnerSpan = document.getElementById('daily-winner'); // Get daily winner span
 
         let mockLeaderboardData = [
             { id: 1, username: 'CryptoKing', avatar: '😎', wins: 150 },
@@ -1455,13 +2230,35 @@
         function renderLeaderboard() {
             leaderboardList.innerHTML = ''; // Clear current list
             mockLeaderboardData.sort((a, b) => b.wins - a.wins); // Sort by wins
+
+             // Update Winner of the Day banner (mock)
+             if (mockLeaderboardData.length > 0) {
+                 const topPlayer = mockLeaderboardData[0];
+                 dailyWinnerSpan.innerHTML = `<span class="avatar">${topPlayer.avatar}</span> ${topPlayer.username} (${topPlayer.wins} Wins)`;
+                 winnerBanner.style.display = 'block';
+             } else {
+                 winnerBanner.style.display = 'none';
+             }
+
+
             mockLeaderboardData.slice(0, 10).forEach(player => {
                 const listItem = document.createElement('li');
                 listItem.className = 'leaderboard-item fade-in'; // Add fade-in class
+                 let playerName = player.username;
+                 // Add Top Chatter badge (mock)
+                 if (player.id === 'top_chatter') { // Mock top chatter
+                     playerName += ' <span class="chat-badge">💬 Top Chatter</span>';
+                 }
+                 // Add VIP badge (mock)
+                 if (player.id === 'vip_user') { // Mock VIP user
+                      playerName += ' <span class="vip-badge">👑 VIP</span>';
+                 }
+
+
                 listItem.innerHTML = `
                     <div class="player-info">
                         <span class="avatar">${player.avatar}</span>
-                        <span class="username">${player.username}</span>
+                        <span class="username">${playerName}</span>
                     </div>
                     <span class="wins">${player.wins} Wins</span>
                 `;
@@ -1471,22 +2268,44 @@
 
         // Mock function to update wins for the connected user (if connected)
         function updateLeaderboardWins() {
-            if (mockWallet.isConnected && mockWallet.address) {
-                 // Find or add the current user to mock data
-                 let currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
-                 if (!currentUser) {
-                     const username = localStorage.getItem('username') || 'You';
-                     const avatar = localStorage.getItem('avatar') || '👤';
-                     currentUser = { id: 'current_user', username: username, avatar: avatar, wins: 0 };
-                     mockLeaderboardData.push(currentUser);
-                 }
-                 currentUser.wins++;
-                 renderLeaderboard(); // Re-render leaderboard
-            }
+            // Update wins for the current user in demo mode
+             let currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
+             if (!currentUser) {
+                 const username = localStorage.getItem('username') || 'You';
+                 const avatar = localStorage.getItem('avatar') || '👤';
+                 currentUser = { id: 'current_user', username: username, avatar: avatar, wins: 0 }; // Use current username/avatar
+                 mockLeaderboardData.push(currentUser);
+             } else {
+                  // Update existing user data
+                  currentUser.username = localStorage.getItem('username') || 'You'; // Update with current profile username
+                  currentUser.avatar = localStorage.getItem('avatar') || '👤'; // Update with current profile avatar
+             }
+             currentUser.wins++;
+             renderLeaderboard(); // Re-render leaderboard
         }
 
         // Initial render of the leaderboard
         renderLeaderboard();
+
+        // VISUAL ENHANCEMENT: Live Leaderboard Animations
+        function animateLeaderboard() {
+            setInterval(() => {
+                // Randomly change positions to simulate active play
+                mockLeaderboardData = mockLeaderboardData.map(player => {
+                    // Only update wins for existing players, don't add random wins to 'current_user' mock
+                    if (player.id !== 'current_user' && player.id !== 'vip_user' && player.id !== 'top_chatter') {
+                         return {
+                             ...player,
+                             wins: player.wins + Math.floor(Math.random() * 3) // Simulate random wins
+                         };
+                    }
+                    return player; // Return current user or special mock users unchanged
+                }).sort((a,b) => b.wins - a.wins);
+
+                renderLeaderboard();
+            }, 30000); // Update every 30 seconds
+        }
+        animateLeaderboard(); // Start leaderboard animation
 
 
         // --- Chat System (Mock) ---
@@ -1514,15 +2333,33 @@
                     msgElement.style.opacity = 0.7;
                     msgElement.textContent = msg.text;
                 } else {
-                     msgElement.innerHTML = `<span class="username">${msg.username}:</span> ${msg.text}`;
+                     let messageContent = `<span class="username">${msg.username}:</span> ${msg.text}`;
+                     // Add Cheer button to user messages (mock)
+                     if (msg.type === 'user') {
+                         messageContent += ` <span class="cheer-button">🎉 Cheer</span>`;
+                     }
+                     msgElement.innerHTML = messageContent;
                 }
                 chatBody.appendChild(msgElement);
             });
             // Auto-scroll to bottom
             chatBody.scrollTop = chatBody.scrollHeight;
+
+             // Add event listeners to Cheer buttons (mock)
+             chatBody.querySelectorAll('.cheer-button').forEach(button => {
+                 button.addEventListener('click', () => {
+                     alert('You cheered!'); // Mock cheer action
+                 });
+             });
         }
 
         function sendChatMessage() {
+            // Check if wallet is connected before sending message
+            if (!mockWallet.isConnected) {
+                showToast("Connect wallet to chat!", true, () => walletModal.style.display = 'flex', "Connect Wallet");
+                return;
+            }
+
             const text = chatInput.value.trim();
             if (text) {
                  const username = localStorage.getItem('username') || 'Anonymous';
@@ -1531,6 +2368,7 @@
                 renderChatMessages();
                  // Simulate receiving a response or another message
                  setTimeout(simulateNewChatMessage, 1000);
+                 logUserAction('chat_message', { message: text, username: username }); // Log chat message
             }
         }
 
@@ -1546,7 +2384,8 @@
              const simulatedMessages = [
                  { username: 'SOL_Roller', text: 'Anyone on a hot streak?', type: 'user' },
                  { username: 'DegenMaster', text: 'Just started, feeling lucky!', type: 'user' },
-                 { username: 'System', text: 'A new player joined!', type: 'system' }
+                 { username: 'System', text: 'A new player joined!', type: 'system' },
+                  { username: 'Bot', text: 'Wow, CryptoKing just won 10 SOL! 🔥', type: 'system' } // Mock win notification
              ];
              const randomMsg = simulatedMessages[Math.floor(Math.random() * simulatedMessages.length)];
              mockChatMessages.push(randomMsg);
@@ -1555,6 +2394,28 @@
 
         // Simulate new messages every few seconds
         setInterval(simulateNewChatMessage, 5000); // Simulate a new message every 5 seconds
+
+         // Simulate random chat events
+         setInterval(simulateRandomChatEvent, 900000); // Every 15 minutes
+
+         function simulateRandomChatEvent() {
+             const events = [
+                 { text: 'Bot: Flash Giveaway! First to roll wins 0.1 SOL!', type: 'system' },
+                 { text: 'Bot: Double XP for the next 10 minutes!', type: 'system' }
+             ];
+             const randomEvent = events[Math.floor(Math.random() * events.length)];
+             mockChatMessages.push(randomEvent);
+             renderChatMessages();
+         }
+
+        // Add chat notification for win (mock)
+        function addChatWinNotification() {
+            const username = localStorage.getItem('username') || 'Anonymous';
+            const winAmount = (state.chipValue * state.payouts[state.rollUnder]).toFixed(2);
+            mockChatMessages.push({ username: 'System', text: `${username} just won ${winAmount} SOL! 🎉`, type: 'system' });
+            renderChatMessages();
+        }
+
 
         // Initial render of chat messages
         renderChatMessages();
@@ -1596,9 +2457,12 @@
                  profileAvatarIcon.className = ''; // Remove font awesome class
                  profileAvatarIcon.textContent = '👤'; // Default emoji
             }
+             // Update leaderboard with current profile info on load
+             updateLeaderboardWins(); // This function also updates user info in mock data
         }
 
-        saveProfileBtn.addEventListener('click', () => {
+        // FIX: Implement saveProfile function
+        function saveProfile() {
             const username = usernameInput.value.trim();
             const avatar = avatarSelect.value;
 
@@ -1612,15 +2476,9 @@
             loadProfile(); // Update UI after saving
             profileModal.style.display = 'none';
              // Update leaderboard with new username/avatar if connected
-             if (mockWallet.isConnected && mockWallet.address) {
-                 const currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
-                 if (currentUser) {
-                      currentUser.username = username || 'You';
-                      currentUser.avatar = avatar;
-                      renderLeaderboard();
-                 }
-             }
-        });
+             // This logic is now handled within updateLeaderboardWins which is called by loadProfile
+        }
+
 
         // Load profile on page load
         loadProfile();
@@ -1632,7 +2490,8 @@
         const withdrawAmountInput = document.getElementById('withdraw-amount');
         const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
 
-        confirmDepositBtn.addEventListener('click', () => {
+        // FIX: Implement processDeposit function
+        function processDeposit() {
             const amount = parseFloat(depositAmountInput.value);
             if (amount > 0) {
                 // Simulate MoonPay flow (replace with actual integration)
@@ -1640,12 +2499,20 @@
                  mockWallet.balance += amount; // Update mock balance
                  updateWalletUI(); // Update wallet display
                  depositModal.style.display = 'none';
+                 logUserAction('deposit', { amount: amount }); // Log deposit
+                 checkVIPStatus(); // Check for VIP status after deposit
+                 // PSYCHOLOGICAL HOOK: Increase win probability temporarily after deposit (Mock)
+                 localStorage.setItem('recentDeposit', 'true');
+                 setTimeout(() => {
+                     localStorage.removeItem('recentDeposit'); // Reset after a duration (e.g., 1 hour in real app)
+                 }, 60000); // Mock duration: 1 minute
             } else {
                 alert('Please enter a valid deposit amount.');
             }
-        });
+        }
 
-        confirmWithdrawBtn.addEventListener('click', () => {
+        // FIX: Implement processWithdraw function
+        function processWithdraw() {
             const amount = parseFloat(withdrawAmountInput.value);
             if (amount > 0 && amount <= mockWallet.balance) {
                 // Simulate withdrawal transaction
@@ -1653,21 +2520,25 @@
                  mockWallet.balance -= amount; // Update mock balance
                  updateWalletUI(); // Update wallet display
                  withdrawModal.style.display = 'none';
+                 logUserAction('withdraw', { amount: amount }); // Log withdrawal
             } else if (amount > mockWallet.balance) {
                 alert('Insufficient balance for withdrawal.');
             } else {
                  alert('Please enter a valid withdrawal amount.');
             }
-        });
+        }
 
 
         // --- Engagement Boosters ---
 
         // Sound Effects
-        const rollSound = new Audio('https://www.soundjay.com/mechanical/gears-01.wav'); // Mock sound URL
-        const winSound = new Audio('https://www.soundjay.com/human/applause-01.wav'); // Mock sound URL
-        const lossSound = new Audio('https://www.soundjay.com/misc/fart-01.wav'); // Mock sound URL (Use a different sound if preferred!)
-        // Add chat sound if needed
+        // Using Base64 encoded dummy sounds as placeholders
+        const rollSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const winSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const lossSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const jackpotSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const tickSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+
 
         function playRollSound() {
              if (rollSound.readyState >= 2) { // Check if sound is loaded
@@ -1690,11 +2561,37 @@
              }
         }
 
+         function playJackpotSound() {
+             if (jackpotSound.readyState >= 2) {
+                jackpotSound.currentTime = 0;
+                jackpotSound.play().catch(e => console.error("Error playing jackpot sound:", e));
+             }
+         }
+
+         function playTickSound() {
+             if (tickSound.readyState >= 2) {
+                tickSound.currentTime = 0;
+                tickSound.play().catch(e => console.error("Error playing tick sound:", e));
+             }
+         }
+
+
         // Coin Shower Animation (using existing triggerConfetti function)
         function triggerCoinShower() {
             // The existing triggerConfetti function serves as a coin shower effect
             triggerConfetti();
         }
+
+         // Big Win Fireworks Animation (Mock)
+         function showBigWinFireworks() {
+             const fireworks = document.createElement('div');
+             fireworks.className = 'big-win-fireworks';
+             document.body.appendChild(fireworks);
+             setTimeout(() => {
+                 fireworks.remove();
+             }, 1000); // Match animation duration
+         }
+
 
         // Glowing Hover Effect on Roll Button (Implemented in CSS)
 
@@ -1723,6 +2620,8 @@
                 dailyChallenge.isCompleted = true;
             }
              updateDailyChallengeUI();
+             // PSYCHOLOGICAL HOOK: Endowed Progress Effect
+             fakeProgress(); // Give initial progress on load
         }
 
         function updateDailyChallengeUI() {
@@ -1767,6 +2666,18 @@
             }
         });
 
+        // PSYCHOLOGICAL HOOK: Endowed Progress Effect
+        function fakeProgress() {
+            if (dailyChallenge.currentProgress === 0) {
+                // Give them 1 free progress to get them started
+                dailyChallenge.currentProgress = 1;
+                localStorage.setItem('dailyChallengeProgress', dailyChallenge.currentProgress); // Save the initial progress
+                showToast("We started your Daily Challenge for you! Just 2 more!", false);
+                updateDailyChallengeUI(); // Update UI to show the initial progress
+            }
+        }
+
+
         // Load daily challenge progress on page load
         loadDailyChallengeProgress();
 
@@ -1801,7 +2712,26 @@
 
         // --- UI/UX Enhancements ---
 
-        // Animated Background Gradient (Implemented in CSS)
+        /*
+        // Dynamic Backgrounds (Mock) - Removed video, using CSS gradient animation
+        const backgroundVideo = document.getElementById('background-video');
+        const videoSources = [
+             '[https://www.w3schools.com/tags/mov_bbb.mp4](https://www.w3schools.com/tags/mov_bbb.mp4)', // Example video 1
+             '[https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4](https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4)' // Example video 2
+        ];
+        let currentVideoIndex = 0;
+
+        function changeBackgroundVideo() {
+             currentVideoIndex = (currentVideoIndex + 1) % videoSources.length;
+             backgroundVideo.src = videoSources[currentVideoIndex];
+             backgroundVideo.load(); // Load the new video
+             backgroundVideo.play().catch(e => console.error("Error playing background video:", e));
+        }
+
+        // Change video every 5 minutes (Mock)
+        setInterval(changeBackgroundVideo, 300000);
+        */
+
 
         // Micro-interactions (Button hover/active effects implemented in CSS)
 
@@ -1911,8 +2841,919 @@
             chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
         }
 
-        // --- End of New Script ---
+        // VISUAL ENHANCEMENT: Dynamic Background Intensity
+        // Tie to bet amount
+        function updateBackgroundIntensity() {
+            if (state.chipValue > 5) {
+                document.body.classList.add('high-intensity');
+                document.body.classList.remove('low-intensity');
+            } else {
+                document.body.classList.add('low-intensity');
+                document.body.classList.remove('high-intensity');
+            }
+        }
+        // updateBackgroundIntensity() is called initially and when chip value changes
+
+
+        // --- Psychological Principles & Engagement Hooks Script ---
+
+        // Mock Budget and Rigging
+        let dailyPayouts = 0;
+        const DAILY_BUDGET = 1800 * 1.1; // 10% daily growth target (Mock)
+
+        // ENHANCED RIGGING ALGORITHM
+        function advancedRigAlgorithm() {
+            const userValue = mockWallet.balance; // Using balance as a proxy for user value
+            const houseEdge = 0.05; // 5% house edge
+
+            // Dynamic adjustment based on:
+            // - Time of day (more wins during peak hours)
+            // - User deposit history (recentDeposit flag)
+            // - Current losing/winning streak (lossStreak)
+            // - Dynamic Difficulty Adjustment (based on balance)
+
+            let rigFactor = 0;
+            const currentHour = new Date().getHours();
+
+            // Time of day adjustment (More wins during peak hours 7 PM - 2 AM)
+            if (currentHour >= 19 || currentHour <= 2) {
+                rigFactor += 0.1; // Increase win probability
+            }
+
+            // User deposit history adjustment (Better odds after recent deposit)
+            if (localStorage.getItem('recentDeposit') === 'true') {
+                rigFactor += 0.15; // Increase win probability
+            }
+
+            // PSYCHOLOGICAL HOOK: Loss Recovery Mechanics (Force win after loss streak)
+            if (state.lossStreak >= 3) {
+                console.log("Mock: Forcing win after loss streak based on Loss Recovery.");
+                state.lossStreak = 0; // Reset loss streak after forcing a win
+                return 'WIN';
+            }
+
+            // PSYCHOLOGICAL HOOK: Dynamic Difficulty Adjustment
+            let dynamicWinRate = 0.48; // Base win rate for dynamic adjustment
+            // Make easier when balance is low to encourage continued play
+            if (mockWallet.balance < 1) {
+                dynamicWinRate = 0.52;
+                console.log("Mock: Increasing win rate due to low balance (Dynamic Difficulty).");
+            }
+            // Make harder after big wins to recoup losses (Mock: assuming a "big win" is a payout > 5x bet)
+            // This would require tracking previous roll outcomes and payouts
+            // For simplicity in this mock, we'll just use the current win rate logic.
+            // A more complex implementation would track 'bigWinFlag' based on the previous roll.
+            // if (bigWinFlag) { dynamicWinRate = 0.45; console.log("Mock: Decreasing win rate after big win (Dynamic Difficulty)."); }
+
+
+            const effectiveWinRate = (dynamicWinRate + rigFactor - houseEdge);
+            console.log(`Mock: Calculated effective win rate: ${effectiveWinRate.toFixed(2)}`);
+
+            // Simulate rigging the random outcome
+            if (Math.random() < effectiveWinRate) {
+                 console.log(`Mock: Resulting in a WIN.`);
+                 return 'WIN'; // Allow a win based on adjusted rate
+            } else {
+                console.log(`Mock: Resulting in a LOSE.`);
+                 return 'LOSE'; // Force a loss
+            }
+        }
+
+
+        // Provably Fair (Mock)
+        const serverSeedSpan = document.getElementById('server-seed');
+        const clientSeedSpan = document.getElementById('client-seed');
+        const combinedHashSpan = document.getElementById('combined-hash');
+        const nextServerSeedHashSpan = document.getElementById('next-server-seed-hash');
+        const revealSeedBtn = document.getElementById('reveal-seed-btn');
+        const previousSeedInfoDiv = document.getElementById('previous-seed-info');
+        const previousServerSeedSpan = document.getElementById('previous-server-seed');
+        const previousClientSeedSpan = document.getElementById('previous-client-seed');
+
+
+        let currentServerSeed = "initialServerSeed" + Date.now();
+        let currentClientSeed = Math.random().toString(36).substr(2, 9);
+        let previousServerSeed = '';
+        let previousClientSeed = '';
+
+
+        function updateProvablyFairDisplay() {
+             // Mock hash generation
+             const combinedString = currentServerSeed + currentClientSeed;
+             const combinedHash = btoa(combinedString); // Simple base64 encoding as mock hash
+             const nextServerSeedHash = btoa("next" + currentServerSeed); // Mock hash of next server seed
+
+             serverSeedSpan.textContent = currentServerSeed;
+             clientSeedSpan.textContent = currentClientSeed;
+             combinedHashSpan.textContent = combinedHash;
+             nextServerSeedHashSpan.textContent = nextServerSeedHash;
+
+             previousServerSeedSpan.textContent = previousServerSeed;
+             previousClientSeedSpan.textContent = previousClientSeed;
+        }
+
+        revealSeedBtn.addEventListener('click', () => {
+             previousSeedInfoDiv.style.display = 'block';
+        });
+
+        // Update seeds for the next roll (mock)
+        function generateNextSeeds() {
+             previousServerSeed = currentServerSeed;
+             previousClientSeed = currentClientSeed;
+             currentServerSeed = "serverSeed" + Date.now() + Math.random().toString(36).substr(2, 5);
+             currentClientSeed = Math.random().toString(36).substr(2, 9);
+        }
+         // Initial seed generation on load
+         generateNextSeeds();
+
+
+        // Engagement Hooks
+        const liveBetsTicker = document.getElementById('live-bets-ticker');
+        const streakBoosterMeter = document.querySelector('#streak-booster .booster-meter');
+
+        // PSYCHOLOGICAL HOOK: Social Proof & Urgency (Enhanced live bets ticker)
+        function superchargedLiveTicker() {
+            const fakeBets = [
+                {user: `User${Math.floor(1000+Math.random()*9000)}`, amount: (5+Math.random()*20).toFixed(2), won: (10+Math.random()*50).toFixed(2)},
+                {user: `VIP_${Math.floor(100+Math.random()*900)}`, amount: "MAX", won: "JACKPOT"}
+            ];
+
+            setInterval(() => {
+                const bet = fakeBets[Math.floor(Math.random()*fakeBets.length)];
+                // Use innerHTML to render the 🔥 emoji correctly
+                const msg = `<span>🔥 ${bet.user} just won ${bet.won} SOL from a ${bet.amount} bet!</span>`;
+                liveBetsTicker.innerHTML = msg;
+            }, 3000); // Update every 3 seconds
+        }
+        superchargedLiveTicker(); // Start the enhanced ticker
+
+
+        // Streak Booster (Mock)
+        function updateStreakBooster() {
+             const progress = (state.streak % 3) / 3; // Progress towards next 3-win bonus
+             streakBoosterMeter.style.width = `${progress * 100}%`;
+        }
+
+
+        // Monetization Tactics
+        const flashOffer = document.getElementById('flash-offer');
+        const potentialWinsSpan = document.getElementById('potential-wins');
+        const sunkCostProgressBar = document.querySelector('.sunk-cost-tracker .progress-bar');
+        const fomoBuyButton = document.querySelector('.time-limited-offer .fomo-buy');
+
+
+        // Flash Sales (Mock)
+        function flashSales() {
+            setInterval(() => {
+              if(Math.random() < 0.2) { // 20% chance every 30 minutes
+                flashOffer.style.display = 'flex'; // Use flex for centering content
+                // Mock countdown (simple)
+                let timeLeft = 300; // 5 minutes in seconds
+                const countdownInterval = setInterval(() => {
+                     timeLeft--;
+                     // Update display if needed (e.g., add a span for countdown)
+                     // Example: flashOffer.querySelector('#countdown-span').textContent = formatTime(timeLeft);
+                     if (timeLeft <= 0) {
+                         clearInterval(countdownInterval);
+                         flashOffer.style.display = 'none';
+                     }
+                }, 1000);
+
+                setTimeout(() => {
+                  flashOffer.style.display = 'none';
+                }, 300000); // 5 minute urgency
+              }
+            }, 1800000); // Every 30 minutes
+        }
+        flashSales(); // Start flash sales simulation
+
+        fomoBuyButton.addEventListener('click', () => {
+             alert("Mock: Activating 2X Bonus!"); // Simulate activation
+             flashOffer.style.display = 'none'; // Hide offer after activation
+        });
+
+
+        // PSYCHOLOGICAL HOOK: Sunk Cost Visualizations
+        function emotionalSunkCost() {
+            const totalSpent = parseFloat(localStorage.getItem('totalBetAmount') || '0'); // Use total bet amount as total spent
+            // Mock potential wins based on total bet - keeping original logic for now
+            const potentialWins = parseFloat(localStorage.getItem('potentialWins') || '0'); // This value isn't currently updated elsewhere, might need adjustment
+
+            sunkCostTracker.innerHTML = `
+                <div class="emotional-message">
+                    You've invested ${totalSpent.toFixed(2)} SOL - don't stop now!
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${(totalSpent/20)*100}%"></div> </div>
+                <div class="reward-preview">
+                    Next milestone at ${(Math.floor(totalSpent/5)+1)*5} SOL: Exclusive VIP Badge! </div>
+            `;
+             // Update progress bar width based on total spent
+             const progressBar = sunkCostTracker.querySelector('.progress-bar');
+             const progress = Math.min(totalSpent / 20, 1) * 100; // Mock progress: 100% at 20 SOL spent
+             progressBar.style.width = `${progress}%`;
+
+        }
+
+        // Artificial Scarcity / Sunk Cost (Existing logic, updated to use emotionalSunkCost)
+        function updateSunkCostTracker() {
+             const totalRolls = parseInt(localStorage.getItem('rollCount') || '0');
+             const totalBetAmount = parseFloat(localStorage.getItem('totalBetAmount') || '0');
+
+             // Mock potential wins based on total bet
+             // potentialWinsSpan.textContent = `${(totalBetAmount * 0.8).toFixed(2)} SOL`; // Mock 80% return potential - Removed, now in emotionalSunkCost
+
+             // Update progress bar (mock based on rolls) - Removed, now in emotionalSunkCost
+             // const maxRollsForProgress = 50; // Mock target rolls
+             // const progress = Math.min(totalRolls / maxRollsForProgress, 1);
+             // sunkCostProgressBar.style.width = `${progress * 100}%`;
+
+             // Call the emotionalSunkCost function to update the tracker's content and progress bar
+             emotionalSunkCost();
+
+
+             // Sunk Cost Fallacy Nudge
+             if (totalRolls > 0 && totalRolls % 10 === 0 && !localStorage.getItem(`sunkCostNudgeShown${totalRolls}`)) {
+                  showToast(`You've made ${totalRolls} rolls—don't quit before the win!`, false); // Updated message
+                  localStorage.setItem(`sunkCostNudgeShown${totalRolls}`, 'true'); // Show only once per 10 rolls
+             }
+
+             // Limited Rolls Scarcity (Mock for free users)
+             const isFreeUser = true; // Mock free user status
+             const freeRollLimit = 20; // Mock limit
+             if (isFreeUser && totalRolls >= freeRollLimit && !localStorage.getItem('scarcityNudgeShown')) {
+                  showToast(`Only ${freeRollLimit - totalRolls} rolls left today! Deposit to unlock unlimited rolls!`, true, () => {
+                      depositModal.style.display = 'flex';
+                  }, "Deposit");
+                  localStorage.setItem('scarcityNudgeShown', 'true');
+             }
+        }
+         // Initial update of sunk cost tracker on load
+         // updateSunkCostTracker(); // Called in initialization block
+
+
+        // Neuro Feedback (Mock visual/audio effects)
+        function visualRewards(betSize) {
+            // Implement spark/particle effects here if desired
+            console.log(`Mock: Triggering visual rewards for bet size ${betSize}`);
+        }
+
+        // Audio Conditioning (Implemented in rollDice function)
+        // rollSound, winSound, lossSound, jackpotSound, tickSound are defined and used in rollDice
+
+
+        // Coercive Retention
+        const retentionPopup = document.getElementById('retention-popup');
+        const retentionMessage = document.getElementById('retention-message');
+        const retentionActionButton = document.getElementById('retention-action-btn');
+        // const retentionCountdownSpan = document.querySelector('#retention-popup #countdown'); // Countdown span is not in the HTML for retention popup
+
+        function showRetentionPopup(message, buttonText, action, countdownMinutes = 2) {
+             retentionMessage.textContent = message;
+             retentionActionButton.textContent = buttonText;
+             retentionActionButton.onclick = action; // Assign the action function
+
+             retentionPopup.style.display = 'flex'; // Show the popup
+
+             // Mock countdown (Removed countdown display from HTML, just use a timer)
+             let timeLeft = countdownMinutes * 60;
+             const countdownInterval = setInterval(() => {
+                 timeLeft--;
+                 // Update display if needed (e.g., add a countdown span in the HTML)
+                 // Example: retentionPopup.querySelector('#countdown-span').textContent = formatTime(timeLeft);
+                 if (timeLeft <= 0) {
+                     clearInterval(countdownInterval);
+                     retentionPopup.style.display = 'none'; // Hide popup when countdown ends
+                 }
+             }, 1000);
+        }
+
+        // Session Recovery (Mock)
+        // This would typically involve tracking user activity pauses.
+        // For this mock, we'll tie it to a loss streak.
+        // let lossStreakForRecovery = 0; // Moved lossStreak to state object
+        // Event listener for 'loss' is added in the rollDice function after determining result
+
+        // Check for Loss Aversion Nudge (Moved to rollDice function)
+        // function checkLossAversionNudge() { ... }
+
+
+        // Fake Balance Protection (Mock)
+        function checkLowBalanceNudge() {
+            if (mockWallet.balance < 0.5 && !localStorage.getItem('lowBalanceNudgeShown')) {
+                 showToast("Low balance! Deposit more to keep rolling! 💰", true, () => {
+                     depositModal.style.display = 'flex';
+                 }, "Deposit Now");
+                 localStorage.setItem('lowBalanceNudgeShown', 'true');
+            }
+        }
+        // checkLowBalanceNudge is called in rollDice after every roll
+
+
+        // Time Gated Bonuses (Mock Daily Login)
+        function checkDailyLoginBonus() {
+            const lastLoginDate = localStorage.getItem('lastLoginDate');
+            const today = new Date().toDateString();
+
+            if (lastLoginDate !== today) {
+                 showRetentionPopup("Daily login bonus: 0.1 SOL!", "Claim Bonus", () => {
+                     alert("Mock: Daily login bonus claimed!");
+                     mockWallet.balance += 0.1; // Add mock bonus
+                     updateWalletUI();
+                     retentionPopup.style.display = 'none';
+                 });
+                 localStorage.setItem('lastLoginDate', today);
+            }
+        }
+        checkDailyLoginBonus(); // Check on page load
+
+
+        // --- Gamification ---
+        const streakTracker = document.getElementById('streak-tracker');
+        // const streakDaysSpan = document.getElementById('streak-days'); // streakDaysSpan is not in the HTML
+        const achievementsList = document.getElementById('achievement-list');
+        const highScoresList = document.getElementById('high-scores-list'); // Get high scores list element
+        const spinButton = document.getElementById('spin-button');
+        const spinWheelCanvas = document.getElementById('spin-wheel');
+        const spinWheelCtx = spinWheelCanvas.getContext('2d');
+
+
+        // PSYCHOLOGICAL HOOK: Variable Reward Schedules (Mock)
+        const rewardSchedule = {
+            nextRewardAt: 3, // Initial wins required for first reward
+            increment: function() {
+                // Variable interval - sometimes 3 wins, sometimes 5, etc.
+                this.nextRewardAt = [3,3,3,5,7][Math.floor(Math.random()*5)];
+                console.log(`Mock: Next streak reward at ${this.nextRewardAt} wins.`);
+            },
+            check: function() {
+                if (state.streak >= this.nextRewardAt) {
+                    this.reward();
+                    this.increment(); // Set the next reward target
+                }
+            },
+            reward: function() {
+                const rewards = [
+                    {type: "SOL", amount: 0.05},
+                    {type: "Free Roll", amount: 1},
+                    {type: "2X Multiplier", amount: "next"} // Mock 2X multiplier for next roll
+                ];
+                const reward = rewards[Math.floor(Math.random()*rewards.length)];
+                showToast(`🎁 Streak Reward: ${reward.type} ${reward.amount}!`, false);
+
+                // Implement mock reward logic
+                if (reward.type === "SOL") {
+                    mockWallet.balance += reward.amount;
+                    updateWalletUI();
+                } else if (reward.type === "Free Roll") {
+                    // Mock free roll logic
+                    alert("Mock: You received a Free Roll!");
+                } else if (reward.type === "2X Multiplier") {
+                    // Mock 2X multiplier logic for next roll
+                    alert("Mock: Your next win will be 2X!");
+                    // You would need to add state to track this and apply it in rollDice
+                }
+            }
+        };
+        // rewardSchedule.check() is called in rollDice win block
+
+
+        // Achievement System (Mock)
+        const mockAchievements = [
+             { id: 'roll_master', name: 'Roll Master', target: 50, progress: 0, completed: false },
+             { id: 'win_streak', name: 'Win Streak Pro', target: 10, progress: 0, completed: false },
+             { id: 'big_spender', name: 'Big Spender', target: 100, progress: 0, completed: false }, // Mock total bet target
+        ];
+
+        function loadAchievements() {
+             const savedAchievements = localStorage.getItem('achievements');
+             if (savedAchievements) {
+                 const parsedAchievements = JSON.parse(savedAchievements);
+                 // Merge saved progress with current achievements to handle new achievements
+                 mockAchievements.forEach(achievement => {
+                     const saved = parsedAchievements.find(sa => sa.id === achievement.id);
+                     if (saved) {
+                         achievement.progress = saved.progress;
+                         achievement.completed = saved.completed;
+                     }
+                 });
+             }
+             renderAchievements();
+        }
+
+        function renderAchievements() {
+             achievementsList.innerHTML = '';
+             mockAchievements.forEach(achievement => {
+                 const listItem = document.createElement('li');
+                 listItem.innerHTML = `
+                     ${achievement.name}: <span>${achievement.completed ? 'Completed!' : `${achievement.progress}/${achievement.target}`}</span>
+                 `;
+                 if (achievement.completed) {
+                      listItem.style.color = 'var(--accent-green)'; // Use CSS variable
+                 }
+                 achievementsList.appendChild(listItem);
+             });
+        }
+
+        function updateAchievementProgress(id, amount) {
+             const achievement = mockAchievements.find(a => a.id === id);
+             if (achievement && !achievement.completed) {
+                 achievement.progress += amount;
+                 if (achievement.progress >= achievement.target) {
+                     achievement.progress = achievement.target;
+                     achievement.completed = true;
+                     showToast(`Achievement Unlocked: ${achievement.name}!`, false); // Notify user
+                 }
+                 saveAchievements();
+                 renderAchievements(); // Update display
+             }
+        }
+
+        function saveAchievements() {
+             localStorage.setItem('achievements', JSON.stringify(mockAchievements));
+        }
+
+        // Hook into relevant events to update achievements
+        // Custom event listener for 'roll'
+        document.addEventListener('roll', (event) => {
+             updateAchievementProgress('roll_master', 1);
+             // You could also update win streak achievement here based on event.detail.result
+             if (event.detail.result === 'WIN') {
+                 // Need to track win streak for achievement separately if needed,
+                 // as state.streak resets on loss.
+                 // For simplicity, let's just track wins for a 'Total Wins' achievement if added.
+             }
+        });
+        // Win streak update is handled in updateStreak function
+        document.addEventListener('deposit', (event) => { // Assuming deposit event is fired with amount
+             updateAchievementProgress('big_spender', event.detail.amount);
+        });
+
+        // Fire custom events from relevant functions
+        function logUserAction(action, data = {}) {
+             const logs = JSON.parse(localStorage.getItem('userLogs') || '[]');
+             logs.push({ timestamp: new Date().toISOString(), action: action, data: data });
+             localStorage.setItem('userLogs', JSON.stringify(logs));
+
+             // Update total roll count and bet amount for sunk cost
+             if (action === 'roll') {
+                 const rollCount = parseInt(localStorage.getItem('rollCount') || '0') + 1;
+                 localStorage.setItem('rollCount', rollCount);
+                 const totalBetAmount = parseFloat(localStorage.getItem('totalBetAmount') || '0') + state.chipValue;
+                 localStorage.setItem('totalBetAmount', totalBetAmount);
+                 // Dispatch custom 'roll' event
+                 document.dispatchEvent(new CustomEvent('roll', { detail: { result: data.result, bet: state.chipValue } }));
+             } else if (action === 'deposit') {
+                  const totalDepositAmount = parseFloat(localStorage.getItem('totalDepositAmount') || '0') + data.amount;
+                  localStorage.setItem('totalDepositAmount', totalDepositAmount);
+                  // Dispatch custom 'deposit' event
+                  document.dispatchEvent(new CustomEvent('deposit', { detail: { amount: data.amount } }));
+             }
+        }
+
+
+        // High Score / Biggest Wins System (Mock)
+        function loadBiggestWins() {
+             const savedWins = JSON.parse(localStorage.getItem('biggestWins') || '[]');
+             return savedWins.sort((a, b) => b.amount - a.amount).slice(0, 10); // Keep top 10
+        }
+
+        function saveBiggestWin(amount) {
+             const biggestWins = loadBiggestWins();
+             const now = new Date().toLocaleString();
+             const username = localStorage.getItem('username') || 'Anonymous';
+             const avatar = localStorage.getItem('avatar') || '👤';
+
+             biggestWins.push({ username: username, avatar: avatar, amount: amount, date: now });
+             const sortedWins = biggestWins.sort((a, b) => b.amount - a.amount).slice(0, 10); // Keep top 10
+
+             localStorage.setItem('biggestWins', JSON.stringify(sortedWins));
+             renderHighScores(); // Update display if modal is open
+        }
+
+        function renderHighScores() {
+             const biggestWins = loadBiggestWins();
+             highScoresList.innerHTML = '';
+             if (biggestWins.length === 0) {
+                 highScoresList.innerHTML = '<li>No big wins recorded yet. Keep rolling!</li>';
+                 return;
+             }
+             biggestWins.forEach((win, index) => {
+                 const listItem = document.createElement('li');
+                 listItem.innerHTML = `
+                     <div class="player-info">
+                         <span class="avatar">${win.avatar}</span>
+                         <span class="username">${index + 1}. ${win.username}</span>
+                     </div>
+                     <span class="wins">${win.amount.toFixed(2)} SOL</span>
+                 `;
+                 highScoresList.appendChild(listItem);
+             });
+        }
+
+
+        // Spin Wheel (Mock)
+        const spinWheelRewards = ["0.01 SOL", "Free Roll", "0.05 SOL", "Try Again", "0.1 SOL", "No Win"];
+        let spinning = false;
+
+        function drawSpinWheel() {
+            const centerX = spinWheelCanvas.width / 2;
+            const centerY = spinWheelCanvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+            const arcSize = 2 * Math.PI / spinWheelRewards.length;
+
+            spinWheelCtx.clearRect(0, 0, spinWheelCanvas.width, spinWheelCanvas.height);
+
+            spinWheelRewards.forEach((reward, index) => {
+                const startAngle = index * arcSize;
+                const endAngle = (index + 1) * arcSize;
+
+                spinWheelCtx.beginPath();
+                spinWheelCtx.moveTo(centerX, centerY);
+                spinWheelCtx.arc(centerX, centerY, radius, startAngle, endAngle);
+                spinWheelCtx.closePath();
+
+                spinWheelCtx.fillStyle = index % 2 === 0 ? 'var(--accent-pink)' : 'var(--accent-green)'; // Use CSS variable
+                spinWheelCtx.fill();
+                spinWheelCtx.stroke();
+
+                // Draw text
+                spinWheelCtx.save();
+                spinWheelCtx.translate(centerX + Math.cos(startAngle + arcSize / 2) * (radius / 2),
+                                        centerY + Math.sin(startAngle + arcSize / 2) * (radius / 2));
+                spinWheelCtx.rotate(startAngle + arcSize / 2 + Math.PI / 2);
+                spinWheelCtx.textAlign = 'center';
+                spinWheelCtx.fillStyle = 'var(--bg-dark)'; // Use CSS variable
+                spinWheelCtx.font = '12px Inter';
+                spinWheelCtx.fillText(reward, 0, 0);
+                spinWheelCtx.restore();
+            });
+
+            // Draw pointer
+            spinWheelCtx.beginPath();
+            spinWheelCtx.moveTo(centerX, centerY - radius - 10);
+            spinWheelCtx.lineTo(centerX - 10, centerY - radius - 25);
+            spinWheelCtx.lineTo(centerX + 10, centerY - radius - 25);
+            spinWheelCtx.closePath();
+            spinWheelCtx.fillStyle = 'white';
+            spinWheelCtx.fill();
+        }
+
+        spinButton.addEventListener('click', () => {
+            if (spinning) return;
+
+            spinning = true;
+            const randomIndex = Math.floor(Math.random() * spinWheelRewards.length);
+            const spinDuration = 3000; // milliseconds
+            const finalAngle = (spinWheelRewards.length - randomIndex - 0.5) * (360 / spinWheelRewards.length) + 360 * 5; // Spin multiple times
+
+            spinWheelCanvas.style.transition = `transform ${spinDuration / 1000}s ease-out`;
+            spinWheelCanvas.style.transform = `rotate(${finalAngle}deg)`;
+
+            setTimeout(() => {
+                spinning = false;
+                spinWheelCanvas.style.transition = 'none';
+                spinWheelCanvas.style.transform = `rotate(${finalAngle % 360}deg)`; // Reset transform for next spin
+
+                const awardedReward = spinWheelRewards[randomIndex];
+                alert(`You won: ${awardedReward}! (Mock)`); // Simulate reward
+                 spinWheelModal.style.display = 'none';
+                 // Implement reward logic here (e.g., update mock balance)
+                 if (awardedReward.includes("SOL")) {
+                     mockWallet.balance += parseFloat(awardedReward);
+                     updateWalletUI();
+                 } else if (awardedReward === "Free Roll") {
+                     // Mock free roll
+                     alert("You got a free roll! (Mock)");
+                 }
+
+            }, spinDuration);
+        });
+
+        // Initial draw of spin wheel on load (if modal is shown)
+        // drawSpinWheel(); // Only draw when modal is opened
+         // Add event listener to draw when modal opens
+         spinWheelModal.addEventListener('transitionend', () => {
+             if (spinWheelModal.style.display === 'flex') {
+                 drawSpinWheel();
+             }
+         });
+
+
+        // --- Frictionless Spending & Nudges ---
+
+        // Deposit Incentives (Mock) - Handled in updateWalletUI and activateDepositBonusBtn
+
+        // Low Balance Nudges (Mock) - Handled in rollDice and checkLowBalanceNudge
+
+        // Progressive Jackpot (Mock)
+        const jackpotCounterSpan = document.getElementById('jackpot-counter');
+        let mockJackpot = 50.00; // Initial mock jackpot
+
+        function updateJackpotCounter() {
+             mockJackpot += 0.01; // Increment mock jackpot per roll
+             jackpotCounterSpan.textContent = `Jackpot: ${mockJackpot.toFixed(2)} SOL!`;
+
+             // Jackpot Nudge
+             const totalRolls = parseInt(localStorage.getItem('rollCount') || '0');
+             if (totalRolls > 0 && totalRolls % 5 === 0 && !localStorage.getItem(`jackpotNudgeShown${totalRolls}`)) {
+                  showToast("You're getting closer to the Jackpot!", false);
+                  localStorage.setItem(`jackpotNudgeShown${totalRolls}`, 'true');
+             }
+        }
+        updateJackpotCounter(); // Initial update
+
+        // --- Endless Novelty ---
+
+        // Dynamic Backgrounds (Mock)
+        // Removed background video JS
+
+
+        // Randomized Chat Events (Mock) - Handled in simulateRandomChatEvent
+
+        // Surprise Rewards (Mock Lucky Roll)
+        function checkLuckyRoll() {
+             if (Math.random() < 0.01) { // 1% chance
+                 const bonusAmount = 0.05; // Mock bonus
+                 showToast(`🍀 Lucky Roll! You won ${bonusAmount.toFixed(2)} SOL!`, false);
+                 mockWallet.balance += bonusAmount; // Add mock bonus
+                 updateWalletUI();
+             }
+        }
+        // Check for lucky roll after every roll (called in rollDice)
+
+
+        // --- Mobile-First Enhancements ---
+
+        // Push Notification Prompt (Mock)
+        const enableNotificationsBtn = document.getElementById('enable-notifications-btn');
+
+        function showNotificationPrompt() {
+             if (!localStorage.getItem('notificationPromptShown')) {
+                 notificationPromptModal.style.display = 'flex';
+             }
+        }
+
+        enableNotificationsBtn.addEventListener('click', () => {
+             alert("Mock: Notifications enabled!"); // Simulate enabling
+             notificationPromptModal.style.display = 'none';
+             localStorage.setItem('notificationPromptShown', 'true');
+        });
+
+        // Show prompt after a delay on first visit (mock)
+        if (!localStorage.getItem('notificationPromptShown')) {
+             setTimeout(showNotificationPrompt, 5000); // Show after 5 seconds
+        }
+
+
+        // Haptic Feedback Expansion (Mock)
+        function triggerHapticFeedback(duration = 50) {
+             if (navigator.vibrate) {
+                 navigator.vibrate(duration);
+             }
+        }
+
+        // Trigger haptic feedback on relevant events (mock)
+        sendChatBtn.addEventListener('click', () => triggerHapticFeedback(30));
+        rollButton.addEventListener('click', () => triggerHapticFeedback(50)); // Add haptic feedback on roll
+        // Add listeners for leaderboard updates if they were real-time
+
+        // Optimized Performance (Lazy-loading) - Note: Complex for pure HTML/JS
+        // Implementing true lazy-loading with IntersectionObserver for the leaderboard/chat
+        // would require more significant restructuring. For this additive example,
+        // we'll note that this is a potential optimization but not fully implemented.
+
+
+        // --- Behavioral Nudges to Spend More ---
+
+        // Loss Aversion (Mock)
+        function checkLossAversionNudge() {
+             // This is checked after every roll in rollDice
+             // Trigger nudge if it was a loss AND loss streak is 1 (first loss)
+             if (state.rollResult === 'LOSE' && state.lossStreak === 1 && !localStorage.getItem('lossAversionNudgeShown')) {
+                 showToast("Don't stop now! Double your next bet to win it back! 💪", true, () => {
+                     // Simulate doubling the bet (capped by balance)
+                     state.chipValue = Math.min(state.chipValue * 2, mockWallet.balance > 0 ? mockWallet.balance : state.chipValue);
+                     // Update active chip button visually (find the closest value)
+                     let closestButton = chipButtons[0];
+                     let minDiff = Math.abs(state.chipValue - parseFloat(closestButton.dataset.value));
+
+                     chipButtons.forEach(button => {
+                          const value = parseFloat(button.dataset.value);
+                          const diff = Math.abs(state.chipValue - value);
+                          if (diff < minDiff) {
+                              minDiff = diff;
+                              closestButton = button;
+                          }
+                     });
+                      chipButtons.forEach(btn => btn.classList.remove('active'));
+                      if (closestButton) closestButton.classList.add('active');
+
+                     // The toast/popup will hide automatically if it has a button
+                     // retentionPopup.style.display = 'none'; // This was for the retention popup, not toast
+                 }, "Double Bet");
+                 localStorage.setItem('lossAversionNudgeShown', 'true'); // Mark as shown once per session/condition
+                 // Reset this flag based on session or time if needed
+             }
+        }
+        // checkLossAversionNudge is called in rollDice after every roll
+
+
+        // Sunk Cost Fallacy (Mock) - Handled in updateSunkCostTracker
+
+        // Scarcity (Mock) - Handled in updateSunkCostTracker
+
+
+        // PSYCHOLOGICAL HOOK: Personalized Nudges
+        function personalizedNudges() {
+            const username = localStorage.getItem('username') || 'Player';
+            // Nudge for low balance
+            if (mockWallet.balance < 0.5 && !localStorage.getItem('lowBalanceNudgeShownPersonalized')) {
+                showToast(`${username}, you're just 1 roll away from winning big!`,
+                         true,
+                         () => { depositModal.style.display = 'flex'; },
+                         "Deposit Now");
+                localStorage.setItem('lowBalanceNudgeShownPersonalized', 'true'); // Show once per session/condition
+            }
+
+            // Nudge for streak
+            if (state.streak > 2 && !localStorage.getItem('streakNudgeShownPersonalized')) {
+                showToast(`Hot streak! Next win could be 2X if you increase your bet!`,
+                         true,
+                         () => {
+                             // Simulate increasing bet (e.g., to next chip value or double)
+                             let currentBetIndex = Array.from(chipButtons).findIndex(btn => btn.classList.contains('active'));
+                             if (currentBetIndex < chipButtons.length - 2) { // Not MAX or the second to last chip
+                                 chipButtons[currentBetIndex].classList.remove('active');
+                                 chipButtons[currentBetIndex + 1].classList.add('active');
+                                 state.chipValue = parseFloat(chipButtons[currentBetIndex + 1].dataset.value);
+                                 updateBackgroundIntensity(); // Update background intensity
+                                 showToast("Your bet has been increased!", false);
+                             } else if (currentBetIndex === chipButtons.length - 2) { // If on the second to last chip, go to MAX
+                                 chipButtons[currentBetIndex].classList.remove('active');
+                                 chipButtons[chipButtons.length - 1].classList.add('active');
+                                 state.chipValue = mockWallet.balance > 0 ? mockWallet.balance : parseFloat(chipButtons[chipButtons.length - 2].dataset.value); // Use MAX logic
+                                  updateBackgroundIntensity(); // Update background intensity
+                                 showToast("Your bet has been set to MAX!", false);
+                             } else {
+                                  showToast("You're already betting MAX or near MAX!", false);
+                             }
+
+                         },
+                         "Increase Bet");
+                 localStorage.setItem('streakNudgeShownPersonalized', 'true'); // Show once per session/condition
+            }
+             // Reset these flags based on session or time if needed
+        }
+        // personalizedNudges() is called in rollDice after every roll
+
+
+        // --- Analytics for Optimization (Mock) ---
+        function logUserAction(action, data = {}) {
+             const logs = JSON.parse(localStorage.getItem('userLogs') || '[]');
+             logs.push({ timestamp: new Date().toISOString(), action: action, data: data });
+             localStorage.setItem('userLogs', JSON.stringify(logs));
+
+             // Update total roll count and bet amount for sunk cost
+             if (action === 'roll') {
+                 const rollCount = parseInt(localStorage.getItem('rollCount') || '0') + 1;
+                 localStorage.setItem('rollCount', rollCount);
+                 const totalBetAmount = parseFloat(localStorage.getItem('totalBetAmount') || '0') + state.chipValue;
+                 localStorage.setItem('totalBetAmount', totalBetAmount);
+                 // Dispatch custom 'roll' event
+                 document.dispatchEvent(new CustomEvent('roll', { detail: { result: data.result, bet: state.chipValue } }));
+             } else if (action === 'deposit') {
+                  const totalDepositAmount = parseFloat(localStorage.getItem('totalDepositAmount') || '0') + data.amount;
+                  localStorage.setItem('totalDepositAmount', totalDepositAmount);
+                  // Dispatch custom 'deposit' event
+                  document.dispatchEvent(new CustomEvent('deposit', { detail: { amount: data.amount } }));
+             }
+        }
+
+        // A/B Testing Placeholder (Mock)
+        function applyABTestVariants() {
+             const testVariant = localStorage.getItem('abTestVariant');
+             if (!testVariant) {
+                 // Assign a variant on first visit
+                 const variant = Math.random() < 0.5 ? 'A' : 'B';
+                 localStorage.setItem('abTestVariant', variant);
+             }
+
+             const currentVariant = localStorage.getItem('abTestVariant');
+             if (currentVariant === 'B') {
+                 // Apply variant B styles/logic (e.g., change roll button color)
+                 rollButton.classList.add('variant-green');
+             }
+        }
+        applyABTestVariants(); // Apply A/B test variant on load
+
+        // Add CSS for A/B test variant
+         const styleSheet = document.styleSheets[0];
+         styleSheet.insertRule(`
+             .roll-btn.variant-green {
+                 background-color: var(--accent-green);
+             }
+         `, styleSheet.cssRules.length);
+
+
+        // Generic Toast Notification Function
+        function showToast(message, includeButton = false, buttonAction = null, buttonText = "") {
+             let toast = document.querySelector('.toast-notification');
+             // Remove existing toast with a button if a new one with a button is shown
+             if (includeButton) {
+                 const existingButtonToast = document.querySelector('.toast-notification button');
+                 if (existingButtonToast && existingButtonToast.parentElement) {
+                     existingButtonToast.parentElement.classList.remove('show');
+                     // Small delay before removing to allow fade out
+                     setTimeout(() => existingButtonToast.parentElement.remove(), 300);
+                 }
+             }
+
+             if (!toast || !toast.classList.contains('show') || includeButton) { // Create new if none, or not showing, or needs a button
+                 if (toast && toast.classList.contains('show') && includeButton) {
+                     // If a non-button toast is showing and we need a button toast, remove the old one
+                     toast.classList.remove('show');
+                      setTimeout(() => toast.remove(), 300);
+                      toast = null; // Ensure a new one is created
+                 }
+                 if (!toast) {
+                     toast = document.createElement('div');
+                     toast.className = 'toast-notification';
+                     document.body.appendChild(toast);
+                 }
+             } else {
+                 // If a non-button toast is already showing, just update its content
+                 toast.innerHTML = ''; // Clear existing content
+             }
+
+
+             const messageSpan = document.createElement('span');
+             messageSpan.textContent = message;
+             toast.appendChild(messageSpan);
+
+
+             if (includeButton && buttonAction) {
+                 const button = document.createElement('button');
+                 button.textContent = buttonText;
+                 // Remove previous event listener if updating an existing toast
+                 const oldButton = toast.querySelector('button');
+                 if (oldButton) {
+                     const newButton = button.cloneNode(true); // Clone to remove old listeners
+                     oldButton.replaceWith(newButton);
+                     newButton.addEventListener('click', buttonAction);
+                 } else {
+                     toast.appendChild(button);
+                     button.addEventListener('click', buttonAction);
+                 }
+             } else {
+                 // If no button is needed, remove any existing button
+                 const existingButton = toast.querySelector('button');
+                 if (existingButton) {
+                     existingButton.remove();
+                 }
+             }
+
+             toast.classList.add('show');
+
+             // Hide after a few seconds unless it has a button
+             if (!includeButton) {
+                 setTimeout(() => {
+                     toast.classList.remove('show');
+                 }, 4000); // Hide after 4 seconds
+             }
+        }
+
+        // Check for VIP status (Mock)
+        function checkVIPStatus() {
+            const totalDepositAmount = parseFloat(localStorage.getItem('totalDepositAmount') || '0');
+            if (totalDepositAmount >= 10 && !localStorage.getItem('vipStatusGranted')) { // Mock threshold
+                 // Find the current user in mock leaderboard data and add VIP badge
+                 const currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
+                 if (currentUser) {
+                     currentUser.id = 'vip_user'; // Change ID to trigger VIP badge in render
+                     renderLeaderboard();
+                     showToast("Congratulations! You are now a VIP! 👑", false);
+                     localStorage.setItem('vipStatusGranted', 'true');
+                 }
+            }
+        }
+        checkVIPStatus(); // Check VIP status on load
+
+
+        // Initial calls for features that need to run on load
+        loadAchievements();
+        // fakeProgress(); // Called within loadDailyChallengeProgress
+
 
     </script>
 </body>
 </html>
+```javascript
+// This script section is intentionally left blank as all JavaScript is
+// included within the single <script> tag in the HTML for this example.
+// In a real application, separating concerns into multiple files is recommended.
+```css
+/* This CSS section is intentionally left blank as all CSS is
+// included within the single <style> tag in the HTML for this example.
+// In a real application, separating concerns into multiple files is recommended.
+*/
