@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DegenJack</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -23,10 +23,18 @@
 
             /* Apply safe area insets */
             padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            /* padding-bottom will be handled by the fixed bottom bar */
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
+
+            overscroll-behavior-y: contain; /* Prevent pull-to-refresh */
+            scroll-behavior: smooth; /* Smooth scrolling */
         }
+
+        /* Utility classes for display toggling */
+        .hidden { display: none !important; }
+        .block { display: block !important; }
+        .flex { display: flex !important; }
 
         /* Custom Scrollbar for Chat */
         .custom-scrollbar::-webkit-scrollbar {
@@ -51,19 +59,21 @@
         #top-bar {
             flex-shrink: 0; /* Prevent shrinking */
             background-color: #0a0a0a; /* Slightly darker */
-            padding: 10px 20px;
+            padding: 1rem 1rem; /* Use rem for padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #222;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
+            border-bottom-left-radius: 0.5rem; /* Use rem for border-radius */
+            border-bottom-right-radius: 0.5rem;
             width: 100%; /* Ensure full width */
             box-sizing: border-box;
-            /* Ensure content is within safe areas if body padding is not enough */
-            /* padding-left: calc(20px + env(safe-area-inset-left)); */
-            /* padding-right: calc(20px + env(safe-area-inset-right)); */
+            position: relative; /* Needed for absolute positioning of dropdown */
+            z-index: 100; /* Ensure it's above other content */
+             /* Ensure content is within safe areas */
+            padding-left: calc(1rem + env(safe-area-inset-left));
+            padding-right: calc(1rem + env(safe-area-inset-right));
         }
 
         #game-table {
@@ -73,28 +83,33 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 1rem; /* Use rem for padding */
             width: 100%; /* Ensure full width */
             box-sizing: border-box;
             overflow: hidden; /* Prevent game table content from causing scroll */
+            position: relative; /* Needed for absolute positioning of near-miss, next-hand */
         }
 
         #bottom-bar {
             flex-shrink: 0; /* Prevent shrinking */
             background-color: #0a0a0a; /* Slightly darker */
-            padding: 10px 20px;
+            padding: 1rem; /* Use rem for padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-top: 2px solid #222;
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
+            border-top-left-radius: 0.5rem; /* Use rem for border-radius */
+            border-top-right-radius: 0.5rem;
             width: 100%; /* Ensure full width */
             box-sizing: border-box;
-            /* Ensure content is within safe areas if body padding is not enough */
-            /* padding-left: calc(10px + env(safe-area-inset-left)); */
-            /* padding-right: calc(10px + env(safe-area-inset-right)); */
+            position: fixed; /* Make it sticky at the bottom */
+            bottom: env(safe-area-inset-bottom); /* Position above safe area */
+            left: 0;
+            z-index: 90; /* Ensure it's above game table but below top bar */
+            /* Ensure content is within safe areas */
+            padding-left: calc(1rem + env(safe-area-inset-left));
+            padding-right: calc(1rem + env(safe-area-inset-right));
         }
 
         /* Top Bar Styles */
@@ -103,18 +118,20 @@
             align-items: center;
             /* Allow sections to shrink/grow */
             flex-shrink: 1;
-            flex-grow: 0;
+            flex-grow: 1; /* Allow sections to grow */
             /* Add some spacing between sections */
-            margin: 0 10px;
+            margin: 0 0.5rem; /* Use rem for margin */
         }
 
          .top-bar-section:first-child { margin-left: 0; }
-         .top-bar-section:last-child { margin-right: 0; }
+         .top-bar-section:last-child { margin-right: 0; justify-content: flex-end; }
+         .top-bar-section:nth-child(2) { justify-content: center; } /* Center the XP section */
 
 
         .wallet-info span {
-            margin-right: 10px;
+            margin-right: 0.5rem; /* Use rem for margin */
             white-space: nowrap; /* Prevent wrapping */
+            font-size: 0.875rem; /* Use rem for font size */
         }
 
         .xp-progress {
@@ -123,13 +140,13 @@
         }
 
         .xp-bar-container {
-            width: 150px; /* Default width, will be fluid on mobile */
+            width: 10rem; /* Use rem for width */
             max-width: 100%; /* Ensure it doesn't exceed container width */
-            height: 8px;
+            height: 0.5rem; /* Use rem for height */
             background-color: #333;
-            border-radius: 4px;
+            border-radius: 0.25rem; /* Use rem for border-radius */
             overflow: hidden;
-            margin: 0 10px;
+            margin: 0 0.5rem; /* Use rem for margin */
         }
 
         .xp-bar-fill {
@@ -140,18 +157,18 @@
         }
 
         .recent-plays-ticker {
-            width: 200px; /* Default width, will be fluid on mobile */
+            width: 12rem; /* Use rem for width */
             max-width: 100%; /* Ensure it doesn't exceed container width */
             overflow: hidden;
             white-space: nowrap;
             font-style: italic;
             color: #aaa;
-            font-size: 0.8em;
+            font-size: 0.75rem; /* Use rem for font size */
             text-overflow: ellipsis; /* Add ellipsis for overflow */
         }
 
         .recent-play-item {
-            margin-right: 15px;
+            margin-right: 0.75rem; /* Use rem for margin */
             display: inline-block;
         }
 
@@ -159,13 +176,13 @@
         .loss { color: #ef4444; /* Red */ }
 
         .menu-icon {
-            width: 24px;
-            height: 24px;
+            width: 1.5rem; /* Use rem for width */
+            height: 1.5rem; /* Use rem for height */
             cursor: pointer;
             fill: #eee;
-            min-width: 44px; /* Touch target */
-            min-height: 44px;
-            padding: 10px; /* Add padding for easier tapping */
+            min-width: 2.75rem; /* Touch target (44px) */
+            min-height: 2.75rem; /* Touch target (44px) */
+            padding: 0.5rem; /* Add padding for easier tapping */
             box-sizing: border-box;
         }
 
@@ -173,20 +190,20 @@
         .dealer-hand, .player-hand {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 1rem; /* Use rem for margin */
             flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
         }
 
         .card {
-            width: 60px;
-            height: 90px;
+            width: 3.75rem; /* Use rem for width (60px) */
+            height: 5.625rem; /* Use rem for height (90px) */
             background-color: #fff;
-            border-radius: 6px;
-            margin: 0 5px;
+            border-radius: 0.375rem; /* Use rem for border-radius (6px) */
+            margin: 0 0.25rem; /* Use rem for margin (5px) */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2em;
+            font-size: 1rem; /* Use rem for font size */
             font-weight: bold;
             color: #333;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -210,53 +227,68 @@
             transform: rotateY(180deg);
         }
 
+         /* Card Deal Animation */
+         @keyframes slide-in {
+             0% { transform: translateY(-6.25rem) rotate(10deg); opacity: 0; } /* Use rem */
+             100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+         }
+
+         .card.deal-animation {
+             animation: slide-in 0.5s ease-out;
+         }
+
         .player-seats {
-            display: flex;
+            display: grid; /* Use grid for player seats */
+            grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); /* Fluid columns, min width 8rem */
+            gap: 0.5rem; /* Use rem for gap */
             justify-content: center;
             width: 100%;
-            flex-wrap: wrap; /* Allow player seats to wrap */
+            margin-bottom: 1rem; /* Add margin below seats */
         }
 
         .player-seat {
-            width: 150px; /* Default width */
-            max-width: 95%; /* Ensure it doesn't overflow on narrow screens */
-            margin: 10px; /* Add margin for spacing */
-            padding: 10px;
+            height: 3rem; /* Compressed height (48px) */
+            max-width: 100%; /* Ensure it doesn't overflow */
+            margin: 0; /* Remove individual seat margin, use grid gap */
+            padding: 0.5rem; /* Use rem for padding */
             background-color: #2a2a2a;
-            border-radius: 8px;
+            border-radius: 0.5rem; /* Use rem for border-radius */
             display: flex;
             flex-direction: column;
             align-items: center;
             border: 2px solid transparent;
             transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             box-sizing: border-box; /* Include padding and border in element's total width and height */
+            font-size: 0.875rem; /* Use rem for font size */
+             overflow: hidden; /* Prevent content overflow */
+             overflow-wrap: anywhere; /* Allow breaking long words */
         }
 
         .player-seat.active {
             border-color: #a78bfa; /* Purple glow */
-            box-shadow: 0 0 10px #a78bfa;
+            box-shadow: 0 0 0.625rem #a78bfa; /* Use rem */
         }
 
         .player-info {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem; /* Use rem for margin */
         }
 
         .avatar {
-            width: 30px;
-            height: 30px;
+            width: 2rem; /* Use rem */
+            height: 2rem; /* Use rem */
             background-color: #5b21b6; /* Violet */
             border-radius: 50%;
-            margin-right: 5px;
+            margin-right: 0.25rem; /* Use rem */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2em;
+            font-size: 1rem; /* Use rem */
         }
 
         .username {
-            font-size: 0.9em;
+            font-size: 0.875rem; /* Use rem */
             font-weight: bold;
             color: #fff;
             white-space: nowrap; /* Prevent wrapping */
@@ -267,69 +299,70 @@
         .xp-badge {
             background-color: #facc15; /* Yellow */
             color: #333;
-            font-size: 0.7em;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
+            font-size: 0.7rem; /* Use rem */
+            padding: 0.125rem 0.375rem; /* Use rem */
+            border-radius: 0.625rem; /* Use rem */
+            margin-left: 0.25rem; /* Use rem */
             white-space: nowrap; /* Prevent wrapping */
         }
 
+         /* Hide player hand in compressed view initially */
+         .player-seat .player-hand {
+             display: none;
+         }
+
+
         .action-buttons {
-            margin-top: 10px;
+            margin-top: 0.5rem; /* Use rem */
             display: flex; /* Use flex for button layout */
             justify-content: center;
             width: 100%; /* Ensure buttons take full width of seat */
         }
 
         .action-buttons button {
-            padding: 12px 20px; /* Increased padding for touch */
+            padding: 0.75rem 1.25rem; /* Increased padding for touch (12px 20px) */
             border: none;
-            border-radius: 5px;
+            border-radius: 0.3125rem; /* Use rem (5px) */
             cursor: pointer;
-            font-size: 1em; /* Increased font size */
+            font-size: 1rem; /* Increased font size */
             font-weight: bold;
             transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            min-width: 48px; /* Ensure touch target size (Android guideline) */
-            min-height: 48px; /* Ensure touch target size */
+            min-width: 3rem; /* Ensure touch target size (48px) */
+            min-height: 3rem; /* Ensure touch target size (48px) */
             flex-grow: 1; /* Allow buttons to grow */
-            margin: 0 5px; /* Add spacing between buttons */
+            margin: 0 0.25rem; /* Add spacing between buttons (4px) */
              /* Remove 300ms click delay */
             touch-action: manipulation;
              /* Optional: Disable tap highlight */
             -webkit-tap-highlight-color: transparent;
+
+            /* Button Pulse Animation (Idle Feedback) */
+            /* Applied via JS class .pulse-button */
         }
 
-        .action-buttons button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+         @keyframes pulse {
+             0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,150,0.4); } /* Green glow */
+             50% { box-shadow: 0 0 0 0.625rem rgba(0,255,150,0); } /* Use rem */
+         }
 
-        .hit-button {
-            background-color: #10b981; /* Green */
-            color: #0a0a0a;
-        }
+         .pulse-button {
+             animation: pulse 2s infinite;
+         }
 
-        .hit-button:hover:not(:disabled) {
-            background-color: #059669;
-            box-shadow: 0 0 8px #10b981;
-        }
+         /* Remove pulse animation when disabled or not active player's turn */
+         .action-buttons button:disabled,
+         .player-seat:not(.active) .action-buttons button {
+             animation: none;
+             box-shadow: none;
+         }
 
-        .stand-button {
-            background-color: #ec4899; /* Pink */
-            color: #0a0a0a;
-        }
-
-        .stand-button:hover:not(:disabled) {
-            background-color: #db2777;
-            box-shadow: 0 0 8px #ec4899;
-        }
 
         .turn-timer-bar {
             width: 100%;
-            height: 3px;
+            height: 0.1875rem; /* Use rem (3px) */
             background-color: #333;
-            margin-top: 5px;
-            border-radius: 2px;
+            margin-top: 0.3125rem; /* Use rem (5px) */
+            border-radius: 0.125rem; /* Use rem (2px) */
             overflow: hidden;
         }
 
@@ -343,10 +376,10 @@
         /* Hot Streak Placeholder */
         .hot-streak-bar {
             width: 80%;
-            height: 5px;
+            height: 0.3125rem; /* Use rem (5px) */
             background-color: #333;
-            border-radius: 2.5px;
-            margin-top: 5px;
+            border-radius: 0.15625rem; /* Use rem */
+            margin-top: 0.3125rem; /* Use rem */
             overflow: hidden;
         }
 
@@ -365,8 +398,8 @@
             transform: translate(-50%, -50%);
             background-color: rgba(255, 255, 0, 0.8); /* Yellowish semi-transparent */
             color: #333;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 0.625rem 1.25rem; /* Use rem */
+            border-radius: 0.3125rem; /* Use rem */
             font-weight: bold;
             z-index: 15;
             opacity: 0;
@@ -378,6 +411,27 @@
             opacity: 1;
         }
 
+        /* Dealer Anchor */
+        .dealer-anchor {
+            background: radial-gradient(circle at center, #2e2e2e, transparent);
+            border-radius: 0.75rem; /* Use rem */
+            padding: 0.5rem; /* Use rem */
+            margin-bottom: 0.75rem; /* Use rem */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Dealer Glow Animation Placeholder */
+        @keyframes dealer-glow {
+             0%, 100% { box-shadow: 0 0 5px rgba(167, 139, 250, 0.3); } /* Subtle purple glow */
+             50% { box-shadow: 0 0 15px rgba(167, 139, 250, 0.6); }
+        }
+
+        .dealer-anchor.glowing {
+            animation: dealer-glow 3s infinite ease-in-out;
+        }
+
 
         /* Bottom Bar Styles */
         .bottom-bar-section { /* Use a class for flex items in bottom bar */
@@ -387,7 +441,7 @@
             flex-shrink: 1;
             flex-grow: 1; /* Allow both sections to grow */
             /* Add some spacing between sections */
-            margin: 0 10px;
+            margin: 0 0.5rem; /* Use rem */
         }
 
          .bottom-bar-section:first-child { margin-left: 0; justify-content: flex-start; }
@@ -399,40 +453,42 @@
             align-items: center;
             flex-wrap: wrap; /* Allow controls to wrap */
             justify-content: center; /* Center controls */
+            flex-grow: 1; /* Allow betting controls to grow */
         }
 
         .betting-controls > span {
             white-space: nowrap; /* Prevent wrapping */
-            margin-right: 10px;
+            margin-right: 0.5rem; /* Use rem */
+            font-size: 1rem; /* Use rem */
         }
 
         .betting-controls input[type="range"] {
-            width: 150px; /* Default width */
+            width: 9.375rem; /* Use rem (150px) */
             max-width: 100%; /* Ensure it doesn't exceed container */
-            margin: 0 10px;
+            margin: 0 0.5rem; /* Use rem */
             accent-color: #10b981; /* Green accent */
-             min-height: 48px; /* Ensure touch target */
+             min-height: 3rem; /* Ensure touch target (48px) */
              box-sizing: border-box;
         }
 
         .quick-bet-buttons {
             display: flex;
             align-items: center;
-            margin-left: 10px;
+            margin-left: 0.5rem; /* Use rem */
         }
 
         .quick-bet-buttons button {
-            padding: 10px 15px; /* Increased padding */
+            padding: 0.625rem 0.9375rem; /* Increased padding (10px 15px) */
             border: none;
-            border-radius: 4px;
+            border-radius: 0.25rem; /* Use rem (4px) */
             background-color: #333;
             color: #eee;
             cursor: pointer;
-            font-size: 0.9em;
-            margin-right: 8px; /* Increased margin */
+            font-size: 0.9rem; /* Use rem */
+            margin-right: 0.5rem; /* Increased margin (8px) */
             transition: background-color 0.3s ease-in-out;
-            min-width: 48px; /* Ensure touch target size */
-            min-height: 48px;
+            min-width: 3rem; /* Ensure touch target size (48px) */
+            min-height: 3rem; /* Ensure touch target size (48px) */
              /* Remove 300ms click delay */
             touch-action: manipulation;
              /* Optional: Disable tap highlight */
@@ -448,16 +504,16 @@
         }
 
         .join-leave-button {
-             padding: 12px 25px; /* Increased padding */
+             padding: 0.75rem 1.5625rem; /* Increased padding (12px 25px) */
              border: none;
-             border-radius: 8px;
+             border-radius: 0.5rem; /* Use rem (8px) */
              cursor: pointer;
-             font-size: 1em; /* Increased font size */
+             font-size: 1rem; /* Increased font size */
              font-weight: bold;
              transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-             margin-left: 20px;
-             min-width: 48px; /* Ensure touch target size */
-             min-height: 48px;
+             margin-left: 1.25rem; /* Use rem (20px) */
+             min-width: 3rem; /* Ensure touch target size (48px) */
+             min-height: 3rem; /* Ensure touch target size (48px) */
               /* Remove 300ms click delay */
             touch-action: manipulation;
              /* Optional: Disable tap highlight */
@@ -471,7 +527,7 @@
 
          .join-button:hover {
             background-color: #059669;
-            box-shadow: 0 0 8px #10b981;
+            box-shadow: 0 0 0.5rem #10b981; /* Use rem */
          }
 
          .leave-button {
@@ -481,77 +537,80 @@
 
          .leave-button:hover {
             background-color: #d92d2d;
-            box-shadow: 0 0 8px #ef4444;
+            box-shadow: 0 0 0.5rem #ef4444; /* Use rem */
          }
 
         .chat-container {
-            width: 300px; /* Default width */
+            width: 18.75rem; /* Default width (300px) */
             max-width: 100%; /* Ensure it doesn't overflow */
-            height: 120px; /* Default height */
+            height: 7.5rem; /* Default height (120px) */
             background-color: #1a1a1a;
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 0.5rem; /* Use rem */
+            padding: 0.625rem; /* Use rem */
             display: flex;
             flex-direction: column;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 0.3125rem rgba(0, 0, 0, 0.5); /* Use rem */
             box-sizing: border-box;
+             flex-grow: 1; /* Allow chat to grow */
+             margin-left: 1rem; /* Add margin to separate from betting controls */
         }
 
         .chat-feed {
             flex-grow: 1;
             overflow-y: auto;
-            font-size: 0.8em;
+            font-size: 0.875rem; /* Use rem */
             color: #bbb;
-            margin-bottom: 5px;
-            padding-right: 5px; /* Add padding to prevent scrollbar overlaying text */
+            margin-bottom: 0.3125rem; /* Use rem */
+            padding-right: 0.3125rem; /* Add padding to prevent scrollbar overlaying text */
+             overflow-wrap: anywhere; /* Allow breaking long words */
         }
 
         .chat-message {
-            margin-bottom: 3px;
+            margin-bottom: 0.1875rem; /* Use rem */
             word-break: break-word; /* Break long words */
         }
 
         .chat-sender {
             font-weight: bold;
             color: #60a5fa; /* Blue */
-            margin-right: 5px;
+            margin-right: 0.3125rem; /* Use rem */
         }
 
          .chat-badge {
              color: #facc15; /* Yellow */
-             margin-right: 5px;
+             margin-right: 0.3125rem; /* Use rem */
          }
 
         .chat-input-area {
             display: flex;
             align-items: center;
-            margin-top: 5px;
+            margin-top: 0.3125rem; /* Use rem */
         }
 
         .chat-input-area input[type="text"] {
             flex-grow: 1;
-            padding: 10px; /* Increased padding */
+            padding: 0.625rem; /* Increased padding (10px) */
             border: none;
-            border-radius: 4px 0 0 4px;
+            border-radius: 0.25rem 0 0 0.25rem; /* Use rem */
             background-color: #333;
             color: #eee;
-            font-size: 1em; /* Increased font size */
+            font-size: 1rem; /* Increased font size */
             outline: none;
-             min-height: 48px; /* Ensure touch target size */
+             min-height: 3rem; /* Ensure touch target size (48px) */
              box-sizing: border-box;
         }
 
         .chat-input-area button {
-            padding: 10px 15px; /* Increased padding */
+            padding: 0.625rem 0.9375rem; /* Increased padding (10px 15px) */
             border: none;
-            border-radius: 0 4px 4px 0;
+            border-radius: 0 0.25rem 0.25rem 0; /* Use rem */
             background-color: #3b82f6; /* Blue */
             color: #fff;
             cursor: pointer;
-            font-size: 1em; /* Increased font size */
+            font-size: 1rem; /* Increased font size */
             transition: background-color 0.3s ease-in-out;
-            min-width: 48px; /* Ensure touch target size */
-            min-height: 48px;
+            min-width: 3rem; /* Ensure touch target size (48px) */
+            min-height: 3rem; /* Ensure touch target size (48px) */
              /* Remove 300ms click delay */
             touch-action: manipulation;
              /* Optional: Disable tap highlight */
@@ -568,23 +627,23 @@
                 transform: translateY(0);
             }
             40% {
-                transform: translateY(-10px);
+                transform: translateY(-0.625rem); /* Use rem */
             }
             60% {
-                transform: translateY(-5px);
+                transform: translateY(-0.3125rem); /* Use rem */
             }
         }
 
         .crate-icon {
-            width: 30px;
-            height: 30px;
+            width: 1.875rem; /* Use rem */
+            height: 1.875rem; /* Use rem */
             fill: #facc15; /* Yellow */
             cursor: pointer;
             animation: bounce 1s infinite;
-            margin-left: 10px;
-             min-width: 44px; /* Touch target */
-             min-height: 44px;
-             padding: 10px; /* Add padding for easier tapping */
+            margin-left: 0.625rem; /* Use rem */
+             min-width: 2.75rem; /* Touch target (44px) */
+             min-height: 2.75rem; /* Touch target (44px) */
+             padding: 0.5rem; /* Add padding for easier tapping */
              box-sizing: border-box;
         }
 
@@ -602,39 +661,39 @@
         /* Hot Table Banner Placeholder */
         #hot-table-banner {
             position: fixed;
-            top: calc(60px + env(safe-area-inset-top)); /* Position below top bar, accounting for safe area */
+            top: calc(3.75rem + env(safe-area-inset-top)); /* Position below top bar (60px), accounting for safe area */
             left: 50%;
             transform: translateX(-50%);
             background-color: #ff6bec; /* Pink accent */
             color: #0a0a0a;
-            padding: 5px 15px;
-            border-radius: 5px;
+            padding: 0.3125rem 0.9375rem; /* Use rem */
+            border-radius: 0.3125rem; /* Use rem */
             font-weight: bold;
             z-index: 15;
             display: none; /* Hidden by default */
-            box-shadow: 0 0 10px #ff6bec;
+            box-shadow: 0 0 0.625rem #ff6bec; /* Use rem */
         }
 
          /* Next Hand Button Placeholder */
          #next-hand-button {
              position: absolute;
-             bottom: calc(150px + env(safe-area-inset-bottom)); /* Position above bottom bar, accounting for safe area */
+             bottom: calc(9.375rem + env(safe-area-inset-bottom)); /* Position above bottom bar (150px), accounting for safe area */
              left: 50%;
              transform: translateX(-50%);
-             padding: 12px 25px;
+             padding: 0.75rem 1.5625rem; /* Use rem */
              border: none;
-             border-radius: 8px;
+             border-radius: 0.5rem; /* Use rem */
              background-color: #10b981; /* Green */
              color: #0a0a0a;
-             font-size: 1.1em;
+             font-size: 1.1rem; /* Use rem */
              font-weight: bold;
              cursor: pointer;
              z-index: 15;
              display: none; /* Hidden by default */
-             box-shadow: 0 0 15px #10b981;
+             box-shadow: 0 0 0.9375rem #10b981; /* Use rem */
              transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-             min-width: 48px; /* Ensure touch target size */
-             min-height: 48px;
+             min-width: 3rem; /* Ensure touch target size (48px) */
+             min-height: 3rem; /* Ensure touch target size (48px) */
               /* Remove 300ms click delay */
             touch-action: manipulation;
              /* Optional: Disable tap highlight */
@@ -642,216 +701,89 @@
          }
 
          #next-hand-button:hover {
-             background-color: #059669;
-             box-shadow: 0 0 20px #059669;
+            background-color: #059669;
+            box-shadow: 0 0 1.25rem #059669; /* Use rem */
+         }
+
+         /* Coin Shower Animation Placeholder */
+         .coin {
+             position: fixed;
+             width: 1.25rem; /* Use rem */
+             height: 1.25rem; /* Use rem */
+             background-color: gold; /* Gold coin color */
+             border-radius: 50%;
+             z-index: 20; /* Above everything */
+             animation: coin-fall 2s ease-in forwards;
+             opacity: 0.8;
+         }
+
+         @keyframes coin-fall {
+             0% { transform: translateY(-100vh) translateX(0) rotate(0deg); opacity: 0.5; }
+             100% { transform: translateY(100vh) translateX(var(--end-x, 0)) rotate(var(--end-rotate, 360deg)); opacity: 0; }
+         }
+
+         /* Ticker Strip Animation Placeholder */
+         @keyframes slide-left {
+             0% { transform: translateX(100%); }
+             100% { transform: translateX(-100%); }
+         }
+
+         .ticker {
+             overflow: hidden;
+             white-space: nowrap;
+             box-sizing: border-box;
+             width: 100%;
+             background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+             padding: 0.25rem 0; /* Use rem */
+             font-size: 0.8rem; /* Use rem */
+             color: #10b981; /* Green neon */
+             margin-top: 0.5rem; /* Use rem */
+         }
+
+         .ticker span {
+             display: inline-block;
+             padding-left: 100%;
+             animation: slide-left 15s linear infinite; /* Adjust duration as needed */
          }
 
 
-        /* Mobile Specific Styles */
-        @media (max-width: 768px) {
+        /* REMOVE Mobile Specific Styles */
+        /* @media (max-width: 768px) {
             body {
                 font-size: 16px;
             }
-
-            #top-bar {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 10px;
-                height: auto;
-            }
-
-            .top-bar-section { /* Adjust flex for mobile stacking */
-                width: 100%;
-                justify-content: space-between;
-                margin: 5px 0; /* Adjust margin */
-            }
-
-            .wallet-info span {
-                 margin-right: 5px; /* Reduce margin */
-            }
-
-            .xp-bar-container {
-                flex-grow: 1; /* Allow XP bar to take available space */
-                margin: 0 8px;
-            }
-
-            .recent-plays-ticker {
-                width: 120px; /* Smaller width on mobile */
-                font-size: 0.7em;
-            }
-
-            #game-table {
-                padding: 10px;
-                justify-content: flex-start; /* Align items to top */
-            }
-
-            .dealer-hand {
-                margin-bottom: 10px;
-            }
-
-            .card {
-                width: 45px; /* Smaller cards on mobile */
-                height: 67.5px;
-                margin: 0 3px;
-                font-size: 1em;
-            }
-
-            .player-seats {
-                flex-direction: column; /* Stack players vertically */
-                align-items: center;
-            }
-
-            .player-seat {
-                width: 95%; /* Nearly full width */
-                margin: 5px 0;
-                padding: 8px;
-            }
-
-            .player-info {
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 8px;
-            }
-
-            .action-buttons {
-                margin-top: 8px;
-            }
-
-            .action-buttons button {
-                padding: 10px 20px; /* Larger touch targets */
-                font-size: 1em;
-            }
-
-            #bottom-bar {
-                flex-direction: column;
-                align-items: center;
-                height: auto;
-                padding: 10px;
-            }
-
-            .bottom-bar-section { /* Adjust flex for mobile stacking */
-                 width: 100%;
-                 margin: 5px 0; /* Adjust margin */
-                 justify-content: center; /* Center content */
-            }
-
-            .betting-controls {
-                width: 100%;
-                flex-direction: column;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-
-            .betting-controls > span, .betting-controls input[type="range"], .quick-bet-buttons {
-                margin-bottom: 8px;
-            }
-
-            .betting-controls input[type="range"] {
-                width: 80%; /* Adjust slider width */
-                margin: 8px 0;
-            }
-
-            .quick-bet-buttons {
-                 width: 100%;
-                 justify-content: center;
-            }
-
-            .quick-bet-buttons button {
-                 flex-grow: 1; /* Distribute space */
-                 margin: 0 4px;
-                 padding: 10px 5px; /* Adjust padding */
-            }
-
-            .join-leave-button {
-                margin-left: 0; /* Remove left margin */
-                width: 100%; /* Full width button */
-                padding: 12px 20px; /* Larger touch target */
-            }
-
-            .chat-container {
-                width: 100%; /* Full width */
-                height: 200px; /* Initial smaller height */
-                position: fixed; /* Position fixed for slide-up */
-                bottom: 0;
-                left: 0;
-                border-radius: 8px 8px 0 0;
-                transform: translateY(100%); /* Initially hidden below screen */
-                transition: transform 0.3s ease-in-out;
-                z-index: 20; /* Above other content */
-                box-sizing: border-box;
-                 padding-bottom: 50px; /* Space for input */
-                 /* Account for safe area bottom */
-                 padding-bottom: calc(50px + env(safe-area-inset-bottom));
-            }
-
-            .chat-container.active {
-                transform: translateY(0); /* Slide up */
-                 height: 50vh; /* Take up half viewport height */
-            }
-
-             .chat-feed {
-                 height: calc(100% - 40px); /* Adjust height based on input area */
-                 margin-bottom: 0;
-             }
-
-            .chat-input-area {
-                position: absolute; /* Position relative to chat container */
-                bottom: env(safe-area-inset-bottom); /* Position above safe area */
-                left: 0;
-                width: 100%;
-                padding: 5px;
-                background-color: #1a1a1a; /* Match chat container background */
-                box-sizing: border-box;
-            }
-
-             .chat-input-area input[type="text"] {
-                 font-size: 1em; /* Standard font size */
-                 min-height: 44px; /* Ensure touch target size */
-             }
-
-             .chat-input-area button {
-                 min-height: 44px; /* Ensure touch target size */
-             }
-
-
-            #toggle-chat {
-                display: block; /* Show toggle button on mobile */
-                padding: 8px 15px;
-                border: none;
-                border-radius: 5px;
-                background-color: #3b82f6; /* Blue */
-                color: #fff;
-                font-weight: bold;
-                cursor: pointer;
-                margin-top: 10px;
-                min-width: 48px; /* Ensure touch target size */
-                min-height: 48px;
-            }
-
-            .player-seat .player-hand {
-                 justify-content: center; /* Center cards in mobile view */
-            }
-
-             /* Hide other players' hands by default on mobile */
-             .player-seat:not(.is-user) .player-hand {
-                 /* display: none; */ /* Option 1: Hide completely */
-                 /* Or show face-down cards */
-             }
-
-             /* Optional: Button to toggle other players' hands */
-             #toggle-other-hands {
-                 display: block; /* Show on mobile */
-                 margin-top: 10px;
-                 padding: 8px 15px;
-                 border: none;
-                 border-radius: 5px;
-                 background-color: #555;
-                 color: #eee;
-                 cursor: pointer;
-                 min-width: 48px; /* Touch target */
-                 min-height: 48px;
-             }
-        }
+            #top-bar { flex-direction: column; align-items: flex-start; padding: 10px; height: auto; }
+            .top-bar-section { width: 100%; justify-content: space-between; margin: 5px 0; }
+            .wallet-info span { margin-right: 5px; }
+            .xp-bar-container { flex-grow: 1; margin: 0 8px; }
+            .recent-plays-ticker { width: 120px; font-size: 0.7em; }
+            #game-table { padding: 10px; justify-content: flex-start; }
+            .dealer-hand { margin-bottom: 10px; }
+            .card { width: 45px; height: 67.5px; margin: 0 3px; font-size: 1em; }
+            .player-seats { flex-direction: column; align-items: center; }
+            .player-seat { width: 95%; margin: 5px 0; padding: 8px; }
+            .player-info { width: 100%; justify-content: center; margin-bottom: 8px; }
+            .action-buttons { margin-top: 8px; }
+            .action-buttons button { padding: 10px 20px; font-size: 1em; }
+            #bottom-bar { flex-direction: column; align-items: center; height: auto; padding: 10px; }
+            .bottom-bar-section { width: 100%; margin: 5px 0; justify-content: center; }
+            .betting-controls { width: 100%; flex-direction: column; align-items: center; margin-bottom: 10px; }
+            .betting-controls > span, .betting-controls input[type="range"], .quick-bet-buttons { margin-bottom: 8px; }
+            .betting-controls input[type="range"] { width: 80%; margin: 8px 0; }
+            .quick-bet-buttons { width: 100%; justify-content: center; }
+            .quick-bet-buttons button { flex-grow: 1; margin: 0 4px; padding: 10px 5px; }
+            .join-leave-button { margin-left: 0; width: 100%; padding: 12px 20px; }
+            .chat-container { width: 100%; height: 200px; position: fixed; bottom: 0; left: 0; border-radius: 8px 8px 0 0; transform: translateY(100%); transition: transform 0.3s ease-in-out; z-index: 20; box-sizing: border-box; padding-bottom: 50px; padding-bottom: calc(50px + env(safe-area-inset-bottom)); }
+            .chat-container.active { transform: translateY(0); height: 50vh; }
+            .chat-feed { height: calc(100% - 40px); margin-bottom: 0; }
+            .chat-input-area { position: absolute; bottom: env(safe-area-inset-bottom); left: 0; width: 100%; padding: 5px; background-color: #1a1a1a; box-sizing: border-box; }
+            .chat-input-area input[type="text"] { font-size: 1em; min-height: 44px; }
+            .chat-input-area button { min-height: 44px; }
+            #toggle-chat { display: block; padding: 8px 15px; border: none; border-radius: 5px; background-color: #3b82f6; color: #fff; font-weight: bold; cursor: pointer; margin-top: 10px; min-width: 48px; min-height: 48px; }
+            .player-seat .player-hand { justify-content: center; }
+            .player-seat:not(.is-user) .player-hand { }
+            #toggle-other-hands { display: block; margin-top: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #555; color: #eee; cursor: pointer; min-width: 48px; min-height: 48px; }
+        } */
 
         /* Hide toggle button on desktop */
         #toggle-chat, #toggle-other-hands {
@@ -859,11 +791,12 @@
         }
 
         /* Ensure elements are within safe areas even if not fixed */
-        .wallet-info, .xp-progress, .recent-plays,
+        /* This is handled by padding on body and fixed elements */
+        /* .wallet-info, .xp-progress, .recent-plays,
         .betting-controls, .chat-container {
             padding-left: env(safe-area-inset-left, 0);
             padding-right: env(safe-area-inset-right, 0);
-        }
+        } */
 
 
     </style>
@@ -875,9 +808,9 @@
             <span id="wallet-address">Not Connected</span>
             <span id="wallet-balance">-- SOL</span>
             <button id="connect-wallet-button">Connect Wallet</button>
-            <button id="disconnect-wallet-button" style="display: none;">Disconnect</button>
-             <a id="phantom-deeplink" href="#" style="display: none; color: #a78bfa; font-size: 0.8em; margin-left: 10px;">Open in Phantom App</a>
-             <span id="wallet-guidance" style="display: none; color: #facc15; font-size: 0.8em; margin-left: 10px;"></span>
+            <button id="disconnect-wallet-button" class="hidden">Disconnect</button>
+             <a id="phantom-deeplink" href="#" class="hidden" style="color: #a78bfa; font-size: 0.8em; margin-left: 10px;">Open in Phantom App</a>
+             <span id="wallet-guidance" class="hidden" style="color: #facc15; font-size: 0.8em; margin-left: 10px;"></span>
         </div>
         <div class="top-bar-section xp-progress">
             <span id="user-level">Level 1</span>
@@ -885,7 +818,7 @@
                 <div id="xp-bar-fill" class="xp-bar-fill"></div>
             </div>
             <span id="user-xp">0/100 XP</span>
-            <svg id="crate-icon" class="crate-icon" style="display: none;" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <svg id="crate-icon" class="crate-icon hidden" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" d="M7.293 2.293a1 1 0 011.414 0L10 3.586l1.293-1.293a1 1 0 111.414 1.414L11.414 5l1.293 1.293a1 1 0 11-1.414 1.414L10 6.414l-1.293 1.293a1 1 0 01-1.414-1.414L8.586 5l-1.293-1.293a1 1 0 010-1.414zM10 14a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2zM5 10a1 1 0 11-2 0 1 1 0 012 0zm10 0a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path>
             </svg>
         </div>
@@ -898,27 +831,27 @@
             <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
-            <div id="settings-dropdown" style="display: none; position: absolute; top: 50px; right: 20px; background-color: #333; border-radius: 5px; padding: 10px; z-index: 20;">
+            <div id="settings-dropdown" class="hidden" style="position: absolute; top: 50px; right: 20px; background-color: #333; border-radius: 5px; padding: 10px; z-index: 20;">
                 Settings content here...
             </div>
         </div>
     </div>
 
     <div id="game-table">
-        <div class="dealer-hand">
+        <div class="dealer-anchor">
             <h3>Dealer</h3>
             <div id="dealer-cards" class="player-hand">
                 </div>
         </div>
         <div id="player-seats" class="player-seats">
             </div>
-         <div id="hot-table-banner">Hot Table!</div>
+         <div id="hot-table-banner" class="hidden">Hot Table!</div>
          <div id="near-miss-popup" class="near-miss-popup">Almost!</div>
-         <div id="hot-streak-bar" class="hot-streak-bar" style="display: none;">
+         <div id="hot-streak-bar" class="hot-streak-bar hidden">
              <div class="hot-streak-fill"></div>
          </div>
 
-         <button id="toggle-other-hands">Show/Hide Other Hands</button>
+         <button id="toggle-other-hands" class="hidden">Show/Hide Other Hands</button>
 
     </div>
 
@@ -932,7 +865,7 @@
                 <button data-bet-amount="MAX">MAX</button>
             </div>
             <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
-             <span id="spectator-status" style="display: none; color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
+             <span id="spectator-status" class="hidden" style="color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
              <button id="refer-friends-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #5b21b6; color: #fff; font-weight: bold; cursor: pointer; min-width: 48px; min-height: 48px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">Refer Friends</button>
         </div>
         <div class="bottom-bar-section chat-container">
@@ -943,13 +876,18 @@
                 <button id="send-chat-button">Send</button>
             </div>
         </div>
-         <button id="toggle-chat">Chat</button>
-         <button id="next-hand-button">Next Hand?</button>
+         <button id="toggle-chat" class="hidden">Chat</button>
+         <button id="next-hand-button" class="hidden">Next Hand?</button>
     </div>
 
     <canvas id="confetti-canvas"></canvas>
 
-    <audio id="card-deal-sound" src="/assets/sounds/card-deal.mp3" preload="auto"></audio> <audio id="win-sound" src="/assets/sounds/win.mp3" preload="auto"></audio> <audio id="loss-sound" src="/assets/sounds/loss.mp3" preload="auto"></audio> <audio id="button-click-sound" src="/assets/sounds/button-click.mp3" preload="auto"></audio> <script>
+    <audio id="card-deal-sound" src="/assets/sounds/card-deal.mp3" preload="auto"></audio>
+    <audio id="win-sound" src="/assets/sounds/win.mp3" preload="auto"></audio>
+    <audio id="loss-sound" src="/assets/sounds/loss.mp3" preload="auto"></audio>
+    <audio id="button-click-sound" src="/assets/sounds/button-click.mp3" preload="auto"></audio>
+    <audio id="coin-drop-sound" src="/assets/sounds/coin-drop.mp3" preload="auto"></audio>
+    <audio id="background-loop-sound" src="/assets/sounds/background-loop.mp3" preload="auto" loop></audio> <script>
         // --- Global State ---
         const gameState = {
             walletAddress: null,
@@ -968,8 +906,9 @@
             websocket: null,
             confettiCanvas: null,
             confettiCtx: null,
-            chatVisible: false, // State for mobile chat toggle
+            chatVisible: window.innerWidth > 768, // Chat visible by default on desktop
             otherHandsVisible: false, // State for mobile other hands toggle
+            backgroundSoundPlaying: false,
             // Add other state properties as needed
         };
 
@@ -990,6 +929,7 @@
             settingsDropdown: document.getElementById('settings-dropdown'), // Placeholder
             dealerCards: document.getElementById('dealer-cards'),
             playerSeats: document.getElementById('player-seats'),
+            dealerAnchor: document.querySelector('.dealer-anchor'), // New dealer anchor
             hotTableBanner: document.getElementById('hot-table-banner'), // New
             nearMissPopup: document.getElementById('near-miss-popup'), // New
             hotStreakBar: document.getElementById('hot-streak-bar'), // New
@@ -1012,6 +952,8 @@
             winSound: document.getElementById('win-sound'),
             lossSound: document.getElementById('loss-sound'),
             buttonClickSound: document.getElementById('button-click-sound'),
+            coinDropSound: document.getElementById('coin-drop-sound'), // New Coin Drop Sound
+            backgroundLoopSound: document.getElementById('background-loop-sound'), // New Background Loop
         };
 
         // --- Initialization ---
@@ -1038,6 +980,9 @@
 
             // Placeholder: Simulate some initial game state for testing UI layout
             simulateInitialGameState();
+
+             // Play background sound on first user interaction (e.g., click anywhere)
+             document.body.addEventListener('click', playBackgroundSound, { once: true });
         });
 
         // Resize Canvas function
@@ -1109,10 +1054,10 @@
         function handleWalletConnected(publicKey) {
             gameState.walletAddress = publicKey.toBase58();
             dom.walletAddress.textContent = `${gameState.walletAddress.slice(0, 4)}...${gameState.walletAddress.slice(-4)}`;
-            dom.connectWalletButton.style.display = 'none';
-            dom.disconnectWalletButton.style.display = 'inline-block';
-            dom.phantomDeeplink.style.display = 'none';
-            dom.walletGuidance.style.display = 'none';
+            dom.connectWalletButton.classList.add('hidden');
+            dom.disconnectWalletButton.classList.remove('hidden');
+            dom.phantomDeeplink.classList.add('hidden');
+            dom.walletGuidance.classList.add('hidden');
             // Placeholder: Fetch balance (requires more web3.js interaction)
             fetchWalletBalance(publicKey);
             updateUI(); // Update UI based on connected state
@@ -1123,10 +1068,10 @@
             gameState.walletBalance = 0;
             dom.walletAddress.textContent = 'Not Connected';
             dom.walletBalance.textContent = '-- SOL';
-            dom.connectWalletButton.style.display = 'inline-block';
-            dom.disconnectWalletButton.style.display = 'none';
-             dom.phantomDeeplink.style.display = 'none'; // Hide deeplink on disconnect
-             dom.walletGuidance.style.display = 'none'; // Hide guidance on disconnect
+            dom.connectWalletButton.classList.remove('hidden');
+            dom.disconnectWalletButton.classList.add('hidden');
+             dom.phantomDeeplink.classList.add('hidden'); // Hide deeplink on disconnect
+             dom.walletGuidance.classList.add('hidden'); // Hide guidance on disconnect
             updateUI(); // Update UI based on disconnected state
         }
 
@@ -1150,16 +1095,16 @@
              // IMPORTANT: Replace with your actual game URL
              const deeplinkUrl = `https://phantom.app/ul/v1/browse?url=${encodeURIComponent(currentUrl)}`;
              dom.phantomDeeplink.href = deeplinkUrl;
-             dom.phantomDeeplink.style.display = 'inline-block';
-             dom.walletGuidance.style.display = 'inline-block';
+             dom.phantomDeeplink.classList.remove('hidden');
+             dom.walletGuidance.classList.remove('hidden');
              dom.walletGuidance.textContent = 'For iOS, use Phantom\'s in-app browser:';
-             dom.connectWalletButton.style.display = 'none'; // Hide connect button if deeplink shown
+             dom.connectWalletButton.classList.add('hidden'); // Hide connect button if deeplink shown
          }
 
          function showWalletGuidance(message) {
              dom.walletGuidance.textContent = message;
-             dom.walletGuidance.style.display = 'inline-block';
-             dom.phantomDeeplink.style.display = 'none';
+             dom.walletGuidance.classList.remove('hidden');
+             dom.phantomDeeplink.classList.add('hidden');
          }
 
 
@@ -1249,8 +1194,11 @@
                     // Trigger confetti or other win/loss animations
                     if (msg.data.userWon) {
                          triggerConfetti();
+                         triggerCoinShower(); // Trigger coin shower on win
                          playSound(dom.winSound); // Play win sound
                          triggerHaptic([100, 50, 100]); // Win haptic
+                         // Show win banner/badge (placeholder)
+                         showWinBanner(msg.data.winAmount);
                     } else if (msg.data.userLost) {
                          playSound(dom.lossSound); // Play loss sound
                          triggerHaptic([200]); // Loss haptic
@@ -1291,9 +1239,10 @@
                  case 'hot_table':
                      // Show/hide hot table banner
                      if (msg.data.isActive) {
-                         dom.hotTableBanner.style.display = 'block';
+                         dom.hotTableBanner.textContent = msg.data.message || 'Hot Table!';
+                         dom.hotTableBanner.classList.remove('hidden');
                      } else {
-                         dom.hotTableBanner.style.display = 'none';
+                         dom.hotTableBanner.classList.add('hidden');
                      }
                      break;
                  case 'near_miss':
@@ -1349,7 +1298,7 @@
         }
 
         function showCrateIcon() {
-            dom.crateIcon.style.display = 'inline-block';
+            dom.crateIcon.classList.remove('hidden');
             // Add logic for crate opening animation on click
             dom.crateIcon.onclick = openCrate; // Assign click handler
         }
@@ -1358,7 +1307,7 @@
              console.log("Crate opened!");
              // Placeholder: Implement crate opening animation (Canvas or image sequence)
              // For now, just hide the icon
-             dom.crateIcon.style.display = 'none';
+             dom.crateIcon.classList.add('hidden');
              // Placeholder: Show crate contents (inline, no popup)
              // Maybe a temporary text display or simple animation near the icon
              alert("You got a reward!"); // Replace with inline display
@@ -1419,8 +1368,13 @@
                      // cardElement.style.backgroundSize = 'cover';
                      // cardElement.style.color = 'transparent'; // Hide text if using image
                  }
-                // Add card flip animation class if needed (e.g., if card.justDealt)
-                // if (card.justDealt) { cardElement.classList.add('flipped'); }
+                 // Add deal animation class
+                 cardElement.classList.add('deal-animation');
+                 // Remove animation class after it finishes
+                 cardElement.addEventListener('animationend', () => {
+                     cardElement.classList.remove('deal-animation');
+                 }, { once: true });
+
                 dom.dealerCards.appendChild(cardElement);
             });
         }
@@ -1472,6 +1426,13 @@
                              // cardElement.style.backgroundSize = 'cover';
                              // cardElement.style.color = 'transparent';
                          }
+                         // Add deal animation class
+                         cardElement.classList.add('deal-animation');
+                         // Remove animation class after it finishes
+                         cardElement.addEventListener('animationend', () => {
+                             cardElement.classList.remove('deal-animation');
+                         }, { once: true });
+
                         playerHand.appendChild(cardElement);
                     });
                 } else {
@@ -1484,7 +1445,13 @@
                 // Action Buttons (Hit/Stand)
                 const actionButtons = document.createElement('div');
                 actionButtons.classList.add('action-buttons');
-                actionButtons.style.display = (player.id === gameState.walletAddress && player.id === gameState.activePlayerId && !gameState.isSpectator) ? 'flex' : 'none'; // Use flex for buttons
+                // Use class 'hidden' instead of inline style
+                if (!(player.id === gameState.walletAddress && player.id === gameState.activePlayerId && !gameState.isSpectator)) {
+                    actionButtons.classList.add('hidden');
+                } else {
+                    actionButtons.classList.remove('hidden');
+                }
+
 
                 const hitButton = document.createElement('button');
                 hitButton.classList.add('hit-button');
@@ -1503,7 +1470,12 @@
                 // Turn Timer Bar
                 const timerBar = document.createElement('div');
                 timerBar.classList.add('turn-timer-bar');
-                timerBar.style.display = (player.id === gameState.activePlayerId) ? 'block' : 'none';
+                 if (!(player.id === gameState.activePlayerId)) { // Use class 'hidden'
+                     timerBar.classList.add('hidden');
+                 } else {
+                     timerBar.classList.remove('hidden');
+                 }
+
                 const timerFill = document.createElement('div');
                 timerFill.classList.add('turn-timer-fill');
                  // Timer fill width will be controlled by startTurnTimer function
@@ -1515,6 +1487,12 @@
                     const hotStreakBar = document.createElement('div');
                     hotStreakBar.classList.add('hot-streak-bar');
                     hotStreakBar.id = 'user-hot-streak-bar'; // Assign an ID for easy access
+                     if (!(player.hotStreak > 0)) { // Use class 'hidden'
+                         hotStreakBar.classList.add('hidden');
+                     } else {
+                         hotStreakBar.classList.remove('hidden');
+                     }
+
                     const hotStreakFill = document.createElement('div');
                     hotStreakFill.classList.add('hot-streak-fill');
                     hotStreakBar.appendChild(hotStreakFill);
@@ -1558,7 +1536,12 @@
                  const maxWidth = 10; // Example max streak before a bonus or reset
                  const widthPercentage = Math.min(streakCount / maxWidth * 100, 100);
                  userHotStreakFill.style.width = `${widthPercentage}%`;
-                 userHotStreakFill.parentElement.style.display = streakCount > 0 ? 'block' : 'none'; // Show if streak > 0
+                 // Use class 'hidden'
+                 if (streakCount > 0) {
+                     userHotStreakFill.parentElement.classList.remove('hidden');
+                 } else {
+                     userHotStreakFill.parentElement.classList.add('hidden');
+                 }
              }
         }
 
@@ -1568,6 +1551,13 @@
             setTimeout(() => {
                 dom.nearMissPopup.classList.remove('show');
             }, 1500); // Show for 1.5 seconds
+        }
+
+        // Placeholder for Win Banner/Badge
+        function showWinBanner(amount) {
+            console.log(`Showing Win Banner for ${amount} SOL`);
+            // Implement a temporary banner or badge animation here
+            // Example: Create a div, add content, animate it in and out
         }
 
 
@@ -1593,8 +1583,13 @@
                  dom.quickBetButtons.forEach(button => button.disabled = false);
             }
 
-            // Show spectator status if applicable
-            dom.spectatorStatus.style.display = gameState.isSpectator ? 'inline-block' : 'none';
+            // Show spectator status if applicable (use class 'hidden')
+            if (gameState.isSpectator) {
+                dom.spectatorStatus.classList.remove('hidden');
+            } else {
+                dom.spectatorStatus.classList.add('hidden');
+            }
+
              // Disable chat input for spectators
              dom.chatInput.disabled = gameState.isSpectator;
              dom.sendChatButton.disabled = gameState.isSpectator;
@@ -1607,13 +1602,7 @@
                 addChatMessageToFeed(msg);
             });
              // Ensure chat container is visible on desktop, hidden on mobile initially
-             if (window.innerWidth > 768) {
-                 dom.chatContainer.classList.add('active');
-                 gameState.chatVisible = true;
-             } else {
-                 dom.chatContainer.classList.remove('active');
-                 gameState.chatVisible = false;
-             }
+             updateChatContainerVisibility();
         }
 
         function addChatMessageToFeed(msg) {
@@ -1633,36 +1622,49 @@
         }
 
         function updateChatContainerVisibility() {
-             if (gameState.chatVisible) {
-                 dom.chatContainer.classList.add('active');
+             // On mobile, chat is toggleable. On desktop, it's always visible.
+             const isMobile = window.innerWidth <= 768;
+             if (isMobile) {
+                 if (gameState.chatVisible) {
+                     dom.chatContainer.classList.add('active');
+                     dom.chatContainer.classList.remove('hidden'); // Ensure it's not hidden by utility class
+                 } else {
+                     dom.chatContainer.classList.remove('active');
+                     // Add 'hidden' class when not active on mobile
+                     dom.chatContainer.classList.add('hidden');
+                 }
+                  dom.toggleChatButton.classList.remove('hidden'); // Show toggle button on mobile
              } else {
-                 dom.chatContainer.classList.remove('active');
+                 dom.chatContainer.classList.add('active'); // Always active on desktop
+                 dom.chatContainer.classList.remove('hidden');
+                 dom.toggleChatButton.classList.add('hidden'); // Hide toggle button on desktop
              }
         }
 
         function updateOtherHandsVisibility() {
              const isMobile = window.innerWidth <= 768;
+             const otherPlayerSeats = document.querySelectorAll('.player-seat:not(.is-user)');
+
              if (!isMobile) {
                  // Always show hands on desktop
-                 document.querySelectorAll('.player-seat:not(.is-user) .player-hand').forEach(hand => {
-                     hand.style.display = 'flex';
-                     hand.querySelectorAll('.card').forEach(card => card.classList.remove('card-back'));
+                 otherPlayerSeats.forEach(seat => {
+                     const hand = seat.querySelector('.player-hand');
+                     hand.classList.remove('hidden'); // Ensure hand is not hidden
+                     seat.querySelectorAll('.card').forEach(card => card.classList.remove('card-back'));
                  });
-                 dom.toggleOtherHandsButton.style.display = 'none'; // Hide button on desktop
+                 dom.toggleOtherHandsButton.classList.add('hidden'); // Hide button on desktop
                  return;
              }
 
              // Mobile logic
-             dom.toggleOtherHandsButton.style.display = 'block'; // Show button on mobile
+             dom.toggleOtherHandsButton.classList.remove('hidden'); // Show button on mobile
 
-             document.querySelectorAll('.player-seat:not(.is-user)').forEach(seat => {
+             otherPlayerSeats.forEach(seat => {
                  const hand = seat.querySelector('.player-hand');
                  if (gameState.otherHandsVisible) {
-                      hand.style.display = 'flex';
+                      hand.classList.remove('hidden'); // Show hand
                       // Show cards face up (assuming card object has 'revealed' or similar)
                       seat.querySelectorAll('.card').forEach(cardElement => {
-                           // In a real app, you'd check if the card is actually revealed by game state
-                           // For simulation, just remove the back class
                            cardElement.classList.remove('card-back');
                            // Restore text content if using text placeholders
                            if (cardElement.textContent === '') {
@@ -1676,7 +1678,7 @@
                            }
                       });
                  } else {
-                      hand.style.display = 'flex'; // Keep hand container visible
+                      hand.classList.remove('hidden'); // Keep hand container visible
                       // Show cards face down
                       seat.querySelectorAll('.card').forEach(cardElement => {
                           cardElement.classList.add('card-back');
@@ -1687,11 +1689,15 @@
         }
 
         function showNextHandButton() {
-             dom.nextHandButton.style.display = 'block';
+             dom.nextHandButton.classList.remove('hidden');
+             // Add pulse animation to Next Hand button
+             dom.nextHandButton.classList.add('pulse-button');
         }
 
         function hideNextHandButton() {
-             dom.nextHandButton.style.display = 'none';
+             dom.nextHandButton.classList.add('hidden');
+             // Remove pulse animation
+             dom.nextHandButton.classList.remove('pulse-button');
         }
 
 
@@ -1749,14 +1755,15 @@
              const menuIcon = document.querySelector('.menu-icon');
              menuIcon.addEventListener('click', () => {
                  const dropdown = dom.settingsDropdown;
-                 dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                 // Use class 'hidden'
+                 dropdown.classList.toggle('hidden');
                   playSound(dom.buttonClickSound); // Play sound
              });
 
              // Close settings dropdown if clicked outside
              document.addEventListener('click', (event) => {
                  if (!menuIcon.contains(event.target) && !dom.settingsDropdown.contains(event.target)) {
-                     dom.settingsDropdown.style.display = 'none';
+                     dom.settingsDropdown.classList.add('hidden'); // Use class 'hidden'
                  }
              });
 
@@ -1813,8 +1820,18 @@
              }
         }
 
+         function playBackgroundSound() {
+             if (dom.backgroundLoopSound && !gameState.backgroundSoundPlaying) {
+                 dom.backgroundLoopSound.volume = 0.3; // Adjust volume as needed
+                 dom.backgroundLoopSound.play().then(() => {
+                     gameState.backgroundSoundPlaying = true;
+                 }).catch(error => console.error("Error playing background sound:", error));
+             }
+         }
+
+
         function triggerHaptic(pattern) {
-            if (navigator.vibrate) {
+            if ('vibrate' in navigator) {
                 navigator.vibrate(pattern);
             }
         }
@@ -1873,6 +1890,33 @@
             }
 
             updateConfetti(); // Start animation
+        }
+
+        // Placeholder for Coin Shower Animation
+        function triggerCoinShower() {
+            console.log("Triggering coin shower!");
+            const coinCount = window.innerWidth < 768 ? 30 : 50; // Adjust count for mobile
+            const coins = [];
+
+            for (let i = 0; i < coinCount; i++) {
+                const coin = document.createElement('div');
+                coin.classList.add('coin');
+                // Random start position at the top
+                coin.style.left = `${Math.random() * 100}vw`;
+                // Random end horizontal position
+                coin.style.setProperty('--end-x', `${(Math.random() - 0.5) * 200}px`); // Drift left or right
+                // Random end rotation
+                 coin.style.setProperty('--end-rotate', `${Math.random() * 720 - 360}deg`); // Rotate in either direction
+
+                document.body.appendChild(coin);
+                coins.push(coin);
+
+                // Remove coin element after animation
+                coin.addEventListener('animationend', () => {
+                    coin.remove();
+                }, { once: true });
+            }
+            playSound(dom.coinDropSound); // Play coin drop sound
         }
 
 
@@ -1946,12 +1990,26 @@
              // Placeholder: Implement UI for mystery event (e.g., Bonus Round banner)
              if (eventData.type === 'bonus_round') {
                  dom.hotTableBanner.textContent = `Bonus Round Active! ${eventData.message || 'Double Payouts!'}`;
-                 dom.hotTableBanner.style.display = 'block';
+                 dom.hotTableBanner.classList.remove('hidden');
                  // Optional: Hide after a duration
                  setTimeout(() => {
-                     dom.hotTableBanner.style.display = 'none';
+                     dom.hotTableBanner.classList.add('hidden');
                  }, eventData.duration || 5000); // Hide after 5 seconds by default
              }
+        }
+
+        // Placeholder for Confetti on Join animation
+        function triggerConfettiOnJoin() {
+             console.log("Triggering confetti on join!");
+             // Reuse the existing triggerConfetti function
+             triggerConfetti();
+        }
+
+        // Placeholder for Auto-Play Timer/Spinner
+        function startAutoPlayTimer() {
+             console.log("Starting auto-play timer...");
+             // Implement a visual timer or spinner animation here
+             // This would likely involve adding/updating a DOM element
         }
 
 
