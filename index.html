@@ -508,7 +508,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer; /* Toggle on click */
+            /* Removed cursor: pointer here, toggle logic is now on the container/close button */
         }
 
         .chat-header i {
@@ -518,6 +518,18 @@
         .chat-header i.rotated {
             transform: rotate(180deg);
         }
+
+        /* Added close button style for chat header on mobile */
+         .chat-header .close-chat-btn {
+             color: #aaa;
+             font-size: 20px;
+             cursor: pointer;
+             transition: color 0.2s ease;
+         }
+
+         .chat-header .close-chat-btn:hover {
+             color: var(--text-light);
+         }
 
 
         .chat-body {
@@ -613,7 +625,7 @@
             transition: all 0.3s ease-in-out;
         }
 
-        /* Full-screen chat for mobile */
+        /* Full-screen chat for mobile when open */
         body.chat-open .chat-container {
             position: fixed;
             top: 0;
@@ -623,6 +635,9 @@
             border-radius: 0;
             background: var(--bg-dark); /* Solid background for full screen */
             z-index: 1000; /* Above everything */
+            display: flex; /* Show flex layout when open */
+            flex-direction: column;
+            box-shadow: none; /* Remove bubble shadow */
         }
 
         body.chat-open .chat-toggle-btn {
@@ -768,17 +783,38 @@
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .header-left, .header-right {
-                gap: 0.5rem; /* Reduce gap on smaller screens */
+                /* Adjusted gap and button width for better spacing */
+                gap: 0.3rem; /* Reduced gap slightly */
+                flex-shrink: 0; /* Prevent shrinking */
             }
+
+            .header-left {
+                 flex-grow: 1; /* Allow left side to grow */
+                 justify-content: flex-start;
+                 overflow-x: auto; /* Add horizontal scroll if needed */
+                 padding-right: 0.5rem;
+                 -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            }
+
+             .header-right {
+                 flex-grow: 1; /* Allow right side to grow */
+                 justify-content: flex-end;
+                  overflow-x: auto; /* Add horizontal scroll if needed */
+                  padding-left: 0.5rem;
+                  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+             }
+
 
             .wallet-info {
                 font-size: 12px;
+                flex-shrink: 0; /* Prevent shrinking */
             }
 
             /* Header Buttons Mobile Size */
             header button {
-                padding: 0.5rem 0.8rem; /* Increased padding */
-                font-size: 0.8rem; /* Slightly smaller font for space */
+                padding: 0.4rem 0.6rem; /* Further reduced padding for space */
+                font-size: 0.8rem; /* Keep font size */
+                 flex-shrink: 0; /* Prevent buttons from shrinking too much */
             }
 
 
@@ -847,6 +883,12 @@
                 display: none; /* Hide chat content in bubble state */
             }
 
+             /* Ensure the chat bubble icon is visible in the bubble state */
+            .chat-container #chat-bubble-icon {
+                 display: flex;
+                 color: white; /* Icon color */
+            }
+
             /* Full-screen chat for mobile when open */
             body.chat-open .chat-container {
                 position: fixed;
@@ -868,6 +910,11 @@
                 display: flex; /* Show chat content when open */
             }
 
+            /* Hide the chat bubble icon when chat is full screen */
+            body.chat-open .chat-container #chat-bubble-icon {
+                 display: none;
+            }
+
 
             body.chat-open .chat-header {
                 padding-top: constant(safe-area-inset-top);
@@ -879,10 +926,10 @@
                 padding-bottom: env(safe-area-inset-bottom);
             }
 
-            /* Hide the separate chat toggle button on mobile, as the chat container itself is the toggle */
-            .chat-toggle-btn {
+            /* The separate mobile chat toggle button is no longer needed */
+            /* .chat-toggle-btn {
                 display: none;
-            }
+            } */
 
 
             .modal-content {
@@ -1016,6 +1063,7 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>Deposit (Mock)</h2>
+             <p>Your Balance: <span id="current-balance">0.00</span> SOL</p>
             <div class="transaction-options">
                 <label for="deposit-amount">Amount (SOL):</label>
                 <input type="number" id="deposit-amount" value="1" min="0.01" step="0.01">
@@ -1046,7 +1094,8 @@
     <div class="chat-container" id="chat-container">
          <i class="fas fa-comment-dots" id="chat-bubble-icon" style="font-size: 1.8rem;"></i>
         <div class="chat-header" id="chat-header">
-            Chat <i class="fas fa-chevron-down"></i>
+            Chat
+            <span class="close-chat-btn">&times;</span>
         </div>
         <div class="chat-body" id="chat-body">
             </div>
@@ -1447,6 +1496,7 @@
         const chatInput = document.getElementById('chat-input');
         const sendChatBtn = document.getElementById('send-chat-btn');
         const chatBubbleIcon = document.getElementById('chat-bubble-icon'); // Get the bubble icon
+        const closeChatBtn = document.querySelector('.chat-header .close-chat-btn'); // Get the new close button
 
         let mockChatMessages = [
             { username: 'System', text: 'Welcome to DegenDice Chat!', type: 'system' },
@@ -1510,18 +1560,17 @@
         renderChatMessages();
 
         // Chat toggle for mobile
-        // Use the chat container itself as the toggle on mobile
-        chatContainer.addEventListener('click', () => {
-             if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open')) {
-                 // If on mobile and chat is not open, open it
+        // Use the chat container itself as the toggle to OPEN on mobile
+        chatContainer.addEventListener('click', (event) => {
+             // Check if the click occurred within the bubble state and not on the header/close button when chat is open
+             if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open') && !chatHeader.contains(event.target)) {
                  document.body.classList.add('chat-open');
              }
         });
 
-        // Close chat when clicking the header on mobile
-        chatHeader.addEventListener('click', () => {
+        // Use the dedicated close button in the header to CLOSE on mobile
+        closeChatBtn.addEventListener('click', () => {
              if (window.innerWidth <= 768 && document.body.classList.contains('chat-open')) {
-                 // If on mobile and chat is open, close it
                  document.body.classList.remove('chat-open');
              }
         });
