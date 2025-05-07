@@ -2,1734 +2,532 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>DegenDice</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=DynaPuff&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DegenDice - Slotana Style</title>
     <style>
-        /* CSS Variables for consistent styling */
         :root {
-            --vh: 1vh; /* Custom variable for viewport height */
-            --wcm-color-fg-1: #FFFFFF; /* Primary foreground color */
-            --wcm-color-fg-2: #B0B0B0; /* Secondary foreground color */
-            --wcm-color-bg-1: #0A0A0A; /* Primary background color */
-            --wcm-accent-color: #00D4FF; /* Accent color (e.g., for highlights) */
-            --wcm-success-color: #00FF99; /* Success color */
-            --wcm-error-color: #EF4444; /* Error color */
-            --wcm-font-family: 'Inter', sans-serif; /* Primary font */
-            --wcm-decorative-font-family: 'DynaPuff', sans-serif; /* Decorative font */
-            --wcm-text-big-bold-size: 24px; /* Large text size */
-            --wcm-text-medium-regular-size: 14px; /* Medium text size */
-            --wcm-button-border-radius: 12px; /* Button border radius */
-            --wcm-transition-speed: 0.3s; /* UI transition speed */
-            --site-max-width: 750px; /* Max width for main content on larger screens */
-            --header-height: 60px; /* Fixed height for the header */
-            --footer-height: 100px; /* Approximate height for the footer */
+            --bg-dark: #0A0A0A;
+            --accent-pink: #FF3366;
+            --accent-green: #00FF99;
+            --text-light: #FFFFFF;
+            --radius-md: 12px;
+            --radius-sm: 6px;
+            --shadow-glow: 0 0 10px;
         }
-
-        /* Base body styling */
+        
         body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
             margin: 0;
             padding: 0;
-            font-family: var(--wcm-font-family);
-            background: radial-gradient(circle at center, #1A1A1A 0%, var(--wcm-color-bg-1) 80%); /* Radial background gradient */
-            color: var(--wcm-color-fg-1);
-            overflow-y: auto; /* Allow vertical scrolling */
-            height: 100dvh; /* Use dynamic viewport height */
-            width: 100%;
-            position: relative; /* Change from fixed to relative for scrolling */
-            box-sizing: border-box;
-            overscroll-behavior-y: contain; /* Prevent pull-to-refresh */
-        }
-
-        /* Utility classes */
-        .hidden { display: none !important; }
-        .flex { display: flex !important; }
-        .grid { display: grid !important; }
-
-        /* Custom scrollbar styling */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 0.375rem;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #333;
-            border-radius: 0.1875rem;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #555;
-            border-radius: 0.1875rem;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #777;
-        }
-
-        /* Main content container */
-        .main-container {
-            width: 100%;
-            max-width: var(--site-max-width); /* Max width for content */
-            margin: 0 auto; /* Center the container */
-            padding: var(--header-height) 16px var(--footer-height); /* Padding to avoid header/footer */
-            box-sizing: border-box;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            min-height: 100vh; /* Ensure container takes at least full viewport height */
         }
-
-
-        /* Top bar styling */
-        #top-bar {
-            height: var(--header-height);
-            padding: 0 16px;
-            background: rgba(0, 0, 0, 0.95); /* Semi-transparent dark background */
-            display: grid;
-            grid-template-columns: auto 1fr auto; /* Wallet info, ticker, menu icon */
-            align-items: center;
-            gap: 12px;
-            position: fixed; /* Keep header fixed */
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100; /* Ensure it's on top */
-            box-sizing: border-box;
-            /* Safe area insets for mobile */
-            padding-left: calc(16px + env(safe-area-inset-left));
-            padding-right: calc(16px + env(safe-area-inset-right));
-        }
-
-        /* Wallet info section */
-        .wallet-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: var(--wcm-text-medium-regular-size);
-        }
-
-        /* XP progress section */
-        .xp-progress {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            font-size: var(--wcm-text-medium-regular-size);
-        }
-
-        /* XP bar container */
-        .xp-bar-container {
-            width: 6rem; /* Adjusted width */
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1); /* Light grey transparent background */
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 0 4px; /* Adjusted margin */
-            position: relative; /* Changed to relative */
-            display: inline-block; /* Allow side-by-side with text */
-            vertical-align: middle; /* Align with text */
-        }
-
-        /* XP bar fill */
-        .xp-bar-fill {
-            height: 100%;
-            width: 0%; /* Initial width */
-            background: linear-gradient(90deg, #00D4FF, #FFD700); /* Gradient fill */
-            transition: width 0.5s ease-in-out; /* Smooth transition for width change */
-        }
-
-        /* Ticker for recent plays */
-        .ticker {
-            overflow: hidden;
-            white-space: nowrap;
-            width: 12rem;
-            font-size: var(--wcm-text-medium-regular-size);
-            color: var(--wcm-color-fg-2);
-        }
-
-        /* Ticker content animation */
-        .ticker span {
-            display: inline-block;
-            padding-left: 100%;
-            animation: slide-left 15s linear infinite; /* Animation for horizontal scrolling */
-        }
-
-        /* Keyframes for ticker animation */
-        @keyframes slide-left {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-
-        /* Menu icon styling */
-        .menu-icon {
-            width: 1.5rem;
-            height: 1.5rem;
-            cursor: pointer;
-            fill: var(--wcm-color-fg-1);
-            min-width: 2.75rem; /* Ensure tap target size */
-            min-height: 2.75rem;
-            padding: 0.5rem;
-        }
-
-        /* Game table area (now part of main-container) */
-        #game-area {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 0; /* Add some vertical padding */
-            background: rgba(0, 0, 0, 0.3); /* Subtle background */
-            border-radius: var(--wcm-button-border-radius);
-            margin-bottom: 2rem; /* Space below game area */
-        }
-
-
-        /* Container for dice display */
-        #dice-display-container {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            height: 8rem; /* Fixed height for consistent layout */
-        }
-
-        /* Individual dice styling */
-        .dice {
-            width: 6rem;
-            height: 6rem;
-            background: #FFFFFF;
-            border-radius: var(--wcm-button-border-radius);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 4rem;
-            color: #000000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
-            animation: rollDice 1s ease-out; /* Animation for dice roll */
-        }
-
-        /* Keyframes for dice roll animation */
-        @keyframes rollDice {
-            0% { transform: translateY(-20px) rotate(0deg) scale(0.8); opacity: 0.5; }
-            50% { transform: translateY(0) rotate(180deg) scale(1.1); opacity: 1; }
-            100% { transform: translateY(0) rotate(360deg) scale(1); opacity: 1; }
-        }
-
-        /* Dice result display styling */
-        #dice-result-display {
-            font-family: var(--wcm-decorative-font-family);
-            font-size: var(--wcm-text-big-bold-size);
-            color: #FFD700; /* Gold color */
-            text-shadow: 0 0 1rem rgba(255, 215, 0, 0.8); /* Glow effect */
-            margin-top: 1rem;
-        }
-
-        /* Betting controls container */
-        #dice-betting-controls {
-            width: 100%;
-            max-width: 30rem; /* Adjusted max width */
-            margin: 1rem auto; /* Adjusted margin */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        
+        header {
+            background: linear-gradient(145deg, rgba(255, 51, 102, 0.2), rgba(0, 255, 153, 0.1));
             padding: 1rem;
-            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-            border-radius: var(--wcm-button-border-radius);
-            gap: 1rem;
-        }
-
-        /* Roll under selector styling */
-        .roll-under-selector {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            width: 100%; /* Take full width */
-            justify-content: space-between; /* Distribute items */
-        }
-
-        /* Roll under label */
-        .roll-under-selector label {
-            font-size: var(--wcm-text-medium-regular-size);
-            color: var(--wcm-color-fg-1);
-        }
-
-        /* Roll under slider styling */
-        .roll-under-selector input[type="range"] {
-            flex-grow: 1; /* Allow slider to take available space */
-            margin: 0 0.5rem; /* Add horizontal margin */
-            accent-color: var(--wcm-accent-color); /* Accent color for slider thumb */
-            background: linear-gradient(to right, #3396FF, #FF3366); /* Gradient track */
-        }
-
-        /* Roll under value display */
-        .roll-under-selector span {
-            font-size: var(--wcm-text-medium-regular-size);
-            color: #FFD700; /* Gold color */
-            min-width: 2rem; /* Prevent text from shrinking too much */
-            text-align: right; /* Align text to the right */
-        }
-
-        /* Multiplier display styling */
-        #multiplier-display {
-            font-size: 24px;
-            color: #FFD700; /* Gold color */
-            text-shadow: 0 0 10px #FFD700; /* Glow effect */
-            animation: scale 0.3s ease; /* Animation for multiplier change */
-            margin-top: 0.5rem; /* Space above multiplier */
-        }
-
-        /* Keyframes for scale animation */
-        @keyframes scale {
-            0% { transform: scale(0.8); }
-            100% { transform: scale(1); }
-        }
-
-        /* Player seats container */
-        #player-seats {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin-top: 1rem;
-            flex-wrap: wrap; /* Wrap players on smaller screens */
-            gap: 0.5rem;
-            padding: 0 1rem; /* Add horizontal padding */
-            box-sizing: border-box;
-        }
-
-        /* Individual player seat styling */
-        .player-seat {
-            max-width: 10rem; /* Max width for each seat */
-            flex: 1 1 auto; /* Allow seats to grow and shrink */
-            min-width: 8rem; /* Minimum width for seats */
-            padding: 0.5rem;
-            background: #2A2A2A; /* Dark grey background */
-            border-radius: var(--wcm-button-border-radius);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 2px solid #FFD700; /* Gold border */
-            box-shadow: inset 0 0 5px #00D4FF; /* Inner glow effect */
-            animation: fade-in 0.3s ease-in-out; /* Fade-in animation */
-            text-align: center; /* Center text within seat */
-        }
-
-        /* Keyframes for fade-in animation */
-        @keyframes fade-in {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        /* Player info section within a seat */
-        .player-info {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Avatar styling */
-        .avatar {
-            width: 2rem;
-            height: 2rem;
-            background: #00D4FF; /* Accent color background */
-            border-radius: var(--wcm-button-border-radius);
-            margin-right: 0.25rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1rem;
-            animation: pop-in 0.3s ease-out; /* Pop-in animation for avatar */
-        }
-
-        /* Keyframes for pop-in animation */
-        @keyframes pop-in {
-            0% { transform: scale(0); }
-            80% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        /* Username styling */
-        .username {
-            font-size: var(--wcm-text-medium-regular-size);
-            color: var(--wcm-color-fg-1);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis; /* Truncate long usernames */
-        }
-
-        /* XP badge styling */
-        .xp-badge {
-            background: #FFD700; /* Gold background */
-            color: #000000; /* Black text */
-            font-size: 12px;
-            padding: 0.125rem 0.375rem;
-            border-radius: var(--wcm-button-border-radius);
-            margin-left: 0.25rem;
-        }
-
-        /* Game History Section */
-        #game-history {
-            width: 100%;
-            max-width: var(--site-max-width); /* Match main container width */
-            margin: 2rem auto; /* Space above and below */
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: var(--wcm-button-border-radius);
-            box-sizing: border-box;
-        }
-
-        #game-history h4 {
-            font-family: var(--wcm-decorative-font-family);
-            font-size: var(--wcm-text-big-bold-size);
-            color: var(--wcm-accent-color);
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        /* Placeholder for tabs (basic styling) */
-        .history-tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .history-tabs button {
-            background: none;
-            border: none;
-            color: var(--wcm-color-fg-2);
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            font-size: var(--wcm-text-medium-regular-size);
-            transition: color var(--wcm-transition-speed);
-        }
-
-        .history-tabs button.active {
-            color: var(--wcm-color-fg-1);
-            border-bottom: 2px solid var(--wcm-accent-color);
-        }
-
-        /* Recent Plays List (basic styling) */
-        #recent-plays-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            font-size: var(--wcm-text-medium-regular-size);
-            color: var(--wcm-color-fg-2);
-        }
-
-        #recent-plays-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-        }
-
-        #recent-plays-list li:last-child {
-            border-bottom: none;
-        }
-
-
-        /* Bottom bar styling */
-        #bottom-bar {
-            position: fixed; /* Keep bottom bar fixed */
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.95); /* Semi-transparent dark background */
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            z-index: 90; /* Below top bar */
-            box-sizing: border-box;
-            /* Safe area insets for mobile */
-            padding-bottom: calc(16px + env(safe-area-inset-bottom));
-            padding-left: calc(16px + env(safe-area-inset-left));
-            padding-right: calc(16px + env(safe-area-inset-right));
-        }
-
-        /* Betting controls in bottom bar */
-        #betting-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap; /* Wrap controls on smaller screens */
-            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        /* Chip selection buttons container */
-        .chip-selection-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap; /* Wrap chips on smaller screens */
+        
+        .wallet-info {
+            font-weight: 400;
+            font-size: 14px;
         }
-
-        /* Individual chip button styling */
-        .chip-button {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%; /* Make them round */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--wcm-text-medium-regular-size);
-            color: var(--wcm-color-fg-1);
-            border: none;
-            cursor: pointer;
-            transition: transform var(--wcm-transition-speed) ease-in-out; /* Transform on hover */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
-        }
-
-        /* Chip button hover effect */
-        .chip-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 8px var(--wcm-accent-color); /* Glow effect on hover */
-        }
-
-        /* Chip button active (pressed) state */
-        .chip-button:active {
-            transform: scale(0.95);
-        }
-
-        /* Specific chip colors */
-        .chip-button.silver { background: #C0C0C0; color: #333; }
-        .chip-button.blue { background: #4169E1; color: #FFFFFF; }
-        .chip-button.gold { background: #FFD700; color: #333; }
-        .chip-button.red { background: #DC143C; color: #FFFFFF; }
-        .chip-button.black { background: #000000; color: #FFD700; }
-
-        /* Active chip button styling */
-        .chip-button.active {
-            border: 2px solid #FFD700; /* Gold border for active chip */
-            animation: pulseChip 1.5s infinite; /* Pulsing animation */
-        }
-
-        /* Keyframes for chip pulse animation */
-        @keyframes pulseChip {
-            0%, 100% { box-shadow: 0 0 5px #FFD700; }
-            50% { box-shadow: 0 0 10px #FFD700; }
-        }
-
-        /* Action button styling (Clear, Roll) */
-        .action-button {
-            height: 48px;
-            border-radius: var(--wcm-button-border-radius);
-            font-size: var(--wcm-text-medium-regular-size);
-            border: none;
-            cursor: pointer;
-            transition: background-color var(--wcm-transition-speed) ease-in-out;
-            padding: 0 15px; /* Add padding */
-        }
-
-         /* Action button hover effect */
-        .action-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 8px var(--wcm-accent-color);
-        }
-
-        /* Clear button specific style */
-        .clear-button {
-            background: #FF3D00; /* Reddish color */
-            color: #FFFFFF;
-        }
-
-        /* Roll button specific style */
-        .roll-button {
-            background: #10B981; /* Greenish color */
-            color: #FFFFFF;
-        }
-
-        /* Chat container styling */
-        .chat-container {
-            width: 18.75rem; /* Fixed width for desktop */
-            max-width: 100%;
-            height: 7.5rem; /* Fixed height for desktop */
-            background: rgba(26, 26, 26, 0.8); /* Semi-transparent dark background */
-            border-radius: var(--wcm-button-border-radius);
-            padding: 0.625rem;
+        
+        .game-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            margin-left: 1rem; /* Spacing from other controls */
-        }
-
-        /* Chat feed area */
-        .chat-feed {
-            flex-grow: 1; /* Take available space */
-            overflow-y: auto; /* Enable vertical scrolling */
-            font-size: var(--wcm-text-medium-regular-size);
-            color: var(--wcm-color-fg-2);
-            padding-right: 0.3125rem;
-        }
-
-        /* Individual chat message styling */
-        .chat-message {
-            margin-bottom: 0.1875rem;
-            word-break: break-word; /* Break long words */
-        }
-
-        /* Chat sender name styling */
-        .chat-sender {
-            font-weight: bold;
-            color: var(--wcm-accent-color); /* Accent color for sender */
-            margin-right: 0.3125rem;
-        }
-
-        /* Chat input area */
-        .chat-input-area {
-            display: flex;
             align-items: center;
-            margin-top: 0.3125rem;
+            justify-content: center;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
         }
-
-        /* Chat input field */
-        .chat-input-area input[type="text"] {
-            flex-grow: 1;
-            padding: 0.625rem;
-            border: none;
-            border-radius: var(--wcm-button-border-radius) 0 0 var(--wcm-button-border-radius);
-            background: #333; /* Dark grey background */
-            color: var(--wcm-color-fg-1);
-            font-size: var(--wcm-text-medium-regular-size);
+        
+        .dice-area {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .dice {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: var(--bg-dark);
+            box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .controls {
+            background: rgba(20, 20, 20, 0.8);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, var(--accent-pink), var(--accent-green));
+            border-radius: 4px;
             outline: none;
-            min-height: 3rem; /* Ensure minimum height for tapping */
         }
-
-        /* Chat send button */
-        .chat-input-area button {
-            padding: 0.625rem 0.9375rem;
-            border: none;
-            border-radius: 0 var(--wcm-button-border-radius) var(--wcm-button-border-radius) 0;
-            background: var(--wcm-accent-color);
-            color: #FFFFFF;
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--text-light);
+            border-radius: 50%;
             cursor: pointer;
-            font-size: var(--wcm-text-medium-regular-size);
-            min-height: 3rem; /* Ensure minimum height for tapping */
+            box-shadow: var(--shadow-glow) var(--accent-pink);
         }
-
-        /* Win overlay styling */
-        #win-overlay {
+        
+        .multiplier-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--accent-green);
+            text-shadow: var(--shadow-glow) var(--accent-green);
+        }
+        
+        .bet-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .roll-btn {
+            background-color: var(--accent-pink);
+            color: white;
+        }
+        
+        .roll-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-glow) var(--accent-pink);
+        }
+        
+        .chip-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            flex: 1;
+        }
+        
+        .chip-btn.active {
+            background-color: var(--accent-pink);
+            box-shadow: var(--shadow-glow) var(--accent-pink);
+        }
+        
+        .result-display {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            text-align: center;
+            min-height: 3rem;
+        }
+        
+        .win {
+            color: var(--accent-green);
+            animation: scale 0.5s;
+        }
+        
+        .loss {
+            color: var(--accent-pink);
+            animation: shake 0.3s;
+        }
+        
+        @keyframes scale {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .win-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 255, 153, 0.3); /* Semi-transparent green background */
-            font-size: 72px;
-            color: var(--wcm-success-color);
+            background: rgba(0, 255, 153, 0.3);
             display: flex;
-            align-items: center;
             justify-content: center;
-            z-index: 1000; /* Ensure it's on top */
-            animation: fadeInOut 2s ease; /* Fade in and out animation */
-            pointer-events: none; /* Allow clicks to pass through */
+            align-items: center;
+            font-size: 72px;
+            color: var(--accent-green);
+            animation: flash 0.5s;
+            pointer-events: none;
+            z-index: 100;
         }
-
-        /* Keyframes for fade in/out animation */
-        @keyframes fadeInOut {
+        
+        @keyframes flash {
             0% { opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
+            50% { opacity: 1; }
             100% { opacity: 0; }
         }
-
-        /* Streak modal styling */
-        #streak-modal {
+        
+        .streak-popup {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* Center the modal */
-            background: rgba(0, 0, 0, 0.8); /* Semi-transparent dark background */
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            border-radius: var(--radius-md);
             font-size: 48px;
-            color: #FF3366; /* Reddish color */
-            padding: 20px;
-            border-radius: var(--wcm-button-border-radius);
-            z-index: 1000;
-            animation: scale 0.5s ease; /* Scale animation */
+            color: var(--accent-pink);
+            animation: scale 0.5s;
+            z-index: 101;
         }
-
-        /* Confetti canvas styling */
+        
+        .recent-wins {
+            position: fixed;
+            bottom: 1rem;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 0;
+        }
+        
+        .recent-wins span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: slide-left 15s linear infinite;
+        }
+        
+        @keyframes slide-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        .hot-streak {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-pink);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
         #confetti-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Allow clicks to pass through */
-            z-index: 10; /* Below overlays */
-        }
-
-        /* Coin animation styling */
-        .coin {
-            position: fixed;
-            width: 1.25rem;
-            height: 1.25rem;
-            background: #FFD700; /* Gold color */
-            border-radius: 50%; /* Make it round */
-            z-index: 20; /* Above confetti */
-            animation: coin-fall 2s ease-in forwards; /* Coin falling animation */
-        }
-
-        /* Keyframes for coin fall animation */
-        @keyframes coin-fall {
-            0% { transform: translateY(-100vh) translateX(0) rotate(0deg); opacity: 0.5; }
-            100% { transform: translateY(100vh) translateX(var(--end-x, 0)) rotate(var(--end-rotate, 360deg)); opacity: 0; }
-        }
-
-        /* Tutorial modal styling */
-        #tutorial-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* Center the modal */
-            background: #1A1A1A; /* Dark background */
-            padding: 24px;
-            border-radius: var(--wcm-button-border-radius);
-            z-index: 1000;
-            color: var(--wcm-color-fg-1);
-            max-width: 90%;
-            text-align: center;
-        }
-
-        /* Tutorial modal button */
-        #tutorial-modal button {
-            background: var(--wcm-accent-color);
-            color: #FFFFFF;
-            padding: 10px 20px;
-            border: none;
-            border-radius: var(--wcm-button-border-radius);
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        /* Toast notification styling */
-        #toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--wcm-error-color); /* Error color background */
-            padding: 12px;
-            border-radius: var(--wcm-button-border-radius);
-            color: #FFFFFF;
-            z-index: 1000;
-            animation: slide-up 0.5s ease; /* Slide up animation */
-        }
-
-        /* Keyframes for slide up animation */
-        @keyframes slide-up {
-            0% { transform: translateY(20px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Footer Styling */
-        #footer {
-            width: 100%;
-            max-width: var(--site-max-width); /* Match main container width */
-            margin: 0 auto;
-            padding: 1rem 16px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(0, 0, 0, 0.95); /* Match top bar background */
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        #footer .footer-links {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        #footer .footer-links a {
-            color: var(--wcm-color-fg-2);
-            text-decoration: none;
-            font-size: var(--wcm-text-medium-regular-size);
-            transition: color var(--wcm-transition-speed);
-        }
-
-        #footer .footer-links a:hover {
-            color: var(--wcm-color-fg-1);
-            text-decoration: underline;
-        }
-
-        #footer .footer-social {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        #footer .footer-social .social-icon {
-            color: var(--wcm-color-fg-2);
-            font-size: 1.5rem;
-            transition: color var(--wcm-transition-speed);
-        }
-
-        #footer .footer-social .social-icon:hover {
-            color: var(--wcm-accent-color);
-        }
-
-        #footer .footer-copyright {
-            font-size: 12px;
-            color: var(--wcm-color-fg-2);
-        }
-
-
-        /* Responsive adjustments for smaller screens */
-        @media (max-width: 768px) {
-            .main-container {
-                 padding: var(--header-height) 8px var(--footer-height); /* Adjusted padding for mobile */
-            }
-
-            #dice-display-container { gap: 1rem; height: 6rem; margin-bottom: 1rem; }
-            .dice { width: 4rem; height: 4rem; font-size: 3rem; }
-            #dice-result-display { font-size: 2rem; }
-
-            #dice-betting-controls {
-                max-width: 100%; /* Allow controls to take full width */
-                padding: 0.8rem; /* Adjusted padding */
-            }
-
-            .roll-under-selector {
-                flex-direction: column; /* Stack elements vertically */
-                gap: 0.5rem; /* Adjusted gap */
-                align-items: flex-start; /* Align items to the start */
-            }
-
-            .roll-under-selector input[type="range"] {
-                width: 100%; /* Full width slider */
-                margin: 0; /* Remove horizontal margin */
-            }
-
-             .roll-under-selector label,
-             .roll-under-selector span {
-                 width: auto; /* Allow text to take necessary width */
-                 text-align: left; /* Align text to the left */
-             }
-
-
-            .player-seat {
-                flex: 1 1 45%; /* Allow 2 seats per row on small screens */
-                max-width: 48%; /* Max width to prevent overflow */
-                min-width: unset; /* Remove minimum width constraint */
-            }
-
-            .chat-container {
-                width: 100%;
-                height: 50vh; /* Take up half the viewport height */
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                border-radius: 8px 8px 0 0; /* Rounded top corners */
-                transform: translateY(100%); /* Initially hidden below screen */
-                transition: transform var(--wcm-transition-speed) ease-in-out; /* Slide animation */
-                margin-left: 0; /* Remove left margin on mobile */
-                padding-bottom: calc(0.625rem + env(safe-area-inset-bottom)); /* Safe area for chat input */
-            }
-            .chat-container.active { transform: translateY(0); } /* Slide up when active */
-            #toggle-chat {
-                position: fixed;
-                bottom: calc(1rem + env(safe-area-inset-bottom));
-                right: calc(1rem + env(safe-area-inset-right));
-                padding: 8px 15px;
-                border: none;
-                border-radius: 5px;
-                background: var(--wcm-accent-color);
-                color: #FFFFFF;
-                cursor: pointer;
-                z-index: 100; /* Above bottom bar */
-            }
-
-            #betting-controls {
-                flex-direction: column; /* Stack betting controls vertically */
-                align-items: stretch; /* Stretch items to fill width */
-            }
-
-            .chip-selection-buttons {
-                justify-content: center; /* Center chips */
-            }
-
-            .action-button {
-                width: 100%; /* Full width buttons */
-            }
-
-            #footer {
-                padding: 1rem 8px; /* Adjusted padding for mobile */
-            }
+            pointer-events: none;
+            z-index: 99;
         }
     </style>
 </head>
 <body>
-    <div id="top-bar">
+    <header>
         <div class="wallet-info">
-            <span id="wallet-address">Not Connected</span>
-            <span id="wallet-balance">-- SOL</span>
-            <button id="connect-wallet-button" aria-label="Connect wallet">Connect Wallet</button>
-            <button id="disconnect-wallet-button" class="hidden" aria-label="Disconnect wallet">Disconnect</button>
+            Wallet: Not connected
         </div>
-        <div class="xp-progress">
-            <span id="user-level">Level 1</span>
-            <div class="xp-bar-container">
-                <div id="xp-bar-fill" class="xp-bar-fill"></div>
-            </div>
-            <span id="user-xp">0/100 XP</span>
+        <div class="hot-streak">
+            🔥 Hot Streak! 5 Wins
         </div>
-        <div class="ticker">
-            <span id="recent-plays-ticker">No recent plays...</span>
+    </header>
+    
+    <div class="game-container">
+        <div class="dice-area">
+            <div class="dice" id="die1">1</div>
+            <div class="dice" id="die2">1</div>
         </div>
-    </div>
-
-    <div class="main-container">
-        <div id="game-area">
-            <div id="dice-display-container">
-                <div id="die-1" class="dice"></div>
-                <div id="die-2" class="dice"></div>
-            </div>
-            <div id="dice-result-display">Roll: --</div>
-            <div id="dice-betting-controls">
-                <div class="roll-under-selector">
-                    <label for="roll-under-slider">Roll Under:</label>
-                    <input type="range" id="roll-under-slider" min="3" max="11" step="1" value="7" aria-label="Select roll under number">
+        
+        <div class="result-display" id="result"></div>
+        
+        <div class="controls">
+            <div class="slider-container">
+                <div class="slider-labels">
+                    <span>Roll Under:</span>
                     <span id="roll-under-value">7</span>
                 </div>
-                <div id="multiplier-display">6x</div>
+                <input type="range" id="roll-under-slider" min="3" max="11" value="7" step="1">
             </div>
-             <div id="player-seats" class="player-seats" role="list"></div>
-        </div>
-
-        <div id="game-history">
-            <h4>Game History</h4>
-            <div class="history-tabs">
-                 <button class="active">RECENT PLAYS</button>
-                <button>LAST 7500 PLAYS</button>
-                <button>HALL OF FAME</button>
-                <button>ANALYTICS</button>
+            
+            <div class="multiplier-display" id="multiplier">
+                Payout: 6x
             </div>
-            <ul id="recent-plays-list">
-                 </ul>
-             <div style="text-align: center; margin-top: 1rem; font-size: var(--wcm-text-medium-regular-size); color: var(--wcm-color-fg-2);">
-                Rows per page: 10 | 1-10 / XXXX
+            
+            <div class="bet-controls">
+                <button class="chip-btn" data-value="0.01">0.01</button>
+                <button class="chip-btn" data-value="0.1">0.1</button>
+                <button class="chip-btn active" data-value="1">1</button>
+                <button class="chip-btn" data-value="5">5</button>
+                <button class="chip-btn" data-value="MAX">MAX</button>
             </div>
-        </div>
-
-        <div style="text-align: center; margin-top: 2rem; font-size: var(--wcm-text-medium-regular-size); color: var(--wcm-color-fg-1);">
-            WINS: XXXX | LOSSES: XXXX | SLA TOKENS GIVEN AWAY: XXXX
-        </div>
-
-         <div class="footer-links" style="margin-top: 2rem;">
-            <a href="#">WHAT IS DEGEN DICE?</a>
-            <span>•</span>
-            <a href="#">DEGEN TOKEN</a>
-        </div>
-
-    </div> <div id="bottom-bar">
-        <div id="betting-controls">
-             <span id="current-bet-display">Chip Value: 0.01 SOL</span>
-            <div class="chip-selection-buttons" role="group" aria-label="Select chip value">
-                <button data-chip-value="0.01" class="chip-button silver active" aria-label="Select 0.01 SOL chip" tabindex="0">0.01</button>
-                <button data-chip-value="0.1" class="chip-button blue" aria-label="Select 0.1 SOL chip" tabindex="0">0.1</button>
-                <button data-chip-value="1" class="chip-button gold" aria-label="Select 1 SOL chip" tabindex="0">1</button>
-                <button data-chip-value="5" class="chip-button red" aria-label="Select 5 SOL chip" tabindex="0">5</button>
-                <button data-chip-value="MAX" class="chip-button black" aria-label="Select MAX chip" tabindex="0">MAX</button>
-            </div>
-            <button id="clear-bets-button" class="action-button clear-button" aria-label="Clear bets" tabindex="0">Clear</button>
-        </div>
-         <div class="chat-container">
-            <div id="chat-feed" class="chat-feed custom-scrollbar" role="log" aria-live="polite"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Type message..." aria-label="Chat input">
-                <button id="send-chat-button" aria-label="Send chat message">Send</button>
-            </div>
-        </div>
-        <button id="toggle-chat" class="hidden" aria-label="Toggle chat visibility" tabindex="0">Chat</button>
-         <button id="roll-button" class="action-button roll-button hidden" aria-label="Roll the dice" tabindex="0">Roll!</button>
-    </div>
-
-    <div id="footer">
-        <div class="footer-links">
-            <a href="#">HOW TO PLAY?</a>
-             <span style="color: var(--wcm-color-fg-2);">•</span>
-            <a href="#">DEGEN TOKEN</a>
-        </div>
-        <div class="footer-social">
-             <a href="#" class="social-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="social-icon" aria-label="Discord"><i class="fab fa-discord"></i></a>
-             </div>
-        <div class="footer-copyright">
-            © 2025 DegenDice. All rights reserved.
+            
+            <button class="roll-btn" id="roll-button">ROLL</button>
         </div>
     </div>
-
-
-    <div id="win-overlay" class="hidden"></div>
-    <div id="streak-modal" class="hidden"></div>
-    <div id="tutorial-modal" class="hidden">
-        <h3>Welcome to DegenDice!</h3>
-        <p id="tutorial-step">Step 1: Select a number...</p>
-        <button id="next-step" aria-label="Next tutorial step">Next</button>
+    
+    <div class="recent-wins">
+        <span>Player1 won 2.5 SOL! • Player2 won 1.8 SOL! • Player3 won 5.2 SOL!</span>
     </div>
-    <div id="toast" class="hidden" role="alert" aria-live="assertive"></div>
+    
     <canvas id="confetti-canvas"></canvas>
-
-    <audio id="dice-roll-sound" src="https://example.com/dice-roll.mp3" preload="none"></audio>
-    <audio id="win-sound" src="https://example.com/win.mp3" preload="none"></audio>
-    <audio id="loss-sound" src="https://example.com/loss.mp3" preload="none"></audio>
-    <audio id="button-click-sound" src="https://example.com/button-click.mp3" preload="none"></audio>
-    <audio id="coin-drop-sound" src="https://example.com/coin-drop.mp3" preload="none"></audio>
-
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    
     <script>
-        // Constants for game configuration
-        const WS_RECONNECT_DELAY = 3000; // Delay before attempting WebSocket reconnect
-        const MAX_CHAT_MESSAGES = 50; // Maximum number of messages to display in chat
-        const XP_PER_LEVEL = 100; // XP required to level up
-        const DICE_ROLL_DURATION = 1000; // Duration of dice roll animation in milliseconds
-        const CHIP_VALUES = { 0.01: 'silver', 0.1: 'blue', 1: 'gold', 5: 'red', 'MAX': 'black' }; // Mapping chip values to CSS classes
-        const ROLL_UNDER_PAYOUTS = { // Payout multipliers for each roll under number
-            3: 35, 4: 17, 5: 11, 6: 8, 7: 6, 8: 5, 9: 4, 10: 3, 11: 2.5
+        // Game state
+        const state = {
+            rollUnder: 7,
+            chipValue: 1,
+            diceValues: [1, 1],
+            rollResult: null,
+            streak: 5,
+            payouts: {
+                3: 35,
+                4: 17,
+                5: 11,
+                6: 8,
+                7: 6,
+                8: 5,
+                9: 4,
+                10: 3,
+                11: 2.5
+            }
         };
-        const DICE_ICONS = { // Font Awesome classes for dice faces
-            1: 'fas fa-dice-one', 2: 'fas fa-dice-two', 3: 'fas fa-dice-three',
-            4: 'fas fa-dice-four', 5: 'fas fa-dice-five', 6: 'fas fa-dice-six'
-        };
-        const translations = { // Localization strings
-            en: { rollUnder: 'Roll Under', clear: 'Clear', roll: 'Roll!' },
-            es: { rollUnder: 'Rodar Bajo', clear: 'Limpiar', roll: '¡Rodar!' }
-        };
-
-        // Game state object to hold all dynamic data
-        const gameState = {
-            walletAddress: null, // Connected wallet address
-            walletBalance: 0, // Wallet balance
-            userXP: parseInt(localStorage.getItem('userXP') || '0'), // User experience points (persisted in local storage)
-            userLevel: parseInt(localStorage.getItem('userLevel') || '1'), // User level (persisted in local storage)
-            diceValues: [1, 1], // Current values of the two dice
-            rollUnderNumber: 7, // The number the user is betting to roll under
-            currentChipValue: 0.01, // The value of the currently selected chip
-            currentBets: {}, // Object storing current bets placed by players
-            rollResult: null, // Result of the last dice roll
-            players: [], // Array of players currently at the table
-            isSpectator: false, // Flag indicating if the user is a spectator
-            isSeated: false, // Flag indicating if the user is seated at the table
-            websocket: null, // WebSocket connection object
-            websocketReconnectAttempts: 0, // Counter for WebSocket reconnect attempts
-            websocketMaxReconnectAttempts: 10, // Maximum allowed WebSocket reconnect attempts
-            chatMessages: [], // Array of recent chat messages
-            recentPlays: [], // Array of recent game results for the ticker and history list
-            streakCount: 0, // Consecutive wins streak counter
-            chatVisible: window.innerWidth > 768, // Initial chat visibility based on screen width
-            language: 'en', // Current language setting
-            confettiCanvas: null, // Confetti canvas element
-            confettiCtx: null, // 2D rendering context for confetti canvas
-            achievements: [{ id: 'roll-master', goal: 100, reward: '0.1 SOL', progress: 0 }], // User achievements
-            challenges: [{ id: 'roll-under-5', goal: 3, reward: '0.1 SOL', progress: 0 }], // User challenges
-        };
-
-        // DOM elements object for easy access
-        const dom = {
-            walletAddress: document.getElementById('wallet-address'),
-            walletBalance: document.getElementById('wallet-balance'),
-            connectWalletButton: document.getElementById('connect-wallet-button'),
-            disconnectWalletButton: document.getElementById('disconnect-wallet-button'),
-            userLevel: document.getElementById('user-level'),
-            xpBarFill: document.getElementById('xp-bar-fill'),
-            userXP: document.getElementById('user-xp'),
-            recentPlaysTicker: document.getElementById('recent-plays-ticker'),
-            die1: document.getElementById('die-1'),
-            die2: document.getElementById('die-2'),
-            diceResultDisplay: document.getElementById('dice-result-display'),
-            rollUnderSlider: document.getElementById('roll-under-slider'),
-            rollUnderValue: document.getElementById('roll-under-value'),
-            multiplierDisplay: document.getElementById('multiplier-display'),
-            chipSelectionButtons: document.querySelectorAll('.chip-selection-buttons button'),
-            clearBetsButton: document.getElementById('clear-bets-button'),
-            rollButton: document.getElementById('roll-button'),
-            playerSeats: document.getElementById('player-seats'),
-            currentBetDisplay: document.getElementById('current-bet-display'),
-            chatContainer: document.querySelector('.chat-container'),
-            chatFeed: document.getElementById('chat-feed'),
-            chatInput: document.getElementById('chat-input'),
-            sendChatButton: document.getElementById('send-chat-button'),
-            toggleChatButton: document.getElementById('toggle-chat'),
-            winOverlay: document.getElementById('win-overlay'),
-            streakModal: document.getElementById('streak-modal'),
-            tutorialModal: document.getElementById('tutorial-modal'),
-            tutorialStep: document.getElementById('tutorial-step'),
-            nextStepButton: document.getElementById('next-step'),
-            toast: document.getElementById('toast'),
-            confettiCanvas: document.getElementById('confetti-canvas'),
-            diceRollSound: document.getElementById('dice-roll-sound'),
-            winSound: document.getElementById('win-sound'),
-            lossSound: document.getElementById('loss-sound'),
-            buttonClickSound: document.getElementById('button-click-sound'),
-            coinDropSound: document.getElementById('coin-drop-sound'),
-            recentPlaysList: document.getElementById('recent-plays-list'), // Added recent plays list element
-        };
-
-        // Initialize the game on DOM load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Setup confetti canvas size and context
-            dom.confettiCanvas.width = window.innerWidth;
-            dom.confettiCanvas.height = window.innerHeight;
-            dom.confettiCtx = dom.confettiCanvas.getContext('2d');
-            // Resize confetti canvas on window resize
-            window.addEventListener('resize', () => {
-                dom.confettiCanvas.width = window.innerWidth;
-                dom.confettiCanvas.height = window.innerHeight;
-            });
-
-            // Initial UI update
-            updateUI();
-            // Setup all event listeners
-            setupEventListeners();
-            // Check if wallet can be auto-connected
-            checkAutoConnectWallet();
-            // Connect to the game WebSocket server
-            connectWebSocket();
-            // Show tutorial if not completed
-            showTutorial();
+        
+        // DOM elements
+        const die1 = document.getElementById('die1');
+        const die2 = document.getElementById('die2');
+        const resultDisplay = document.getElementById('result');
+        const rollUnderSlider = document.getElementById('roll-under-slider');
+        const rollUnderValue = document.getElementById('roll-under-value');
+        const multiplierDisplay = document.getElementById('multiplier');
+        const rollButton = document.getElementById('roll-button');
+        const chipButtons = document.querySelectorAll('.chip-btn');
+        
+        // Initialize
+        updateMultiplier();
+        
+        // Event listeners
+        rollUnderSlider.addEventListener('input', function() {
+            state.rollUnder = parseInt(this.value);
+            rollUnderValue.textContent = state.rollUnder;
+            updateMultiplier();
         });
-
-        // Check if the wallet can be auto-connected (e.g., Phantom wallet)
-        async function checkAutoConnectWallet() {
-            if (window.solana && window.solana.isConnected) {
-                try {
-                    // Attempt to connect silently
-                    await window.solana.connect({ onlyIfTrusted: true });
-                    // Handle successful connection
-                    handleWalletConnected(window.solana.publicKey);
-                } catch (error) {
-                    // Show toast if auto-connect fails
-                    showToast('Auto-connect failed. Please connect manually.');
-                }
-            }
-        }
-
-        // Function to connect the wallet
-        async function connectWallet() {
-            if (window.solana) { // Check if Solana wallet is available
-                try {
-                    // Request wallet connection
-                    const response = await window.solana.connect();
-                    // Handle successful connection
-                    handleWalletConnected(response.publicKey);
-                } catch (error) {
-                    // Show toast if connection fails
-                    showToast('Wallet connection failed: ' + error.message);
-                }
-            } else {
-                // Show toast if Solana wallet is not found
-                showToast('Solana wallet not found! Please install Phantom.');
-            }
-        }
-
-        // Function to disconnect the wallet
-        async function disconnectWallet() {
-            if (window.solana && window.solana.isConnected) {
-                // Request wallet disconnection
-                await window.solana.disconnect();
-                // Handle successful disconnection
-                handleWalletDisconnected();
-            }
-        }
-
-        // Handle wallet connected event
-        function handleWalletConnected(publicKey) {
-            gameState.walletAddress = publicKey.toBase58();
-            // Display truncated wallet address
-            dom.walletAddress.textContent = `${gameState.walletAddress.slice(0, 4)}...${gameState.walletAddress.slice(-4)}`;
-            // Toggle button visibility
-            dom.connectWalletButton.classList.add('hidden');
-            dom.disconnectWalletButton.classList.remove('hidden');
-            // Simulate fetching balance (replace with actual API call)
-            gameState.walletBalance = 10; // Dummy balance
-            dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
-            // Update UI after connection
-            updateUI();
-            // Send join message to WebSocket server
-            sendMessage({ type: 'joinDice', wallet: gameState.walletAddress });
-        }
-
-        // Handle wallet disconnected event
-        function handleWalletDisconnected() {
-            gameState.walletAddress = null;
-            gameState.walletBalance = 0;
-            // Reset wallet info display
-            dom.walletAddress.textContent = 'Not Connected';
-            dom.walletBalance.textContent = '-- SOL';
-            // Toggle button visibility
-            dom.connectWalletButton.classList.remove('hidden');
-            dom.disconnectWalletButton.classList.add('hidden');
-            // Update UI after disconnection
-            updateUI();
-        }
-
-        // Connect to the game WebSocket server
-        function connectWebSocket() {
-            // Replace with your actual WebSocket server URL
-            gameState.websocket = new WebSocket('wss://your-game-server-url');
-            // WebSocket on open event
-            gameState.websocket.onopen = () => {
-                gameState.websocketReconnectAttempts = 0; // Reset reconnect attempts
-                if (gameState.walletAddress) {
-                    // Send join message if wallet is connected
-                    sendMessage({ type: 'joinDice', wallet: gameState.walletAddress });
-                }
-            };
-            // WebSocket on message event
-            gameState.websocket.onmessage = (event) => {
-                const msg = JSON.parse(event.data);
-                // Handle incoming game events
-                handleGameEvent(msg);
-            };
-            // WebSocket on close event
-            gameState.websocket.onclose = (event) => {
-                // Attempt to reconnect if not a clean close and within max attempts
-                if (!event.wasClean && gameState.websocketReconnectAttempts < gameState.websocketMaxReconnectAttempts) {
-                    gameState.websocketReconnectAttempts++;
-                    setTimeout(connectWebSocket, WS_RECONNECT_DELAY);
-                } else if (!event.wasClean) {
-                    // Show toast if max reconnect attempts reached
-                    showToast('Lost connection to the game server.');
-                }
-            };
-             // WebSocket on error event
-            gameState.websocket.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                showToast('WebSocket error. Attempting to reconnect...');
-            };
-        }
-
-        // Send message to WebSocket server
-        function sendMessage(message) {
-            // Check if WebSocket is open before sending
-            if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) {
-                gameState.websocket.send(JSON.stringify(message));
-            } else {
-                // Show toast if WebSocket is not connected
-                showToast('Game server not connected.');
-            }
-        }
-
-        // Handle incoming game events from WebSocket
-        function handleGameEvent(msg) {
-            switch (msg.type) {
-                case 'table_state':
-                    // Update game state with table information
-                    gameState.players = msg.data.players;
-                    gameState.currentBets = msg.data.currentBets || {};
-                    gameState.rollResult = msg.data.rollResult || null;
-                    gameState.diceValues = msg.data.diceValues || [1, 1];
-                    gameState.isSeated = msg.data.isSeated;
-                    gameState.isSpectator = msg.data.isSpectator; // Assume isSpectator is sent in table_state
-                    updateUI(); // Update UI based on new state
-                    if (gameState.rollResult !== null) {
-                        // Render dice display if roll result is available
-                        renderDiceDisplay(gameState.diceValues);
-                        dom.diceResultDisplay.textContent = `Roll: ${gameState.rollResult}`;
-                    }
-                    break;
-                case 'roll_start':
-                    // Start dice roll animation and play sound
-                    animateDiceRoll(DICE_ROLL_DURATION);
-                    playSound(dom.diceRollSound);
-                    hideRollButton(); // Hide roll button during roll
-                    break;
-                case 'roll_result':
-                    // Update game state with roll result
-                    gameState.diceValues = msg.data.diceValues;
-                    gameState.rollResult = msg.data.rollResult;
-                    stopDiceAnimation(gameState.diceValues); // Stop animation and show final dice
-                    dom.diceResultDisplay.textContent = `Roll: ${gameState.rollResult}`;
-                    if (msg.data.userWon) {
-                        // Trigger win celebration and update streak/achievements
-                        triggerCelebration('win', msg.data.payout);
-                        gameState.streakCount++;
-                        if (gameState.streakCount >= 3) {
-                            dom.streakModal.textContent = `🔥 Streak x${gameState.streakCount}!`;
-                            dom.streakModal.classList.remove('hidden');
-                            setTimeout(() => dom.streakModal.classList.add('hidden'), 2000);
-                        }
-                        updateAchievements('roll');
-                        updateChallenges('roll-under-5', gameState.rollUnderNumber);
-                    } else {
-                        // Play loss sound and reset streak
-                        playSound(dom.lossSound);
-                        gameState.streakCount = 0;
-                    }
-                    // Add play to recent plays ticker and list
-                    gameState.recentPlays.push({
-                        rollUnder: gameState.rollUnderNumber,
-                        rollResult: gameState.rollResult,
-                        payout: msg.data.userWon ? msg.data.payout : 0,
-                        timestamp: new Date().toLocaleTimeString(), // Add timestamp
-                        player: gameState.walletAddress ? `${gameState.walletAddress.slice(0, 4)}...` : 'Anon' // Add player info
-                    });
-                    updateRecentPlaysTicker(); // Update the ticker display
-                    updateRecentPlaysList(); // Update the recent plays list
-                    showRollButton(); // Show roll button again
-                    break;
-                case 'chat_message':
-                    // Sanitize and add chat message to feed
-                    msg.data.message = sanitizeInput(msg.data.message);
-                    gameState.chatMessages.push(msg.data);
-                    addChatMessageToFeed(msg.data);
-                    break;
-                 case 'error':
-                    // Show error message as a toast
-                    showToast('Error: ' + msg.data.message);
-                    break;
-            }
-        }
-
-        // Sanitize user input to prevent XSS
-        function sanitizeInput(input) {
-            const div = document.createElement('div');
-            div.appendChild(document.createTextNode(input));
-            return div.innerHTML;
-        }
-
-        // Update all relevant UI elements
-        function updateUI() {
-            updateXPBar();
-            updateRecentPlaysTicker();
-            renderPlayerSeats();
-            updateBettingControls();
-            renderChatFeed();
-            updateChatContainerVisibility();
-            updateLanguage(gameState.language); // Update language specific text
-            updateMultiplierDisplay(gameState.rollUnderNumber);
-            updateRecentPlaysList(); // Ensure recent plays list is updated on UI refresh
-        }
-
-        // Update the XP bar and level display
-        function updateXPBar() {
-            dom.userLevel.textContent = `Level ${gameState.userLevel}`;
-            const xpProgress = gameState.userXP % XP_PER_LEVEL;
-            dom.xpBarFill.style.width = `${(xpProgress / XP_PER_LEVEL) * 100}%`; // Calculate width as percentage
-            dom.userXP.textContent = `${xpProgress}/${XP_PER_LEVEL} XP`;
-        }
-
-        // Update the recent plays ticker content
-        function updateRecentPlaysTicker() {
-            dom.recentPlaysTicker.innerHTML = ''; // Clear existing content
-            if (gameState.recentPlays.length === 0) {
-                dom.recentPlaysTicker.textContent = 'No recent plays...';
-                return;
-            }
-            const tickerContent = document.createElement('span');
-            // Limit ticker to a reasonable number of recent plays
-            const recentPlaysForTicker = gameState.recentPlays.slice(-10); // Show last 10 plays
-            recentPlaysForTicker.forEach(play => {
-                const span = document.createElement('span');
-                span.textContent = `Player ${play.player} rolled ${play.rollResult} under ${play.rollUnder} • Payout: ${play.payout.toFixed(2)} SOL • `;
-                tickerContent.appendChild(span);
-            });
-            dom.recentPlaysTicker.appendChild(tickerContent);
-            // Restart the animation
-            tickerContent.style.animation = 'none';
-            tickerContent.offsetHeight; // Trigger reflow
-            tickerContent.style.animation = `slide-left 15s linear infinite`;
-        }
-
-         // Update the recent plays list in the Game History section
-        function updateRecentPlaysList() {
-            dom.recentPlaysList.innerHTML = ''; // Clear existing list items
-             // Display recent plays in reverse order (most recent first)
-            const playsToShow = gameState.recentPlays.slice().reverse().slice(0, 10); // Show last 10 plays
-
-            if (playsToShow.length === 0) {
-                const listItem = document.createElement('li');
-                listItem.textContent = 'No recent plays yet.';
-                dom.recentPlaysList.appendChild(listItem);
-                return;
-            }
-
-            playsToShow.forEach(play => {
-                const listItem = document.createElement('li');
-                const outcome = play.payout > 0 ? `won ${play.payout.toFixed(2)} SOL` : `lost`;
-                 // Construct a more detailed message for the list
-                listItem.textContent = `${play.player} rolled ${play.rollResult} (under ${play.rollUnder}) and ${outcome} at ${play.timestamp}`;
-                dom.recentPlaysList.appendChild(listItem);
-            });
-        }
-
-
-        // Render the dice display with appropriate icons
-        function renderDiceDisplay(diceValues) {
-            dom.die1.className = 'dice'; // Reset classes
-            dom.die2.className = 'dice';
-            dom.die1.classList.add(DICE_ICONS[diceValues[0]]);
-            dom.die2.classList.add(DICE_ICONS[diceValues[1]]);
-        }
-
-        // Animate the dice roll
-        function animateDiceRoll(duration) {
-             // Restart animation by resetting and triggering reflow
-            dom.die1.style.animation = 'none';
-            dom.die1.offsetHeight;
-            dom.die1.style.animation = 'rollDice 1s ease-out';
-            dom.die2.style.animation = 'none';
-            dom.die2.offsetHeight;
-            dom.die2.style.animation = 'rollDice 1s ease-out';
-        }
-
-        // Stop dice animation and show final result
-        function stopDiceAnimation(finalDiceValues) {
-            dom.die1.style.animation = 'none';
-            dom.die2.style.animation = 'none';
-            renderDiceDisplay(finalDiceValues);
-        }
-
-        // Update the multiplier display based on roll under number
-        function updateMultiplierDisplay(rollUnder) {
-            const payout = ROLL_UNDER_PAYOUTS[rollUnder] || 0;
-            dom.multiplierDisplay.textContent = `${payout}x`;
-        }
-
-        // Render the player seats at the table
-        function renderPlayerSeats() {
-            dom.playerSeats.innerHTML = ''; // Clear existing seats
-            // Limit the number of displayed players to avoid clutter
-            const playersToShow = gameState.players.slice(0, 8); // Show up to 8 players
-
-            playersToShow.forEach(player => {
-                const seatElement = document.createElement('div');
-                seatElement.classList.add('player-seat');
-                if (player.id === gameState.walletAddress) {
-                    seatElement.classList.add('is-user'); // Highlight the current user's seat
-                }
-
-                const playerInfo = document.createElement('div');
-                playerInfo.classList.add('player-info');
-                const avatar = document.createElement('div');
-                avatar.classList.add('avatar');
-                avatar.textContent = player.avatar || '😊'; // Default avatar
-                const username = document.createElement('span');
-                username.classList.add('username');
-                username.textContent = player.name || 'Player'; // Default username
-                const xpBadge = document.createElement('span');
-                xpBadge.classList.add('xp-badge');
-                xpBadge.textContent = player.level || 1; // Default level
-                playerInfo.appendChild(avatar);
-                playerInfo.appendChild(username);
-                playerInfo.appendChild(xpBadge);
-                seatElement.appendChild(playerInfo);
-
-                // Display the player's current bet for the selected roll under number
-                const totalBetDisplay = document.createElement('div');
-                const rollUnderBet = player.bets ? (player.bets[`rollUnder_${gameState.rollUnderNumber}`] || 0) : 0;
-                totalBetDisplay.textContent = `Under ${gameState.rollUnderNumber}: ${rollUnderBet.toFixed(2)} SOL`;
-                totalBetDisplay.style.color = '#FFD700'; // Gold color for bet amount
-                seatElement.appendChild(totalBetDisplay);
-
-                dom.playerSeats.appendChild(seatElement);
-            });
-        }
-
-        // Update the state and appearance of betting controls
-        function updateBettingControls() {
-            dom.currentBetDisplay.textContent = `Chip Value: ${gameState.currentChipValue.toFixed(2)} SOL`;
-            // Update active state for chip buttons
-            dom.chipSelectionButtons.forEach(button => {
-                button.classList.remove('active');
-                const chipValue = button.dataset.chipValue;
-                if (chipValue === 'MAX' && gameState.currentChipValue === gameState.walletBalance) {
-                    button.classList.add('active');
-                } else if (parseFloat(chipValue) === gameState.currentChipValue) {
-                    button.classList.add('active');
-                }
-            });
-
-            // Disable controls if user is not seated or is a spectator
-            const canInteract = gameState.isSeated && !gameState.isSpectator;
-            dom.chipSelectionButtons.forEach(button => button.disabled = !canInteract);
-            dom.clearBetsButton.disabled = !canInteract;
-            dom.rollUnderSlider.disabled = !canInteract;
-            dom.chatInput.disabled = !canInteract;
-            dom.sendChatButton.disabled = !canInteract;
-
-            // Show roll button only if user is seated and not spectating
-             if (canInteract) {
-                showRollButton();
-            } else {
-                hideRollButton();
-            }
-        }
-
-        // Render the chat feed from the gameState
-        function renderChatFeed() {
-            dom.chatFeed.innerHTML = ''; // Clear existing messages
-            gameState.chatMessages.forEach(msg => {
-                addChatMessageToFeed(msg); // Add each message to the feed
-            });
-             // Scroll to the bottom of the chat feed
-            dom.chatFeed.scrollTop = dom.chatFeed.scrollHeight;
-        }
-
-        // Add a single chat message to the feed
-        function addChatMessageToFeed(msg) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message');
-            // Use innerHTML for sanitized content
-            messageElement.innerHTML = `<span class="chat-sender">[${msg.sender}]</span> ${msg.message}`;
-            dom.chatFeed.appendChild(messageElement);
-            // Remove oldest message if exceeding limit
-            if (dom.chatFeed.children.length > MAX_CHAT_MESSAGES) {
-                dom.chatFeed.removeChild(dom.chatFeed.firstChild);
-            }
-            // Scroll to the bottom
-            dom.chatFeed.scrollTop = dom.chatFeed.scrollHeight;
-        }
-
-        // Update the visibility of the chat container based on screen size and state
-        function updateChatContainerVisibility() {
-            if (window.innerWidth <= 768) {
-                // On small screens, chat is a sliding modal
-                dom.chatContainer.classList.toggle('active', gameState.chatVisible);
-                dom.toggleChatButton.classList.remove('hidden'); // Show toggle button
-            } else {
-                // On large screens, chat is always visible
-                dom.chatContainer.classList.add('active');
-                dom.toggleChatButton.classList.add('hidden'); // Hide toggle button
-            }
-        }
-
-        // Show the roll button
-        function showRollButton() {
-            dom.rollButton.classList.remove('hidden');
-        }
-
-        // Hide the roll button
-        function hideRollButton() {
-            dom.rollButton.classList.add('hidden');
-        }
-
-        // Setup all event listeners for user interactions
-        function setupEventListeners() {
-            dom.connectWalletButton.addEventListener('click', connectWallet);
-            dom.disconnectWalletButton.addEventListener('click', disconnectWallet);
-
-            // Event listeners for chip selection buttons
-            dom.chipSelectionButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const value = event.target.dataset.chipValue;
-                    // Set current chip value, handling 'MAX' case
-                    gameState.currentChipValue = value === 'MAX' ? gameState.walletBalance : parseFloat(value);
-                    dom.currentBetDisplay.textContent = `Chip Value: ${gameState.currentChipValue.toFixed(2)} SOL`;
-                    updateBettingControls(); // Update UI after chip selection
-                    playSound(dom.buttonClickSound); // Play button click sound
-                });
-            });
-
-            // Event listener for clear bets button
-            dom.clearBetsButton.addEventListener('click', () => {
-                gameState.currentBets = {}; // Clear all bets
-                renderPlayerSeats(); // Update player seats display
-                playSound(dom.buttonClickSound); // Play button click sound
-            });
-
-            // Event listener for roll under slider
-            dom.rollUnderSlider.addEventListener('input', (event) => {
-                gameState.rollUnderNumber = parseInt(event.target.value);
-                dom.rollUnderValue.textContent = gameState.rollUnderNumber;
-                updateMultiplierDisplay(gameState.rollUnderNumber); // Update multiplier display
-            });
-
-            // Event listener for the roll button
-            dom.rollButton.addEventListener('click', () => {
-                // Check if user can roll
-                if (!gameState.isSeated || gameState.isSpectator) {
-                    showToast('You must be seated to roll.');
-                    return;
-                }
-                if (gameState.currentChipValue <= 0) {
-                    showToast('Select a chip value.');
-                    return;
-                }
-                if (gameState.walletBalance < gameState.currentChipValue) {
-                    showToast('Insufficient balance.');
-                    return;
-                }
-                // Send bet and roll message to server
-                const betType = `rollUnder_${gameState.rollUnderNumber}`;
-                sendMessage({ type: 'placeBetAndRoll', betType, amount: gameState.currentChipValue, rollUnder: gameState.rollUnderNumber });
-                playSound(dom.buttonClickSound); // Play button click sound
-            });
-
-            // Event listeners for chat input and send button
-            dom.sendChatButton.addEventListener('click', sendChatMessage);
-            dom.chatInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') sendChatMessage();
-            });
-
-            // Event listener for toggle chat button (mobile)
-            dom.toggleChatButton.addEventListener('click', () => {
-                gameState.chatVisible = !gameState.chatVisible;
-                updateChatContainerVisibility();
-                playSound(dom.buttonClickSound); // Play button click sound
-            });
-
-            // Event listener for tutorial next step button
-            dom.nextStepButton.addEventListener('click', nextTutorialStep);
-        }
-
-        // Send a chat message
-        function sendChatMessage() {
-            const message = dom.chatInput.value.trim();
-            // Check if message is not empty and user is not a spectator
-            if (message && !gameState.isSpectator) {
-                // Determine sender name (truncated wallet or 'Anon')
-                const sender = gameState.walletAddress ? `${gameState.walletAddress.slice(0, 4)}...` : 'Anon';
-                // Send chat message to server
-                sendMessage({ type: 'chat_message', message, sender });
-                dom.chatInput.value = ''; // Clear input field
-            }
-        }
-
-        // Play a sound effect
-        function playSound(audioElement) {
-            if (audioElement) {
-                audioElement.currentTime = 0; // Rewind to start
-                audioElement.play().catch(error => console.error('Sound error:', error)); // Play and catch potential errors
-            }
-        }
-
-        // Trigger celebration effects (confetti, coins, win overlay)
-        function triggerCelebration(type, payout) {
-            if (type === 'win') {
-                dom.winOverlay.textContent = `+${payout.toFixed(2)} SOL!`;
-                dom.winOverlay.classList.remove('hidden');
-                playSound(dom.winSound);
-                playSound(dom.coinDropSound);
-
-                // Confetti effect
-                const confettiCount = window.innerWidth < 768 ? 50 : 100;
-                const particles = [];
-                for (let i = 0; i < confettiCount; i++) {
-                    particles.push({
-                        x: Math.random() * dom.confettiCanvas.width,
-                        y: dom.confettiCanvas.height, // Start from bottom
-                        radius: Math.random() * 5 + 2,
-                        color: ['#10B981', '#EC4899', '#A78BFA', '#FACC15'][Math.floor(Math.random() * 4)], // Random color
-                        speedX: Math.random() * 10 - 5, // Random horizontal speed
-                        speedY: Math.random() * -15 - 5, // Random upward speed
-                        gravity: 0.5, // Gravity effect
-                        dampening: 0.9, // Dampening for realistic fall
-                    });
-                }
-
-                // Confetti animation loop
-                function updateConfetti() {
-                    dom.confettiCtx.clearRect(0, 0, dom.confettiCanvas.width, dom.confettiCanvas.height); // Clear canvas
-                    particles.forEach(p => {
-                        p.speedY += p.gravity; // Apply gravity
-                        p.x += p.speedX;
-                        p.y += p.speedY;
-                        p.speedX *= p.dampening; // Apply dampening
-                        p.speedY *= p.dampening;
-                        dom.confettiCtx.fillStyle = p.color;
-                        dom.confettiCtx.fillRect(p.x, p.y, p.radius, p.radius); // Draw confetti particle
-                    });
-                    // Filter out particles that have fallen off screen
-                    const remainingParticles = particles.filter(p => p.y < dom.confettiCanvas.height);
-                    particles.length = 0;
-                    particles.push(...remainingParticles);
-                    // Continue animation if there are remaining particles
-                    if (particles.length > 0) requestAnimationFrame(updateConfetti);
-                }
-                updateConfetti(); // Start confetti animation
-
-                // Coin drop effect
-                const coinCount = window.innerWidth < 768 ? 30 : 50;
-                for (let i = 0; i < coinCount; i++) {
-                    const coin = document.createElement('div');
-                    coin.classList.add('coin');
-                    coin.style.left = `${Math.random() * 100}vw`; // Random horizontal starting position
-                    coin.style.setProperty('--end-x', `${(Math.random() - 0.5) * 200}px`); // Random horizontal end position offset
-                    document.body.appendChild(coin);
-                    // Remove coin element after animation ends
-                    coin.addEventListener('animationend', () => coin.remove(), { once: true });
-                }
-
-                // Hide win overlay after animation duration
-                setTimeout(() => dom.winOverlay.classList.add('hidden'), 2000); // Match animation duration
-            }
-        }
-
-        // Show the tutorial modal and manage steps
-        function showTutorial() {
-            const steps = [
-                'Step 1: Select a number to roll under using the slider.',
-                'Step 2: Choose your bet amount with the chip buttons.',
-                'Step 3: Click Roll to play and win big!'
-            ];
-            let step = 0;
-
-            // Show tutorial only if it hasn't been completed before
-            if (!localStorage.getItem('tutorialCompleted')) {
-                dom.tutorialModal.classList.remove('hidden');
-                dom.tutorialStep.textContent = steps[step];
-            }
-
-            // Function to advance to the next tutorial step
-            window.nextTutorialStep = () => {
-                step++;
-                if (step < steps.length) {
-                    dom.tutorialStep.textContent = steps[step];
+        
+        chipButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                chipButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                if (this.dataset.value === 'MAX') {
+                    state.chipValue = 10; // In a real app, this would be wallet balance
                 } else {
-                    dom.tutorialModal.classList.add('hidden'); // Hide modal after last step
-                    localStorage.setItem('tutorialCompleted', 'true'); // Mark tutorial as completed
-                }
-            };
-        }
-
-        // Show a toast notification
-        function showToast(message) {
-            dom.toast.textContent = message;
-            dom.toast.classList.remove('hidden');
-            // Hide toast after 3 seconds
-            setTimeout(() => dom.toast.classList.add('hidden'), 3000);
-        }
-
-        // Update progress for achievements
-        function updateAchievements(eventType) {
-            if (eventType === 'roll') {
-                gameState.achievements.forEach(achievement => {
-                    if (achievement.id === 'roll-master') {
-                        achievement.progress++;
-                        // Check if achievement is completed
-                        if (achievement.progress >= achievement.goal) {
-                            showToast(`Achievement Unlocked: Roll Master! Reward: ${achievement.reward}`);
-                            achievement.progress = 0; // Reset progress or handle as completed
-                        }
-                    }
-                });
-            }
-            // Add more achievement types and logic here
-        }
-
-        // Update progress for challenges
-        function updateChallenges(challengeId, rollUnder) {
-            gameState.challenges.forEach(challenge => {
-                if (challenge.id === challengeId && rollUnder <= 5) { // Example challenge: roll under 5
-                    challenge.progress++;
-                    // Check if challenge is completed
-                    if (challenge.progress >= challenge.goal) {
-                        showToast(`Challenge Completed: Roll Under 5! Reward: ${challenge.reward}`);
-                        challenge.progress = 0; // Reset progress or handle as completed
-                    }
+                    state.chipValue = parseFloat(this.dataset.value);
                 }
             });
-            // Add more challenge types and logic here
+        });
+        
+        rollButton.addEventListener('click', rollDice);
+        
+        // Game functions
+        function rollDice() {
+            // Disable button during roll
+            rollButton.disabled = true;
+            
+            // Animate dice
+            animateDice();
+            
+            // After animation, show result
+            setTimeout(() => {
+                // Generate random dice values
+                state.diceValues = [
+                    Math.floor(Math.random() * 6) + 1,
+                    Math.floor(Math.random() * 6) + 1
+                ];
+                
+                // Calculate result
+                const sum = state.diceValues[0] + state.diceValues[1];
+                state.rollResult = sum < state.rollUnder ? 'WIN' : 'LOSE';
+                
+                // Update UI
+                die1.textContent = state.diceValues[0];
+                die2.textContent = state.diceValues[1];
+                
+                resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
+                resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
+                
+                // Show effects
+                if (state.rollResult === 'WIN') {
+                    showWinEffect();
+                    updateStreak(true);
+                } else {
+                    updateStreak(false);
+                }
+                
+                // Re-enable button
+                rollButton.disabled = false;
+            }, 1000);
         }
-
-        // Update UI text based on selected language
-        function updateLanguage(lang) {
-            gameState.language = lang;
-            // Update text content for specific elements
-            dom.rollUnderSlider.previousElementSibling.textContent = translations[lang].rollUnder;
-            dom.clearBetsButton.textContent = translations[lang].clear;
-            dom.rollButton.textContent = translations[lang].roll;
-            // Add more elements to translate here
+        
+        function animateDice() {
+            die1.style.animation = 'none';
+            die2.style.animation = 'none';
+            
+            // Trigger reflow
+            void die1.offsetWidth;
+            void die2.offsetWidth;
+            
+            die1.style.animation = 'shake 0.5s infinite';
+            die2.style.animation = 'shake 0.5s infinite';
+        }
+        
+        function showWinEffect() {
+            // Create win overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'win-overlay';
+            overlay.textContent = `+${(state.chipValue * state.payouts[state.rollUnder]).toFixed(2)} SOL!`;
+            document.body.appendChild(overlay);
+            
+            // Create confetti
+            triggerConfetti();
+            
+            // Remove overlay after animation
+            setTimeout(() => {
+                overlay.remove();
+            }, 1000);
+        }
+        
+        function updateStreak(isWin) {
+            if (isWin) {
+                state.streak++;
+                
+                if (state.streak % 3 === 0) {
+                    showStreakPopup();
+                }
+            } else {
+                state.streak = 0;
+            }
+        }
+        
+        function showStreakPopup() {
+            const popup = document.createElement('div');
+            popup.className = 'streak-popup';
+            popup.textContent = `🔥 Streak x${state.streak}!`;
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                popup.remove();
+            }, 1500);
+        }
+        
+        function updateMultiplier() {
+            const multiplier = state.payouts[state.rollUnder];
+            multiplierDisplay.textContent = `Payout: ${multiplier}x`;
+        }
+        
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = [];
+            const colors = ['#FF3366', '#00FF99', '#FFFFFF', '#FFD700'];
+            
+            // Create particles
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 10 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 4 - 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                let stillAlive = false;
+                
+                particles.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    p.rotation += p.rotationSpeed;
+                    
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                    
+                    if (p.y < canvas.height) {
+                        stillAlive = true;
+                    }
+                });
+                
+                if (stillAlive) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            animate();
         }
     </script>
 </body>
