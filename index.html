@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DegenRoulette</title> <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>DegenRoulette</title>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Basic Reset and Body Styles */
         body {
@@ -1056,8 +1057,8 @@
          }
 
 
-        /* REMOVE Mobile Specific Styles */
-        /* @media (max-width: 768px) {
+        /* Mobile Specific Styles */
+        @media (max-width: 768px) {
             body {
                 font-size: 16px;
             }
@@ -1067,37 +1068,80 @@
             .xp-bar-container { flex-grow: 1; margin: 0 8px; }
             .recent-plays-ticker { width: 120px; font-size: 0.7em; }
             #game-table { padding: 10px; justify-content: flex-start; }
-            .dealer-hand { margin-bottom: 10px; }
-            .card { width: 45px; height: 67.5px; margin: 0 3px; font-size: 1em; }
+            #roulette-wheel-container { width: 15rem; height: 15rem; margin-bottom: 1rem; } /* Smaller wheel on mobile */
+            #winning-number-display { font-size: 2rem; }
+            #betting-grid-container { padding: 0.5rem; }
+            #betting-grid {
+                grid-template-columns: repeat(12, 2rem) 2rem; /* Smaller grid cells */
+                grid-template-rows: repeat(3, 2rem) 2rem 2rem;
+                gap: 0.15rem;
+                font-size: 0.8rem;
+            }
+            .grid-cell { border-radius: 0.15rem; }
+            .placed-chip { width: 1rem; height: 1rem; font-size: 0.6rem; }
+
             .player-seats { flex-direction: column; align-items: center; }
-            .player-seat { width: 95%; margin: 5px 0; padding: 8px; }
+            .player-seat { width: 95%; margin: 5px 0; padding: 8px; max-width: none; } /* Allow seats to take more width */
             .player-info { width: 100%; justify-content: center; margin-bottom: 8px; }
-            .action-buttons { margin-top: 8px; }
-            .action-buttons button { padding: 10px 20px; font-size: 1em; }
+
             #bottom-bar { flex-direction: column; align-items: center; height: auto; padding: 10px; }
             .bottom-bar-section { width: 100%; margin: 5px 0; justify-content: center; }
             .betting-controls { width: 100%; flex-direction: column; align-items: center; margin-bottom: 10px; }
-            .betting-controls > span, .betting-controls input[type="range"], .quick-bet-buttons { margin-bottom: 8px; }
-            .betting-controls input[type="range"] { width: 80%; margin: 8px 0; }
-            .quick-bet-buttons { width: 100%; justify-content: center; }
-            .quick-bet-buttons button { flex-grow: 1; margin: 0 4px; padding: 10px 5px; }
-            .join-leave-button { margin-left: 0; width: 100%; padding: 12px 20px; }
-            .chat-container { width: 100%; height: 200px; position: fixed; bottom: 0; left: 0; border-radius: 8px 8px 0 0; transform: translateY(100%); transition: transform 0.3s ease-in-out; z-index: 20; box-sizing: border-box; padding-bottom: 50px; padding-bottom: calc(50px + env(safe-area-inset-bottom)); }
+            .betting-controls > span { margin-bottom: 8px; }
+            .chip-selection-buttons { width: 100%; justify-content: center; }
+            .chip-selection-buttons button { flex-grow: 1; margin: 0 4px; padding: 10px 5px; font-size: 0.8em; }
+
+            .join-leave-button, #clear-bets-button, #refer-friends-button { margin-left: 0; width: 100%; padding: 12px 20px; margin-top: 5px; }
+
+            .chat-container {
+                width: 100%;
+                height: 200px;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                border-radius: 8px 8px 0 0;
+                transform: translateY(100%);
+                transition: transform 0.3s ease-in-out;
+                z-index: 95; /* Above bottom bar */
+                box-sizing: border-box;
+                padding-bottom: calc(50px + env(safe-area-inset-bottom)); /* Adjust for input area height */
+                padding-top: 10px; /* Add some padding at the top */
+            }
             .chat-container.active { transform: translateY(0); height: 50vh; }
-            .chat-feed { height: calc(100% - 40px); margin-bottom: 0; }
+            .chat-feed { height: calc(100% - 40px); margin-bottom: 0; padding-bottom: 10px; } /* Add padding to feed */
             .chat-input-area { position: absolute; bottom: env(safe-area-inset-bottom); left: 0; width: 100%; padding: 5px; background-color: #1a1a1a; box-sizing: border-box; }
             .chat-input-area input[type="text"] { font-size: 1em; min-height: 44px; }
             .chat-input-area button { min-height: 44px; }
+
             #toggle-chat { display: block; padding: 8px 15px; border: none; border-radius: 5px; background-color: #3b82f6; color: #fff; font-weight: bold; cursor: pointer; margin-top: 10px; min-width: 48px; min-height: 48px; }
-            .player-seat .player-hand { justify-content: center; }
-            .player-seat:not(.is-user) .player-hand { }
+             /* Position toggle chat button */
+             #toggle-chat {
+                 position: fixed;
+                 bottom: calc(1rem + env(safe-area-inset-bottom));
+                 right: calc(1rem + env(safe-area-inset-right));
+                 z-index: 100; /* Above chat container */
+             }
+
+
             #toggle-other-hands { display: block; margin-top: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #555; color: #eee; cursor: pointer; min-width: 48px; min-height: 48px; }
-        } */
+             /* Position toggle other players button */
+             #toggle-other-hands {
+                 position: fixed;
+                 bottom: calc(1rem + 48px + 1rem + env(safe-area-inset-bottom)); /* Below chat toggle */
+                 right: calc(1rem + env(safe-area-inset-right));
+                 z-index: 100;
+             }
+             /* Ensure betting grid is visible when other players are hidden */
+             #game-table { overflow-y: auto; } /* Allow scrolling */
+        }
 
         /* Hide toggle button on desktop */
-        #toggle-chat, #toggle-other-hands {
-            display: none;
+        @media (min-width: 769px) {
+             #toggle-chat, #toggle-other-hands {
+                 display: none;
+             }
         }
+
 
         /* Ensure elements are within safe areas even if not fixed */
         /* This is handled by padding on body and fixed elements */
@@ -1106,6 +1150,22 @@
             padding-left: env(safe-area-inset-left, 0);
             padding-right: env(safe-area-inset-right, 0);
         } */
+
+         /* Added animations */
+         @keyframes shake {
+             0%, 100% { transform: translateX(0); }
+             20%, 60% { transform: translateX(-5px); }
+             40%, 80% { transform: translateX(5px); }
+         }
+
+         @keyframes float-up {
+             0% { transform: translate(-50%, 0); opacity: 1; }
+             100% { transform: translate(-50%, -50px); opacity: 0; } /* Adjust distance */
+         }
+         @keyframes flashWarning {
+             0%, 100% { background-color: #ef4444; } /* Red */
+             50% { background-color: transparent; }
+         }
 
 
     </style>
@@ -1149,8 +1209,7 @@
                 </div>
                 <div style="display: flex; flex-direction: column;">
                     <button id="profile-tab-button" style="background: none; border: none; color: #eee; text-align: left; padding: 5px; cursor: pointer;">👤 Profile</button>
-                    <button id="lounge-tab-button" style="background: none; border: none; color: #eee; text-align: left; padding: 5px; cursor: pointer;">🛋️ Lounge</button>
-                </div>
+                    <button data-game="roulette" class="game-tab-button" style="background: none; border: none; color: #eee; text-align: left; padding: 5px; cursor: pointer;">🎰 Roulette</button> <button data-game="blackjack" class="game-tab-button" style="background: none; border: none; color: #eee; text-align: left; padding: 5px; cursor: pointer;">🃏 Blackjack</button> <button data-game="dice" class="game-tab-button" style="background: none; border: none; color: #eee; text-align: left; padding: 5px; cursor: pointer;">🎲 Dice (Soon)</button> </div>
             </div>
         </div>
     </div>
@@ -1274,6 +1333,14 @@
 
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
     <script>
+        // --- Constants ---
+        const WS_RECONNECT_DELAY = 3000; // Milliseconds before attempting WebSocket reconnect
+        const MAX_CHAT_MESSAGES = 50; // Maximum number of chat messages to display
+        const XP_PER_LEVEL = 100; // XP required to level up
+        const MAX_HOT_STREAK_DISPLAY = 10; // Max streak count for hot streak bar display
+        const ROULETTE_SPIN_DURATION = 5000; // Default roulette spin duration in ms
+        const BETTING_PHASE_DURATION = 20; // Default betting phase duration in seconds
+
         // --- Global State ---
         const gameState = {
             walletAddress: null,
@@ -1289,16 +1356,18 @@
             currentBets: {}, // Object storing bets: { 'betType': amount, 'number_X': amount, ... }
             winningNumber: null,
             spinAnimation: null, // For controlling the wheel animation
-            spinDuration: 5000, // milliseconds
+            spinDuration: ROULETTE_SPIN_DURATION, // milliseconds
             players: [], // Array of player objects { id, name, level, avatar, bets: {}, totalBet: 0 }
             activePlayerId: null, // Could represent the player whose turn it is to bet (optional)
-            bettingPhaseDuration: 20, // seconds
+            bettingPhaseDuration: BETTING_PHASE_DURATION, // seconds
             bettingPhaseTimer: null, // Interval timer for betting phase
             chatMessages: [], // Array of { sender, message, badge }
             recentPlays: [], // Array of { winningNumber, payout }
             isSpectator: false,
             isSeated: false,
             websocket: null,
+            websocketReconnectAttempts: 0,
+            websocketMaxReconnectAttempts: 10, // Limit reconnect attempts
             confettiCanvas: null,
             confettiCtx: null,
             backgroundParticlesCanvas: null, // New background particles canvas
@@ -1330,7 +1399,8 @@
             settingsDropdown: document.getElementById('settings-dropdown'), // Placeholder
             freeModeToggle: document.getElementById('free-mode-toggle'), // Phase 2: Free Mode Toggle
             profileTabButton: document.getElementById('profile-tab-button'), // Phase 2: Profile Tab Button
-            loungeTabButton: document.getElementById('lounge-tab-button'), // Phase 2: Lounge Tab Button
+            // Lounge tabs moved to settings dropdown for better organization
+            // loungeTabButton: document.getElementById('lounge-tab-button'), // Phase 2: Lounge Tab Button
             profileLoungeSection: document.getElementById('profile-lounge-section'), // Phase 2: Profile/Lounge Section
             profileLoungeClose: document.getElementById('profile-lounge-close'), // Phase 2: Profile/Lounge Close Button
             profileContent: document.getElementById('profile-content'), // Phase 2: Profile Content
@@ -1489,7 +1559,7 @@
                      if (isIOS) {
                          showPhantomDeeplink();
                      } else {
-                         showWalletGuidance('Wallet connection failed. Please try again or install Phantom.');
+                         showWalletGuidance(`Wallet connection failed: ${error.message}. Please try again or install Phantom.`); // More specific error
                      }
                 }
             } else {
@@ -1520,8 +1590,7 @@
             dom.phantomDeeplink.classList.add('hidden');
             dom.walletGuidance.classList.add('hidden');
             dom.walletIcon.classList.remove('hidden'); // Show wallet icon
-            // Placeholder: Fetch balance (requires more web3.js interaction)
-            fetchWalletBalance(publicKey);
+            fetchWalletBalance(publicKey); // Fetch balance on connect
             updateUI(); // Update UI based on connected state
         }
 
@@ -1542,9 +1611,15 @@
              // Placeholder: In a real app, use Solana Web3.js Connection object
              // Example:
              // const connection = new Connection(Solana.Web3.clusterApiUrl('devnet'), 'confirmed');
-             // const balance = await connection.getBalance(publicKey);
-             // gameState.walletBalance = balance / 10**9; // Convert lamports to SOL
-             // dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
+             // try {
+             //   const balance = await connection.getBalance(publicKey);
+             //   gameState.walletBalance = balance / 10**9; // Convert lamports to SOL
+             //   dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
+             // } catch (error) {
+             //   console.error('Failed to fetch balance:', error);
+             //   dom.walletBalance.textContent = 'Error';
+             // }
+
 
              // Simulate fetching balance
              setTimeout(() => {
@@ -1574,11 +1649,12 @@
         // --- WebSocket Integration ---
         function connectWebSocket() {
             // Replace with your actual WebSocket server URL
-            const wsUrl = "wss://your-game-server-url";
+            const wsUrl = "wss://your-game-server-url"; // TODO: Replace with actual server URL
             gameState.websocket = new WebSocket(wsUrl);
 
             gameState.websocket.onopen = () => {
                 console.log("WebSocket Connected");
+                gameState.websocketReconnectAttempts = 0; // Reset reconnect attempts on successful connection
                  // Display connection status
                  updateConnectionStatus(true);
 
@@ -1594,9 +1670,14 @@
             };
 
             gameState.websocket.onmessage = (event) => {
-                const msg = JSON.parse(event.data);
-                console.log("WebSocket Message:", msg);
-                handleGameEvent(msg);
+                try {
+                    const msg = JSON.parse(event.data);
+                    console.log("WebSocket Message:", msg);
+                    handleGameEvent(msg);
+                } catch (error) {
+                    console.error("Error parsing WebSocket message:", error);
+                    showErrorMessage("Received invalid data from server.");
+                }
             };
 
             gameState.websocket.onerror = (error) => {
@@ -1606,11 +1687,18 @@
                 // Handle errors, attempt reconnect
             };
 
-            gameState.websocket.onclose = () => {
-                console.log("WebSocket Disconnected");
+            gameState.websocket.onclose = (event) => {
+                console.log("WebSocket Disconnected:", event.code, event.reason);
                  // Display connection status
-                 updateConnectionStatus(false, "Disconnected");
-                // Handle disconnection, attempt reconnect
+                 updateConnectionStatus(false, `Disconnected: ${event.code}`);
+                // Attempt to reconnect if not a clean close or if reconnect attempts are within limit
+                if (!event.wasClean && gameState.websocketReconnectAttempts < gameState.websocketMaxReconnectAttempts) {
+                    gameState.websocketReconnectAttempts++;
+                    console.log(`Attempting WebSocket reconnect ${gameState.websocketReconnectAttempts}/${gameState.websocketMaxReconnectAttempts}...`);
+                    setTimeout(connectWebSocket, WS_RECONNECT_DELAY);
+                } else if (!event.wasClean) {
+                    showErrorMessage("Lost connection to the game server. Please refresh the page.");
+                }
             };
         }
 
@@ -1639,6 +1727,13 @@
              console.error("User Error:", message);
              // Implement a temporary message display in the UI (e.g., a small banner)
              alert(message); // Replace with inline display
+        }
+
+        // Basic input sanitization to prevent XSS
+        function sanitizeInput(input) {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML; // Returns sanitized string
         }
 
 
@@ -1754,6 +1849,8 @@
                     showCrateIcon();
                     break;
                 case 'chat_message':
+                    // Sanitize incoming chat message
+                    msg.data.message = sanitizeInput(msg.data.message);
                     gameState.chatMessages.push(msg.data);
                     addChatMessageToFeed(msg.data);
                     break;
@@ -1806,9 +1903,9 @@
 
         function updateXPBar() {
             dom.userLevel.textContent = `Level ${gameState.userLevel}`;
-            const xpProgress = gameState.userXP % 100; // Assuming 100 XP per level
+            const xpProgress = gameState.userXP % XP_PER_LEVEL; // Using constant
             dom.xpBarFill.style.width = `${xpProgress}%`;
-            dom.userXP.textContent = `${xpProgress}/100 XP`;
+            dom.userXP.textContent = `${xpProgress}/${XP_PER_LEVEL} XP`; // Using constant
         }
 
         function showCrateIcon() {
@@ -1819,7 +1916,7 @@
         function openCrate() {
              console.log("Crate opened!");
              dom.crateIcon.classList.add('hidden');
-             alert("You got a reward!"); // Replace with inline display
+             showInfoMessage("You got a reward!"); // Use a better message display
          }
 
          function triggerLevelUpAnimation() {
@@ -2186,6 +2283,12 @@
                  showErrorMessage("Select a chip value first.");
                  return;
              }
+             // Client-side validation: Check if user has enough balance
+             if (gameState.walletBalance < gameState.currentChipValue) {
+                 showErrorMessage("Insufficient balance to place this bet.");
+                 return;
+             }
+
 
              const betType = event.target.dataset.betType;
              const amount = gameState.currentChipValue;
@@ -2195,6 +2298,10 @@
 
              // Optimistic UI update (assuming server will confirm)
              gameState.currentBets[betType] = (gameState.currentBets[betType] || 0) + amount;
+             // Deduct bet amount from local balance optimistically
+             gameState.walletBalance -= amount;
+             dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
+
              renderPlacedChips(); // Re-render chips
              playSound(dom.chipSound); // Play chip sound
              triggerHaptic([50]); // Haptic feedback
@@ -2331,7 +2438,7 @@
                     const hotStreakFill = document.createElement('div');
                     hotStreakFill.classList.add('hot-streak-fill');
                     hotStreakBar.appendChild(hotStreakFill);
-                    seatElement.appendChild(hotStreakFill);
+                    seatElement.appendChild(hotStreakBar);
                 }
 
                  // Add Streak Emoji Placeholder
@@ -2419,7 +2526,7 @@
              const userStreakEmoji = document.querySelector('.player-seat.is-user .streak-emoji');
 
              if (userHotStreakFill) {
-                 const maxWidth = 10;
+                 const maxWidth = MAX_HOT_STREAK_DISPLAY; // Using constant
                  const widthPercentage = Math.min(streakCount / maxWidth * 100, 100);
                  userHotStreakFill.style.width = `${widthPercentage}%`;
                  if (streakCount > 0) {
@@ -2496,10 +2603,12 @@
         function addChatMessageToFeed(msg) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message');
-            messageElement.innerHTML = `<span class="chat-sender">[${msg.sender}]</span><span class="chat-badge">[${msg.badge}]</span> ${msg.message}`;
+            // Sanitize message content before displaying
+            const sanitizedMessage = sanitizeInput(msg.message);
+            messageElement.innerHTML = `<span class="chat-sender">[${msg.sender}]</span><span class="chat-badge">[${msg.badge}]</span> ${sanitizedMessage}`;
             dom.chatFeed.appendChild(messageElement);
 
-             const maxChatMessages = 50;
+             const maxChatMessages = MAX_CHAT_MESSAGES; // Using constant
              if (dom.chatFeed.children.length > maxChatMessages) {
                  dom.chatFeed.removeChild(dom.chatFeed.children[0]);
              }
@@ -2685,35 +2794,40 @@
                  playSound(dom.buttonClickSound);
              });
 
+             // Game Tab Buttons (within Settings/Lounge)
+             dom.settingsDropdown.querySelectorAll('.game-tab-button').forEach(button => {
+                 button.addEventListener('click', (event) => {
+                     const game = event.target.dataset.game;
+                     console.log(`Switched to game tab: ${game}`);
+                     // Placeholder: Navigate or load content for the selected game
+                     // This would likely involve changing the entire game view
+                      showInfoMessage(`Switched to ${game.charAt(0).toUpperCase() + game.slice(1)} (Placeholder)`);
+                      dom.settingsDropdown.classList.add('hidden'); // Hide dropdown
+                      playSound(dom.buttonClickSound);
+                 });
+             });
+
+             // Profile Tab Button
              dom.profileTabButton.addEventListener('click', () => {
                  showProfileLoungeSection('profile');
                  playSound(dom.buttonClickSound);
              });
-             dom.loungeTabButton.addEventListener('click', () => {
-                 showProfileLoungeSection('lounge');
-                 playSound(dom.buttonClickSound);
-             });
+
+             // Close Profile/Lounge Section
              dom.profileLoungeClose.addEventListener('click', () => {
                  dom.profileLoungeSection.classList.add('hidden');
                  playSound(dom.buttonClickSound);
-             });
-
-             dom.gameTabs.querySelectorAll('.game-tab-button').forEach(button => {
-                 button.addEventListener('click', (event) => {
-                     const game = event.target.dataset.game;
-                     console.log(`Switched to game tab: ${game}`);
-                     loadLoungeContent(game);
-                      playSound(dom.buttonClickSound);
-                 });
              });
         }
 
         function sendChatMessage() {
             const message = dom.chatInput.value.trim();
             if (message && !gameState.isSpectator) {
+                // Sanitize outgoing message
+                const sanitizedMessage = sanitizeInput(message);
                 const sender = gameState.walletAddress ? `${gameState.walletAddress.slice(0, 4)}...` : 'Anon';
                 const badge = gameState.userLevel;
-                sendMessage({ type: 'chat_message', message: message, sender: sender, badge: badge });
+                sendMessage({ type: 'chat_message', message: sanitizedMessage, sender: sender, badge: badge });
                 dom.chatInput.value = '';
             }
         }
@@ -2722,25 +2836,28 @@
              dom.freeModeToggle.textContent = gameState.isFreeMode ? '✅ Free Mode' : '🔁 SOL Mode';
         }
 
+        // Unified function to show Profile or Lounge section
         function showProfileLoungeSection(section) {
              dom.profileLoungeSection.classList.remove('hidden');
+             // Hide all lounge content initially
+             dom.profileContent.classList.add('hidden');
+             dom.loungeContent.classList.add('hidden');
+
              if (section === 'profile') {
                  dom.profileContent.classList.remove('hidden');
-                 dom.loungeContent.classList.add('hidden');
                  updateProfileDisplay();
              } else if (section === 'lounge') {
-                 dom.profileContent.classList.add('hidden');
                  dom.loungeContent.classList.remove('hidden');
-                 loadLoungeContent('blackjack'); // Load default lounge content
+                 loadLoungeContent('roulette'); // Load default lounge content for Roulette
              }
         }
 
         function updateProfileDisplay() {
              dom.profileAvatar.textContent = gameState.players.find(p => p.id === gameState.walletAddress)?.avatar || '😊';
              dom.profileLevel.textContent = gameState.userLevel;
-             const xpProgress = gameState.userXP % 100;
+             const xpProgress = gameState.userXP % XP_PER_LEVEL; // Using constant
              dom.profileXpBarFill.style.width = `${xpProgress}%`;
-             dom.profileXP.textContent = `${xpProgress}/100`;
+             dom.profileXP.textContent = `${xpProgress}/${XP_PER_LEVEL}`; // Using constant
              // Placeholder: Fetch and display other profile data (Win %, Wager, Streak, Badges)
              dom.profileWinRate.textContent = '--'; // Needs real data
              dom.profileHighestWager.textContent = '--'; // Needs real data
@@ -2751,8 +2868,9 @@
 
         function loadLoungeContent(game) {
              console.log(`Loading lounge content for: ${game}`);
-             dom.loungeLeaderboards.innerHTML = `Leaderboard for ${game}...`;
-             dom.loungeChat.innerHTML = `Chat for ${game}...`;
+             dom.loungeLeaderboards.innerHTML = `Live Leaderboard for ${game}...`; // Updated text
+             dom.loungeChat.innerHTML = `Lounge chat for ${game}...`; // Updated text
+             // Placeholder: Fetch and display leaderboards and chat for the selected game
         }
 
 
@@ -2825,7 +2943,11 @@
                     dom.confettiCtx.restore();
                 });
 
-                particles.filter(p => p.y < dom.confettiCanvas.height && p.x > 0 && p.x < dom.confettiCanvas.width);
+                // Filter out particles that are off-screen
+                const remainingParticles = particles.filter(p => p.y < dom.confettiCanvas.height && p.x > 0 && p.x < dom.confettiCanvas.width);
+                particles.length = 0; // Clear the original array
+                particles.push(...remainingParticles); // Add remaining particles back
+
 
                 if (particles.length > 0) {
                     requestAnimationFrame(updateConfetti);
@@ -2867,10 +2989,13 @@
                  const emoji = document.createElement('span');
                  emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
                  emoji.classList.add('floating-emoji');
+                 emoji.style.position = 'absolute'; // Ensure absolute positioning
                  emoji.style.left = `${50 + (Math.random() - 0.5) * 20}vw`;
                  emoji.style.bottom = `${Math.random() * 10}vh`;
                  emoji.style.fontSize = `${Math.random() * 1 + 1}rem`;
                  emoji.style.opacity = Math.random() * 0.5 + 0.5;
+                 emoji.style.animation = 'float-up 2s ease-out forwards'; // Apply float-up animation
+
 
                  container.appendChild(emoji);
 
@@ -2948,20 +3073,25 @@
                  localStorage.setItem('loginStreak', streak);
 
                  if (streak >= 5) {
-                     gameState.walletBalance += 0.01;
-                     localStorage.setItem('walletBalance', gameState.walletBalance);
+                     // Award daily reward (e.g., 0.01 SOL)
+                     const rewardAmount = 0.01; // Define reward amount
+                     gameState.walletBalance += rewardAmount; // Simulate adding balance
+                     localStorage.setItem('walletBalance', gameState.walletBalance); // Persist balance (simple)
                      dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
-                     alert('Daily Reward: 0.01 SOL Free Bet!');
-                     localStorage.setItem('loginStreak', '0');
+                     showInfoMessage(`Daily Reward: ${rewardAmount.toFixed(2)} SOL Free Bet!`); // Use a better message display
+                     localStorage.setItem('loginStreak', '0'); // Reset streak after reward
+                 } else {
+                      showInfoMessage(`Login Streak: ${streak} days. Keep it up for a reward!`); // Inform about streak
                  }
              } else {
+                 // Already logged in today, maybe show streak status?
                  const streak = localStorage.getItem('loginStreak') || '0';
                  console.log(`Login Streak: ${streak} days`);
              }
         }
 
         function shareReferral() {
-             const referralLink = "YOUR_REFERRAL_LINK_HERE"; // Replace with your actual referral link
+             const referralLink = "YOUR_REFERRAL_LINK_HERE"; // TODO: Replace with your actual referral link
              const text = `Join DegenRoulette & get a bonus! Play roulette on Solana. ${referralLink} 🚀`; // Changed text
 
              if (navigator.share) {
@@ -3019,6 +3149,14 @@
              console.log("Starting auto-play timer...");
         }
 
+        // Placeholder for a generic info/message display (replace alerts)
+        function showInfoMessage(message) {
+            console.log("Info:", message);
+            // Implement a temporary message display in the UI (e.g., a small banner or toast)
+            alert(message); // Still using alert for now, replace this.
+        }
+
+
         // --- Simulation for Testing (Roulette Specific) ---
         function simulateInitialGameStateRoulette() {
              // Simulate a few players and their bets
@@ -3043,6 +3181,10 @@
              ];
 
              // Simulate betting phase start
+             // Clear previous timer if it exists
+             if (gameState.bettingPhaseTimer) {
+                 clearTimeout(gameState.bettingPhaseTimer);
+             }
              gameState.bettingPhaseTimer = setTimeout(() => {
                  console.log("Simulated betting phase end");
                  // In a real app, server sends 'betting_phase_end'
@@ -3069,23 +3211,6 @@
              // Implement a temporary message display (e.g., "Better luck next time!", "Try betting on Red!")
              // Similar to near miss popup but with different text/styling
          }
-
-         // Placeholder for Shake Animation CSS (Add to your <style> block)
-         /*
-         @keyframes shake {
-             0%, 100% { transform: translateX(0); }
-             20%, 60% { transform: translateX(-5px); }
-             40%, 80% { transform: translateX(5px); }
-         }
-         */
-
-         // Placeholder for Float Up Animation CSS (Add to your <style> block)
-         /*
-         @keyframes float-up {
-             0% { transform: translate(-50%, 0); opacity: 1; }
-             100% { transform: translate(-50%, -50px); opacity: 0; } // Adjust distance
-         }
-         */
 
 
     </script>
