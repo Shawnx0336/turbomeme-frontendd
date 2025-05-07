@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DegenJack</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -17,6 +17,9 @@
             display: flex;
             flex-direction: column;
             height: 100vh; /* Full viewport height */
+            /* Ensure full coverage on mobile */
+            width: 100%;
+            box-sizing: border-box;
         }
 
         /* Custom Scrollbar for Chat */
@@ -50,6 +53,8 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
+            width: 100%; /* Ensure full width */
+            box-sizing: border-box;
         }
 
         #game-table {
@@ -60,6 +65,9 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            width: 100%; /* Ensure full width */
+            box-sizing: border-box;
+            overflow: hidden; /* Prevent game table content from causing scroll */
         }
 
         #bottom-bar {
@@ -73,6 +81,8 @@
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
+            width: 100%; /* Ensure full width */
+            box-sizing: border-box;
         }
 
         /* Top Bar Styles */
@@ -153,6 +163,9 @@
         .card-back {
             background-color: #4a4a4a; /* Dark grey back */
             color: transparent; /* Hide text on back */
+             /* Optional: Add a simple pattern or logo on the back */
+             background-image: url('/assets/card_back.png'); /* Placeholder */
+             background-size: cover;
         }
 
         .card.flipped {
@@ -228,6 +241,8 @@
             font-size: 0.9em;
             font-weight: bold;
             transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            min-width: 44px; /* Ensure touch target size */
+            min-height: 44px;
         }
 
         .action-buttons button:disabled {
@@ -272,6 +287,44 @@
             transition: width linear; /* Transition handled by JS */
         }
 
+        /* Hot Streak Placeholder */
+        .hot-streak-bar {
+            width: 80%;
+            height: 5px;
+            background-color: #333;
+            border-radius: 2.5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .hot-streak-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #facc15, #ef4444); /* Yellow to Red */
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* Near Miss Placeholder */
+        .near-miss-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 0, 0.8); /* Yellowish semi-transparent */
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            z-index: 15;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Don't block clicks */
+        }
+
+        .near-miss-popup.show {
+            opacity: 1;
+        }
+
 
         /* Bottom Bar Styles */
         .betting-controls {
@@ -295,6 +348,8 @@
             font-size: 0.8em;
             margin-right: 5px;
             transition: background-color 0.3s ease-in-out;
+            min-width: 44px; /* Ensure touch target size */
+            min-height: 44px;
         }
 
         .quick-bet-buttons button:hover {
@@ -310,6 +365,8 @@
              font-weight: bold;
              transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
              margin-left: 20px;
+             min-width: 44px; /* Ensure touch target size */
+             min-height: 44px;
          }
 
          .join-button {
@@ -377,19 +434,22 @@
             border-radius: 4px 0 0 4px;
             background-color: #333;
             color: #eee;
-            font-size: 0.9em;
+            font-size: 0.9em; /* Adjust for mobile keyboard */
             outline: none;
+             min-height: 34px; /* Adjust for touch */
         }
 
         .chat-input-area button {
             padding: 5px 10px;
             border: none;
-            border-radius: 0 4px 4px 0;
+            border-radius: 0 4px 44px 0;
             background-color: #3b82f6; /* Blue */
             color: #fff;
             cursor: pointer;
             font-size: 0.9em;
             transition: background-color 0.3s ease-in-out;
+            min-width: 44px; /* Ensure touch target size */
+            min-height: 44px;
         }
 
         .chat-input-area button:hover {
@@ -420,13 +480,252 @@
 
         /* Placeholder for Confetti Canvas */
         #confetti-canvas {
-            position: absolute;
+            position: fixed; /* Use fixed for full viewport coverage */
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none; /* Allow clicks through */
             z-index: 10; /* Above game elements */
+        }
+
+        /* Hot Table Banner Placeholder */
+        #hot-table-banner {
+            position: fixed;
+            top: 60px; /* Below top bar */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ff6bec; /* Pink accent */
+            color: #0a0a0a;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            z-index: 15;
+            display: none; /* Hidden by default */
+            box-shadow: 0 0 10px #ff6bec;
+        }
+
+         /* Next Hand Button Placeholder */
+         #next-hand-button {
+             position: absolute;
+             bottom: 150px; /* Above bottom bar */
+             left: 50%;
+             transform: translateX(-50%);
+             padding: 12px 25px;
+             border: none;
+             border-radius: 8px;
+             background-color: #10b981; /* Green */
+             color: #0a0a0a;
+             font-size: 1.1em;
+             font-weight: bold;
+             cursor: pointer;
+             z-index: 15;
+             display: none; /* Hidden by default */
+             box-shadow: 0 0 15px #10b981;
+             transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+         }
+
+         #next-hand-button:hover {
+             background-color: #059669;
+             box-shadow: 0 0 20px #059669;
+         }
+
+
+        /* Mobile Specific Styles */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
+            #top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+                height: auto;
+            }
+
+            .wallet-info, .xp-progress, .recent-plays {
+                width: 100%;
+                justify-content: space-between;
+                margin-bottom: 8px;
+            }
+
+            .xp-bar-container {
+                flex-grow: 1; /* Allow XP bar to take available space */
+                margin: 0 8px;
+            }
+
+            .recent-plays-ticker {
+                width: 120px; /* Smaller width on mobile */
+                font-size: 0.7em;
+            }
+
+            #game-table {
+                padding: 10px;
+                justify-content: flex-start; /* Align items to top */
+            }
+
+            .dealer-hand {
+                margin-bottom: 10px;
+            }
+
+            .card {
+                width: 45px; /* Smaller cards on mobile */
+                height: 67.5px;
+                margin: 0 3px;
+                font-size: 1em;
+            }
+
+            .player-seats {
+                flex-direction: column; /* Stack players vertically */
+                align-items: center;
+            }
+
+            .player-seat {
+                width: 95%; /* Nearly full width */
+                margin: 5px 0;
+                padding: 8px;
+            }
+
+            .player-info {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 8px;
+            }
+
+            .action-buttons {
+                margin-top: 8px;
+            }
+
+            .action-buttons button {
+                padding: 10px 20px; /* Larger touch targets */
+                font-size: 1em;
+            }
+
+            #bottom-bar {
+                flex-direction: column;
+                align-items: center;
+                height: auto;
+                padding: 10px;
+            }
+
+            .betting-controls {
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .betting-controls > span, .betting-controls input[type="range"], .quick-bet-buttons {
+                margin-bottom: 8px;
+            }
+
+            .betting-controls input[type="range"] {
+                width: 80%; /* Adjust slider width */
+                margin: 8px 0;
+            }
+
+            .quick-bet-buttons {
+                 width: 100%;
+                 justify-content: center;
+            }
+
+            .quick-bet-buttons button {
+                 flex-grow: 1; /* Distribute space */
+                 margin: 0 4px;
+                 padding: 10px 5px; /* Adjust padding */
+            }
+
+            .join-leave-button {
+                margin-left: 0; /* Remove left margin */
+                width: 100%; /* Full width button */
+                padding: 12px 20px; /* Larger touch target */
+            }
+
+            .chat-container {
+                width: 100%; /* Full width */
+                height: 200px; /* Initial smaller height */
+                position: fixed; /* Position fixed for slide-up */
+                bottom: 0;
+                left: 0;
+                border-radius: 8px 8px 0 0;
+                transform: translateY(100%); /* Initially hidden below screen */
+                transition: transform 0.3s ease-in-out;
+                z-index: 20; /* Above other content */
+                box-sizing: border-box;
+                 padding-bottom: 50px; /* Space for input */
+            }
+
+            .chat-container.active {
+                transform: translateY(0); /* Slide up */
+                 height: 50vh; /* Take up half viewport height */
+            }
+
+             .chat-feed {
+                 height: calc(100% - 40px); /* Adjust height based on input area */
+                 margin-bottom: 0;
+             }
+
+            .chat-input-area {
+                position: absolute; /* Position relative to chat container */
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                padding: 5px;
+                background-color: #1a1a1a; /* Match chat container background */
+                box-sizing: border-box;
+            }
+
+             .chat-input-area input[type="text"] {
+                 font-size: 1em; /* Standard font size */
+                 min-height: 44px; /* Ensure touch target size */
+             }
+
+             .chat-input-area button {
+                 min-height: 44px; /* Ensure touch target size */
+             }
+
+
+            #toggle-chat {
+                display: block; /* Show toggle button on mobile */
+                padding: 8px 15px;
+                border: none;
+                border-radius: 5px;
+                background-color: #3b82f6; /* Blue */
+                color: #fff;
+                font-weight: bold;
+                cursor: pointer;
+                margin-top: 10px;
+                min-width: 44px; /* Ensure touch target size */
+                min-height: 44px;
+            }
+
+            .player-seat .player-hand {
+                 justify-content: center; /* Center cards in mobile view */
+            }
+
+             /* Hide other players' hands by default on mobile */
+             .player-seat:not(.is-user) .player-hand {
+                 /* display: none; */ /* Option 1: Hide completely */
+                 /* Or show face-down cards */
+             }
+
+             /* Optional: Button to toggle other players' hands */
+             #toggle-other-hands {
+                 display: block; /* Show on mobile */
+                 margin-top: 10px;
+                 padding: 8px 15px;
+                 border: none;
+                 border-radius: 5px;
+                 background-color: #555;
+                 color: #eee;
+                 cursor: pointer;
+             }
+        }
+
+        /* Hide toggle button on desktop */
+        #toggle-chat, #toggle-other-hands {
+            display: none;
         }
 
     </style>
@@ -439,6 +738,8 @@
             <span id="wallet-balance">-- SOL</span>
             <button id="connect-wallet-button">Connect Wallet</button>
             <button id="disconnect-wallet-button" style="display: none;">Disconnect</button>
+             <a id="phantom-deeplink" href="#" style="display: none; color: #a78bfa; font-size: 0.8em; margin-left: 10px;">Open in Phantom App</a>
+             <span id="wallet-guidance" style="display: none; color: #facc15; font-size: 0.8em; margin-left: 10px;"></span>
         </div>
         <div class="xp-progress">
             <span id="user-level">Level 1</span>
@@ -454,6 +755,8 @@
             <div id="recent-plays-ticker" class="recent-plays-ticker">
                 <span>No recent plays...</span>
             </div>
+             <div id="leaderboard" style="font-size: 0.8em; margin-left: 10px;">
+                 </div>
             <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
@@ -471,6 +774,14 @@
         </div>
         <div id="player-seats" class="player-seats">
             </div>
+         <div id="hot-table-banner">Hot Table!</div>
+         <div id="near-miss-popup" class="near-miss-popup">Almost!</div>
+         <div id="hot-streak-bar" class="hot-streak-bar" style="display: none;">
+             <div class="hot-streak-fill"></div>
+         </div>
+
+         <button id="toggle-other-hands">Show/Hide Other Hands</button>
+
     </div>
 
     <div id="bottom-bar">
@@ -484,6 +795,7 @@
             </div>
             <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
              <span id="spectator-status" style="display: none; color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
+             <button id="refer-friends-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #5b21b6; color: #fff; font-weight: bold; cursor: pointer;">Refer Friends</button>
         </div>
         <div class="chat-container">
             <div id="chat-feed" class="chat-feed custom-scrollbar">
@@ -493,19 +805,21 @@
                 <button id="send-chat-button">Send</button>
             </div>
         </div>
+         <button id="toggle-chat">Chat</button>
+         <button id="next-hand-button">Next Hand?</button>
     </div>
 
     <canvas id="confetti-canvas"></canvas>
 
-    <script>
-        // --- Global State (Placeholder) ---
+    <audio id="card-deal-sound" src="/assets/sounds/card-deal.mp3" preload="auto"></audio> <audio id="win-sound" src="/assets/sounds/win.mp3" preload="auto"></audio> <audio id="loss-sound" src="/assets/sounds/loss.mp3" preload="auto"></audio> <audio id="button-click-sound" src="/assets/sounds/button-click.mp3" preload="auto"></audio> <script>
+        // --- Global State ---
         const gameState = {
             walletAddress: null,
             walletBalance: 0,
-            userXP: 0,
-            userLevel: 1,
+            userXP: parseInt(localStorage.getItem('userXP') || '0'), // Load from localStorage
+            userLevel: parseInt(localStorage.getItem('userLevel') || '1'), // Load from localStorage
             dealerHand: [],
-            players: [], // Array of player objects { id, name, level, avatar, hand, isUser, timer }
+            players: [], // Array of player objects { id, name, level, avatar, hand, isUser, timer, hotStreak }
             activePlayerId: null,
             turnTimerDuration: 10, // seconds
             betAmount: 0,
@@ -516,6 +830,8 @@
             websocket: null,
             confettiCanvas: null,
             confettiCtx: null,
+            chatVisible: false, // State for mobile chat toggle
+            otherHandsVisible: false, // State for mobile other hands toggle
             // Add other state properties as needed
         };
 
@@ -525,23 +841,39 @@
             walletBalance: document.getElementById('wallet-balance'),
             connectWalletButton: document.getElementById('connect-wallet-button'),
             disconnectWalletButton: document.getElementById('disconnect-wallet-button'),
+            phantomDeeplink: document.getElementById('phantom-deeplink'),
+            walletGuidance: document.getElementById('wallet-guidance'),
             userLevel: document.getElementById('user-level'),
             xpBarFill: document.getElementById('xp-bar-fill'),
             userXP: document.getElementById('user-xp'),
             crateIcon: document.getElementById('crate-icon'),
             recentPlaysTicker: document.getElementById('recent-plays-ticker'),
+            leaderboard: document.getElementById('leaderboard'), // New
             settingsDropdown: document.getElementById('settings-dropdown'), // Placeholder
             dealerCards: document.getElementById('dealer-cards'),
             playerSeats: document.getElementById('player-seats'),
+            hotTableBanner: document.getElementById('hot-table-banner'), // New
+            nearMissPopup: document.getElementById('near-miss-popup'), // New
+            hotStreakBar: document.getElementById('hot-streak-bar'), // New
+            toggleOtherHandsButton: document.getElementById('toggle-other-hands'), // New
             currentBetDisplay: document.getElementById('current-bet-display'),
             betSlider: document.getElementById('bet-slider'),
             quickBetButtons: document.querySelectorAll('.quick-bet-buttons button'),
             joinLeaveButton: document.getElementById('join-leave-button'),
             spectatorStatus: document.getElementById('spectator-status'),
+            referFriendsButton: document.getElementById('refer-friends-button'), // New
+            chatContainer: document.querySelector('.chat-container'), // New
             chatFeed: document.getElementById('chat-feed'),
             chatInput: document.getElementById('chat-input'),
             sendChatButton: document.getElementById('send-chat-button'),
+            toggleChatButton: document.getElementById('toggle-chat'), // New
+            nextHandButton: document.getElementById('next-hand-button'), // New
             confettiCanvas: document.getElementById('confetti-canvas'),
+            // Audio Elements
+            cardDealSound: document.getElementById('card-deal-sound'),
+            winSound: document.getElementById('win-sound'),
+            lossSound: document.getElementById('loss-sound'),
+            buttonClickSound: document.getElementById('button-click-sound'),
         };
 
         // --- Initialization ---
@@ -563,6 +895,9 @@
             // Connect to WebSocket
             connectWebSocket();
 
+            // Check for Daily Reward
+            checkForDailyReward();
+
             // Placeholder: Simulate some initial game state for testing UI layout
             simulateInitialGameState();
         });
@@ -576,6 +911,8 @@
 
         // --- Solana Wallet Integration (using window.solana) ---
         async function checkAutoConnectWallet() {
+             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+
             if (window.solana && window.solana.isConnected) {
                 try {
                     // Attempt to connect silently if already authorized
@@ -583,22 +920,40 @@
                     handleWalletConnected(window.solana.publicKey);
                 } catch (error) {
                     console.error('Auto-connect failed:', error);
-                    // Handle cases where auto-connect is not possible or user rejected
+                     if (isIOS) {
+                         showPhantomDeeplink();
+                     } else {
+                         showWalletGuidance('Please install Phantom wallet.');
+                     }
                 }
+            } else if (isIOS) {
+                 showPhantomDeeplink();
+            } else {
+                 showWalletGuidance('Please install Phantom wallet or another Solana wallet.');
             }
         }
 
         async function connectWallet() {
+             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+
             if (window.solana) {
                 try {
                     const response = await window.solana.connect();
                     handleWalletConnected(response.publicKey);
                 } catch (error) {
                     console.error('Wallet connection failed:', error);
-                    // Handle specific errors (e.g., user rejected)
+                     if (isIOS) {
+                         showPhantomDeeplink();
+                     } else {
+                         showWalletGuidance('Wallet connection failed. Please try again or install Phantom.');
+                     }
                 }
             } else {
-                alert('Solana wallet not found! Please install Phantom, Backpack, Solflare, or Coinbase wallet.');
+                 if (isIOS) {
+                     showPhantomDeeplink();
+                 } else {
+                     showWalletGuidance('Solana wallet not found! Please install Phantom, Backpack, Solflare, or Coinbase wallet.');
+                 }
             }
         }
 
@@ -618,6 +973,8 @@
             dom.walletAddress.textContent = `${gameState.walletAddress.slice(0, 4)}...${gameState.walletAddress.slice(-4)}`;
             dom.connectWalletButton.style.display = 'none';
             dom.disconnectWalletButton.style.display = 'inline-block';
+            dom.phantomDeeplink.style.display = 'none';
+            dom.walletGuidance.style.display = 'none';
             // Placeholder: Fetch balance (requires more web3.js interaction)
             fetchWalletBalance(publicKey);
             updateUI(); // Update UI based on connected state
@@ -630,13 +987,15 @@
             dom.walletBalance.textContent = '-- SOL';
             dom.connectWalletButton.style.display = 'inline-block';
             dom.disconnectWalletButton.style.display = 'none';
+             dom.phantomDeeplink.style.display = 'none'; // Hide deeplink on disconnect
+             dom.walletGuidance.style.display = 'none'; // Hide guidance on disconnect
             updateUI(); // Update UI based on disconnected state
         }
 
         async function fetchWalletBalance(publicKey) {
              // Placeholder: In a real app, use Solana Web3.js Connection object
              // Example:
-             // const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+             // const connection = new Connection(Solana.Web3.clusterApiUrl('devnet'), 'confirmed');
              // const balance = await connection.getBalance(publicKey);
              // gameState.walletBalance = balance / 10**9; // Convert lamports to SOL
              // dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
@@ -646,6 +1005,23 @@
                  gameState.walletBalance = Math.random() * 5 + 1; // Random balance between 1 and 6
                  dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
              }, 500);
+         }
+
+         function showPhantomDeeplink() {
+             const currentUrl = window.location.href;
+             // IMPORTANT: Replace with your actual game URL
+             const deeplinkUrl = `https://phantom.app/ul/v1/browse?url=${encodeURIComponent(currentUrl)}`;
+             dom.phantomDeeplink.href = deeplinkUrl;
+             dom.phantomDeeplink.style.display = 'inline-block';
+             dom.walletGuidance.style.display = 'inline-block';
+             dom.walletGuidance.textContent = 'For iOS, use Phantom\'s in-app browser:';
+             dom.connectWalletButton.style.display = 'none'; // Hide connect button if deeplink shown
+         }
+
+         function showWalletGuidance(message) {
+             dom.walletGuidance.textContent = message;
+             dom.walletGuidance.style.display = 'inline-block';
+             dom.phantomDeeplink.style.display = 'none';
          }
 
 
@@ -717,6 +1093,7 @@
                             renderPlayerSeats(); // Re-render all seats for simplicity
                         }
                     }
+                    playSound(dom.cardDealSound); // Play card deal sound
                     break;
                 case 'turn_changed':
                     gameState.activePlayerId = msg.data.playerId;
@@ -730,15 +1107,26 @@
                     // Update player results (win/loss status)
                     // msg.data might contain results for each player
                     updateUI(); // Update all relevant UI elements
+
                     // Trigger confetti or other win/loss animations
                     if (msg.data.userWon) {
                          triggerConfetti();
+                         playSound(dom.winSound); // Play win sound
+                         triggerHaptic([100, 50, 100]); // Win haptic
+                    } else if (msg.data.userLost) {
+                         playSound(dom.lossSound); // Play loss sound
+                         triggerHaptic([200]); // Loss haptic
                     }
+
+                     // Show "Next Hand?" button
+                     showNextHandButton();
                     break;
                 case 'xp_update':
                     // Update user XP and level
                     gameState.userXP = msg.data.newXP;
                     gameState.userLevel = msg.data.newLevel;
+                    localStorage.setItem('userXP', gameState.userXP); // Persist XP
+                    localStorage.setItem('userLevel', gameState.userLevel); // Persist Level
                     updateXPBar();
                     if (msg.data.levelUp) {
                         showCrateIcon();
@@ -762,6 +1150,30 @@
                     }
                     updateRecentPlaysTicker();
                     break;
+                 case 'hot_table':
+                     // Show/hide hot table banner
+                     if (msg.data.isActive) {
+                         dom.hotTableBanner.style.display = 'block';
+                     } else {
+                         dom.hotTableBanner.style.display = 'none';
+                     }
+                     break;
+                 case 'near_miss':
+                     // Trigger near miss animation
+                     showNearMissPopup(msg.data.message || 'Almost!');
+                     break;
+                 case 'hot_streak_update':
+                     // Update hot streak bar
+                     updateHotStreakBar(msg.data.streakCount);
+                     break;
+                 case 'leaderboard_update':
+                     // Update leaderboard
+                     updateLeaderboard(msg.data.leaderboard);
+                     break;
+                 case 'mystery_event':
+                     // Handle mystery event (e.g., Bonus Round)
+                     showMysteryEvent(msg.data);
+                     break;
                 // Handle other event types as needed
                 default:
                     console.warn("Unknown WebSocket message type:", msg.type);
@@ -783,6 +1195,12 @@
             updateBettingControls();
             // Render chat messages (initial load)
             renderChatFeed();
+             // Update chat container visibility based on state
+             updateChatContainerVisibility();
+             // Update other players hands visibility based on state
+             updateOtherHandsVisibility();
+             // Update leaderboard
+             updateLeaderboard(gameState.leaderboard || []); // Pass current leaderboard state
         }
 
         function updateXPBar() {
@@ -824,6 +1242,25 @@
             // Implement smooth scrolling animation for the ticker if needed
         }
 
+        function updateLeaderboard(leaderboardData) {
+             dom.leaderboard.innerHTML = ''; // Clear current leaderboard
+             if (leaderboardData.length === 0) {
+                 dom.leaderboard.textContent = 'Leaderboard: --';
+                 return;
+             }
+             const leaderboardTitle = document.createElement('span');
+             leaderboardTitle.textContent = 'Leaderboard: ';
+             leaderboardTitle.style.fontWeight = 'bold';
+             dom.leaderboard.appendChild(leaderboardTitle);
+
+             leaderboardData.forEach((entry, index) => {
+                 const entrySpan = document.createElement('span');
+                 entrySpan.textContent = `${index + 1}. ${entry.player}: ${entry.wins} Wins | `;
+                 dom.leaderboard.appendChild(entrySpan);
+             });
+        }
+
+
         function renderDealerHand() {
             dom.dealerCards.innerHTML = ''; // Clear current cards
              if (gameState.dealerHand.length === 0) {
@@ -835,13 +1272,16 @@
             gameState.dealerHand.forEach((card, index) => {
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card');
-                 // For the first card, show back initially
-                 if (index === 0 && !gameState.dealerHand[0].revealed) { // Assuming a 'revealed' property
+                 // For the first card, show back initially if not revealed
+                 if (index === 0 && !card.revealed) { // Assuming a 'revealed' property on card objects
                       cardElement.classList.add('card-back');
                  } else {
                      cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
+                     // In a real app, use an image: cardElement.style.backgroundImage = `url('/assets/cards/${card.value}_${card.suit}.png')`;
+                     // cardElement.style.backgroundSize = 'cover';
+                     // cardElement.style.color = 'transparent'; // Hide text if using image
                  }
-                // Add card flip animation class if needed
+                // Add card flip animation class if needed (e.g., if card.justDealt)
                 // if (card.justDealt) { cardElement.classList.add('flipped'); }
                 dom.dealerCards.appendChild(cardElement);
             });
@@ -849,9 +1289,14 @@
 
         function renderPlayerSeats() {
             dom.playerSeats.innerHTML = ''; // Clear current seats
+            const isMobile = window.innerWidth <= 768;
+
             gameState.players.forEach(player => {
                 const seatElement = document.createElement('div');
                 seatElement.classList.add('player-seat');
+                 if (player.id === gameState.walletAddress) {
+                     seatElement.classList.add('is-user'); // Mark the user's seat
+                 }
                 if (player.id === gameState.activePlayerId) {
                     seatElement.classList.add('active');
                 }
@@ -880,9 +1325,15 @@
                     player.hand.forEach(card => {
                         const cardElement = document.createElement('div');
                         cardElement.classList.add('card');
-                         // If it's not the user's hand, maybe show some cards face down? Depends on game rules.
-                         // For simplicity, showing all cards face up for now.
-                        cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
+                         // On mobile, hide other players' cards unless toggled
+                         if (isMobile && !player.isUser && !gameState.otherHandsVisible) {
+                             cardElement.classList.add('card-back');
+                         } else {
+                             cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
+                             // In a real app, use an image: cardElement.style.backgroundImage = `url('/assets/cards/${card.value}_${card.suit}.png')`;
+                             // cardElement.style.backgroundSize = 'cover';
+                             // cardElement.style.color = 'transparent';
+                         }
                         playerHand.appendChild(cardElement);
                     });
                 } else {
@@ -900,12 +1351,12 @@
                 const hitButton = document.createElement('button');
                 hitButton.classList.add('hit-button');
                 hitButton.textContent = 'Hit';
-                hitButton.onclick = () => sendPlayerAction('hit');
+                hitButton.onclick = () => { sendPlayerAction('hit'); playSound(dom.buttonClickSound); triggerHaptic([50]); }; // Add sound and haptic
 
                 const standButton = document.createElement('button');
                 standButton.classList.add('stand-button');
                 standButton.textContent = 'Stand';
-                standButton.onclick = () => sendPlayerAction('stand');
+                standButton.onclick = () => { sendPlayerAction('stand'); playSound(dom.buttonClickSound); triggerHaptic([50]); }; // Add sound and haptic
 
                 actionButtons.appendChild(hitButton);
                 actionButtons.appendChild(standButton);
@@ -920,6 +1371,17 @@
                  // Timer fill width will be controlled by startTurnTimer function
                 timerBar.appendChild(timerFill);
                 seatElement.appendChild(timerBar);
+
+                // Hot Streak Bar (Visible only for the user's seat)
+                if (player.id === gameState.walletAddress) {
+                    const hotStreakBar = document.createElement('div');
+                    hotStreakBar.classList.add('hot-streak-bar');
+                    hotStreakBar.id = 'user-hot-streak-bar'; // Assign an ID for easy access
+                    const hotStreakFill = document.createElement('div');
+                    hotStreakFill.classList.add('hot-streak-fill');
+                    hotStreakBar.appendChild(hotStreakFill);
+                    seatElement.appendChild(hotStreakBar);
+                }
 
 
                 dom.playerSeats.appendChild(seatElement);
@@ -937,17 +1399,37 @@
         }
 
         function startTurnTimer(duration) {
-            const activePlayerSeat = document.querySelector('.player-seat.active .turn-timer-fill');
-            if (activePlayerSeat) {
+            const activePlayerSeatFill = document.querySelector('.player-seat.active .turn-timer-fill');
+            if (activePlayerSeatFill) {
                 // Reset timer animation
-                activePlayerSeat.style.transition = 'none';
-                activePlayerSeat.style.width = '100%';
+                activePlayerSeatFill.style.transition = 'none';
+                activePlayerSeatFill.style.width = '100%';
                 // Force reflow to apply width: 100% immediately
-                activePlayerSeat.offsetHeight;
+                activePlayerSeatFill.offsetHeight;
                 // Start animation
-                activePlayerSeat.style.transition = `width ${duration}s linear`;
-                activePlayerSeat.style.width = '0%';
+                activePlayerSeatFill.style.transition = `width ${duration}s linear`;
+                activePlayerSeatFill.style.width = '0%';
             }
+        }
+
+        function updateHotStreakBar(streakCount) {
+             const userHotStreakFill = document.getElementById('user-hot-streak-bar')?.querySelector('.hot-streak-fill');
+             if (userHotStreakFill) {
+                 // Assuming streakCount is between 0 and some max value (e.g., 5 or 10)
+                 // Adjust width calculation based on your max streak logic
+                 const maxWidth = 10; // Example max streak before a bonus or reset
+                 const widthPercentage = Math.min(streakCount / maxWidth * 100, 100);
+                 userHotStreakFill.style.width = `${widthPercentage}%`;
+                 userHotStreakFill.parentElement.style.display = streakCount > 0 ? 'block' : 'none'; // Show if streak > 0
+             }
+        }
+
+        function showNearMissPopup(message) {
+            dom.nearMissPopup.textContent = message;
+            dom.nearMissPopup.classList.add('show');
+            setTimeout(() => {
+                dom.nearMissPopup.classList.remove('show');
+            }, 1500); // Show for 1.5 seconds
         }
 
 
@@ -986,6 +1468,14 @@
             gameState.chatMessages.forEach(msg => {
                 addChatMessageToFeed(msg);
             });
+             // Ensure chat container is visible on desktop, hidden on mobile initially
+             if (window.innerWidth > 768) {
+                 dom.chatContainer.classList.add('active');
+                 gameState.chatVisible = true;
+             } else {
+                 dom.chatContainer.classList.remove('active');
+                 gameState.chatVisible = false;
+             }
         }
 
         function addChatMessageToFeed(msg) {
@@ -993,9 +1483,79 @@
             messageElement.classList.add('chat-message');
             messageElement.innerHTML = `<span class="chat-sender">[${msg.sender}]</span><span class="chat-badge">[${msg.badge}]</span> ${msg.message}`;
             dom.chatFeed.appendChild(messageElement);
+
+             // Limit chat messages to prevent DOM bloat
+             const maxChatMessages = 50;
+             if (dom.chatFeed.children.length > maxChatMessages) {
+                 dom.chatFeed.removeChild(dom.chatFeed.children[0]); // Remove the oldest message
+             }
+
             // Auto-scroll to the bottom
             dom.chatFeed.scrollTop = dom.chatFeed.scrollHeight;
         }
+
+        function updateChatContainerVisibility() {
+             if (gameState.chatVisible) {
+                 dom.chatContainer.classList.add('active');
+             } else {
+                 dom.chatContainer.classList.remove('active');
+             }
+        }
+
+        function updateOtherHandsVisibility() {
+             const isMobile = window.innerWidth <= 768;
+             if (!isMobile) {
+                 // Always show hands on desktop
+                 document.querySelectorAll('.player-seat:not(.is-user) .player-hand').forEach(hand => {
+                     hand.style.display = 'flex';
+                     hand.querySelectorAll('.card').forEach(card => card.classList.remove('card-back'));
+                 });
+                 dom.toggleOtherHandsButton.style.display = 'none'; // Hide button on desktop
+                 return;
+             }
+
+             // Mobile logic
+             dom.toggleOtherHandsButton.style.display = 'block'; // Show button on mobile
+
+             document.querySelectorAll('.player-seat:not(.is-user)').forEach(seat => {
+                 const hand = seat.querySelector('.player-hand');
+                 if (gameState.otherHandsVisible) {
+                      hand.style.display = 'flex';
+                      // Show cards face up (assuming card object has 'revealed' or similar)
+                      seat.querySelectorAll('.card').forEach(cardElement => {
+                           // In a real app, you'd check if the card is actually revealed by game state
+                           // For simulation, just remove the back class
+                           cardElement.classList.remove('card-back');
+                           // Restore text content if using text placeholders
+                           if (cardElement.textContent === '') {
+                                // Find the corresponding card in gameState.players and set textContent
+                                const playerId = seat.id; // Assuming player seat has ID matching player.id
+                                const player = gameState.players.find(p => p.id === playerId);
+                                if (player && player.hand.length > Array.from(seat.querySelectorAll('.card')).indexOf(cardElement)) {
+                                     const card = player.hand[Array.from(seat.querySelectorAll('.card')).indexOf(cardElement)];
+                                     cardElement.textContent = `${card.value}${card.suit}`;
+                                }
+                           }
+                      });
+                 } else {
+                      hand.style.display = 'flex'; // Keep hand container visible
+                      // Show cards face down
+                      seat.querySelectorAll('.card').forEach(cardElement => {
+                          cardElement.classList.add('card-back');
+                          cardElement.textContent = ''; // Hide text
+                      });
+                 }
+             });
+        }
+
+        function showNextHandButton() {
+             dom.nextHandButton.style.display = 'block';
+        }
+
+        function hideNextHandButton() {
+             dom.nextHandButton.style.display = 'none';
+        }
+
 
         // --- Event Handlers ---
 
@@ -1025,6 +1585,8 @@
                     dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
                      // Optional: Send bet update
                      // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
+                     playSound(dom.buttonClickSound); // Play sound
+                     triggerHaptic([50]); // Haptic feedback
                 });
             });
 
@@ -1034,6 +1596,8 @@
                 } else {
                     sendMessage({ type: 'joinTable', bet: gameState.betAmount }); // Send bet when joining
                 }
+                 playSound(dom.buttonClickSound); // Play sound
+                 triggerHaptic([50]); // Haptic feedback
             });
 
             dom.sendChatButton.addEventListener('click', sendChatMessage);
@@ -1048,6 +1612,7 @@
              menuIcon.addEventListener('click', () => {
                  const dropdown = dom.settingsDropdown;
                  dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                  playSound(dom.buttonClickSound); // Play sound
              });
 
              // Close settings dropdown if clicked outside
@@ -1056,6 +1621,31 @@
                      dom.settingsDropdown.style.display = 'none';
                  }
              });
+
+             // Mobile Chat Toggle
+             dom.toggleChatButton.addEventListener('click', () => {
+                 gameState.chatVisible = !gameState.chatVisible;
+                 updateChatContainerVisibility();
+                  playSound(dom.buttonClickSound); // Play sound
+             });
+
+             // Mobile Other Hands Toggle
+             dom.toggleOtherHandsButton.addEventListener('click', () => {
+                 gameState.otherHandsVisible = !gameState.otherHandsVisible;
+                 updateOtherHandsVisibility();
+                  playSound(dom.buttonClickSound); // Play sound
+             });
+
+             // Next Hand Button
+             dom.nextHandButton.addEventListener('click', () => {
+                 sendMessage({ type: 'nextHand' });
+                 hideNextHandButton();
+                  playSound(dom.buttonClickSound); // Play sound
+                  triggerHaptic([50]); // Haptic feedback
+             });
+
+             // Refer Friends Button
+             dom.referFriendsButton.addEventListener('click', shareReferral);
         }
 
         function sendPlayerAction(action) {
@@ -1069,8 +1659,25 @@
         function sendChatMessage() {
             const message = dom.chatInput.value.trim();
             if (message && !gameState.isSpectator) {
-                sendMessage({ type: 'chat_message', message: message });
+                // In a real app, sender and badge would come from gameState or backend
+                const sender = gameState.walletAddress ? `${gameState.walletAddress.slice(0, 4)}...` : 'Anon';
+                const badge = gameState.userLevel;
+                sendMessage({ type: 'chat_message', message: message, sender: sender, badge: badge });
                 dom.chatInput.value = ''; // Clear input
+            }
+        }
+
+        // --- Sound and Haptics ---
+        function playSound(audioElement) {
+             if (audioElement) {
+                 audioElement.currentTime = 0; // Rewind to start
+                 audioElement.play().catch(error => console.error("Error playing sound:", error));
+             }
+        }
+
+        function triggerHaptic(pattern) {
+            if (navigator.vibrate) {
+                navigator.vibrate(pattern);
             }
         }
 
@@ -1080,8 +1687,7 @@
         // Placeholder for Confetti Animation (Canvas)
         function triggerConfetti() {
             console.log("Triggering confetti!");
-            // Basic Confetti Simulation (replace with a more robust implementation)
-            const confettiCount = 100;
+            const confettiCount = window.innerWidth < 768 ? 50 : 100; // Adjust count for mobile
             const colors = ['#10b981', '#ec4899', '#a78bfa', '#facc15']; // Green, Pink, Purple, Yellow
             const particles = [];
 
@@ -1121,7 +1727,7 @@
                 });
 
                 // Remove particles that are off-screen
-                particles.filter(p => p.y < dom.confettiCanvas.height);
+                particles.filter(p => p.y < dom.confettiCanvas.height && p.x > 0 && p.x < dom.confettiCanvas.width); // Filter particles within bounds
 
                 if (particles.length > 0) {
                     requestAnimationFrame(updateConfetti);
@@ -1132,16 +1738,100 @@
         }
 
 
+        // --- Additional Engagement Features ---
+
+        function checkForDailyReward() {
+             const lastLogin = localStorage.getItem('lastLogin');
+             const today = new Date().toDateString();
+
+             if (lastLogin !== today) {
+                 let streak = parseInt(localStorage.getItem('loginStreak') || '0') + 1;
+                 localStorage.setItem('lastLogin', today);
+                 localStorage.setItem('loginStreak', streak);
+
+                 if (streak >= 5) {
+                     // Award daily reward (e.g., 0.01 SOL)
+                     gameState.walletBalance += 0.01; // Simulate adding balance
+                     localStorage.setItem('walletBalance', gameState.walletBalance); // Persist balance (simple)
+                     dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
+                     alert('Daily Reward: 0.01 SOL Free Bet!'); // Replace with inline message
+                     localStorage.setItem('loginStreak', '0'); // Reset streak after reward
+                 }
+             } else {
+                 // Already logged in today, maybe show streak status?
+                 const streak = localStorage.getItem('loginStreak') || '0';
+                 console.log(`Login Streak: ${streak} days`);
+             }
+        }
+
+        function shareReferral() {
+             const referralLink = "YOUR_REFERRAL_LINK_HERE"; // Replace with your actual referral link
+             const text = `Join DegenJack & get a bonus! Play blackjack on Solana. ${referralLink} 🚀`;
+
+             if (navigator.share) {
+                 navigator.share({
+                     title: 'DegenJack Referral',
+                     text: text,
+                     url: referralLink, // Optional: share the link directly
+                 }).catch(error => console.error('Error sharing:', error));
+             } else {
+                 // Fallback for browsers that don't support navigator.share
+                 window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank'); // Example: Share on X (Twitter)
+                 // Or copy to clipboard:
+                 // navigator.clipboard.writeText(text).then(() => {
+                 //     alert('Referral link copied to clipboard!'); // Replace with inline message
+                 // }).catch(err => console.error('Failed to copy:', err));
+             }
+             playSound(dom.buttonClickSound); // Play sound
+        }
+
+        function updateLeaderboard(leaderboardData) {
+            dom.leaderboard.innerHTML = ''; // Clear current leaderboard
+            if (!leaderboardData || leaderboardData.length === 0) {
+                dom.leaderboard.textContent = 'Leaderboard: --';
+                return;
+            }
+            const leaderboardTitle = document.createElement('span');
+            leaderboardTitle.textContent = 'Leaderboard: ';
+            leaderboardTitle.style.fontWeight = 'bold';
+            dom.leaderboard.appendChild(leaderboardTitle);
+
+            leaderboardData.forEach((entry, index) => {
+                const entrySpan = document.createElement('span');
+                entrySpan.textContent = `${index + 1}. ${entry.player}: ${entry.wins} Wins | `;
+                dom.leaderboard.appendChild(entrySpan);
+            });
+        }
+
+        function showMysteryEvent(eventData) {
+             console.log("Mystery Event Triggered:", eventData);
+             // Placeholder: Implement UI for mystery event (e.g., Bonus Round banner)
+             if (eventData.type === 'bonus_round') {
+                 dom.hotTableBanner.textContent = `Bonus Round Active! ${eventData.message || 'Double Payouts!'}`;
+                 dom.hotTableBanner.style.display = 'block';
+                 // Optional: Hide after a duration
+                 setTimeout(() => {
+                     dom.hotTableBanner.style.display = 'none';
+                 }, eventData.duration || 5000); // Hide after 5 seconds by default
+             }
+        }
+
+
         // --- Placeholder Simulation Data (for initial UI testing) ---
         function simulateInitialGameState() {
+             // Load persisted state
+             gameState.userXP = parseInt(localStorage.getItem('userXP') || '0');
+             gameState.userLevel = parseInt(localStorage.getItem('userLevel') || '1');
+             gameState.walletBalance = parseFloat(localStorage.getItem('walletBalance') || '0'); // Load simulated balance
+
              gameState.players = [
-                 { id: 'player1', name: 'CryptoKing', level: 7, avatar: '😎', hand: [{value: 'K', suit: '♥'}, {value: '5', suit: '♦'}], isUser: false, timer: 10 },
-                 { id: 'user-wallet-id', name: 'You', level: 5, avatar: '😊', hand: [{value: 'Q', suit: '♠'}, {value: '8', suit: '♣'}], isUser: true, timer: 10 }, // Replace 'user-wallet-id' with actual connected wallet ID
-                 { id: 'player3', name: 'DegenJane', level: 3, avatar: '😂', hand: [{value: '2', suit: '♥'}, {value: '7', suit: '♦'}], isUser: false, timer: 10 },
+                 { id: 'player1', name: 'CryptoKing', level: 7, avatar: '😎', hand: [{value: 'K', suit: '♥'}, {value: '5', suit: '♦'}], isUser: false, timer: 10, hotStreak: 3 },
+                 { id: 'user-wallet-id', name: 'You', level: gameState.userLevel, avatar: '😊', hand: [{value: 'Q', suit: '♠'}, {value: '8', suit: '♣'}], isUser: true, timer: 10, hotStreak: 2 }, // Replace 'user-wallet-id' with actual connected wallet ID
+                 { id: 'player3', name: 'DegenJane', level: 3, avatar: '😂', hand: [{value: '2', suit: '♥'}, {value: '7', suit: '♦'}], isUser: false, timer: 10, hotStreak: 0 },
              ];
              gameState.dealerHand = [{value: '?', suit: '?'}, {value: '10', suit: '♠'}]; // Dealer shows one card
              gameState.activePlayerId = 'user-wallet-id'; // Set user as active initially
-             gameState.betAmount = 0.5;
+             gameState.betAmount = parseFloat(localStorage.getItem('currentBet') || '0.5'); // Persist bet amount
              gameState.isSeated = true;
              gameState.chatMessages = [
                  { sender: 'Anon', message: 'gm degens!', badge: '1' },
@@ -1152,14 +1842,54 @@
                  { player: 'You', amount: 0.5, win: false },
                  { player: 'DegenJane', amount: 0.1, win: true },
              ];
-             gameState.userXP = 75; // Example XP
-             gameState.userLevel = 5; // Example Level
+
+             // Simulate a leaderboard
+             gameState.leaderboard = [
+                 { player: 'CryptoKing', wins: 10 },
+                 { player: 'DegenJane', wins: 8 },
+                 { player: 'Anon', wins: 5 },
+                 { player: 'You', wins: 4 },
+                 { player: 'Whale', wins: 3 },
+             ];
 
 
              // Update UI with simulated data
              updateUI();
              // Start the timer animation for the active player
              startTurnTimer(gameState.turnTimerDuration);
+
+             // Simulate a fake chat message every few seconds
+             setInterval(() => {
+                 const fakeMessages = [
+                     { sender: 'Anon' + Math.floor(Math.random() * 100), message: 'wow!', badge: Math.floor(Math.random() * 10) + 1 },
+                     { sender: 'WhaleWatcher', message: 'big win!', badge: Math.floor(Math.random() * 20) + 5 },
+                     { sender: 'Degen', message: 'lfg!', badge: Math.floor(Math.random() * 5) + 1 },
+                 ];
+                 const randomMsg = fakeMessages[Math.floor(Math.random() * fakeMessages.length)];
+                 // Only add if chat is visible on desktop or chat container is active on mobile
+                 if (window.innerWidth > 768 || gameState.chatVisible) {
+                      addChatMessageToFeed(randomMsg);
+                 }
+             }, 10000); // Every 10 seconds
+
+             // Simulate a fake recent play every few seconds
+             setInterval(() => {
+                 const fakePlays = [
+                     { player: 'Anon' + Math.floor(Math.random() * 100), amount: parseFloat((Math.random() * 0.5 + 0.01).toFixed(2)), win: Math.random() > 0.5 },
+                     { player: 'WhaleWatcher', amount: parseFloat((Math.random() * 1 + 0.1).toFixed(2)), win: Math.random() > 0.5 },
+                 ];
+                 const randomPlay = fakePlays[Math.floor(Math.random() * fakePlays.length)];
+                 gameState.recentPlays.unshift(randomPlay);
+                  if (gameState.recentPlays.length > 10) {
+                      gameState.recentPlays.pop();
+                  }
+                  updateRecentPlaysTicker();
+             }, 15000); // Every 15 seconds
+
+             // Simulate Mystery Event (Bonus Round) periodically
+             setInterval(() => {
+                 showMysteryEvent({ type: 'bonus_round', message: 'Double Payouts!', duration: 10000 }); // Bonus round for 10 seconds
+             }, 60000); // Every 60 seconds (1 minute)
         }
 
 
