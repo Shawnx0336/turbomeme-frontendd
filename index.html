@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DegenDice - Slotana Style</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"> <title>DegenDice - Slotana Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --bg-dark: #0A0A0A;
@@ -13,33 +13,72 @@
             --radius-md: 12px;
             --radius-sm: 6px;
             --shadow-glow: 0 0 10px;
+            --header-height: 60px; /* Define header height */
+            --leaderboard-width: 250px; /* Define leaderboard width */
+            --chat-height: 300px; /* Define chat height */
+            --chat-width: 300px; /* Define chat width */
         }
-        
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
+            background: linear-gradient(180deg, var(--bg-dark) 0%, #1a0a1a 100%); /* Animated background gradient */
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
             color: var(--text-light);
             margin: 0;
             padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative; /* Needed for fixed positioning */
+            /* Safe Area Insets for mobile */
+            padding-top: constant(safe-area-inset-top);
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: constant(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom);
+            overflow-x: hidden; /* Prevent horizontal scroll from fixed elements */
         }
-        
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         header {
             background: linear-gradient(145deg, rgba(255, 51, 102, 0.2), rgba(0, 255, 153, 0.1));
-            padding: 1rem;
+            padding: 0.5rem 1rem; /* Adjusted padding */
+            height: var(--header-height); /* Set header height */
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed; /* Fixed header */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 20; /* Ensure header is on top */
+            box-sizing: border-box; /* Include padding in width */
         }
-        
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem; /* Space between header elements */
+        }
+
         .wallet-info {
             font-weight: 400;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        
+
+        .wallet-info i {
+            color: var(--accent-green); /* Icon color */
+        }
+
         .game-container {
             flex: 1;
             display: flex;
@@ -47,17 +86,21 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            padding-top: calc(var(--header-height) + 2rem); /* Add padding to account for fixed header */
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
+            box-sizing: border-box; /* Include padding in width */
+            position: relative; /* Needed for z-index */
+            z-index: 1; /* Below fixed elements */
         }
-        
+
         .dice-area {
             display: flex;
             gap: 2rem;
             margin-bottom: 2rem;
         }
-        
+
         .dice {
             width: 100px;
             height: 100px;
@@ -71,7 +114,7 @@
             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.2);
             transition: transform 0.3s ease;
         }
-        
+
         .controls {
             background: rgba(20, 20, 20, 0.8);
             padding: 1.5rem;
@@ -82,18 +125,18 @@
             flex-direction: column;
             gap: 1.5rem;
         }
-        
+
         .slider-container {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
-        
+
         .slider-labels {
             display: flex;
             justify-content: space-between;
         }
-        
+
         input[type="range"] {
             width: 100%;
             height: 8px;
@@ -102,7 +145,7 @@
             border-radius: 4px;
             outline: none;
         }
-        
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 24px;
@@ -112,7 +155,7 @@
             cursor: pointer;
             box-shadow: var(--shadow-glow) var(--accent-pink);
         }
-        
+
         .multiplier-display {
             font-size: 1.5rem;
             font-weight: 700;
@@ -120,13 +163,13 @@
             color: var(--accent-green);
             text-shadow: var(--shadow-glow) var(--accent-green);
         }
-        
+
         .bet-controls {
             display: flex;
             gap: 1rem;
             justify-content: center;
         }
-        
+
         button {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -135,29 +178,45 @@
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative; /* Needed for pseudo-elements/animations */
+            overflow: hidden; /* Hide overflow for glowing effect */
         }
-        
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .roll-btn {
             background-color: var(--accent-pink);
             color: white;
         }
-        
-        .roll-btn:hover {
+
+        /* Glowing hover effect for roll button */
+        .roll-btn:hover:not(:disabled) {
             transform: scale(1.05);
             box-shadow: var(--shadow-glow) var(--accent-pink);
+            animation: glowing 1.5s infinite;
         }
-        
+
+        @keyframes glowing {
+            0% { box-shadow: var(--shadow-glow) var(--accent-pink); }
+            50% { box-shadow: 0 0 20px var(--accent-pink); }
+            100% { box-shadow: var(--shadow-glow) var(--accent-pink); }
+        }
+
+
         .chip-btn {
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
             flex: 1;
         }
-        
+
         .chip-btn.active {
             background-color: var(--accent-pink);
             box-shadow: var(--shadow-glow) var(--accent-pink);
         }
-        
+
         .result-display {
             font-size: 2rem;
             font-weight: 700;
@@ -165,29 +224,29 @@
             text-align: center;
             min-height: 3rem;
         }
-        
+
         .win {
             color: var(--accent-green);
             animation: scale 0.5s;
         }
-        
+
         .loss {
             color: var(--accent-pink);
             animation: shake 0.3s;
         }
-        
+
         @keyframes scale {
             0% { transform: scale(0.8); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-        
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-5px); }
             40%, 80% { transform: translateX(5px); }
         }
-        
+
         .win-overlay {
             position: fixed;
             top: 0;
@@ -204,13 +263,13 @@
             pointer-events: none;
             z-index: 100;
         }
-        
+
         @keyframes flash {
             0% { opacity: 0; }
             50% { opacity: 1; }
             100% { opacity: 0; }
         }
-        
+
         .streak-popup {
             position: fixed;
             top: 50%;
@@ -224,7 +283,7 @@
             animation: scale 0.5s;
             z-index: 101;
         }
-        
+
         .recent-wins {
             position: fixed;
             bottom: 1rem;
@@ -234,19 +293,20 @@
             white-space: nowrap;
             background: rgba(0, 0, 0, 0.5);
             padding: 0.5rem 0;
+            z-index: 10; /* Below game container, above background */
         }
-        
+
         .recent-wins span {
             display: inline-block;
             padding-left: 100%;
             animation: slide-left 15s linear infinite;
         }
-        
+
         @keyframes slide-left {
             0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
         }
-        
+
         .hot-streak {
             position: fixed;
             top: 1rem;
@@ -257,13 +317,14 @@
             border-radius: var(--radius-md);
             font-weight: 700;
             animation: pulse 1s infinite;
+            z-index: 10; /* Below header, above game */
         }
-        
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
-        
+
         #confetti-canvas {
             position: fixed;
             top: 0;
@@ -273,26 +334,568 @@
             pointer-events: none;
             z-index: 99;
         }
+
+        /* --- New Styles for Added Features --- */
+
+        /* Modals */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000; /* High z-index for modals */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: var(--bg-dark);
+            padding: 2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: slideInFromTop 0.3s ease;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--accent-green);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--text-light);
+            text-decoration: none;
+        }
+
+        /* Wallet Connect Modal Specifics */
+        .wallet-options button {
+            display: block;
+            width: 100%;
+            margin-bottom: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 1rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .wallet-options button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .wallet-options button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Leaderboard */
+        .leaderboard-sidebar {
+            position: fixed;
+            top: var(--header-height); /* Position below header */
+            right: 0;
+            width: var(--leaderboard-width);
+            height: calc(100% - var(--header-height)); /* Full height below header */
+            background: rgba(20, 20, 20, 0.9);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            box-sizing: border-box;
+            z-index: 15; /* Above game container, below header */
+            overflow-y: auto; /* Enable scrolling for long leaderboards */
+            transform: translateX(0); /* Default position */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .leaderboard-sidebar h3 {
+            margin-top: 0;
+            color: var(--accent-green);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 1; /* Default opacity for animation */
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-item .player-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .leaderboard-item .player-info .avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1); /* Placeholder background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .leaderboard-item .wins {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        /* Leaderboard update animation */
+        .leaderboard-item.fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .leaderboard-item.pulse {
+            animation: pulse 1s infinite;
+        }
+
+
+        /* Chat System */
+        .chat-container {
+            position: fixed;
+            bottom: calc(1rem + constant(safe-area-inset-bottom)); /* Position above safe area */
+            bottom: calc(1rem + env(safe-area-inset-bottom));
+            right: 1rem;
+            width: var(--chat-width);
+            height: var(--chat-height);
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
+            z-index: 100; /* Above most elements */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer; /* Toggle on click */
+        }
+
+        .chat-header i {
+             transition: transform 0.3s ease;
+        }
+
+        .chat-header i.rotated {
+            transform: rotate(180deg);
+        }
+
+
+        .chat-body {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto; /* Scrollable chat messages */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-pink) transparent;
+        }
+
+        .chat-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background-color: var(--accent-pink);
+            border-radius: 3px;
+        }
+
+
+        .chat-message {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            word-break: break-word; /* Break long words */
+        }
+
+        .chat-message .username {
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-right: 0.5rem;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 0.75rem;
+            gap: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input-area input[type="text"] {
+            flex: 1;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            outline: none;
+        }
+
+        .chat-input-area input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-input-area button {
+            padding: 0.5rem 1rem;
+            background-color: var(--accent-pink);
+            color: white;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+        }
+
+        .chat-input-area button:hover {
+            background-color: #ff6699;
+        }
+
+        /* Mobile Chat Toggle */
+        .chat-toggle-btn {
+            display: none; /* Hidden by default on desktop */
+            position: fixed;
+            bottom: calc(1rem + constant(safe-area-inset-bottom));
+            bottom: calc(1rem + env(safe-area-inset-bottom));
+            right: 1rem;
+            background-color: var(--accent-pink);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-glow) var(--accent-pink);
+            z-index: 110; /* Above chat container */
+            cursor: pointer;
+        }
+
+        /* Full-screen chat for mobile */
+        body.chat-open .chat-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            background: var(--bg-dark); /* Solid background for full screen */
+            z-index: 1000; /* Above everything */
+        }
+
+        body.chat-open .chat-toggle-btn {
+            display: none; /* Hide toggle button when chat is full screen */
+        }
+
+        body.chat-open .chat-header i {
+            transform: rotate(180deg); /* Indicate chat is open */
+        }
+
+
+        /* Profile Modal Specifics */
+        .profile-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .profile-options label {
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .profile-options input[type="text"] {
+             padding: 0.75rem;
+             border-radius: var(--radius-sm);
+             border: 1px solid rgba(255, 255, 255, 0.1);
+             background-color: rgba(255, 255, 255, 0.05);
+             color: var(--text-light);
+             outline: none;
+        }
+
+        .profile-options button {
+            background-color: var(--accent-green);
+            color: var(--bg-dark);
+            font-weight: 700;
+        }
+
+        .profile-options button:hover {
+            background-color: #33ffb3;
+        }
+
+        /* Deposit/Withdraw Modals */
+        .transaction-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .transaction-options input[type="number"] {
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            outline: none;
+        }
+
+        .transaction-options button {
+            background-color: var(--accent-green);
+            color: var(--bg-dark);
+            font-weight: 700;
+        }
+
+        .transaction-options button:hover {
+            background-color: #33ffb3;
+        }
+
+        /* Daily Challenge */
+        .daily-challenge-panel {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-top: 2rem;
+            text-align: center;
+            border: 1px solid var(--accent-green);
+            animation: pulseBorder 2s infinite;
+        }
+
+        @keyframes pulseBorder {
+            0%, 100% { border-color: var(--accent-green); }
+            50% { border-color: rgba(0, 255, 153, 0.5); }
+        }
+
+        .daily-challenge-panel h4 {
+            margin-top: 0;
+            color: var(--accent-green);
+        }
+
+        .daily-challenge-panel .progress {
+            margin: 0.5rem 0;
+        }
+
+        .daily-challenge-panel button {
+            background-color: var(--accent-pink);
+            color: white;
+            margin-top: 1rem;
+        }
+
+        /* Referral Feature */
+        .referral-feature {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-top: 2rem;
+            text-align: center;
+            border: 1px solid var(--accent-pink);
+        }
+
+        .referral-feature h4 {
+            margin-top: 0;
+            color: var(--accent-pink);
+        }
+
+        .referral-code {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            color: var(--accent-green);
+        }
+
+        .referral-feature button {
+            background-color: var(--accent-green);
+            color: var(--bg-dark);
+            margin-top: 1rem;
+        }
+
+        /* Coin Shower Animation (using existing confetti) */
+        /* Confetti styles are already present */
+
+
+        /* Micro-interactions (added to existing buttons) */
+        button:active:not(:disabled) {
+            transform: scale(0.95); /* Press down effect */
+        }
+
+        /* Flash on Wins/Milestones (using existing .win-overlay) */
+        /* The .win-overlay already provides a flash effect */
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .header-left, .header-right {
+                gap: 0.5rem; /* Reduce gap on smaller screens */
+            }
+
+            .wallet-info {
+                font-size: 12px;
+            }
+
+            .dice {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+
+            .dice-area {
+                gap: 1rem;
+            }
+
+            .controls {
+                padding: 1rem;
+            }
+
+            .multiplier-display {
+                font-size: 1.2rem;
+            }
+
+            .bet-controls {
+                gap: 0.5rem;
+            }
+
+            button {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .result-display {
+                font-size: 1.5rem;
+                min-height: 2.5rem;
+            }
+
+            .leaderboard-sidebar {
+                width: 100%; /* Full width on mobile */
+                right: -100%; /* Hide off-screen initially */
+                transition: transform 0.3s ease-in-out;
+            }
+
+            body.leaderboard-open .leaderboard-sidebar {
+                transform: translateX(-100%); /* Slide in from right */
+            }
+
+            .chat-container {
+                width: 95%; /* Adjust chat width for mobile */
+                right: 2.5%;
+                bottom: calc(60px + 1rem + constant(safe-area-inset-bottom)); /* Position above mobile toggle */
+                bottom: calc(60px + 1rem + env(safe-area-inset-bottom));
+                height: 250px; /* Adjust chat height */
+            }
+
+            .chat-toggle-btn {
+                display: flex; /* Show toggle button on mobile */
+            }
+
+             body.chat-open .chat-container {
+                bottom: 0; /* Full screen position */
+                right: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            body.chat-open .chat-header {
+                padding-top: constant(safe-area-inset-top);
+                padding-top: env(safe-area-inset-top);
+            }
+
+            body.chat-open .chat-input-area {
+                 padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .streak-popup {
+                font-size: 36px;
+                padding: 0.75rem 1.5rem;
+            }
+
+            .hot-streak {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .recent-wins {
+                font-size: 0.9rem;
+            }
+        }
+
     </style>
 </head>
 <body>
     <header>
-        <div class="wallet-info">
-            Wallet: Not connected
+        <div class="header-left">
+             <button id="connect-wallet-btn" class="chip-btn"><i class="fas fa-wallet"></i> Connect Wallet</button>
+            <div class="wallet-info" id="wallet-info">
+                Wallet: Not connected
+            </div>
+             <div class="profile-avatar" id="profile-avatar" style="cursor: pointer;">
+                <i class="fas fa-user-circle" style="font-size: 24px;"></i> </div>
         </div>
-        <div class="hot-streak">
+        <div class="header-right">
+            <button id="deposit-btn" class="chip-btn"><i class="fas fa-plus-circle"></i> Deposit</button>
+            <button id="withdraw-btn" class="chip-btn"><i class="fas fa-minus-circle"></i> Withdraw</button>
+             <button id="referral-btn" class="chip-btn"><i class="fas fa-share-alt"></i> Invite</button>
+        </div>
+        <div class="hot-streak" id="hot-streak">
             🔥 Hot Streak! 5 Wins
         </div>
     </header>
-    
+
     <div class="game-container">
         <div class="dice-area">
             <div class="dice" id="die1">1</div>
             <div class="dice" id="die2">1</div>
         </div>
-        
+
         <div class="result-display" id="result"></div>
-        
+
         <div class="controls">
             <div class="slider-container">
                 <div class="slider-labels">
@@ -301,11 +904,11 @@
                 </div>
                 <input type="range" id="roll-under-slider" min="3" max="11" value="7" step="1">
             </div>
-            
+
             <div class="multiplier-display" id="multiplier">
                 Payout: 6x
             </div>
-            
+
             <div class="bet-controls">
                 <button class="chip-btn" data-value="0.01">0.01</button>
                 <button class="chip-btn" data-value="0.1">0.1</button>
@@ -313,18 +916,114 @@
                 <button class="chip-btn" data-value="5">5</button>
                 <button class="chip-btn" data-value="MAX">MAX</button>
             </div>
-            
+
             <button class="roll-btn" id="roll-button">ROLL</button>
         </div>
+
+        <div class="daily-challenge-panel" id="daily-challenge-panel">
+            <h4>Daily Challenge</h4>
+            <p id="challenge-text">Roll under 5 three times</p>
+            <div class="progress" id="challenge-progress">Progress: 0/3</div>
+            <button id="claim-reward-btn" style="display: none;">Claim Reward (Mock)</button>
+        </div>
+
+         <div class="referral-feature" id="referral-feature" style="display: none;">
+             <h4>Invite Friends</h4>
+             <p>Earn 0.05 SOL for each friend who joins!</p>
+             <div class="referral-code" id="referral-code">YOURCODE123</div>
+             <button id="copy-referral-btn">Copy Code</button>
+         </div>
+
     </div>
-    
+
     <div class="recent-wins">
         <span>Player1 won 2.5 SOL! • Player2 won 1.8 SOL! • Player3 won 5.2 SOL!</span>
     </div>
-    
+
     <canvas id="confetti-canvas"></canvas>
-    
+
+    <div id="wallet-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Connect Wallet</h2>
+            <div class="wallet-options">
+                <button id="connect-phantom"><img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> Phantom</button>
+                <button id="connect-solflare"><img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> Solflare</button>
+                <button id="disconnect-wallet" style="display: none;">Disconnect</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Profile</h2>
+            <div class="profile-options">
+                <label for="username-input">Username:</label>
+                <input type="text" id="username-input" placeholder="Enter your username">
+                 <label for="avatar-select">Choose Avatar:</label>
+                 <select id="avatar-select">
+                     <option value="😎">😎</option>
+                     <option value="🥳">🥳</option>
+                     <option value="🤩">🤩</option>
+                     <option value="🚀">🚀</option>
+                     <option value="💎">💎</option>
+                 </select>
+                <button id="save-profile-btn">Save Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deposit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Deposit (Mock)</h2>
+            <div class="transaction-options">
+                <label for="deposit-amount">Amount (SOL):</label>
+                <input type="number" id="deposit-amount" value="1" min="0.01" step="0.01">
+                <button id="confirm-deposit-btn">Simulate Deposit</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdraw-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Withdraw (Mock)</h2>
+             <p>Your Balance: <span id="current-balance">0.00</span> SOL</p>
+            <div class="transaction-options">
+                <label for="withdraw-amount">Amount (SOL):</label>
+                <input type="number" id="withdraw-amount" value="0.1" min="0.01" step="0.01">
+                <button id="confirm-withdraw-btn">Simulate Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="leaderboard-sidebar" id="leaderboard-sidebar">
+        <h3>Leaderboard 🔥</h3>
+        <ul class="leaderboard-list" id="leaderboard-list">
+            </ul>
+    </div>
+
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header" id="chat-header">
+            Chat <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="chat-body" id="chat-body">
+            </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type a message...">
+            <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div class="chat-toggle-btn" id="mobile-chat-toggle">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+
+
     <script>
+        // --- Existing Game Script (DO NOT MODIFY) ---
         // Game state
         const state = {
             rollUnder: 7,
@@ -344,7 +1043,7 @@
                 11: 2.5
             }
         };
-        
+
         // DOM elements
         const die1 = document.getElementById('die1');
         const die2 = document.getElementById('die2');
@@ -354,22 +1053,24 @@
         const multiplierDisplay = document.getElementById('multiplier');
         const rollButton = document.getElementById('roll-button');
         const chipButtons = document.querySelectorAll('.chip-btn');
-        
+        const hotStreakDisplay = document.getElementById('hot-streak'); // Get hot streak element
+
         // Initialize
         updateMultiplier();
-        
+        updateHotStreakDisplay(); // Initialize hot streak display
+
         // Event listeners
         rollUnderSlider.addEventListener('input', function() {
             state.rollUnder = parseInt(this.value);
             rollUnderValue.textContent = state.rollUnder;
             updateMultiplier();
         });
-        
+
         chipButtons.forEach(button => {
             button.addEventListener('click', function() {
                 chipButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
-                
+
                 if (this.dataset.value === 'MAX') {
                     state.chipValue = 10; // In a real app, this would be wallet balance
                 } else {
@@ -377,17 +1078,20 @@
                 }
             });
         });
-        
+
         rollButton.addEventListener('click', rollDice);
-        
+
         // Game functions
         function rollDice() {
             // Disable button during roll
             rollButton.disabled = true;
-            
+
             // Animate dice
             animateDice();
-            
+
+            // Play roll sound
+            playRollSound(); // Added sound effect
+
             // After animation, show result
             setTimeout(() => {
                 // Generate random dice values
@@ -395,97 +1099,104 @@
                     Math.floor(Math.random() * 6) + 1,
                     Math.floor(Math.random() * 6) + 1
                 ];
-                
+
                 // Calculate result
                 const sum = state.diceValues[0] + state.diceValues[1];
                 state.rollResult = sum < state.rollUnder ? 'WIN' : 'LOSE';
-                
+
                 // Update UI
                 die1.textContent = state.diceValues[0];
                 die2.textContent = state.diceValues[1];
-                
+
                 resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
                 resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
-                
+
                 // Show effects
                 if (state.rollResult === 'WIN') {
                     showWinEffect();
                     updateStreak(true);
+                    playWinSound(); // Play win sound
+                    triggerCoinShower(); // Trigger coin shower
+                    updateLeaderboardWins(); // Update leaderboard wins (mock)
+                    checkDailyChallenge(); // Check daily challenge progress
                 } else {
                     updateStreak(false);
+                    playLossSound(); // Play loss sound
                 }
-                
+
                 // Re-enable button
                 rollButton.disabled = false;
             }, 1000);
         }
-        
+
         function animateDice() {
             die1.style.animation = 'none';
             die2.style.animation = 'none';
-            
+
             // Trigger reflow
             void die1.offsetWidth;
             void die2.offsetWidth;
-            
+
             die1.style.animation = 'shake 0.5s infinite';
             die2.style.animation = 'shake 0.5s infinite';
         }
-        
+
         function showWinEffect() {
             // Create win overlay
             const overlay = document.createElement('div');
             overlay.className = 'win-overlay';
             overlay.textContent = `+${(state.chipValue * state.payouts[state.rollUnder]).toFixed(2)} SOL!`;
             document.body.appendChild(overlay);
-            
+
             // Create confetti
             triggerConfetti();
-            
+
             // Remove overlay after animation
             setTimeout(() => {
                 overlay.remove();
             }, 1000);
         }
-        
+
         function updateStreak(isWin) {
             if (isWin) {
                 state.streak++;
-                
-                if (state.streak % 3 === 0) {
-                    showStreakPopup();
+
+                if (state.streak >= 3 && state.streak % 3 === 0) { // Show popup every 3 wins after 3
+                     showStreakPopup();
                 }
             } else {
                 state.streak = 0;
             }
+            updateHotStreakDisplay(); // Update hot streak display
         }
-        
+
         function showStreakPopup() {
             const popup = document.createElement('div');
             popup.className = 'streak-popup';
             popup.textContent = `🔥 Streak x${state.streak}!`;
             document.body.appendChild(popup);
-            
+
             setTimeout(() => {
                 popup.remove();
             }, 1500);
         }
-        
+
         function updateMultiplier() {
             const multiplier = state.payouts[state.rollUnder];
             multiplierDisplay.textContent = `Payout: ${multiplier}x`;
         }
-        
+
+        // Confetti function (existing)
         function triggerConfetti() {
             const canvas = document.getElementById('confetti-canvas');
             const ctx = canvas.getContext('2d');
-            
+
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
+
             const particles = [];
             const colors = ['#FF3366', '#00FF99', '#FFFFFF', '#FFD700'];
-            
+
             // Create particles
             for (let i = 0; i < 100; i++) {
                 particles.push({
@@ -499,36 +1210,554 @@
                     rotationSpeed: Math.random() * 10 - 5
                 });
             }
-            
+
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
+
                 let stillAlive = false;
-                
+
                 particles.forEach(p => {
                     p.x += p.speedX;
                     p.y += p.speedY;
                     p.rotation += p.rotationSpeed;
-                    
+
                     ctx.save();
                     ctx.translate(p.x, p.y);
                     ctx.rotate(p.rotation * Math.PI / 180);
                     ctx.fillStyle = p.color;
                     ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
                     ctx.restore();
-                    
+
                     if (p.y < canvas.height) {
                         stillAlive = true;
                     }
                 });
-                
+
                 if (stillAlive) {
                     requestAnimationFrame(animate);
                 }
             }
-            
+
             animate();
         }
+
+        // Update hot streak display
+        function updateHotStreakDisplay() {
+             if (state.streak > 0) {
+                hotStreakDisplay.style.display = 'block';
+                hotStreakDisplay.textContent = `🔥 Hot Streak! ${state.streak} Wins`;
+             } else {
+                hotStreakDisplay.style.display = 'none';
+             }
+        }
+
+
+        // --- New Script for Added Features ---
+
+        // --- Modals ---
+        const walletModal = document.getElementById('wallet-modal');
+        const profileModal = document.getElementById('profile-modal');
+        const depositModal = document.getElementById('deposit-modal');
+        const withdrawModal = document.getElementById('withdraw-modal');
+
+        const connectWalletBtn = document.getElementById('connect-wallet-btn');
+        const profileAvatar = document.getElementById('profile-avatar');
+        const depositBtn = document.getElementById('deposit-btn');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        const referralBtn = document.getElementById('referral-btn'); // Get referral button
+
+        const closeButtons = document.querySelectorAll('.modal .close-button');
+
+        // Open Modals
+        connectWalletBtn.addEventListener('click', () => { walletModal.style.display = 'flex'; });
+        profileAvatar.addEventListener('click', () => { profileModal.style.display = 'flex'; });
+        depositBtn.addEventListener('click', () => {
+            document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in withdraw modal
+            depositModal.style.display = 'flex';
+        });
+        withdrawBtn.addEventListener('click', () => {
+            document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in withdraw modal
+            withdrawModal.style.display = 'flex';
+        });
+        referralBtn.addEventListener('click', () => {
+             // Toggle referral panel visibility instead of a modal for simplicity
+             const referralPanel = document.getElementById('referral-feature');
+             referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
+        });
+
+
+        // Close Modals
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.modal').style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === walletModal) { walletModal.style.display = 'none'; }
+            if (event.target === profileModal) { profileModal.style.display = 'none'; }
+            if (event.target === depositModal) { depositModal.style.display = 'none'; }
+            if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; }
+        });
+
+
+        // --- Wallet Connection (Mock) ---
+        const walletInfo = document.getElementById('wallet-info');
+        const connectPhantomBtn = document.getElementById('connect-phantom');
+        const connectSolflareBtn = document.getElementById('connect-solflare');
+        const disconnectWalletBtn = document.getElementById('disconnect-wallet');
+
+        const mockWallet = {
+            isConnected: false,
+            address: null,
+            balance: 10.00 // Mock balance
+        };
+
+        function updateWalletUI() {
+            if (mockWallet.isConnected) {
+                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${mockWallet.address.substring(0, 6)}...${mockWallet.address.slice(-4)} (${mockWallet.balance.toFixed(2)} SOL)`;
+                connectWalletBtn.style.display = 'none';
+                disconnectWalletBtn.style.display = 'block';
+            } else {
+                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
+                connectWalletBtn.style.display = 'block';
+                disconnectWalletBtn.style.display = 'none';
+            }
+        }
+
+        connectPhantomBtn.addEventListener('click', () => {
+            // Simulate connecting to Phantom
+            mockWallet.isConnected = true;
+            mockWallet.address = 'G4t1mE5b8...'; // Mock address
+            updateWalletUI();
+            walletModal.style.display = 'none';
+        });
+
+        connectSolflareBtn.addEventListener('click', () => {
+            // Simulate connecting to Solflare
+            mockWallet.isConnected = true;
+            mockWallet.address = 'S0lF1aR3...'; // Mock address
+            updateWalletUI();
+            walletModal.style.display = 'none';
+        });
+
+        disconnectWalletBtn.addEventListener('click', () => {
+            // Simulate disconnecting
+            mockWallet.isConnected = false;
+            mockWallet.address = null;
+            updateWalletUI();
+            walletModal.style.display = 'none';
+        });
+
+        // Initial wallet UI update
+        updateWalletUI();
+
+
+        // --- Leaderboard (Mock) ---
+        const leaderboardList = document.getElementById('leaderboard-list');
+
+        let mockLeaderboardData = [
+            { id: 1, username: 'CryptoKing', avatar: '😎', wins: 150 },
+            { id: 2, username: 'SOL_Roller', avatar: '🥳', wins: 120 },
+            { id: 3, username: 'DegenMaster', avatar: '🤩', wins: 95 },
+            { id: 4, username: 'LuckyCharm', avatar: '🍀', wins: 88 },
+            { id: 5, username: 'BlockchainPro', avatar: '💎', wins: 76 },
+            { id: 6, username: 'NFT_Gamer', avatar: '🎮', wins: 65 },
+            { id: 7, username: 'YieldFarmer', avatar: '🧑‍🌾', wins: 50 },
+            { id: 8, username: 'TokenTrader', avatar: '📈', wins: 45 },
+            { id: 9, username: 'Web3_Novice', avatar: '🐣', wins: 30 },
+            { id: 10, username: 'HODLer', avatar: '🧘', wins: 25 },
+        ];
+
+        function renderLeaderboard() {
+            leaderboardList.innerHTML = ''; // Clear current list
+            mockLeaderboardData.sort((a, b) => b.wins - a.wins); // Sort by wins
+            mockLeaderboardData.slice(0, 10).forEach(player => {
+                const listItem = document.createElement('li');
+                listItem.className = 'leaderboard-item fade-in'; // Add fade-in class
+                listItem.innerHTML = `
+                    <div class="player-info">
+                        <span class="avatar">${player.avatar}</span>
+                        <span class="username">${player.username}</span>
+                    </div>
+                    <span class="wins">${player.wins} Wins</span>
+                `;
+                leaderboardList.appendChild(listItem);
+            });
+        }
+
+        // Mock function to update wins for the connected user (if connected)
+        function updateLeaderboardWins() {
+            if (mockWallet.isConnected && mockWallet.address) {
+                 // Find or add the current user to mock data
+                 let currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
+                 if (!currentUser) {
+                     const username = localStorage.getItem('username') || 'You';
+                     const avatar = localStorage.getItem('avatar') || '👤';
+                     currentUser = { id: 'current_user', username: username, avatar: avatar, wins: 0 };
+                     mockLeaderboardData.push(currentUser);
+                 }
+                 currentUser.wins++;
+                 renderLeaderboard(); // Re-render leaderboard
+            }
+        }
+
+        // Initial render of the leaderboard
+        renderLeaderboard();
+
+
+        // --- Chat System (Mock) ---
+        const chatContainer = document.getElementById('chat-container');
+        const chatHeader = document.getElementById('chat-header');
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat-btn');
+        const mobileChatToggleBtn = document.getElementById('mobile-chat-toggle');
+
+        let mockChatMessages = [
+            { username: 'System', text: 'Welcome to DegenDice Chat!', type: 'system' },
+            { username: 'CryptoKing', text: 'Just hit a x35!', type: 'user' },
+            { username: 'LuckyCharm', text: 'Nice one!', type: 'user' },
+        ];
+
+        function renderChatMessages() {
+            chatBody.innerHTML = ''; // Clear current messages
+            mockChatMessages.forEach(msg => {
+                const msgElement = document.createElement('div');
+                msgElement.className = 'chat-message';
+                if (msg.type === 'system') {
+                    msgElement.style.fontStyle = 'italic';
+                    msgElement.style.opacity = 0.7;
+                    msgElement.textContent = msg.text;
+                } else {
+                     msgElement.innerHTML = `<span class="username">${msg.username}:</span> ${msg.text}`;
+                }
+                chatBody.appendChild(msgElement);
+            });
+            // Auto-scroll to bottom
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (text) {
+                 const username = localStorage.getItem('username') || 'Anonymous';
+                mockChatMessages.push({ username: username, text: text, type: 'user' });
+                chatInput.value = ''; // Clear input
+                renderChatMessages();
+                 // Simulate receiving a response or another message
+                 setTimeout(simulateNewChatMessage, 1000);
+            }
+        }
+
+        sendChatBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+
+        // Simulate new messages arriving
+        function simulateNewChatMessage() {
+             const simulatedMessages = [
+                 { username: 'SOL_Roller', text: 'Anyone on a hot streak?', type: 'user' },
+                 { username: 'DegenMaster', text: 'Just started, feeling lucky!', type: 'user' },
+                 { username: 'System', text: 'A new player joined!', type: 'system' }
+             ];
+             const randomMsg = simulatedMessages[Math.floor(Math.random() * simulatedMessages.length)];
+             mockChatMessages.push(randomMsg);
+             renderChatMessages();
+        }
+
+        // Simulate new messages every few seconds
+        setInterval(simulateNewChatMessage, 5000); // Simulate a new message every 5 seconds
+
+        // Initial render of chat messages
+        renderChatMessages();
+
+        // Chat toggle for mobile
+        chatHeader.addEventListener('click', () => {
+            if (window.innerWidth <= 768) { // Only toggle on mobile
+                document.body.classList.toggle('chat-open');
+            }
+        });
+
+         mobileChatToggleBtn.addEventListener('click', () => {
+             document.body.classList.add('chat-open'); // Open chat on mobile toggle click
+         });
+
+
+        // --- Profile System ---
+        const usernameInput = document.getElementById('username-input');
+        const avatarSelect = document.getElementById('avatar-select');
+        const saveProfileBtn = document.getElementById('save-profile-btn');
+        const profileAvatarIcon = document.querySelector('#profile-avatar i'); // Get the icon element
+
+        function loadProfile() {
+            const savedUsername = localStorage.getItem('username');
+            const savedAvatar = localStorage.getItem('avatar');
+
+            if (savedUsername) {
+                usernameInput.value = savedUsername;
+            }
+            if (savedAvatar) {
+                avatarSelect.value = savedAvatar;
+                profileAvatarIcon.textContent = savedAvatar; // Update header icon
+            } else {
+                 profileAvatarIcon.className = ''; // Remove font awesome class
+                 profileAvatarIcon.textContent = '👤'; // Default emoji
+            }
+        }
+
+        saveProfileBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const avatar = avatarSelect.value;
+
+            if (username) {
+                localStorage.setItem('username', username);
+            } else {
+                 localStorage.removeItem('username');
+            }
+            localStorage.setItem('avatar', avatar);
+
+            loadProfile(); // Update UI after saving
+            profileModal.style.display = 'none';
+             // Update leaderboard with new username/avatar if connected
+             if (mockWallet.isConnected && mockWallet.address) {
+                 const currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
+                 if (currentUser) {
+                      currentUser.username = username || 'You';
+                      currentUser.avatar = avatar;
+                      renderLeaderboard();
+                 }
+             }
+        });
+
+        // Load profile on page load
+        loadProfile();
+
+
+        // --- Deposit & Withdraw (Mock) ---
+        const depositAmountInput = document.getElementById('deposit-amount');
+        const confirmDepositBtn = document.getElementById('confirm-deposit-btn');
+        const withdrawAmountInput = document.getElementById('withdraw-amount');
+        const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
+
+        confirmDepositBtn.addEventListener('click', () => {
+            const amount = parseFloat(depositAmountInput.value);
+            if (amount > 0) {
+                // Simulate MoonPay flow (replace with actual integration)
+                alert(`Simulating deposit of ${amount.toFixed(2)} SOL via MoonPay... (This is a mock)`);
+                 mockWallet.balance += amount; // Update mock balance
+                 updateWalletUI(); // Update wallet display
+                 depositModal.style.display = 'none';
+            } else {
+                alert('Please enter a valid deposit amount.');
+            }
+        });
+
+        confirmWithdrawBtn.addEventListener('click', () => {
+            const amount = parseFloat(withdrawAmountInput.value);
+            if (amount > 0 && amount <= mockWallet.balance) {
+                // Simulate withdrawal transaction
+                alert(`Simulating withdrawal of ${amount.toFixed(2)} SOL... (This is a mock)`);
+                 mockWallet.balance -= amount; // Update mock balance
+                 updateWalletUI(); // Update wallet display
+                 withdrawModal.style.display = 'none';
+            } else if (amount > mockWallet.balance) {
+                alert('Insufficient balance for withdrawal.');
+            } else {
+                 alert('Please enter a valid withdrawal amount.');
+            }
+        });
+
+
+        // --- Engagement Boosters ---
+
+        // Sound Effects
+        const rollSound = new Audio('https://www.soundjay.com/mechanical/gears-01.wav'); // Mock sound URL
+        const winSound = new Audio('https://www.soundjay.com/human/applause-01.wav'); // Mock sound URL
+        const lossSound = new Audio('https://www.soundjay.com/misc/fart-01.wav'); // Mock sound URL (Use a different sound if preferred!)
+        // Add chat sound if needed
+
+        function playRollSound() {
+             if (rollSound.readyState >= 2) { // Check if sound is loaded
+                rollSound.currentTime = 0; // Rewind to start
+                rollSound.play().catch(e => console.error("Error playing roll sound:", e));
+             }
+        }
+
+        function playWinSound() {
+             if (winSound.readyState >= 2) {
+                winSound.currentTime = 0;
+                winSound.play().catch(e => console.error("Error playing win sound:", e));
+             }
+        }
+
+        function playLossSound() {
+             if (lossSound.readyState >= 2) {
+                lossSound.currentTime = 0;
+                lossSound.play().catch(e => console.error("Error playing loss sound:", e));
+             }
+        }
+
+        // Coin Shower Animation (using existing triggerConfetti function)
+        function triggerCoinShower() {
+            // The existing triggerConfetti function serves as a coin shower effect
+            triggerConfetti();
+        }
+
+        // Glowing Hover Effect on Roll Button (Implemented in CSS)
+
+        // Daily Challenge
+        const dailyChallengePanel = document.getElementById('daily-challenge-panel');
+        const challengeText = document.getElementById('challenge-text');
+        const challengeProgress = document.getElementById('challenge-progress');
+        const claimRewardBtn = document.getElementById('claim-reward-btn');
+
+        const dailyChallenge = {
+            description: "Roll under 5 three times",
+            targetValue: 5,
+            targetCount: 3,
+            currentProgress: 0,
+            rewardAmount: 0.1, // Mock reward
+            isCompleted: false
+        };
+
+        function loadDailyChallengeProgress() {
+            const savedProgress = localStorage.getItem('dailyChallengeProgress');
+            if (savedProgress !== null) {
+                dailyChallenge.currentProgress = parseInt(savedProgress);
+            }
+            const savedCompletion = localStorage.getItem('dailyChallengeCompleted');
+            if (savedCompletion === 'true') {
+                dailyChallenge.isCompleted = true;
+            }
+             updateDailyChallengeUI();
+        }
+
+        function updateDailyChallengeUI() {
+            challengeText.textContent = dailyChallenge.description;
+            challengeProgress.textContent = `Progress: ${dailyChallenge.currentProgress}/${dailyChallenge.targetCount}`;
+
+            if (dailyChallenge.isCompleted) {
+                challengeProgress.textContent = "Completed!";
+                claimRewardBtn.style.display = 'none'; // Hide claim button after claiming
+            } else if (dailyChallenge.currentProgress >= dailyChallenge.targetCount) {
+                 claimRewardBtn.style.display = 'block';
+            } else {
+                 claimRewardBtn.style.display = 'none';
+            }
+        }
+
+        function checkDailyChallenge() {
+            if (!dailyChallenge.isCompleted && state.rollResult === 'WIN' && (state.diceValues[0] + state.diceValues[1]) < dailyChallenge.targetValue) {
+                dailyChallenge.currentProgress++;
+                localStorage.setItem('dailyChallengeProgress', dailyChallenge.currentProgress);
+                updateDailyChallengeUI();
+                if (dailyChallenge.currentProgress >= dailyChallenge.targetCount) {
+                     // Challenge completed!
+                     dailyChallenge.isCompleted = true;
+                     localStorage.setItem('dailyChallengeCompleted', 'true');
+                     updateDailyChallengeUI();
+                     alert('Daily Challenge Completed! Claim your reward.'); // Notify user
+                }
+            }
+        }
+
+        claimRewardBtn.addEventListener('click', () => {
+            if (dailyChallenge.isCompleted && !localStorage.getItem('dailyChallengeClaimed')) {
+                // Simulate claiming reward
+                 alert(`Claiming mock reward of ${dailyChallenge.rewardAmount} SOL!`);
+                 mockWallet.balance += dailyChallenge.rewardAmount; // Add mock reward to balance
+                 updateWalletUI(); // Update wallet display
+                 localStorage.setItem('dailyChallengeClaimed', 'true'); // Mark as claimed
+                 claimRewardBtn.style.display = 'none'; // Hide button
+            } else {
+                 alert('Reward already claimed or challenge not completed.');
+            }
+        });
+
+        // Load daily challenge progress on page load
+        loadDailyChallengeProgress();
+
+
+        // Referral Feature
+        const referralCodeElement = document.getElementById('referral-code');
+        const copyReferralBtn = document.getElementById('copy-referral-btn');
+
+        function generateReferralCode() {
+             // Simple mock code generation
+             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+             let code = '';
+             for (let i = 0; i < 7; i++) {
+                 code += characters.charAt(Math.floor(Math.random() * characters.length));
+             }
+             return code;
+        }
+
+        // Generate and display a mock referral code
+        referralCodeElement.textContent = generateReferralCode();
+
+        copyReferralBtn.addEventListener('click', () => {
+             const code = referralCodeElement.textContent;
+             navigator.clipboard.writeText(code).then(() => {
+                 alert('Referral code copied to clipboard!');
+             }).catch(err => {
+                 console.error('Failed to copy referral code: ', err);
+                 alert('Could not copy referral code.');
+             });
+        });
+
+
+        // --- UI/UX Enhancements ---
+
+        // Animated Background Gradient (Implemented in CSS)
+
+        // Micro-interactions (Button hover/active effects implemented in CSS)
+
+        // Safe Area Insets (Implemented in CSS padding)
+
+        // Mobile Chat Toggle (Implemented in CSS and JS event listeners)
+
+        // Adjust leaderboard and chat visibility on window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                // Ensure leaderboard and chat are visible on desktop if window is resized
+                document.body.classList.remove('leaderboard-open'); // Assume leaderboard is always visible on desktop
+                document.body.classList.remove('chat-open'); // Chat is a fixed box on desktop
+                leaderboardSidebar.style.transform = 'translateX(0)';
+                chatContainer.style.position = 'fixed';
+                chatContainer.style.width = 'var(--chat-width)';
+                chatContainer.style.height = 'var(--chat-height)';
+                chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
+                chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
+                chatContainer.style.right = '1rem';
+                chatContainer.style.top = 'auto';
+                chatContainer.style.left = 'auto';
+                chatContainer.style.borderRadius = 'var(--radius-md)';
+                chatContainer.style.background = 'rgba(20, 20, 20, 0.9)';
+                mobileChatToggleBtn.style.display = 'none';
+
+            } else {
+                // On mobile, ensure leaderboard is hidden and chat is positioned correctly
+                 leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard
+                 mobileChatToggleBtn.style.display = 'flex'; // Show mobile chat toggle
+                 // Chat position handled by .chat-container and .chat-open class
+            }
+        });
+
+        // Initial check for mobile layout on load
+        if (window.innerWidth <= 768) {
+            leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard on mobile
+            mobileChatToggleBtn.style.display = 'flex'; // Show mobile chat toggle
+        } else {
+             leaderboardSidebar.style.transform = 'translateX(0)'; // Ensure leaderboard is visible on desktop
+             mobileChatToggleBtn.style.display = 'none'; // Hide mobile chat toggle on desktop
+        }
+
+        // --- End of New Script ---
+
     </script>
 </body>
 </html>
