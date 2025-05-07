@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DegenJack</title>
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>DegenRoulette</title> <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Basic Reset and Body Styles */
         body {
@@ -109,13 +108,13 @@
             background-color: rgba(26, 26, 26, 0.8); /* Middle dark, semi-transparent */
             backdrop-filter: blur(3px); /* Subtle blur */
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Changed to column for wheel and grid */
             align-items: center;
             justify-content: center;
             padding: 1rem; /* Use rem for padding */
             width: 100%; /* Ensure full width */
             box-sizing: border-box;
-            overflow: hidden; /* Prevent game table content from causing scroll */
+            overflow: auto; /* Allow scrolling if content exceeds size */
             position: relative; /* Needed for absolute positioning of near-miss, next-hand */
             /* Add padding at the bottom to prevent game table content from being hidden by the fixed bottom bar */
             padding-bottom: calc(8rem + env(safe-area-inset-bottom)); /* Adjust 8rem based on bottom bar height */
@@ -125,6 +124,10 @@
             background-size: cover, 100% 100%;
             background-position: center, center;
             background-blend-mode: overlay; /* Blend gradient over texture */
+             /* Wood grain border (placeholder) */
+             /* border: 0.5rem solid url('/assets/textures/wood-grain.png'); */
+             /* border-image: url('/assets/textures/wood-grain.png') 30 repeat; */
+             /* box-shadow: inset 0 0 6.25rem rgba(0, 0, 0, 0.8); */ /* Vignette effect */
         }
 
         #bottom-bar {
@@ -230,104 +233,184 @@
         }
 
         /* Game Table Styles */
-        .dealer-hand, .player-hand {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1rem; /* Use rem for margin */
-            flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
-        }
 
-        .card {
-            width: 3.75rem; /* Use rem for width (60px) */
-            height: 5.625rem; /* Use rem for height (90px) */
-            background-color: #fff;
-            border-radius: 0.375rem; /* Use rem for border-radius (6px) */
-            margin: 0 0.25rem; /* Use rem for margin (5px) */
+        /* Roulette Wheel Container */
+        #roulette-wheel-container {
+            width: 25rem; /* Use rem */
+            height: 25rem; /* Use rem */
+            margin-bottom: 2rem; /* Use rem */
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1rem; /* Use rem for font size */
+            /* Add some 3D perspective */
+            transform: perspective(1000px) rotateX(15deg);
+        }
+
+        #roulette-wheel-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #000; /* Black center */
+            box-shadow: 0 0 2rem rgba(255, 215, 0, 0.5); /* Gold glow */
+             /* Add wood grain texture to the wheel edge */
+             border: 1rem solid transparent; /* Placeholder for border image */
+             border-image: url('/assets/textures/wood-grain.png') 30 round; /* Placeholder */
+             box-sizing: border-box;
+        }
+
+        #winning-number-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem; /* Use rem */
+            font-weight: bold;
+            color: #ffd700; /* Gold */
+            text-shadow: 0 0 1rem rgba(255, 215, 0, 0.8);
+            z-index: 5;
+             /* Add a subtle bounce animation on update */
+             animation: bounce-text 0.5s ease-out;
+        }
+
+         @keyframes bounce-text {
+             0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+             50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+             100% { transform: translate(-50%, -50%) scale(1); }
+         }
+
+
+        /* Betting Grid */
+        #betting-grid-container {
+             width: 100%;
+             max-width: 50rem; /* Max width for the grid */
+             margin: 0 auto; /* Center the grid */
+             display: flex;
+             flex-direction: column;
+             align-items: center; /* Center grid content */
+             padding: 1rem; /* Use rem */
+             background-color: rgba(0, 50, 0, 0.8); /* Dark green felt */
+             border-radius: 1rem; /* Use rem */
+             box-shadow: inset 0 0 2rem rgba(0, 0, 0, 0.5); /* Inner shadow */
+        }
+
+        #betting-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 3rem) 3rem; /* 12 columns for numbers + 1 for 3x */
+            grid-template-rows: repeat(3, 3rem) 3rem 3rem; /* 3 rows for numbers + 1 for 2x + 1 for 1-18/etc */
+            gap: 0.25rem; /* Use rem for gap */
+             font-family: 'Luckiest Guy', cursive; /* Casino font */
+             font-size: 1.2rem; /* Use rem */
+             color: #eee;
+        }
+
+        .grid-cell {
+            background-color: rgba(20, 20, 20, 0.8); /* Dark cell background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.25rem; /* Use rem */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            position: relative; /* For chip placement */
+             /* Add subtle border */
+             border: 1px solid #333;
+        }
+
+        .grid-cell:hover {
+            background-color: rgba(50, 50, 50, 0.8);
+            box-shadow: 0 0 0.5rem rgba(255, 215, 0, 0.5); /* Gold hover glow */
+        }
+
+        .cell-0 {
+            grid-column: 1 / span 1;
+            grid-row: 1 / span 3;
+            background-color: #006400; /* Dark green for 0 */
+        }
+
+        .cell-number {
+            /* Colors for numbers */
+        }
+
+        .cell-red { background-color: #b22222; /* Firebrick Red */ }
+        .cell-black { background-color: #1a1a1a; /* Very dark black */ }
+
+        .cell-2x {
+            grid-column: 13 / span 1;
+        }
+
+        .cell-bottom-row {
+             grid-row: 4 / span 1;
+        }
+
+         .cell-bottom-row.full-width {
+             grid-column: 1 / span 13;
+             display: grid;
+             grid-template-columns: repeat(3, 1fr); /* 3 columns for 1-18, Even, Red */
+             gap: 0.25rem; /* Use rem */
+         }
+
+         .cell-bottom-row.full-width > .grid-cell {
+             grid-column: span 1;
+         }
+
+         .cell-bottom-row.full-width.second-row {
+             grid-row: 5 / span 1;
+         }
+
+         .cell-bottom-row.full-width.second-row > .grid-cell {
+              grid-column: span 1;
+         }
+
+
+        /* Chip on Grid */
+        .placed-chip {
+            position: absolute;
+            width: 1.5rem; /* Use rem */
+            height: 1.5rem; /* Use rem */
+            border-radius: 50%;
+            background-color: gold; /* Placeholder */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem; /* Use rem */
             font-weight: bold;
             color: #333;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
-             /* Promote to hardware layer for smoother animation */
-            will-change: transform;
-             /* Entry animation */
-             animation: fade-in 0.3s ease-in-out;
-
-             /* Card Design Enhancements */
-             background-size: cover;
-             background-position: center;
-             color: transparent; /* Hide text content when using background images */
-             border: 1px solid #d4af37; /* Gold border */
-             box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4), inset -1px -1px 2px rgba(0, 0, 0, 0.2); /* Layered shadow */
-             /* Add subtle linen texture overlay if desired */
-             /* background-image: url('/assets/textures/linen.png'), var(--card-image); */
-             /* background-size: cover, cover; */
-             /* background-blend-mode: overlay; */
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+             /* Subtle pulse animation */
+             animation: chip-pulse 1s infinite alternate;
         }
 
-        .card-back {
-            background-color: #1d3557; /* Deep navy blue back */
-            color: transparent; /* Hide text on back */
-             /* Gold filigree pattern */
-             background-image: url('/assets/textures/filigree-gold.png'); /* Placeholder */
-             background-size: cover;
-             background-position: center;
-             /* Subtle embossed logo */
-             /* background-image: url('/assets/logo/degenjack-back.png'), url('/assets/textures/filigree-gold.png'); */
-             /* background-size: 50%, cover; */
-             /* background-position: center, center; */
-             /* background-repeat: no-repeat, no-repeat; */
-        }
-
-        .card.flipped {
-            transform: rotateY(180deg);
-        }
-
-         /* Card Deal Animation */
-         @keyframes slide-in {
-             0% { transform: translateY(-6.25rem) rotate(10deg); opacity: 0; } /* Use rem */
-             100% { transform: translateY(0) rotate(0deg); opacity: 1; }
-         }
-
-         .card.deal-animation {
-             animation: slide-in 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Cubic bezier for bounce */
-         }
-
-         /* Card Hover Effect */
-         .card:hover:not(.card-back) {
-             transform: translateY(-0.3125rem); /* Lift slightly */
-             box-shadow: 0 0 0.625rem #ffd700; /* Gold glow */
+         @keyframes chip-pulse {
+             0% { transform: scale(1); box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); }
+             100% { transform: scale(1.05); box-shadow: 0 0 5px rgba(255, 215, 0, 0.8); }
          }
 
 
+        /* Player Seats (Simplified for Roulette) */
         .player-seats {
-            display: grid; /* Use grid for player seats */
-            grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); /* Fluid columns, min width 8rem */
-            gap: 0.5rem; /* Use rem for gap */
+            display: flex; /* Use flex for a horizontal row below the grid */
             justify-content: center;
             width: 100%;
-            margin-bottom: 1rem; /* Add margin below seats */
+            margin-top: 1rem; /* Use rem */
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 0.5rem; /* Use rem */
         }
 
         .player-seat {
-            height: 3rem; /* Compressed height (48px) */
-            max-width: 100%; /* Ensure it doesn't overflow */
-            margin: 0; /* Remove individual seat margin, use grid gap */
-            padding: 0.5rem; /* Use rem for padding */
+            height: auto; /* Auto height */
+            max-width: 10rem; /* Max width for seat */
+            margin: 0; /* Remove individual seat margin, use flex gap */
+            padding: 0.5rem; /* Use rem */
             background-color: #2a2a2a;
-            border-radius: 0.5rem; /* Use rem for border-radius */
+            border-radius: 0.5rem; /* Use rem */
             display: flex;
             flex-direction: column;
             align-items: center;
             border: 2px solid transparent;
             transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             box-sizing: border-box; /* Include padding and border in element's total width and height */
-            font-size: 0.875rem; /* Use rem for font size */
+            font-size: 0.875rem; /* Use rem */
              overflow: hidden; /* Prevent content overflow */
              overflow-wrap: anywhere; /* Allow breaking long words */
              /* Entry animation */
@@ -338,6 +421,7 @@
              background-size: cover;
              border: 2px solid #d4af37; /* Gold trim */
              box-shadow: inset 0 0 0.3125rem #a78bfa; /* Inner glow */
+             flex-shrink: 0; /* Prevent shrinking */
         }
 
         @keyframes fade-in {
@@ -430,7 +514,7 @@
 
          /* Hide player hand in compressed view initially */
          .player-seat .player-hand {
-             display: none;
+             display: none; /* No hands in Roulette seats */
          }
 
 
@@ -542,7 +626,7 @@
             opacity: 1;
         }
 
-        /* Dealer Anchor */
+        /* Dealer Anchor - Repurposed for Roulette Info */
         .dealer-anchor {
             background: radial-gradient(circle at center, #2e2e2e, transparent);
             border-radius: 0.75rem; /* Use rem */
@@ -849,8 +933,8 @@
          }
 
 
-         /* Next Hand Button Placeholder */
-         #next-hand-button {
+         /* Next Hand Button Placeholder - Repurposed for Spin */
+         #spin-button {
              position: absolute;
              bottom: calc(9.375rem + env(safe-area-inset-bottom)); /* Position above bottom bar (150px), accounting for safe area */
              left: 50%;
@@ -875,7 +959,7 @@
             -webkit-tap-highlight-color: transparent;
          }
 
-         #next-hand-button:hover {
+         #spin-button:hover {
             background-color: #059669;
             box-shadow: 0 0 1.25rem #059669; /* Use rem */
          }
@@ -1072,10 +1156,37 @@
     </div>
 
     <div id="game-table">
-        <div class="dealer-anchor">
-            <h3>Dealer <span id="dealer-emoji">🃏</span></h3> <div id="dealer-cards" class="player-hand">
-                </div>
+        <div id="roulette-wheel-container">
+            <canvas id="roulette-wheel-canvas"></canvas>
+            <div id="winning-number-display">--</div>
         </div>
+
+        <div id="betting-grid-container">
+            <div id="betting-grid">
+                </div>
+             <div class="cell-bottom-row full-width">
+                 <div class="grid-cell" data-bet-type="1-18">1-18</div>
+                 <div class="grid-cell cell-black" data-bet-type="even">EVEN</div>
+                 <div class="grid-cell cell-red" data-bet-type="red">RED</div>
+             </div>
+             <div class="cell-bottom-row full-width second-row">
+                 <div class="grid-cell cell-red" data-bet-type="black">BLACK</div>
+                 <div class="grid-cell cell-odd" data-bet-type="odd">ODD</div>
+                 <div class="grid-cell" data-bet-type="19-36">19-36</div>
+             </div>
+             <div class="cell-bottom-row">
+                 <div class="grid-cell" data-bet-type="1st12">1st 12</div>
+                 <div class="grid-cell" data-bet-type="2nd12">2nd 12</div>
+                 <div class="grid-cell" data-bet-type="3rd12">3rd 12</div>
+             </div>
+             <div class="cell-bottom-row">
+                 <div class="grid-cell cell-2x" data-bet-type="2to1-1">2 to 1</div>
+                 <div class="grid-cell cell-2x" data-bet-type="2to1-2">2 to 1</div>
+                 <div class="grid-cell cell-2x" data-bet-type="2to1-3">2 to 1</div>
+             </div>
+        </div>
+
+
         <div id="player-seats" class="player-seats">
             </div>
          <div id="hot-table-banner" class="hidden">Hot Table!</div>
@@ -1084,20 +1195,16 @@
              <div class="hot-streak-fill"></div>
          </div>
 
-         <button id="toggle-other-hands" class="hidden">Show/Hide Other Hands</button>
-
-    </div>
+         <button id="toggle-other-hands" class="hidden">Show/Hide Other Players</button> </div>
 
     <div id="bottom-bar">
         <div class="bottom-bar-section betting-controls">
-            <span id="current-bet-display">Bet: 0.00 SOL</span>
-            <input type="range" id="bet-slider" min="0" max="10" step="0.01" value="0">
-            <div class="quick-bet-buttons">
-                <button data-bet-amount="0.01" class="chip-button green-chip">+0.01</button>
-                <button data-bet-amount="0.1" class="chip-button purple-chip">+0.1</button>
-                <button data-bet-amount="MAX" class="chip-button max-chip">🔥MAX Bet</button>
+            <span id="current-bet-display">Chip Value: 0.01 SOL</span> <div class="chip-selection-buttons">
+                 <button data-chip-value="0.01" class="chip-button green-chip">+0.01</button>
+                 <button data-chip-value="0.1" class="chip-button purple-chip">+0.1</button>
+                 <button data-chip-value="1" class="chip-button gold-chip">+1</button> <button data-chip-value="5" class="chip-button red-chip">+5</button> <button data-chip-value="MAX" class="chip-button max-chip">🔥MAX</button>
             </div>
-            <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
+            <button id="clear-bets-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #ef4444; color: #0a0a0a; font-weight: bold; cursor: pointer; min-width: 48px; min-height: 48px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">Clear Bets</button> <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
              <span id="spectator-status" class="hidden" style="color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
              <button id="refer-friends-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #5b21b6; color: #fff; font-weight: bold; cursor: pointer; min-width: 48px; min-height: 48px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">🎁 Invite & Earn 0.05 SOL</button> </div>
         <div class="bottom-bar-section chat-container">
@@ -1109,8 +1216,7 @@
             </div>
         </div>
          <button id="toggle-chat" class="hidden">Chat</button>
-         <button id="next-hand-button" class="hidden">Next Hand?</button>
-    </div>
+         <button id="spin-button" class="hidden">Spin!</button> </div>
 
     <canvas id="confetti-canvas"></canvas>
     <canvas id="background-particles" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas> <div id="profile-lounge-section" class="hidden">
@@ -1153,7 +1259,17 @@
     </div>
 
 
-    <audio id="card-deal-sound" src="/assets/sounds/card-deal.mp3" preload="none"></audio> <audio id="win-sound" src="/assets/sounds/win.mp3" preload="none"></audio> <audio id="loss-sound" src="/assets/sounds/loss.mp3" preload="none"></audio> <audio id="button-click-sound" src="/assets/sounds/button-click.mp3" preload="none"></audio> <audio id="coin-drop-sound" src="/assets/sounds/coin-drop.mp3" preload="none"></audio> <audio id="background-loop-sound" src="/assets/sounds/background-loop.mp3" preload="none" loop></audio> <audio id="chip-sound" src="/assets/sounds/chip.mp3" preload="none"></audio> <audio id="whoosh-sound" src="/assets/sounds/whoosh.mp3" preload="none"></audio> <audio id="card-thud-sound" src="/assets/sounds/card-thud.mp3" preload="none"></audio> <audio id="jackpot-sound" src="/assets/sounds/jackpot.mp3" preload="none"></audio> <audio id="crowd-cheer-sound" src="/assets/sounds/crowd-cheer.mp3" preload="none"></audio> <div id="floating-emoji-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20;"></div>
+    <audio id="roulette-spin-sound" src="/assets/sounds/roulette-spin.mp3" preload="none"></audio> <audio id="ball-drop-sound" src="/assets/sounds/ball-drop.mp3" preload="none"></audio> <audio id="win-sound" src="/assets/sounds/win.mp3" preload="none"></audio>
+    <audio id="loss-sound" src="/assets/sounds/loss.mp3" preload="none"></audio>
+    <audio id="button-click-sound" src="/assets/sounds/button-click.mp3" preload="none"></audio>
+    <audio id="coin-drop-sound" src="/assets/sounds/coin-drop.mp3" preload="none"></audio>
+    <audio id="background-loop-sound" src="/assets/sounds/background-loop.mp3" preload="none" loop></audio>
+    <audio id="chip-sound" src="/assets/sounds/chip.mp3" preload="none"></audio>
+    <audio id="whoosh-sound" src="/assets/sounds/whoosh.mp3" preload="none"></audio>
+    <audio id="card-thud-sound" src="/assets/sounds/card-thud.mp3" preload="none"></audio>
+    <audio id="jackpot-sound" src="/assets/sounds/jackpot.mp3" preload="none"></audio>
+    <audio id="crowd-cheer-sound" src="/assets/sounds/crowd-cheer.mp3" preload="none"></audio>
+    <div id="floating-emoji-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20;"></div>
 
 
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
@@ -1164,13 +1280,22 @@
             walletBalance: 0,
             userXP: parseInt(localStorage.getItem('userXP') || '0'), // Load from localStorage
             userLevel: parseInt(localStorage.getItem('userLevel') || '1'), // Load from localStorage
-            dealerHand: [],
-            players: [], // Array of player objects { id, name, level, avatar, hand, isUser, timer, hotStreak }
-            activePlayerId: null,
-            turnTimerDuration: 10, // seconds
-            betAmount: 0,
+            // Roulette specific state
+            rouletteNumbers: [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26], // European Roulette
+            rouletteColors: { // Mapping numbers to colors
+                0: 'green', 32: 'red', 15: 'black', 19: 'red', 4: 'black', 21: 'red', 2: 'black', 25: 'red', 17: 'black', 34: 'red', 6: 'black', 27: 'red', 13: 'black', 36: 'red', 11: 'black', 30: 'red', 8: 'black', 23: 'red', 10: 'black', 5: 'red', 24: 'black', 16: 'red', 33: 'black', 1: 'red', 20: 'black', 14: 'red', 31: 'black', 9: 'red', 22: 'black', 18: 'red', 29: 'black', 7: 'red', 28: 'black', 12: 'red', 35: 'black', 3: 'red', 26: 'black'
+            },
+            currentChipValue: 0.01, // Selected chip value for betting
+            currentBets: {}, // Object storing bets: { 'betType': amount, 'number_X': amount, ... }
+            winningNumber: null,
+            spinAnimation: null, // For controlling the wheel animation
+            spinDuration: 5000, // milliseconds
+            players: [], // Array of player objects { id, name, level, avatar, bets: {}, totalBet: 0 }
+            activePlayerId: null, // Could represent the player whose turn it is to bet (optional)
+            bettingPhaseDuration: 20, // seconds
+            bettingPhaseTimer: null, // Interval timer for betting phase
             chatMessages: [], // Array of { sender, message, badge }
-            recentPlays: [], // Array of { player, amount, win }
+            recentPlays: [], // Array of { winningNumber, payout }
             isSpectator: false,
             isSeated: false,
             websocket: null,
@@ -1179,7 +1304,7 @@
             backgroundParticlesCanvas: null, // New background particles canvas
             backgroundParticlesCtx: null, // New background particles context
             chatVisible: window.innerWidth > 768, // Chat visible by default on desktop
-            otherHandsVisible: false, // State for mobile other hands toggle
+            otherHandsVisible: false, // State for mobile other hands toggle - repurposed for other players display
             backgroundSoundPlaying: false,
             isFreeMode: false, // Phase 2: Free Mode state
             referralCount: parseInt(localStorage.getItem('referralCount') || '0'), // New: Referral count
@@ -1222,17 +1347,26 @@
             gameTabs: document.getElementById('game-tabs'), // Phase 2: Game Tabs
             loungeLeaderboards: document.getElementById('lounge-leaderboards'), // Phase 2: Lounge Leaderboards
             loungeChat: document.getElementById('lounge-chat'), // Phase 2: Lounge Chat
-            dealerCards: document.getElementById('dealer-cards'),
-            playerSeats: document.getElementById('player-seats'),
-            dealerAnchor: document.querySelector('.dealer-anchor'), // New dealer anchor
-            dealerEmoji: document.getElementById('dealer-emoji'), // New dealer emoji
+
+            // Roulette specific DOM
+            rouletteWheelContainer: document.getElementById('roulette-wheel-container'),
+            rouletteWheelCanvas: document.getElementById('roulette-wheel-canvas'),
+            winningNumberDisplay: document.getElementById('winning-number-display'),
+            bettingGridContainer: document.getElementById('betting-grid-container'),
+            bettingGrid: document.getElementById('betting-grid'),
+            chipSelectionButtons: document.querySelectorAll('.chip-selection-buttons button'), // New
+            clearBetsButton: document.getElementById('clear-bets-button'), // New
+            spinButton: document.getElementById('spin-button'), // Renamed
+
+            playerSeats: document.getElementById('player-seats'), // Still used for player list
+            dealerAnchor: document.querySelector('.dealer-anchor'), // Repurposed
+            dealerEmoji: document.getElementById('dealer-emoji'), // Repurposed
             hotTableBanner: document.getElementById('hot-table-banner'), // New
             nearMissPopup: document.getElementById('near-miss-popup'), // New
             hotStreakBar: document.getElementById('hot-streak-bar'), // New
             toggleOtherHandsButton: document.getElementById('toggle-other-hands'), // New
-            currentBetDisplay: document.getElementById('current-bet-display'),
-            betSlider: document.getElementById('bet-slider'),
-            quickBetButtons: document.querySelectorAll('.quick-bet-buttons button'),
+            currentBetDisplay: document.getElementById('current-bet-display'), // Repurposed for chip value
+
             joinLeaveButton: document.getElementById('join-leave-button'),
             spectatorStatus: document.getElementById('spectator-status'),
             referFriendsButton: document.getElementById('refer-friends-button'), // New
@@ -1241,12 +1375,13 @@
             chatInput: document.getElementById('chat-input'),
             sendChatButton: document.getElementById('send-chat-button'),
             toggleChatButton: document.getElementById('toggle-chat'), // New
-            nextHandButton: document.getElementById('next-hand-button'), // New
+
             confettiCanvas: document.getElementById('confetti-canvas'),
             backgroundParticlesCanvas: document.getElementById('background-particles'), // New background particles canvas
             floatingEmojiContainer: document.getElementById('floating-emoji-container'), // New: Floating emoji container
             // Audio Elements
-            cardDealSound: document.getElementById('card-deal-sound'),
+            rouletteSpinSound: document.getElementById('roulette-spin-sound'), // New
+            ballDropSound: document.getElementById('ball-drop-sound'), // New
             winSound: document.getElementById('win-sound'),
             lossSound: document.getElementById('loss-sound'),
             buttonClickSound: document.getElementById('button-click-sound'),
@@ -1254,39 +1389,10 @@
             backgroundLoopSound: document.getElementById('background-loop-sound'), // New Background Loop
             chipSound: document.getElementById('chip-sound'), // New Chip Sound
             whooshSound: document.getElementById('whoosh-sound'), // New Whoosh Sound
-            cardThudSound: document.getElementById('card-thud-sound'), // New Card Thud Sound
+            cardThudSound: document.getElementById('card-thud-sound'), // New Card Thud Sound - maybe not needed for roulette
             jackpotSound: document.getElementById('jackpot-sound'), // New Jackpot Sound
             crowdCheerSound: document.getElementById('crowd-cheer-sound'), // New Crowd Cheer Sound
         };
-
-        // --- Global State ---
-        const gameState = {
-            walletAddress: null,
-            walletBalance: 0,
-            userXP: parseInt(localStorage.getItem('userXP') || '0'), // Load from localStorage
-            userLevel: parseInt(localStorage.getItem('userLevel') || '1'), // Load from localStorage
-            dealerHand: [],
-            players: [], // Array of player objects { id, name, level, avatar, hand, isUser, timer, hotStreak }
-            activePlayerId: null,
-            turnTimerDuration: 10, // seconds
-            betAmount: 0,
-            chatMessages: [], // Array of { sender, message, badge }
-            recentPlays: [], // Array of { player, amount, win }
-            isSpectator: false,
-            isSeated: false,
-            websocket: null,
-            confettiCanvas: null,
-            confettiCtx: null,
-            backgroundParticlesCanvas: null, // New background particles canvas
-            backgroundParticlesCtx: null, // New background particles context
-            chatVisible: window.innerWidth > 768, // Chat visible by default on desktop
-            otherHandsVisible: false, // State for mobile other hands toggle
-            backgroundSoundPlaying: false,
-            isFreeMode: false, // Phase 2: Free Mode state
-            referralCount: parseInt(localStorage.getItem('referralCount') || '0'), // New: Referral count
-            // Add other state properties as needed
-        };
-
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -1295,6 +1401,8 @@
             dom.confettiCtx = dom.confettiCanvas.getContext('2d');
             dom.backgroundParticlesCanvas = document.getElementById('background-particles');
             dom.backgroundParticlesCtx = dom.backgroundParticlesCanvas.getContext('2d');
+            dom.rouletteWheelCanvas = document.getElementById('roulette-wheel-canvas');
+            gameState.rouletteWheelCtx = dom.rouletteWheelCanvas.getContext('2d'); // Store wheel context in gameState
 
             resizeCanvases(); // Set initial size
             window.addEventListener('resize', resizeCanvases); // Resize on window resize
@@ -1302,6 +1410,11 @@
             // Start background particles animation
             startBackgroundParticlesAnimation();
 
+            // Draw the initial roulette wheel
+            drawRouletteWheel();
+
+            // Generate the betting grid
+            generateBettingGrid();
 
             // Set initial UI state
             updateUI();
@@ -1319,7 +1432,7 @@
             checkForDailyReward();
 
             // Placeholder: Simulate some initial game state for testing UI layout
-            simulateInitialGameState();
+            simulateInitialGameStateRoulette(); // Use a different simulation function
 
              // Play background sound on first user interaction (e.g., click anywhere)
              document.body.addEventListener('click', playBackgroundSound, { once: true });
@@ -1332,6 +1445,11 @@
             dom.confettiCanvas.height = window.innerHeight;
             dom.backgroundParticlesCanvas.width = window.innerWidth;
             dom.backgroundParticlesCanvas.height = window.innerHeight;
+            // Resize roulette wheel canvas while maintaining aspect ratio
+            const wheelContainerSize = Math.min(dom.rouletteWheelContainer.offsetWidth, dom.rouletteWheelContainer.offsetHeight);
+            dom.rouletteWheelCanvas.width = wheelContainerSize;
+            dom.rouletteWheelCanvas.height = wheelContainerSize;
+            drawRouletteWheel(); // Redraw wheel after resizing
         }
 
 
@@ -1461,12 +1579,15 @@
 
             gameState.websocket.onopen = () => {
                 console.log("WebSocket Connected");
+                 // Display connection status
+                 updateConnectionStatus(true);
+
                 // Send initial message, e.g., join game, if wallet is connected
                 if (gameState.walletAddress) {
-                     sendMessage({ type: 'joinGame', wallet: gameState.walletAddress });
+                     sendMessage({ type: 'joinRoulette', wallet: gameState.walletAddress }); // Changed message type
                 } else {
                      // Maybe join as spectator if not connected? Depends on backend logic.
-                     sendMessage({ type: 'joinGameAsSpectator' });
+                     sendMessage({ type: 'joinRouletteAsSpectator' }); // Changed message type
                 }
                  // Trigger confetti on join (optional addictive UX)
                 triggerConfettiOnJoin();
@@ -1480,11 +1601,15 @@
 
             gameState.websocket.onerror = (error) => {
                 console.error("WebSocket Error:", error);
+                 // Display connection status and error message
+                 updateConnectionStatus(false, "Connection Error");
                 // Handle errors, attempt reconnect
             };
 
             gameState.websocket.onclose = () => {
                 console.log("WebSocket Disconnected");
+                 // Display connection status
+                 updateConnectionStatus(false, "Disconnected");
                 // Handle disconnection, attempt reconnect
             };
         }
@@ -1494,77 +1619,124 @@
                 gameState.websocket.send(JSON.stringify(message));
             } else {
                 console.warn("WebSocket not connected. Cannot send message:", message);
+                 // Display error message to user (placeholder)
+                 showErrorMessage("Game server not connected. Please try refreshing.");
                 // Maybe queue messages or try to reconnect
             }
         }
 
-        // Handle incoming WebSocket messages
+        // New: Update Connection Status Display
+        function updateConnectionStatus(isConnected, message = "") {
+             const statusElement = document.getElementById('connection-status'); // Assuming you add this element in HTML
+             if (statusElement) {
+                 statusElement.textContent = isConnected ? "Online" : `Offline: ${message}`;
+                 statusElement.style.color = isConnected ? '#10b981' : '#ef4444';
+             }
+        }
+
+        // New: Show User-Facing Error Message (Placeholder)
+        function showErrorMessage(message) {
+             console.error("User Error:", message);
+             // Implement a temporary message display in the UI (e.g., a small banner)
+             alert(message); // Replace with inline display
+        }
+
+
+        // Handle incoming WebSocket messages (Roulette specific)
         function handleGameEvent(msg) {
             switch (msg.type) {
                 case 'table_state':
                     // Update entire table state
                     gameState.players = msg.data.players;
-                    gameState.dealerHand = msg.data.dealerHand;
-                    gameState.activePlayerId = msg.data.activePlayerId;
+                    gameState.currentBets = msg.data.currentBets || {}; // Update current bets
+                    gameState.winningNumber = msg.data.winningNumber || null; // Update winning number
                     gameState.isSpectator = msg.data.isSpectator;
                     gameState.isSeated = msg.data.isSeated; // Assuming backend sends this
+                    // Update betting phase timer display
+                    updateBettingPhaseTimer(msg.data.bettingPhaseRemaining || 0);
+
                     updateUI();
-                    break;
-                case 'card_dealt':
-                    // Add card to specific player or dealer hand
-                    // msg.data should contain { playerId, card } or { target: 'dealer', card }
-                    if (msg.data.target === 'dealer') {
-                        gameState.dealerHand.push(msg.data.card);
-                        renderDealerHand();
+                    // If winning number is present, animate the wheel to it
+                    if (gameState.winningNumber !== null) {
+                         animateRouletteWheelTo(gameState.winningNumber);
                     } else {
-                        const player = gameState.players.find(p => p.id === msg.data.playerId);
-                        if (player) {
-                            player.hand.push(msg.data.card);
-                            renderPlayerSeats(); // Re-render all seats for simplicity
-                        }
-                    }
-                    playSound(dom.cardDealSound); // Play card deal sound
-                    playSound(dom.whooshSound); // Play whoosh sound for deal
-                    playSound(dom.cardThudSound); // Play thud sound for deal
-                    break;
-                case 'turn_changed':
-                    gameState.activePlayerId = msg.data.playerId;
-                    // Start or reset turn timer animation
-                    startTurnTimer(msg.data.duration || gameState.turnTimerDuration);
-                    renderPlayerSeats(); // Update active player highlight
-                    // Add dealer glow when it's dealer's turn (placeholder)
-                    if (gameState.activePlayerId === 'dealer') { // Assuming dealer ID is 'dealer'
-                         dom.dealerAnchor.classList.add('glowing');
-                    } else {
-                         dom.dealerAnchor.classList.remove('glowing');
+                         // Reset wheel position if no winning number
+                         resetRouletteWheel();
                     }
                     break;
-                case 'round_end':
-                    // Handle round end logic (reveal dealer cards, show results)
-                    gameState.dealerHand = msg.data.dealerHand; // Full dealer hand revealed
-                    // Update player results (win/loss status)
-                    // msg.data might contain results for each player
-                    updateUI(); // Update all relevant UI elements
-
-                    // Trigger confetti or other win/loss animations
-                    if (msg.data.userWon) {
+                case 'bet_placed':
+                    // Update specific bet on the grid
+                    const bet = msg.data; // { playerId, betType, amount }
+                    // Find the player and update their bets
+                    const player = gameState.players.find(p => p.id === bet.playerId);
+                    if (player) {
+                         player.bets[bet.betType] = (player.bets[bet.betType] || 0) + bet.amount;
+                         player.totalBet = (player.totalBet || 0) + bet.amount;
+                         renderPlayerSeats(); // Update player seat display
+                    }
+                    // If the bet is by the current user, update their local bets and display
+                    if (bet.playerId === gameState.walletAddress) {
+                         gameState.currentBets[bet.betType] = (gameState.currentBets[bet.betType] || 0) + bet.amount;
+                         renderPlacedChips(); // Re-render chips on the grid
+                         playSound(dom.chipSound); // Play chip sound
+                         triggerHaptic([50]); // Haptic feedback
+                    }
+                    break;
+                case 'betting_phase_start':
+                    // Start the betting phase timer and enable betting
+                    gameState.winningNumber = null; // Clear previous winning number
+                    dom.winningNumberDisplay.textContent = '--';
+                    gameState.currentBets = {}; // Clear local bets
+                    renderPlacedChips(); // Remove chips from grid
+                    enableBetting();
+                    startBettingPhaseTimer(msg.data.duration || gameState.bettingPhaseDuration);
+                    hideSpinButton(); // Hide spin button during betting
+                    // Add dealer glow during betting phase (placeholder)
+                    dom.dealerAnchor.classList.add('glowing');
+                    break;
+                case 'betting_phase_end':
+                    // Stop the betting phase timer and disable betting
+                    disableBetting();
+                    stopBettingPhaseTimer();
+                    showSpinButton(); // Show spin button (or wait for server spin command)
+                    dom.dealerAnchor.classList.remove('glowing'); // Remove dealer glow
+                    break;
+                case 'spin_start':
+                    // Start the wheel spin animation
+                    animateRouletteWheel(msg.data.spinDuration || gameState.spinDuration);
+                    playSound(dom.rouletteSpinSound); // Play spin sound
+                    hideSpinButton(); // Hide spin button
+                    break;
+                case 'spin_result':
+                    // Stop the wheel animation at the winning number and show result
+                    gameState.winningNumber = msg.data.winningNumber;
+                    dom.winningNumberDisplay.textContent = gameState.winningNumber;
+                    animateRouletteWheelTo(gameState.winningNumber);
+                    playSound(dom.ballDropSound); // Play ball drop sound
+                    // Trigger win/loss animations and sounds based on result
+                    if (msg.data.userWon) { // Assuming backend sends userWon flag and payout
                          triggerConfetti();
-                         triggerCoinShower(); // Trigger coin shower on win
-                         playSound(dom.winSound); // Play win sound
-                         playSound(dom.jackpotSound); // Play jackpot sound for big wins
-                         playSound(dom.crowdCheerSound); // Play crowd cheer sound
+                         triggerCoinShower();
+                         playSound(dom.winSound);
+                         playSound(dom.jackpotSound);
+                         playSound(dom.crowdCheerSound);
                          triggerHaptic([100, 50, 100]); // Win haptic
-                         // Show win banner/badge (placeholder)
-                         showWinBanner(msg.data.winAmount);
-                         // Trigger floating win emojis
+                         showWinBanner(msg.data.payout);
                          triggerFloatingWinEmojis();
-                    } else if (msg.data.userLost) {
-                         playSound(dom.lossSound); // Play loss sound
+                         // Add shake animation to user's seat (placeholder)
+                         const userSeat = document.getElementById(`player-seat-${gameState.walletAddress}`);
+                         if (userSeat) {
+                             userSeat.style.animation = 'none';
+                             userSeat.offsetHeight;
+                             userSeat.style.animation = 'shake 0.5s ease-in-out';
+                         }
+                    } else {
+                         playSound(dom.lossSound);
                          triggerHaptic([200]); // Loss haptic
+                         showLossAversionMessage();
                     }
-
-                     // Show "Next Hand?" button
-                     showNextHandButton();
+                    // Update recent plays ticker with result
+                    updateRecentPlaysTicker(); // Will need to adapt this function for Roulette results
                     break;
                 case 'xp_update':
                     // Update user XP and level
@@ -1575,30 +1747,17 @@
                     updateXPBar();
                     if (msg.data.levelUp) {
                         showCrateIcon();
-                         // Add sparkles/shine animation on level up (placeholder)
                          triggerLevelUpAnimation();
                     }
                     break;
                 case 'crate_awarded':
-                    // Trigger crate animation/display
                     showCrateIcon();
                     break;
                 case 'chat_message':
-                    // Add new chat message
                     gameState.chatMessages.push(msg.data);
                     addChatMessageToFeed(msg.data);
                     break;
-                case 'recent_play':
-                    // Add new recent play to the ticker
-                    gameState.recentPlays.unshift(msg.data); // Add to the beginning
-                    // Keep ticker length reasonable
-                    if (gameState.recentPlays.length > 10) {
-                        gameState.recentPlays.pop();
-                    }
-                    updateRecentPlaysTicker();
-                    break;
                  case 'hot_table':
-                     // Show/hide hot table banner
                      if (msg.data.isActive) {
                          dom.hotTableBanner.textContent = msg.data.message || 'Hot Table!';
                          dom.hotTableBanner.classList.remove('hidden');
@@ -1607,24 +1766,20 @@
                      }
                      break;
                  case 'near_miss':
-                     // Trigger near miss animation
-                     showNearMissPopup(msg.data.message || 'Almost!');
+                     // Near miss concept is different in Roulette, might need adaptation
+                     showNearMissPopup(msg.data.message || 'Close Call!'); // Changed message
                      triggerHaptic([100, 100, 100, 100]); // Heartbeat haptic for near miss
                      break;
                  case 'hot_streak_update':
-                     // Update hot streak bar and potentially display streak emoji
                      updateHotStreakBar(msg.data.streakCount);
-                     // Trigger celebratory haptic for streak milestone (placeholder)
-                     if (msg.data.milestone) { // Assuming backend sends milestone flag
+                     if (msg.data.milestone) {
                          triggerHaptic([100, 50, 100, 50, 100]);
                      }
                      break;
                  case 'leaderboard_update':
-                     // Update leaderboard
                      updateLeaderboard(msg.data.leaderboard);
                      break;
                  case 'mystery_event':
-                     // Handle mystery event (e.g., Bonus Round)
                      showMysteryEvent(msg.data);
                      break;
                 // Handle other event types as needed
@@ -1636,30 +1791,17 @@
         // --- UI Rendering Functions ---
 
         function updateUI() {
-            // Update wallet info (already done in handleWalletConnected/Disconnected)
-            // Update XP bar and level
             updateXPBar();
-            // Update recent plays ticker
-            updateRecentPlaysTicker();
-            // Render game table elements
-            renderDealerHand();
-            renderPlayerSeats();
-            // Update betting controls and join/leave button
-            updateBettingControls();
-            // Render chat messages (initial load)
+            updateRecentPlaysTicker(); // Needs adaptation for Roulette results
+            renderPlayerSeats(); // Needs adaptation for Roulette player info
+            updateBettingControls(); // Needs adaptation for chip selection
             renderChatFeed();
-             // Update chat container visibility based on state
-             updateChatContainerVisibility();
-             // Update other players hands visibility based on state
-             updateOtherHandsVisibility();
-             // Update leaderboard
-             updateLeaderboard(gameState.leaderboard || []); // Pass current leaderboard state
-
-             // Update Free Mode Toggle text
-             updateFreeModeToggleText();
-
-             // Update referral count display
-             updateReferralCountDisplay();
+            updateChatContainerVisibility();
+            updateOtherHandsVisibility(); // Needs adaptation for showing other players/bets
+            updateLeaderboard(gameState.leaderboard || []);
+            updateFreeModeToggleText();
+            updateReferralCountDisplay();
+            renderPlacedChips(); // Render chips based on currentBets
         }
 
         function updateXPBar() {
@@ -1671,30 +1813,22 @@
 
         function showCrateIcon() {
             dom.crateIcon.classList.remove('hidden');
-            // Add logic for crate opening animation on click
             dom.crateIcon.onclick = openCrate; // Assign click handler
         }
 
         function openCrate() {
              console.log("Crate opened!");
-             // Placeholder: Implement crate opening animation (Canvas or image sequence)
-             // For now, just hide the icon
              dom.crateIcon.classList.add('hidden');
-             // Placeholder: Show crate contents (inline, no popup)
-             // Maybe a temporary text display or simple animation near the icon
              alert("You got a reward!"); // Replace with inline display
          }
 
-         // Placeholder for Level Up Animation
          function triggerLevelUpAnimation() {
              console.log("Triggering level up animation!");
-             // Example: Briefly change text color or add a sparkle effect
              dom.userLevel.style.transition = 'color 0.3s ease-in-out';
              dom.userLevel.style.color = '#facc15'; // Yellow sparkle color
              setTimeout(() => {
                  dom.userLevel.style.color = '#eee'; // Revert color
              }, 500);
-             // Could also add a particle effect around the level text
          }
 
 
@@ -1704,22 +1838,19 @@
                 dom.recentPlaysTicker.textContent = 'No recent plays...';
                 return;
             }
-            // Create a single span for the ticker content
             const tickerContent = document.createElement('span');
             gameState.recentPlays.forEach(play => {
                 const span = document.createElement('span');
-                span.classList.add('recent-play-item', play.win ? 'win' : 'loss');
-                span.textContent = `${play.player}: ${play.win ? '+' : '-'}${play.amount.toFixed(2)} SOL • `; // Added bullet point
+                 // Adapt for Roulette results: Winning Number and Payout
+                span.classList.add('recent-play-item', play.payout > 0 ? 'win' : 'loss'); // Win if payout > 0
+                span.textContent = `Result: ${play.winningNumber} • Payout: ${play.payout.toFixed(2)} SOL • `; // Example format
                 tickerContent.appendChild(span);
             });
-             // Remove the last bullet point
              if (tickerContent.lastChild) {
                  tickerContent.lastChild.textContent = tickerContent.lastChild.textContent.slice(0, -2);
              }
-
             dom.recentPlaysTicker.appendChild(tickerContent);
 
-            // Apply animation to the ticker content span
             tickerContent.style.animation = 'none'; // Reset animation
             tickerContent.offsetHeight; // Trigger reflow
             tickerContent.style.animation = `slide-left 15s linear infinite`; // Apply animation
@@ -1738,65 +1869,388 @@
 
              leaderboardData.forEach((entry, index) => {
                  const entrySpan = document.createElement('span');
-                 entrySpan.textContent = `${index + 1}. ${entry.player}: ${entry.wins} Wins | `;
+                 // Adapt for Roulette leaderboard (e.g., total won, biggest win)
+                 entrySpan.textContent = `${index + 1}. ${entry.player}: ${entry.totalWon.toFixed(2)} SOL | `; // Example format
                  dom.leaderboard.appendChild(entrySpan);
              });
         }
 
-        // New: Update Referral Count Display
         function updateReferralCountDisplay() {
             dom.referralCount.textContent = `👥 ${gameState.referralCount} referrals`;
         }
 
+        // --- Roulette Specific Rendering ---
 
-        function renderDealerHand() {
-            dom.dealerCards.innerHTML = ''; // Clear current cards
-             if (gameState.dealerHand.length === 0) {
-                  const placeholder = document.createElement('div');
-                  placeholder.classList.add('card', 'card-back');
-                  dom.dealerCards.appendChild(placeholder);
-                  return;
-             }
-            gameState.dealerHand.forEach((card, index) => {
-                const cardElement = document.createElement('div');
-                cardElement.classList.add('card');
-                 // For the first card, show back initially if not revealed
-                 if (index === 0 && !card.revealed) { // Assuming a 'revealed' property on card objects
-                      cardElement.classList.add('card-back');
-                 } else {
-                     // Set card image background and text color based on suit
-                     const suitColor = (card.suit === '♥' || card.suit === '♦') ? '#e63946' : '#1d3557'; // Ruby Red or Sapphire Blue
-                     cardElement.style.color = suitColor;
-                     cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
-                     // In a real app, use an image:
-                     // cardElement.style.backgroundImage = `url('/assets/cards/${card.value}_${card.suit}.png')`;
-                     // cardElement.style.color = 'transparent'; // Hide text if using image
-                 }
-                 // Add deal animation class
-                 cardElement.classList.add('deal-animation');
-                 // Remove animation class after it finishes
-                 cardElement.addEventListener('animationend', () => {
-                     cardElement.classList.remove('deal-animation');
-                 }, { once: true });
+        function drawRouletteWheel() {
+            const canvas = dom.rouletteWheelCanvas;
+            const ctx = gameState.rouletteWheelCtx;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) * 0.9; // Wheel radius
+            const segmentAngle = (Math.PI * 2) / gameState.rouletteNumbers.length;
 
-                dom.dealerCards.appendChild(cardElement);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            gameState.rouletteNumbers.forEach((number, index) => {
+                const startAngle = index * segmentAngle;
+                const endAngle = (index + 1) * segmentAngle;
+                const color = gameState.rouletteColors[number];
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Draw number text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + segmentAngle / 2); // Rotate to the center of the segment
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#eee'; // Text color
+                ctx.font = `${radius * 0.1}px Arial`; // Adjust font size based on radius
+                ctx.fillText(number, radius * 0.7, 0); // Position text
+                ctx.restore();
+
+                 // Draw separators
+                 ctx.beginPath();
+                 ctx.moveTo(centerX, centerY);
+                 ctx.arc(centerX, centerY, radius, startAngle, startAngle);
+                 ctx.lineTo(centerX + Math.cos(startAngle) * radius, centerY + Math.sin(startAngle) * radius);
+                 ctx.strokeStyle = '#333'; // Separator color
+                 ctx.lineWidth = 2;
+                 ctx.stroke();
             });
+
+             // Draw inner circle (for the ball path)
+             const innerRadius = radius * 0.8;
+             ctx.beginPath();
+             ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+             ctx.fillStyle = '#1a1a1a'; // Dark inner circle
+             ctx.fill();
+             ctx.strokeStyle = '#555'; // Border
+             ctx.lineWidth = 3;
+             ctx.stroke();
+
+             // Draw the ball (placeholder)
+             drawRouletteBall(centerX, centerY, innerRadius);
         }
+
+        function drawRouletteBall(centerX, centerY, innerRadius, angle = 0) {
+             const ctx = gameState.rouletteWheelCtx;
+             const ballRadius = innerRadius * 0.1; // Ball size relative to inner circle
+             const ballX = centerX + Math.cos(angle) * (innerRadius - ballRadius - 5); // Position slightly inside the path
+             const ballY = centerY + Math.sin(angle) * (innerRadius - ballRadius - 5);
+
+             ctx.beginPath();
+             ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+             ctx.fillStyle = '#eee'; // White ball
+             ctx.shadowColor = '#ffd700'; // Gold glow
+             ctx.shadowBlur = 10;
+             ctx.fill();
+             ctx.shadowColor = 'transparent'; // Reset shadow
+        }
+
+        function animateRouletteWheel(duration) {
+            const canvas = dom.rouletteWheelCanvas;
+            const ctx = gameState.rouletteWheelCtx;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) * 0.9;
+            const innerRadius = radius * 0.8;
+            const startTime = performance.now();
+            let currentRotation = 0;
+            let ballAngle = 0; // Ball position
+
+            function spin(currentTime) {
+                const elapsedTime = currentTime - startTime;
+                const progress = Math.min(elapsedTime / duration, 1); // Animation progress (0 to 1)
+
+                // Easing function for spin (starts fast, slows down)
+                const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic easing out
+
+                // Calculate rotation - Spin multiple times
+                const totalRotations = 10; // Spin 10 full times
+                currentRotation = (totalRotations * easedProgress) * (Math.PI * 2); // Total rotation in radians
+
+                 // Calculate ball movement (opposite direction of wheel)
+                 const ballSpeedFactor = 1.5; // Ball moves faster than wheel
+                 ballAngle = (totalRotations * easedProgress * ballSpeedFactor) * (Math.PI * 2);
+
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(currentRotation);
+
+                // Redraw wheel segments (without numbers for performance during spin)
+                const segmentAngle = (Math.PI * 2) / gameState.rouletteNumbers.length;
+                 gameState.rouletteNumbers.forEach((number, index) => {
+                     const startAngle = index * segmentAngle;
+                     const endAngle = (index + 1) * segmentAngle;
+                     const color = gameState.rouletteColors[number];
+
+                     ctx.beginPath();
+                     ctx.moveTo(0, 0); // Translate already applied
+                     ctx.arc(0, 0, radius, startAngle, endAngle);
+                     ctx.closePath();
+                     ctx.fillStyle = color;
+                     ctx.fill();
+                      // Draw separators
+                     ctx.beginPath();
+                     ctx.moveTo(0, 0);
+                     ctx.arc(0, 0, radius, startAngle, startAngle);
+                     ctx.lineTo(Math.cos(startAngle) * radius, Math.sin(startAngle) * radius);
+                     ctx.strokeStyle = '#333';
+                     ctx.lineWidth = 2;
+                     ctx.stroke();
+                 });
+
+                 // Redraw inner circle
+                 ctx.beginPath();
+                 ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
+                 ctx.fillStyle = '#1a1a1a';
+                 ctx.fill();
+                 ctx.strokeStyle = '#555';
+                 ctx.lineWidth = 3;
+                 ctx.stroke();
+
+                ctx.restore();
+
+                 // Draw the ball (relative to the canvas, not rotated)
+                 drawRouletteBall(centerX, centerY, innerRadius, ballAngle);
+
+
+                if (progress < 1) {
+                    gameState.spinAnimation = requestAnimationFrame(spin);
+                } else {
+                    // Animation finished, wait for spin_result message
+                    gameState.spinAnimation = null;
+                }
+            }
+
+            gameState.spinAnimation = requestAnimationFrame(spin);
+        }
+
+         function animateRouletteWheelTo(winningNumber) {
+             cancelAnimationFrame(gameState.spinAnimation); // Stop current animation if any
+
+             const canvas = dom.rouletteWheelCanvas;
+             const ctx = gameState.rouletteWheelCtx;
+             const centerX = canvas.width / 2;
+             const centerY = canvas.height / 2;
+             const radius = Math.min(centerX, centerY) * 0.9;
+             const innerRadius = radius * 0.8;
+             const segmentAngle = (Math.PI * 2) / gameState.rouletteNumbers.length;
+
+             // Find the angle for the winning number
+             const winningIndex = gameState.rouletteNumbers.indexOf(winningNumber);
+             // Calculate the target angle. Need to account for the wheel's current rotation
+             // and make sure the ball lands in the correct segment.
+             // This is a simplified calculation. A real implementation would need more precise physics.
+             const targetAngle = winningIndex * segmentAngle + segmentAngle / 2; // Center of the winning segment
+             const currentRotation = 0; // Assuming wheel is reset or we track its rotation
+             const startAngle = currentRotation; // Start from current position
+
+             const animationDuration = 3000; // Duration to slow down and stop
+             const startTime = performance.now();
+
+             function stopSpin(currentTime) {
+                 const elapsedTime = currentTime - startTime;
+                 const progress = Math.min(elapsedTime / animationDuration, 1); // Animation progress
+
+                 // Easing function for stopping (starts fast, slows down)
+                 const easedProgress = Math.pow(progress, 3); // Cubic easing in
+
+                 // Calculate rotation - Slow down to the target angle
+                 // This is a simplified approach. A more realistic spin-down is complex.
+                 // We'll just interpolate from a fast spin to the target angle.
+                 const initialSpinSpeed = 5 * (Math.PI * 2); // Start with a few fast rotations
+                 const currentAngle = startAngle + (targetAngle - startAngle + initialSpinSpeed) * (1 - easedProgress);
+
+                 // Ball movement - Slow down with the wheel
+                 const ballAngle = (currentAngle + Math.PI / 2) % (Math.PI * 2); // Keep ball ahead slightly
+
+
+                 ctx.save();
+                 ctx.translate(centerX, centerY);
+                 ctx.rotate(currentAngle);
+
+                 // Redraw wheel segments with numbers
+                 const segmentAngle = (Math.PI * 2) / gameState.rouletteNumbers.length;
+                 gameState.rouletteNumbers.forEach((number, index) => {
+                     const startAngle = index * segmentAngle;
+                     const endAngle = (index + 1) * segmentAngle;
+                     const color = gameState.rouletteColors[number];
+
+                     ctx.beginPath();
+                     ctx.moveTo(0, 0);
+                     ctx.arc(0, 0, radius, startAngle, endAngle);
+                     ctx.closePath();
+                     ctx.fillStyle = color;
+                     ctx.fill();
+                      // Draw separators
+                     ctx.beginPath();
+                     ctx.moveTo(0, 0);
+                     ctx.arc(0, 0, radius, startAngle, startAngle);
+                     ctx.lineTo(Math.cos(startAngle) * radius, Math.sin(startAngle) * radius);
+                     ctx.strokeStyle = '#333';
+                     ctx.lineWidth = 2;
+                     ctx.stroke();
+
+                     // Draw number text
+                     ctx.save();
+                     ctx.rotate(startAngle + segmentAngle / 2); // Rotate to the center of the segment
+                     ctx.textAlign = 'center';
+                     ctx.fillStyle = '#eee'; // Text color
+                     ctx.font = `${radius * 0.1}px Arial`; // Adjust font size based on radius
+                     ctx.fillText(number, radius * 0.7, 0); // Position text
+                     ctx.restore();
+                 });
+
+                 // Redraw inner circle
+                 ctx.beginPath();
+                 ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
+                 ctx.fillStyle = '#1a1a1a';
+                 ctx.fill();
+                 ctx.strokeStyle = '#555';
+                 ctx.lineWidth = 3;
+                 ctx.stroke();
+
+                ctx.restore();
+
+                 // Draw the ball (relative to the canvas, not rotated)
+                 drawRouletteBall(centerX, centerY, innerRadius, ballAngle);
+
+
+                 if (progress < 1) {
+                     gameState.spinAnimation = requestAnimationFrame(stopSpin);
+                 } else {
+                     // Animation finished
+                     gameState.spinAnimation = null;
+                     // Ensure the wheel is drawn correctly at the final position with numbers
+                     drawRouletteWheel();
+                 }
+             }
+
+             gameState.spinAnimation = requestAnimationFrame(stopSpin);
+         }
+
+         function resetRouletteWheel() {
+             cancelAnimationFrame(gameState.spinAnimation);
+             drawRouletteWheel(); // Draw the wheel in its default state
+             dom.winningNumberDisplay.textContent = '--';
+         }
+
+
+        function generateBettingGrid() {
+            const grid = dom.bettingGrid;
+            grid.innerHTML = ''; // Clear existing grid
+
+            // Numbers 1-36
+            const numbers = Array.from({ length: 36 }, (_, i) => i + 1);
+            numbers.forEach(number => {
+                const cell = document.createElement('div');
+                cell.classList.add('grid-cell', 'cell-number');
+                cell.textContent = number;
+                cell.dataset.betType = `number_${number}`;
+                 // Add color class
+                 if (gameState.rouletteColors[number] === 'red') {
+                     cell.classList.add('cell-red');
+                 } else {
+                     cell.classList.add('cell-black');
+                 }
+                grid.appendChild(cell);
+            });
+
+            // Add the 0 cell
+            const cell0 = document.createElement('div');
+            cell0.classList.add('grid-cell', 'cell-0');
+            cell0.textContent = '0';
+            cell0.dataset.betType = 'number_0';
+            grid.insertBefore(cell0, grid.firstChild); // Insert at the beginning
+
+             // Add click listeners to grid cells for betting
+             dom.bettingGridContainer.querySelectorAll('.grid-cell').forEach(cell => {
+                 cell.addEventListener('click', handleBetPlacement);
+             });
+        }
+
+        function handleBetPlacement(event) {
+             if (!gameState.isSeated || gameState.isSpectator) {
+                 showErrorMessage("You must be seated to place bets.");
+                 return;
+             }
+             if (gameState.currentChipValue <= 0) {
+                 showErrorMessage("Select a chip value first.");
+                 return;
+             }
+
+             const betType = event.target.dataset.betType;
+             const amount = gameState.currentChipValue;
+
+             // Placeholder: Send bet to server
+             sendMessage({ type: 'placeBet', betType: betType, amount: amount });
+
+             // Optimistic UI update (assuming server will confirm)
+             gameState.currentBets[betType] = (gameState.currentBets[betType] || 0) + amount;
+             renderPlacedChips(); // Re-render chips
+             playSound(dom.chipSound); // Play chip sound
+             triggerHaptic([50]); // Haptic feedback
+        }
+
+        function renderPlacedChips() {
+             // Remove existing chips
+             dom.bettingGridContainer.querySelectorAll('.placed-chip').forEach(chip => chip.remove());
+
+             // Place new chips based on gameState.currentBets
+             for (const betType in gameState.currentBets) {
+                 if (gameState.currentBets[betType] > 0) {
+                     const targetCell = dom.bettingGridContainer.querySelector(`[data-bet-type="${betType}"]`);
+                     if (targetCell) {
+                         const chip = document.createElement('div');
+                         chip.classList.add('placed-chip');
+                         chip.textContent = gameState.currentBets[betType]; // Display bet amount
+                         // Position chip randomly within the cell for multiple chips
+                         chip.style.left = `${Math.random() * 50 + 25}%`; // Random left position
+                         chip.style.top = `${Math.random() * 50 + 25}%`; // Random top position
+                         // Add color based on chip value (placeholder)
+                         chip.style.backgroundColor = getChipColor(gameState.currentBets[betType]);
+
+                         targetCell.appendChild(chip);
+                     }
+                 }
+             }
+        }
+
+        function getChipColor(amount) {
+             // Placeholder: Map bet amount to chip color
+             if (amount >= 5) return 'red';
+             if (amount >= 1) return 'gold';
+             if (amount >= 0.1) return 'purple';
+             return 'green';
+        }
+
 
         function renderPlayerSeats() {
             dom.playerSeats.innerHTML = ''; // Clear current seats
             const isMobile = window.innerWidth <= 768;
 
             gameState.players.forEach(player => {
+                 // Only show other players if otherHandsVisible is true (on mobile) or always on desktop
+                 if (player.id !== gameState.walletAddress && isMobile && !gameState.otherHandsVisible) {
+                     return; // Skip rendering other players if hidden on mobile
+                 }
+
                 const seatElement = document.createElement('div');
                 seatElement.classList.add('player-seat');
-                 // Add ID to seat for easier targeting in updateOtherHandsVisibility
                  seatElement.id = `player-seat-${player.id}`;
 
                  if (player.id === gameState.walletAddress) {
                      seatElement.classList.add('is-user'); // Mark the user's seat
                  }
-                if (player.id === gameState.activePlayerId) {
+                if (player.id === gameState.activePlayerId) { // Active player might be the one whose turn it is to bet
                     seatElement.classList.add('active');
                 }
 
@@ -1805,8 +2259,7 @@
                 playerInfo.classList.add('player-info');
                 const avatar = document.createElement('div');
                 avatar.classList.add('avatar');
-                 // Add VIP badge overlay if player is VIP (placeholder)
-                 if (player.isVIP) { // Assuming player object has isVIP property
+                 if (player.isVIP) {
                      avatar.classList.add('vip');
                  }
                 avatar.textContent = player.avatar || '😊'; // Placeholder avatar
@@ -1820,75 +2273,39 @@
                 playerInfo.appendChild(username);
                 playerInfo.appendChild(xpBadge);
 
-                 // Add Flair next to username (placeholder)
                  const flair = document.createElement('span');
                  flair.classList.add('player-flair');
                  flair.style.fontSize = '0.8em';
                  flair.style.marginLeft = '0.25rem';
-                 // Example flair based on streak or VIP status
-                 if (player.hotStreak >= 5) flair.textContent = '🔥'; // Hot streak flair
-                 else if (player.isVIP) flair.textContent = '👑'; // VIP flair
+                 if (player.hotStreak >= 5) flair.textContent = '🔥';
+                 else if (player.isVIP) flair.textContent = '👑';
+                 else flair.textContent = '👍';
                  playerInfo.appendChild(flair);
 
 
                 seatElement.appendChild(playerInfo);
 
-                // Player Hand
-                const playerHand = document.createElement('div');
-                playerHand.classList.add('player-hand');
-                // Hand visibility handled by updateOtherHandsVisibility
+                 // Display total bet for the player (Roulette specific)
+                 const totalBetDisplay = document.createElement('div');
+                 totalBetDisplay.classList.add('player-total-bet');
+                 totalBetDisplay.textContent = `Bet: ${(player.totalBet || 0).toFixed(2)} SOL`; // Assuming totalBet property
+                 totalBetDisplay.style.fontSize = '0.8em';
+                 totalBetDisplay.style.marginTop = '0.25rem';
+                 seatElement.appendChild(totalBetDisplay);
 
-                if (player.hand && player.hand.length > 0) {
-                    player.hand.forEach(card => {
-                        const cardElement = document.createElement('div');
-                        cardElement.classList.add('card');
-                         // Card back/face handled by updateOtherHandsVisibility and renderDealerHand
-                         cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
-                         // Add deal animation class
-                         cardElement.classList.add('deal-animation');
-                         // Remove animation class after it finishes
-                         cardElement.addEventListener('animationend', () => {
-                             cardElement.classList.remove('deal-animation');
-                         }, { once: true });
 
-                        playerHand.appendChild(cardElement);
-                    });
-                } else {
-                     const placeholder = document.createElement('div');
-                     placeholder.classList.add('card', 'card-back');
-                     playerHand.appendChild(placeholder);
-                }
-                seatElement.appendChild(playerHand);
-
-                // Action Buttons (Hit/Stand)
+                // Action Buttons (Spin - only for the player who can spin, or server triggered)
+                // In Roulette, the spin is usually server triggered or by one designated player.
+                // We'll hide these action buttons for now and use the main Spin button.
                 const actionButtons = document.createElement('div');
-                actionButtons.classList.add('action-buttons');
-                // Use class 'hidden' instead of inline style
-                if (!(player.id === gameState.walletAddress && player.id === gameState.activePlayerId && !gameState.isSpectator)) {
-                    actionButtons.classList.add('hidden');
-                } else {
-                    actionButtons.classList.remove('hidden');
-                }
-
-
-                const hitButton = document.createElement('button');
-                hitButton.classList.add('hit-button');
-                hitButton.textContent = 'Hit';
-                hitButton.onclick = () => { sendPlayerAction('hit'); playSound(dom.buttonClickSound); triggerHaptic([50]); }; // Add sound and haptic
-
-                const standButton = document.createElement('button');
-                standButton.classList.add('stand-button');
-                standButton.textContent = 'Stand';
-                standButton.onclick = () => { sendPlayerAction('stand'); playSound(dom.buttonClickSound); triggerHaptic([50]); }; // Add sound and haptic
-
-                actionButtons.appendChild(hitButton);
-                actionButtons.appendChild(standButton);
+                actionButtons.classList.add('action-buttons', 'hidden'); // Hide action buttons
                 seatElement.appendChild(actionButtons);
 
-                // Turn Timer Bar
+                // Turn Timer Bar (for betting phase)
                 const timerBar = document.createElement('div');
                 timerBar.classList.add('turn-timer-bar');
-                 if (!(player.id === gameState.activePlayerId)) { // Use class 'hidden'
+                 // Show timer only during betting phase
+                 if (!gameState.bettingPhaseTimer) { // Assuming timer is active during betting phase
                      timerBar.classList.add('hidden');
                  } else {
                      timerBar.classList.remove('hidden');
@@ -1896,7 +2313,7 @@
 
                 const timerFill = document.createElement('div');
                 timerFill.classList.add('turn-timer-fill');
-                 // Timer fill width will be controlled by startTurnTimer function
+                 // Timer fill width will be controlled by startBettingPhaseTimer function
                 timerBar.appendChild(timerFill);
                 seatElement.appendChild(timerBar);
 
@@ -1929,7 +2346,10 @@
                 dom.playerSeats.appendChild(seatElement);
             });
 
-             // Add empty seats if less than 5 players
+             // Add empty seats if less than 5 players (optional for Roulette)
+             // For Roulette, showing empty seats might be less relevant than Blackjack.
+             // We can skip this or show a simplified "Waiting for players" message.
+             // Let's keep it for now for consistency, but simplify the content.
              for (let i = gameState.players.length; i < 5; i++) {
                  const emptySeat = document.createElement('div');
                  emptySeat.classList.add('player-seat');
@@ -1940,41 +2360,77 @@
              }
         }
 
-        function startTurnTimer(duration) {
-            const activePlayerSeatFill = document.querySelector('.player-seat.active .turn-timer-fill');
-            if (activePlayerSeatFill) {
-                // Reset timer animation
-                activePlayerSeatFill.style.transition = 'none';
-                activePlayerSeatFill.style.width = '100%';
-                // Force reflow to apply width: 100% immediately
-                activePlayerSeatFill.offsetHeight;
-                // Start animation
-                activePlayerSeatFill.style.transition = `width ${duration}s linear`;
-                activePlayerSeatFill.style.width = '0%';
+        function startBettingPhaseTimer(duration) {
+             // Find the timer bar element (maybe just one for the table, or on the user's seat)
+             // Let's use a single timer bar for the betting phase, maybe in the dealer anchor area or near the grid.
+             // For now, we'll update the timer bar on the user's seat if they are seated.
+            const userSeatTimerFill = document.querySelector('.player-seat.is-user .turn-timer-fill');
+            if (userSeatTimerFill) {
+                userSeatTimerFill.parentElement.classList.remove('hidden'); // Show timer bar
+                userSeatTimerFill.style.transition = 'none';
+                userSeatTimerFill.style.width = '100%';
+                userSeatTimerFill.offsetHeight;
+                userSeatTimerFill.style.transition = `width ${duration}s linear`;
+                userSeatTimerFill.style.width = '0%';
+
+                 // Add timer urgency animation when 3 seconds remain (placeholder)
+                 const timerElement = userSeatTimerFill.parentElement;
+                 if (timerElement) {
+                     setTimeout(() => {
+                         timerElement.style.animation = 'none';
+                         timerElement.offsetHeight;
+                         timerElement.style.animation = 'flashWarning 1s infinite';
+                     }, (duration - 3) * 1000);
+
+                      setTimeout(() => {
+                          timerElement.style.animation = 'none';
+                      }, duration * 1000);
+                 }
             }
+             // Store the timer interval ID if needed for stopping
+             // gameState.bettingPhaseTimer = setInterval(updateTimerDisplay, 1000); // Example interval
         }
+
+        function stopBettingPhaseTimer() {
+             // Clear the interval timer
+             // clearInterval(gameState.bettingPhaseTimer);
+             // gameState.bettingPhaseTimer = null;
+             // Hide the timer bar
+             const userSeatTimerBar = document.querySelector('.player-seat.is-user .turn-timer-bar');
+             if (userSeatTimerBar) {
+                 userSeatTimerBar.classList.add('hidden');
+                 userSeatTimerBar.style.animation = 'none'; // Remove urgency animation
+             }
+        }
+
+        function updateBettingPhaseTimer(remainingTime) {
+             // Update the visual display of the timer bar based on remainingTime
+             const userSeatTimerFill = document.querySelector('.player-seat.is-user .turn-timer-fill');
+             if (userSeatTimerFill) {
+                  const percentage = (remainingTime / gameState.bettingPhaseDuration) * 100;
+                  userSeatTimerFill.style.width = `${percentage}%`;
+                  // Optional: Update a text display of remaining time
+             }
+        }
+
 
         function updateHotStreakBar(streakCount) {
              const userHotStreakFill = document.getElementById('user-hot-streak-bar')?.querySelector('.hot-streak-fill');
              const userStreakEmoji = document.querySelector('.player-seat.is-user .streak-emoji');
 
              if (userHotStreakFill) {
-                 // Assuming streakCount is between 0 and some max value (e.g., 5 or 10)
-                 // Adjust width calculation based on your max streak logic
-                 const maxWidth = 10; // Example max streak before a bonus or reset
+                 const maxWidth = 10;
                  const widthPercentage = Math.min(streakCount / maxWidth * 100, 100);
                  userHotStreakFill.style.width = `${widthPercentage}%`;
-                 // Use class 'hidden'
                  if (streakCount > 0) {
                      userHotStreakFill.parentElement.classList.remove('hidden');
-                     if (userStreakEmoji) userStreakEmoji.classList.remove('hidden'); // Show emoji
-                     // Update emoji based on streak count (placeholder)
+                     if (userStreakEmoji) userStreakEmoji.classList.remove('hidden');
                      if (streakCount >= 5) userStreakEmoji.textContent = '👑';
                      else if (streakCount >= 3) userStreakEmoji.textContent = '🔥';
                      else userStreakEmoji.textContent = '👍';
                  } else {
                      userHotStreakFill.parentElement.classList.add('hidden');
-                     if (userStreakEmoji) userStreakEmoji.classList.add('hidden'); // Hide emoji
+                     if (userStreakEmoji) userStreakEmoji.classList.add('hidden');
                  }
              }
         }
@@ -1984,48 +2440,46 @@
             dom.nearMissPopup.classList.add('show');
             setTimeout(() => {
                 dom.nearMissPopup.classList.remove('show');
-            }, 1500); // Show for 1.5 seconds
-             triggerHaptic([50]); // Haptic feedback for near miss
+            }, 1500);
+             triggerHaptic([100, 100, 100, 100]);
         }
 
-        // Placeholder for Win Banner/Badge
         function showWinBanner(amount) {
             console.log(`Showing Win Banner for ${amount} SOL`);
             // Implement a temporary banner or badge animation here
-            // Example: Create a div, add content, animate it in and out
         }
 
-
+        // Update betting controls for Roulette (chip selection)
         function updateBettingControls() {
-            dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
-            dom.betSlider.value = gameState.betAmount;
+             // Update displayed chip value
+            dom.currentBetDisplay.textContent = `Chip Value: ${gameState.currentChipValue.toFixed(2)} SOL`;
 
             if (gameState.isSeated) {
                 dom.joinLeaveButton.textContent = 'Leave Table';
                 dom.joinLeaveButton.classList.remove('join-button');
                 dom.joinLeaveButton.classList.add('leave-button');
-                // Disable betting controls if seated and not active player or spectator
-                const disableBetting = gameState.isSeated && !gameState.isSpectator && gameState.activePlayerId !== gameState.walletAddress;
-                 dom.betSlider.disabled = disableBetting;
-                 dom.quickBetButtons.forEach(button => button.disabled = disableBetting);
+                // Enable/disable betting controls based on betting phase and spectator status
+                 const canBet = gameState.bettingPhaseTimer !== null && !gameState.isSpectator; // Can bet if timer is active and not spectator
+                 dom.chipSelectionButtons.forEach(button => button.disabled = !canBet);
+                 dom.clearBetsButton.disabled = !canBet;
+                 // Spin button visibility handled by specific functions (showSpinButton/hideSpinButton)
 
             } else {
                 dom.joinLeaveButton.textContent = 'Join Table';
                 dom.joinLeaveButton.classList.remove('leave-button');
                 dom.joinLeaveButton.classList.add('join-button');
-                 // Enable betting controls if not seated
-                 dom.betSlider.disabled = false;
-                 dom.quickBetButtons.forEach(button => button.disabled = false);
+                 // Disable betting controls if not seated
+                 dom.chipSelectionButtons.forEach(button => button.disabled = true);
+                 dom.clearBetsButton.disabled = true;
+                 hideSpinButton(); // Hide spin button if not seated
             }
 
-            // Show spectator status if applicable (use class 'hidden')
             if (gameState.isSpectator) {
                 dom.spectatorStatus.classList.remove('hidden');
             } else {
                 dom.spectatorStatus.classList.add('hidden');
             }
 
-             // Disable chat input for spectators
              dom.chatInput.disabled = gameState.isSpectator;
              dom.sendChatButton.disabled = gameState.isSpectator;
              dom.chatInput.placeholder = gameState.isSpectator ? "Spectators cannot chat" : "Type message...";
@@ -2036,7 +2490,6 @@
             gameState.chatMessages.forEach(msg => {
                 addChatMessageToFeed(msg);
             });
-             // Ensure chat container is visible on desktop, hidden on mobile initially
              updateChatContainerVisibility();
         }
 
@@ -2046,16 +2499,13 @@
             messageElement.innerHTML = `<span class="chat-sender">[${msg.sender}]</span><span class="chat-badge">[${msg.badge}]</span> ${msg.message}`;
             dom.chatFeed.appendChild(messageElement);
 
-             // Limit chat messages to prevent DOM bloat
              const maxChatMessages = 50;
              if (dom.chatFeed.children.length > maxChatMessages) {
-                 dom.chatFeed.removeChild(dom.chatFeed.children[0]); // Remove the oldest message
+                 dom.chatFeed.removeChild(dom.chatFeed.children[0]);
              }
 
-            // Auto-scroll to the bottom
             dom.chatFeed.scrollTop = dom.chatFeed.scrollHeight;
 
-            // Add flash animation to the new message
             messageElement.classList.add('flash');
             messageElement.addEventListener('animationend', () => {
                 messageElement.classList.remove('flash');
@@ -2063,22 +2513,20 @@
         }
 
         function updateChatContainerVisibility() {
-             // On mobile, chat is toggleable. On desktop, it's always visible.
              const isMobile = window.innerWidth <= 768;
              if (isMobile) {
                  if (gameState.chatVisible) {
                      dom.chatContainer.classList.add('active');
-                     dom.chatContainer.classList.remove('hidden'); // Ensure it's not hidden by utility class
+                     dom.chatContainer.classList.remove('hidden');
                  } else {
                      dom.chatContainer.classList.remove('active');
-                     // Add 'hidden' class when not active on mobile
                      dom.chatContainer.classList.add('hidden');
                  }
-                  dom.toggleChatButton.classList.remove('hidden'); // Show toggle button on mobile
+                  dom.toggleChatButton.classList.remove('hidden');
              } else {
-                 dom.chatContainer.classList.add('active'); // Always active on desktop
+                 dom.chatContainer.classList.add('active');
                  dom.chatContainer.classList.remove('hidden');
-                 dom.toggleChatButton.classList.add('hidden'); // Hide toggle button on desktop
+                 dom.toggleChatButton.classList.add('hidden');
              }
         }
 
@@ -2087,13 +2535,11 @@
              const otherPlayerSeats = document.querySelectorAll('.player-seat:not(.is-user)');
 
              if (!isMobile) {
-                 // Always show hands on desktop
+                 // Always show other players on desktop
                  otherPlayerSeats.forEach(seat => {
-                     const hand = seat.querySelector('.player-hand');
-                     hand.classList.remove('hidden'); // Ensure hand is not hidden
-                     seat.querySelectorAll('.card').forEach(card => card.classList.remove('card-back'));
+                      seat.classList.remove('hidden'); // Ensure seat is not hidden
                  });
-                 dom.toggleOtherHandsButton.classList.add('hidden'); // Hide button on desktop
+                 dom.toggleOtherHandsButton.classList.add('hidden');
                  return;
              }
 
@@ -2101,44 +2547,44 @@
              dom.toggleOtherHandsButton.classList.remove('hidden'); // Show button on mobile
 
              otherPlayerSeats.forEach(seat => {
-                 const hand = seat.querySelector('.player-hand');
                  if (gameState.otherHandsVisible) {
-                      hand.classList.remove('hidden'); // Show hand
-                      // Show cards face up (assuming card object has 'revealed' or similar)
-                      seat.querySelectorAll('.card').forEach(cardElement => {
-                           cardElement.classList.remove('card-back');
-                           // Restore text content if using text placeholders
-                           if (cardElement.textContent === '') {
-                                // Find the corresponding card in gameState.players and set textContent
-                                const playerId = seat.id; // Assuming player seat has ID matching player.id
-                                const player = gameState.players.find(p => p.id === playerId);
-                                if (player && player.hand.length > Array.from(seat.querySelectorAll('.card')).indexOf(cardElement)) {
-                                     const card = player.hand[Array.from(seat.querySelectorAll('.card')).indexOf(cardElement)];
-                                     cardElement.textContent = `${card.value}${card.suit}`;
-                                }
-                           }
-                      });
+                      seat.classList.remove('hidden'); // Show seat
                  } else {
-                      hand.classList.remove('hidden'); // Keep hand container visible
-                      // Show cards face down
-                      seat.querySelectorAll('.card').forEach(cardElement => {
-                          cardElement.classList.add('card-back');
-                          cardElement.textContent = ''; // Hide text
-                      });
+                      seat.classList.add('hidden'); // Hide seat
                  }
              });
         }
 
-        function showNextHandButton() {
-             dom.nextHandButton.classList.remove('hidden');
-             // Add pulse animation to Next Hand button
-             dom.nextHandButton.classList.add('pulse-button');
+        function showSpinButton() {
+             dom.spinButton.classList.remove('hidden');
+             dom.spinButton.classList.add('pulse-button');
         }
 
-        function hideNextHandButton() {
-             dom.nextHandButton.classList.add('hidden');
-             // Remove pulse animation
-             dom.nextHandButton.classList.remove('pulse-button');
+        function hideSpinButton() {
+             dom.spinButton.classList.add('hidden');
+             dom.spinButton.classList.remove('pulse-button');
+        }
+
+        function enableBetting() {
+             dom.bettingGridContainer.querySelectorAll('.grid-cell').forEach(cell => {
+                 cell.style.pointerEvents = 'auto'; // Enable clicks
+                 cell.style.opacity = 1;
+             });
+             dom.chipSelectionButtons.forEach(button => button.disabled = false);
+             dom.clearBetsButton.disabled = false;
+             // Optional: Add visual feedback for betting phase
+             dom.bettingGridContainer.style.boxShadow = '0 0 1rem rgba(16, 185, 129, 0.5)'; // Green glow
+        }
+
+        function disableBetting() {
+             dom.bettingGridContainer.querySelectorAll('.grid-cell').forEach(cell => {
+                 cell.style.pointerEvents = 'none'; // Disable clicks
+                 cell.style.opacity = 0.8; // Dim cells
+             });
+             dom.chipSelectionButtons.forEach(button => button.disabled = true);
+             dom.clearBetsButton.disabled = true;
+             // Optional: Remove visual feedback
+             dom.bettingGridContainer.style.boxShadow = 'inset 0 0 2rem rgba(0, 0, 0, 0.5)'; // Revert shadow
         }
 
 
@@ -2148,43 +2594,44 @@
             dom.connectWalletButton.addEventListener('click', connectWallet);
             dom.disconnectWalletButton.addEventListener('click', disconnectWallet);
 
-            dom.betSlider.addEventListener('input', (event) => {
-                gameState.betAmount = parseFloat(event.target.value);
-                dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
-                // Optional: Send bet update to server on slider change or on a separate "Place Bet" button
-                 // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
+            // Chip selection button listeners
+            dom.chipSelectionButtons.forEach(button => {
+                 button.addEventListener('click', (event) => {
+                     const value = event.target.dataset.chipValue;
+                     if (value === 'MAX') {
+                          // Placeholder: Implement MAX chip value logic
+                          gameState.currentChipValue = gameState.walletBalance; // Example: MAX is wallet balance
+                     } else {
+                          gameState.currentChipValue = parseFloat(value);
+                     }
+                     // Update display and highlight active chip button (optional)
+                     dom.currentBetDisplay.textContent = `Chip Value: ${gameState.currentChipValue.toFixed(2)} SOL`;
+                     playSound(dom.buttonClickSound);
+                     triggerHaptic([50]);
+                 });
             });
 
-            dom.quickBetButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const amount = event.target.dataset.betAmount;
-                    if (amount === 'MAX') {
-                        // Placeholder: Implement MAX bet logic (e.g., based on wallet balance or table limit)
-                        gameState.betAmount = 10; // Example MAX bet
-                         // Trigger MAX bet animation (shake)
-                         triggerMaxBetAnimation();
-                    } else {
-                        gameState.betAmount = Math.max(0, gameState.betAmount + parseFloat(amount));
-                    }
-                    // Clamp bet amount to max slider value
-                    gameState.betAmount = Math.min(gameState.betAmount, parseFloat(dom.betSlider.max));
-                    dom.betSlider.value = gameState.betAmount;
-                    dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
-                     // Optional: Send bet update
-                     // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
-                     playSound(dom.chipSound); // Play chip sound
-                     triggerHaptic([50]); // Haptic feedback
-                });
+            // Clear Bets button listener
+            dom.clearBetsButton.addEventListener('click', () => {
+                 gameState.currentBets = {}; // Clear local bets
+                 renderPlacedChips(); // Remove chips from grid
+                 // Placeholder: Send clear bets message to server
+                 sendMessage({ type: 'clearBets' });
+                 playSound(dom.buttonClickSound);
+                 triggerHaptic([50]);
             });
+
 
             dom.joinLeaveButton.addEventListener('click', () => {
                 if (gameState.isSeated) {
                     sendMessage({ type: 'leaveTable' });
                 } else {
-                    sendMessage({ type: 'joinTable', bet: gameState.betAmount }); // Send bet when joining
+                    // In Roulette, joining might not require an initial bet,
+                    // betting happens during the betting phase.
+                    sendMessage({ type: 'joinRoulette' }); // Changed message type
                 }
-                 playSound(dom.buttonClickSound); // Play sound
-                 triggerHaptic([50]); // Haptic feedback
+                 playSound(dom.buttonClickSound);
+                 triggerHaptic([50]);
             });
 
             dom.sendChatButton.addEventListener('click', sendChatMessage);
@@ -2194,57 +2641,50 @@
                 }
             });
 
-             // Placeholder for Settings Menu Toggle
              const menuIcon = document.querySelector('.menu-icon');
              menuIcon.addEventListener('click', () => {
                  const dropdown = dom.settingsDropdown;
-                 // Use class 'hidden'
                  dropdown.classList.toggle('hidden');
-                  playSound(dom.buttonClickSound); // Play sound
+                  playSound(dom.buttonClickSound);
              });
 
-             // Close settings dropdown if clicked outside
              document.addEventListener('click', (event) => {
                  if (!menuIcon.contains(event.target) && !dom.settingsDropdown.contains(event.target)) {
-                     dom.settingsDropdown.classList.add('hidden'); // Use class 'hidden'
+                     dom.settingsDropdown.classList.add('hidden');
                  }
              });
 
-             // Mobile Chat Toggle
              dom.toggleChatButton.addEventListener('click', () => {
                  gameState.chatVisible = !gameState.chatVisible;
                  updateChatContainerVisibility();
-                  playSound(dom.buttonClickSound); // Play sound
+                  playSound(dom.buttonClickSound);
              });
 
-             // Mobile Other Hands Toggle
+             // Toggle Other Players button
              dom.toggleOtherHandsButton.addEventListener('click', () => {
                  gameState.otherHandsVisible = !gameState.otherHandsVisible;
                  updateOtherHandsVisibility();
-                  playSound(dom.buttonClickSound); // Play sound
+                  playSound(dom.buttonClickSound);
              });
 
-             // Next Hand Button
-             dom.nextHandButton.addEventListener('click', () => {
-                 sendMessage({ type: 'nextHand' });
-                 hideNextHandButton();
-                  playSound(dom.buttonClickSound); // Play sound
-                  triggerHaptic([50]); // Haptic feedback
+             // Spin Button
+             dom.spinButton.addEventListener('click', () => {
+                 // Placeholder: Send spin request to server
+                 sendMessage({ type: 'requestSpin' }); // Server will validate and trigger spin
+                 hideSpinButton(); // Hide button immediately
+                 playSound(dom.buttonClickSound);
+                 triggerHaptic([50]);
              });
 
-             // Refer Friends Button
              dom.referFriendsButton.addEventListener('click', shareReferral);
 
-             // Phase 2: Free Mode Toggle
              dom.freeModeToggle.addEventListener('click', () => {
                  gameState.isFreeMode = !gameState.isFreeMode;
                  updateFreeModeToggleText();
-                 // Placeholder: Send update to backend or handle state change
                  console.log(`Free Mode: ${gameState.isFreeMode}`);
-                 playSound(dom.buttonClickSound); // Play sound
+                 playSound(dom.buttonClickSound);
              });
 
-             // Phase 2: Profile/Lounge Tab Buttons
              dom.profileTabButton.addEventListener('click', () => {
                  showProfileLoungeSection('profile');
                  playSound(dom.buttonClickSound);
@@ -2258,61 +2698,43 @@
                  playSound(dom.buttonClickSound);
              });
 
-             // Phase 2: Game Tab Buttons (within Lounge)
              dom.gameTabs.querySelectorAll('.game-tab-button').forEach(button => {
                  button.addEventListener('click', (event) => {
                      const game = event.target.dataset.game;
                      console.log(`Switched to game tab: ${game}`);
-                     // Placeholder: Load content for the selected game tab
-                     // This would involve fetching data and updating the loungeLeaderboards/loungeChat areas
+                     loadLoungeContent(game);
                       playSound(dom.buttonClickSound);
                  });
              });
         }
 
-        function sendPlayerAction(action) {
-             if (gameState.walletAddress && gameState.walletAddress === gameState.activePlayerId && !gameState.isSpectator) {
-                  sendMessage({ type: 'player_action', action: action });
-             } else {
-                 console.warn("Cannot send action: Not your turn, not connected, or spectator.");
-             }
-        }
-
         function sendChatMessage() {
             const message = dom.chatInput.value.trim();
             if (message && !gameState.isSpectator) {
-                // In a real app, sender and badge would come from gameState or backend
                 const sender = gameState.walletAddress ? `${gameState.walletAddress.slice(0, 4)}...` : 'Anon';
                 const badge = gameState.userLevel;
                 sendMessage({ type: 'chat_message', message: message, sender: sender, badge: badge });
-                dom.chatInput.value = ''; // Clear input
+                dom.chatInput.value = '';
             }
         }
 
-        // Phase 2: Update Free Mode Toggle Text
         function updateFreeModeToggleText() {
              dom.freeModeToggle.textContent = gameState.isFreeMode ? '✅ Free Mode' : '🔁 SOL Mode';
-             // Optional: Update UI elements based on mode (e.g., bet currency symbol)
         }
 
-        // Phase 2: Show Profile/Lounge Section
         function showProfileLoungeSection(section) {
              dom.profileLoungeSection.classList.remove('hidden');
-             // Toggle content visibility
              if (section === 'profile') {
                  dom.profileContent.classList.remove('hidden');
                  dom.loungeContent.classList.add('hidden');
-                 // Placeholder: Populate profile data
                  updateProfileDisplay();
              } else if (section === 'lounge') {
                  dom.profileContent.classList.add('hidden');
                  dom.loungeContent.classList.remove('hidden');
-                 // Placeholder: Load initial lounge content (e.g., Blackjack leaderboard)
-                 loadLoungeContent('blackjack');
+                 loadLoungeContent('blackjack'); // Load default lounge content
              }
         }
 
-        // Phase 2: Placeholder for Populating Profile Data
         function updateProfileDisplay() {
              dom.profileAvatar.textContent = gameState.players.find(p => p.id === gameState.walletAddress)?.avatar || '😊';
              dom.profileLevel.textContent = gameState.userLevel;
@@ -2320,18 +2742,15 @@
              dom.profileXpBarFill.style.width = `${xpProgress}%`;
              dom.profileXP.textContent = `${xpProgress}/100`;
              // Placeholder: Fetch and display other profile data (Win %, Wager, Streak, Badges)
-             dom.profileWinRate.textContent = '55%';
-             dom.profileHighestWager.textContent = '10 SOL';
-             dom.longestStreak.textContent = '5'; // Corrected variable name
-             dom.profileFavoriteGame.textContent = 'Blackjack'; // Example
-             // Placeholder: Render badges
-             dom.profileBadges.innerHTML = '<li>Risk Lord</li><li>Low Roller</li>'; // Example badges
+             dom.profileWinRate.textContent = '--'; // Needs real data
+             dom.profileHighestWager.textContent = '--'; // Needs real data
+             dom.longestStreak.textContent = '--'; // Needs real data
+             dom.profileFavoriteGame.textContent = 'Roulette'; // Example
+             dom.profileBadges.innerHTML = '<li>Coming Soon</li>'; // Example badges
         }
 
-        // Phase 2: Placeholder for Loading Lounge Content
         function loadLoungeContent(game) {
              console.log(`Loading lounge content for: ${game}`);
-             // Placeholder: Fetch and display leaderboards and chat for the selected game
              dom.loungeLeaderboards.innerHTML = `Leaderboard for ${game}...`;
              dom.loungeChat.innerHTML = `Chat for ${game}...`;
         }
@@ -2347,7 +2766,7 @@
 
          function playBackgroundSound() {
              if (dom.backgroundLoopSound && !gameState.backgroundSoundPlaying) {
-                 dom.backgroundLoopSound.volume = 0.1; // Adjust volume as needed
+                 dom.backgroundLoopSound.volume = 0.05; // Lower volume for subtle ambient loop
                  dom.backgroundLoopSound.play().then(() => {
                      gameState.backgroundSoundPlaying = true;
                  }).catch(error => console.error("Error playing background sound:", error));
@@ -2364,7 +2783,6 @@
 
         // --- Animation Placeholders ---
 
-        // Placeholder for Confetti Animation (Canvas)
         function triggerConfetti() {
             console.log("Triggering confetti!");
             const confettiCount = window.innerWidth < 768 ? 50 : 100; // Adjust count for mobile
@@ -2383,11 +2801,12 @@
                     dampening: 0.9, // Reduce speed over time
                     rotation: Math.random() * 360,
                     rotationSpeed: Math.random() * 20 - 10,
+                     shape: 'circle', // or 'star', 'chip', 'dollar'
                 });
             }
 
             function updateConfetti() {
-                dom.confettiCtx.clearRect(0, 0, dom.confettiCanvas.width, dom.confettiCtx.canvas.height); // Use canvas height
+                dom.confettiCtx.clearRect(0, 0, dom.confettiCanvas.width, dom.confettiCtx.canvas.height);
 
                 particles.forEach(p => {
                     p.speedY += p.gravity;
@@ -2397,27 +2816,25 @@
                     p.speedY *= p.dampening;
                     p.rotation += p.rotationSpeed;
 
-                    // Draw particle (simplified square for now)
                     dom.confettiCtx.save();
                     dom.confettiCtx.translate(p.x, p.y);
                     dom.confettiCtx.rotate(p.rotation * Math.PI / 180);
                     dom.confettiCtx.fillStyle = p.color;
                     dom.confettiCtx.fillRect(-p.radius / 2, -p.radius / 2, p.radius, p.radius);
+
                     dom.confettiCtx.restore();
                 });
 
-                // Remove particles that are off-screen
-                particles.filter(p => p.y < dom.confettiCanvas.height && p.x > 0 && p.x < dom.confettiCanvas.width); // Filter particles within bounds
+                particles.filter(p => p.y < dom.confettiCanvas.height && p.x > 0 && p.x < dom.confettiCanvas.width);
 
                 if (particles.length > 0) {
                     requestAnimationFrame(updateConfetti);
                 }
             }
 
-            updateConfetti(); // Start animation
+            updateConfetti();
         }
 
-        // Placeholder for Coin Shower Animation
         function triggerCoinShower() {
             console.log("Triggering coin shower!");
             const coinCount = window.innerWidth < 768 ? 30 : 50; // Adjust count for mobile
@@ -2426,163 +2843,61 @@
             for (let i = 0; i < coinCount; i++) {
                 const coin = document.createElement('div');
                 coin.classList.add('coin');
-                // Random start position at the top
                 coin.style.left = `${Math.random() * 100}vw`;
-                // Random end horizontal position
-                coin.style.setProperty('--end-x', `${(Math.random() - 0.5) * 200}px`); // Drift left or right
-                // Random end rotation
-                 coin.style.setProperty('--end-rotate', `${Math.random() * 720 - 360}deg`); // Rotate in either direction
+                coin.style.setProperty('--end-x', `${(Math.random() - 0.5) * 200}px`);
+                 coin.style.setProperty('--end-rotate', `${Math.random() * 720 - 360}deg`);
 
                 document.body.appendChild(coin);
                 coins.push(coin);
 
-                // Remove coin element after animation
                 coin.addEventListener('animationend', () => {
                     coin.remove();
                 }, { once: true });
             }
-            playSound(dom.coinDropSound); // Play coin drop sound
+            playSound(dom.coinDropSound);
         }
 
-        // New: Placeholder for Floating Win Emojis
         function triggerFloatingWinEmojis() {
              console.log("Triggering floating win emojis!");
-             const emojiCount = window.innerWidth < 768 ? 10 : 20; // Adjust count for mobile
-             const emojis = ['🎉', '💰', '💸', '✨', '👑']; // Win emojis
+             const emojiCount = window.innerWidth < 768 ? 10 : 20;
+             const emojis = ['🎉', '💰', '💸', '✨', '👑', '🎰', '🤑', '💎', '🎴'];
              const container = dom.floatingEmojiContainer;
 
              for (let i = 0; i < emojiCount; i++) {
                  const emoji = document.createElement('span');
                  emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
                  emoji.classList.add('floating-emoji');
-                 // Random start position near the center/bottom of the screen
                  emoji.style.left = `${50 + (Math.random() - 0.5) * 20}vw`;
-                 emoji.style.bottom = `${Math.random() * 10}vh`; // Start near the bottom
-                 emoji.style.fontSize = `${Math.random() * 1 + 1}rem`; // Random size
-                 emoji.style.opacity = Math.random() * 0.5 + 0.5; // Random opacity
+                 emoji.style.bottom = `${Math.random() * 10}vh`;
+                 emoji.style.fontSize = `${Math.random() * 1 + 1}rem`;
+                 emoji.style.opacity = Math.random() * 0.5 + 0.5;
 
                  container.appendChild(emoji);
 
-                 // Remove emoji element after animation
                  emoji.addEventListener('animationend', () => {
                      emoji.remove();
                  }, { once: true });
              }
         }
 
-         // New: Placeholder for MAX Bet Animation (Shake)
          function triggerMaxBetAnimation() {
              console.log("Triggering MAX Bet animation!");
-             const maxBetButton = document.querySelector('.quick-bet-buttons button[data-bet-amount="MAX"]');
+             const maxBetButton = document.querySelector('.chip-selection-buttons button[data-chip-value="MAX"]'); // Changed selector
              if (maxBetButton) {
-                 maxBetButton.style.animation = 'none'; // Reset animation
-                 maxBetButton.offsetHeight; // Trigger reflow
-                 maxBetButton.style.animation = 'shake 0.3s ease-in-out'; // Apply shake animation
+                 maxBetButton.style.animation = 'none';
+                 maxBetButton.offsetHeight;
+                 maxBetButton.style.animation = 'shake 0.3s ease-in-out';
              }
          }
 
-
-        // --- Additional Engagement Features ---
-
-        function checkForDailyReward() {
-             const lastLogin = localStorage.getItem('lastLogin');
-             const today = new Date().toDateString();
-
-             if (lastLogin !== today) {
-                 let streak = parseInt(localStorage.getItem('loginStreak') || '0') + 1;
-                 localStorage.setItem('lastLogin', today);
-                 localStorage.setItem('loginStreak', streak);
-
-                 if (streak >= 5) {
-                     // Award daily reward (e.g., 0.01 SOL)
-                     gameState.walletBalance += 0.01; // Simulate adding balance
-                     localStorage.setItem('walletBalance', gameState.walletBalance); // Persist balance (simple)
-                     dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
-                     alert('Daily Reward: 0.01 SOL Free Bet!'); // Replace with inline message
-                     localStorage.setItem('loginStreak', '0'); // Reset streak after reward
-                 }
-             } else {
-                 // Already logged in today, maybe show streak status?
-                 const streak = localStorage.getItem('loginStreak') || '0';
-                 console.log(`Login Streak: ${streak} days`);
-             }
-        }
-
-        function shareReferral() {
-             const referralLink = "YOUR_REFERRAL_LINK_HERE"; // Replace with your actual referral link
-             const text = `Join DegenJack & get a bonus! Play blackjack on Solana. ${referralLink} 🚀`;
-
-             if (navigator.share) {
-                 navigator.share({
-                     title: 'DegenJack Referral',
-                     text: text,
-                     url: referralLink, // Optional: share the link directly
-                 }).catch(error => console.error('Error sharing:', error));
-             } else {
-                 // Fallback for browsers that don't support navigator.share
-                 window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank'); // Example: Share on X (Twitter)
-                 // Or copy to clipboard:
-                 // navigator.clipboard.writeText(text).then(() => {
-                 //     alert('Referral link copied to clipboard!'); // Replace with inline message
-                 // }).catch(err => console.error('Failed to copy:', err));
-             }
-             playSound(dom.buttonClickSound); // Play sound
-        }
-
-        function updateLeaderboard(leaderboardData) {
-            dom.leaderboard.innerHTML = ''; // Clear current leaderboard
-            if (!leaderboardData || leaderboardData.length === 0) {
-                dom.leaderboard.textContent = 'Leaderboard: --';
-                return;
-            }
-            const leaderboardTitle = document.createElement('span');
-            leaderboardTitle.textContent = 'Leaderboard: ';
-            leaderboardTitle.style.fontWeight = 'bold';
-            dom.leaderboard.appendChild(leaderboardTitle);
-
-            leaderboardData.forEach((entry, index) => {
-                const entrySpan = document.createElement('span');
-                entrySpan.textContent = `${index + 1}. ${entry.player}: ${entry.wins} Wins | `;
-                dom.leaderboard.appendChild(entrySpan);
-            });
-        }
-
-        function showMysteryEvent(eventData) {
-             console.log("Mystery Event Triggered:", eventData);
-             // Placeholder: Implement UI for mystery event (e.g., Bonus Round banner)
-             if (eventData.type === 'bonus_round') {
-                 dom.hotTableBanner.textContent = `Bonus Round Active! ${eventData.message || 'Double Payouts!'}`;
-                 dom.hotTableBanner.classList.remove('hidden');
-                 // Optional: Hide after a duration
-                 setTimeout(() => {
-                     dom.hotTableBanner.classList.add('hidden');
-                 }, eventData.duration || 5000); // Hide after 5 seconds by default
-             }
-        }
-
-        // Placeholder for Confetti on Join animation
-        function triggerConfettiOnJoin() {
-             console.log("Triggering confetti on join!");
-             // Reuse the existing triggerConfetti function
-             triggerConfetti();
-        }
-
-        // Placeholder for Auto-Play Timer/Spinner
-        function startAutoPlayTimer() {
-             console.log("Starting auto-play timer...");
-             // Implement a visual timer or spinner animation here
-             // This would likely involve adding/updating a DOM element
-        }
-
-         // New: Placeholder for Background Particles Animation
          function startBackgroundParticlesAnimation() {
              console.log("Starting background particles animation...");
              const canvas = dom.backgroundParticlesCanvas;
              const ctx = dom.backgroundParticlesCtx;
              const particles = [];
-             const particleCount = window.innerWidth < 768 ? 20 : 50; // Adjust count for mobile
+             const particleCount = navigator.hardwareConcurrency ? Math.min(50, navigator.hardwareConcurrency * 5) : 50;
 
-             // Create particles (simplified chips/sparkles)
+
              for (let i = 0; i < particleCount; i++) {
                  particles.push({
                      x: Math.random() * canvas.width,
@@ -2602,7 +2917,6 @@
                      p.y += p.speedY;
                      p.x += p.speedX;
 
-                     // Reset particle if it goes off screen
                      if (p.y > canvas.height) {
                          p.y = -p.size;
                          p.x = Math.random() * canvas.width;
@@ -2611,106 +2925,169 @@
                      ctx.fillStyle = p.color;
                      ctx.globalAlpha = p.opacity;
                      ctx.beginPath();
-                     ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2); // Draw as circles (simplified chips)
+                     ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
                      ctx.fill();
                  });
 
                  requestAnimationFrame(drawParticles);
              }
 
-             drawParticles(); // Start animation
+             drawParticles();
          }
 
 
-        // --- Placeholder Simulation Data (for initial UI testing) ---
-        function simulateInitialGameState() {
-             // Load persisted state
-             gameState.userXP = parseInt(localStorage.getItem('userXP') || '0');
-             gameState.userLevel = parseInt(localStorage.getItem('userLevel') || '1');
-             gameState.walletBalance = parseFloat(localStorage.getItem('walletBalance') || '0'); // Load simulated balance
+        // --- Additional Engagement Features ---
 
-             gameState.players = [
-                 { id: 'player1', name: 'CryptoKing', level: 7, avatar: '😎', hand: [{value: 'K', suit: '♥', revealed: true}, {value: '5', suit: '♦', revealed: true}], isUser: false, timer: 10, hotStreak: 3, isVIP: false }, // Added revealed and isVIP
-                 { id: 'user-wallet-id', name: 'You', level: gameState.userLevel, avatar: '😊', hand: [{value: 'Q', suit: '♠', revealed: true}, {value: '8', suit: '♣', revealed: true}], isUser: true, timer: 10, hotStreak: 2, isVIP: true }, // Added revealed and isVIP
-                 { id: 'player3', name: 'DegenJane', level: 3, avatar: '😂', hand: [{value: '2', suit: '♥', revealed: true}, {value: '7', suit: '♦', revealed: true}], isUser: false, timer: 10, hotStreak: 0, isVIP: false },
-             ];
-             gameState.dealerHand = [{value: '?', suit: '?', revealed: false}, {value: '10', suit: '♠', revealed: true}]; // Dealer shows one card
-             gameState.activePlayerId = 'user-wallet-id'; // Set user as active initially
-             gameState.betAmount = parseFloat(localStorage.getItem('currentBet') || '0.5'); // Persist bet amount
-             gameState.isSeated = true;
-             gameState.chatMessages = [
-                 { sender: 'Anon', message: 'gm degens!', badge: '1' },
-                 { sender: 'CryptoKing', message: 'let\'s go!', badge: '7' },
-             ];
-             gameState.recentPlays = [
-                 { player: 'Whale', amount: 2.0, win: true },
-                 { player: 'You', amount: 0.5, win: false },
-                 { player: 'DegenJane', amount: 0.1, win: true },
-             ];
+        function checkForDailyReward() {
+             const lastLogin = localStorage.getItem('lastLogin');
+             const today = new Date().toDateString();
 
-             // Simulate a leaderboard
-             gameState.leaderboard = [
-                 { player: 'CryptoKing', wins: 10 },
-                 { player: 'DegenJane', wins: 8 },
-                 { player: 'Anon', wins: 5 },
-                 { player: 'You', wins: 4 },
-                 { player: 'Whale', wins: 3 },
-             ];
+             if (lastLogin !== today) {
+                 let streak = parseInt(localStorage.getItem('loginStreak') || '0') + 1;
+                 localStorage.setItem('lastLogin', today);
+                 localStorage.setItem('loginStreak', streak);
 
-             // Simulate referral count
-             gameState.referralCount = parseInt(localStorage.getItem('referralCount') || '0');
-
-
-             // Update UI with simulated data
-             updateUI();
-             // Start the timer animation for the active player
-             startTurnTimer(gameState.turnTimerDuration);
-
-             // Simulate a fake chat message every few seconds
-             setInterval(() => {
-                 const fakeMessages = [
-                     { sender: 'Anon' + Math.floor(Math.random() * 100), message: 'wow!', badge: Math.floor(Math.random() * 10) + 1 },
-                     { sender: 'WhaleWatcher', message: 'big win!', badge: Math.floor(Math.random() * 20) + 5 },
-                     { sender: 'Degen', message: 'lfg!', badge: Math.floor(Math.random() * 5) + 1 },
-                 ];
-                 const randomMsg = fakeMessages[Math.floor(Math.random() * fakeMessages.length)];
-                 // Only add if chat is visible on desktop or chat container is active on mobile
-                 if (window.innerWidth > 768 || gameState.chatVisible) {
-                      addChatMessageToFeed(randomMsg);
+                 if (streak >= 5) {
+                     gameState.walletBalance += 0.01;
+                     localStorage.setItem('walletBalance', gameState.walletBalance);
+                     dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
+                     alert('Daily Reward: 0.01 SOL Free Bet!');
+                     localStorage.setItem('loginStreak', '0');
                  }
-             }, 10000); // Every 10 seconds
+             } else {
+                 const streak = localStorage.getItem('loginStreak') || '0';
+                 console.log(`Login Streak: ${streak} days`);
+             }
+        }
 
-             // Simulate a fake recent play every few seconds
-             setInterval(() => {
-                 const fakePlays = [
-                     { player: 'Anon' + Math.floor(Math.random() * 100), amount: parseFloat((Math.random() * 0.5 + 0.01).toFixed(2)), win: Math.random() > 0.5 },
-                     { player: 'WhaleWatcher', amount: parseFloat((Math.random() * 1 + 0.1).toFixed(2)), win: Math.random() > 0.5 },
-                 ];
-                 const randomPlay = fakePlays[Math.floor(Math.random() * fakePlays.length)];
-                 gameState.recentPlays.unshift(randomPlay);
-                  if (gameState.recentPlays.length > 10) {
-                      gameState.recentPlays.pop();
-                  }
-                  updateRecentPlaysTicker();
-             }, 15000); // Every 15 seconds
+        function shareReferral() {
+             const referralLink = "YOUR_REFERRAL_LINK_HERE"; // Replace with your actual referral link
+             const text = `Join DegenRoulette & get a bonus! Play roulette on Solana. ${referralLink} 🚀`; // Changed text
 
-             // Simulate Mystery Event (Bonus Round) periodically
-             setInterval(() => {
-                 showMysteryEvent({ type: 'bonus_round', message: 'Double Payouts!', duration: 10000 }); // Bonus round for 10 seconds
-             }, 60000); // Every 60 seconds (1 minute)
+             if (navigator.share) {
+                 navigator.share({
+                     title: 'DegenRoulette Referral', // Changed title
+                     text: text,
+                     url: referralLink,
+                 }).catch(error => console.error('Error sharing:', error));
+             } else {
+                 window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+             }
+             playSound(dom.buttonClickSound);
+             triggerFloatingReferralReward();
+        }
 
-             // Simulate referral count increase (for testing)
-             setInterval(() => {
-                 gameState.referralCount++;
-                 localStorage.setItem('referralCount', gameState.referralCount);
-                 updateReferralCountDisplay();
-             }, 30000); // Every 30 seconds
+        function triggerFloatingReferralReward() {
+             console.log("Triggering floating referral reward animation!");
+             const rewardElement = document.createElement('span');
+             rewardElement.textContent = "+0.05 SOL";
+             rewardElement.style.position = 'absolute';
+             rewardElement.style.bottom = '5rem';
+             rewardElement.style.left = '50%';
+             rewardElement.style.transform = 'translateX(-50%)';
+             rewardElement.style.color = '#10b981';
+             rewardElement.style.fontSize = '1.5rem';
+             rewardElement.style.fontWeight = 'bold';
+             rewardElement.style.zIndex = 100;
+             rewardElement.style.animation = 'float-up 1.5s ease-out forwards';
+             dom.bottomBar.appendChild(rewardElement);
+
+             rewardElement.addEventListener('animationend', () => {
+                 rewardElement.remove();
+             }, { once: true });
         }
 
 
+        function showMysteryEvent(eventData) {
+             console.log("Mystery Event Triggered:", eventData);
+             if (eventData.type === 'bonus_round') {
+                 dom.hotTableBanner.textContent = `Bonus Round Active! ${eventData.message || 'Double Payouts!'}`;
+                 dom.hotTableBanner.classList.remove('hidden');
+                 setTimeout(() => {
+                     dom.hotTableBanner.classList.add('hidden');
+                 }, eventData.duration || 5000);
+             }
+        }
+
+        function triggerConfettiOnJoin() {
+             console.log("Triggering confetti on join!");
+             triggerConfetti();
+        }
+
+        // Placeholder for Auto-Play Timer/Spinner (Less relevant for Roulette)
+        function startAutoPlayTimer() {
+             console.log("Starting auto-play timer...");
+        }
+
+        // --- Simulation for Testing (Roulette Specific) ---
+        function simulateInitialGameStateRoulette() {
+             // Simulate a few players and their bets
+             gameState.players = [
+                 { id: 'user123', name: 'You', level: 5, avatar: '😎', bets: { 'number_7': 0.5, 'red': 0.2 }, totalBet: 0.7, hotStreak: 3, isVIP: true },
+                 { id: 'player456', name: 'CryptoKing', level: 10, avatar: '👑', bets: { '1st12': 1, 'number_0': 0.1 }, totalBet: 1.1, hotStreak: 0, isVIP: false },
+                 { id: 'player789', name: 'SolanaSpin', level: 2, avatar: '🦄', bets: { 'odd': 0.3 }, totalBet: 0.3, hotStreak: 0, isVIP: false },
+             ];
+             // Set user's bets in gameState.currentBets
+             const currentUser = gameState.players.find(p => p.id === 'user123');
+             if (currentUser) {
+                 gameState.currentBets = currentUser.bets;
+                 gameState.walletAddress = currentUser.id; // Simulate connected wallet
+                 handleWalletConnected({ toBase58: () => currentUser.id }); // Simulate wallet connection UI update
+             }
+
+             // Simulate a recent play result
+             gameState.recentPlays = [
+                 { winningNumber: 17, payout: 1.5 },
+                 { winningNumber: 0, payout: 0 },
+                 { winningNumber: 24, payout: 0.5 },
+             ];
+
+             // Simulate betting phase start
+             gameState.bettingPhaseTimer = setTimeout(() => {
+                 console.log("Simulated betting phase end");
+                 // In a real app, server sends 'betting_phase_end'
+                 disableBetting();
+                 stopBettingPhaseTimer();
+                 showSpinButton();
+             }, gameState.bettingPhaseDuration * 1000); // Timer for simulation
+             enableBetting(); // Enable betting at simulation start
+             startBettingPhaseTimer(gameState.bettingPhaseDuration);
+
+             // Update UI based on simulated state
+             updateUI();
+             // Simulate initial leaderboard data
+             updateLeaderboard([
+                 { player: 'CryptoKing', totalWon: 150 },
+                 { player: 'You', totalWon: 80 },
+                 { player: 'WhaleBets', totalWon: 50 },
+             ]);
+        }
+
+         // Placeholder for Loss Aversion Message
+         function showLossAversionMessage() {
+             console.log("Showing loss aversion message...");
+             // Implement a temporary message display (e.g., "Better luck next time!", "Try betting on Red!")
+             // Similar to near miss popup but with different text/styling
+         }
+
+         // Placeholder for Shake Animation CSS (Add to your <style> block)
+         /*
+         @keyframes shake {
+             0%, 100% { transform: translateX(0); }
+             20%, 60% { transform: translateX(-5px); }
+             40%, 80% { transform: translateX(5px); }
+         }
+         */
+
+         // Placeholder for Float Up Animation CSS (Add to your <style> block)
+         /*
+         @keyframes float-up {
+             0% { transform: translate(-50%, 0); opacity: 1; }
+             100% { transform: translate(-50%, -50px); opacity: 0; } // Adjust distance
+         }
+         */
+
+
     </script>
-
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-
 </body>
 </html>
