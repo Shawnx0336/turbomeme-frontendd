@@ -17,6 +17,7 @@
             --leaderboard-width: 250px; /* Define leaderboard width */
             --chat-height: 300px; /* Define chat height */
             --chat-width: 300px; /* Define chat width */
+             --chat-bubble-size: 60px; /* Size for the mobile chat bubble */
         }
 
         body {
@@ -316,14 +317,10 @@
             padding: 0.5rem 1rem;
             border-radius: var(--radius-md);
             font-weight: 700;
-            animation: pulse 1s infinite;
+            /* Removed pulse animation */
             z-index: 10; /* Below header, above game */
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
 
         #confetti-canvas {
             position: fixed;
@@ -501,6 +498,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: all 0.3s ease-in-out; /* Added transition for smooth opening/closing */
         }
 
         .chat-header {
@@ -593,7 +591,7 @@
             background-color: #ff6699;
         }
 
-        /* Mobile Chat Toggle */
+        /* Mobile Chat Toggle Button (Bubble) */
         .chat-toggle-btn {
             display: none; /* Hidden by default on desktop */
             position: fixed;
@@ -602,8 +600,8 @@
             right: 1rem;
             background-color: var(--accent-pink);
             color: white;
-            width: 50px;
-            height: 50px;
+            width: var(--chat-bubble-size);
+            height: var(--chat-bubble-size);
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -612,6 +610,7 @@
             box-shadow: var(--shadow-glow) var(--accent-pink);
             z-index: 110; /* Above chat container */
             cursor: pointer;
+            transition: all 0.3s ease-in-out;
         }
 
         /* Full-screen chat for mobile */
@@ -776,6 +775,13 @@
                 font-size: 12px;
             }
 
+            /* Header Buttons Mobile Size */
+            header button {
+                padding: 0.5rem 0.8rem; /* Increased padding */
+                font-size: 0.8rem; /* Slightly smaller font for space */
+            }
+
+
             .dice {
                 width: 80px;
                 height: 80px;
@@ -818,24 +824,50 @@
                 transform: translateX(-100%); /* Slide in from right */
             }
 
+            /* Mobile Chat Bubble Position and Size */
             .chat-container {
-                width: 95%; /* Adjust chat width for mobile */
-                right: 2.5%;
-                bottom: calc(60px + 1rem + constant(safe-area-inset-bottom)); /* Position above mobile toggle */
-                bottom: calc(60px + 1rem + env(safe-area-inset-bottom));
-                height: 250px; /* Adjust chat height */
+                width: var(--chat-bubble-size);
+                height: var(--chat-bubble-size);
+                bottom: calc(1rem + constant(safe-area-inset-bottom)); /* Position above safe area */
+                bottom: calc(1rem + env(safe-area-inset-bottom));
+                right: 1rem;
+                border-radius: 50%; /* Make it a circle */
+                box-shadow: var(--shadow-glow) var(--accent-pink);
+                display: flex; /* Keep flex for centering icon */
+                justify-content: center;
+                align-items: center;
+                overflow: hidden; /* Hide chat content initially */
+                cursor: pointer; /* Indicate it's clickable */
+                background: var(--accent-pink); /* Bubble color */
             }
 
-            .chat-toggle-btn {
-                display: flex; /* Show toggle button on mobile */
+            .chat-container .chat-header,
+            .chat-container .chat-body,
+            .chat-container .chat-input-area {
+                display: none; /* Hide chat content in bubble state */
             }
 
-             body.chat-open .chat-container {
-                bottom: 0; /* Full screen position */
-                right: 0;
+            /* Full-screen chat for mobile when open */
+            body.chat-open .chat-container {
+                position: fixed;
+                top: 0;
+                left: 0;
                 width: 100%;
                 height: 100%;
+                border-radius: 0;
+                background: var(--bg-dark); /* Solid background for full screen */
+                z-index: 1000; /* Above everything */
+                display: flex; /* Show flex layout when open */
+                flex-direction: column;
+                box-shadow: none; /* Remove bubble shadow */
             }
+
+            body.chat-open .chat-container .chat-header,
+            body.chat-open .chat-container .chat-body,
+            body.chat-open .chat-container .chat-input-area {
+                display: flex; /* Show chat content when open */
+            }
+
 
             body.chat-open .chat-header {
                 padding-top: constant(safe-area-inset-top);
@@ -846,6 +878,12 @@
                  padding-bottom: constant(safe-area-inset-bottom);
                 padding-bottom: env(safe-area-inset-bottom);
             }
+
+            /* Hide the separate chat toggle button on mobile, as the chat container itself is the toggle */
+            .chat-toggle-btn {
+                display: none;
+            }
+
 
             .modal-content {
                 padding: 1.5rem;
@@ -1006,6 +1044,7 @@
     </div>
 
     <div class="chat-container" id="chat-container">
+         <i class="fas fa-comment-dots" id="chat-bubble-icon" style="font-size: 1.8rem;"></i>
         <div class="chat-header" id="chat-header">
             Chat <i class="fas fa-chevron-down"></i>
         </div>
@@ -1016,11 +1055,6 @@
             <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
-
-    <div class="chat-toggle-btn" id="mobile-chat-toggle">
-        <i class="fas fa-comment-dots"></i>
-    </div>
-
 
     <script>
         // --- Existing Game Script (DO NOT MODIFY) ---
@@ -1412,7 +1446,7 @@
         const chatBody = document.getElementById('chat-body');
         const chatInput = document.getElementById('chat-input');
         const sendChatBtn = document.getElementById('send-chat-btn');
-        const mobileChatToggleBtn = document.getElementById('mobile-chat-toggle');
+        const chatBubbleIcon = document.getElementById('chat-bubble-icon'); // Get the bubble icon
 
         let mockChatMessages = [
             { username: 'System', text: 'Welcome to DegenDice Chat!', type: 'system' },
@@ -1476,15 +1510,21 @@
         renderChatMessages();
 
         // Chat toggle for mobile
-        chatHeader.addEventListener('click', () => {
-            if (window.innerWidth <= 768) { // Only toggle on mobile
-                document.body.classList.toggle('chat-open');
-            }
+        // Use the chat container itself as the toggle on mobile
+        chatContainer.addEventListener('click', () => {
+             if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open')) {
+                 // If on mobile and chat is not open, open it
+                 document.body.classList.add('chat-open');
+             }
         });
 
-         mobileChatToggleBtn.addEventListener('click', () => {
-             document.body.classList.add('chat-open'); // Open chat on mobile toggle click
-         });
+        // Close chat when clicking the header on mobile
+        chatHeader.addEventListener('click', () => {
+             if (window.innerWidth <= 768 && document.body.classList.contains('chat-open')) {
+                 // If on mobile and chat is open, close it
+                 document.body.classList.remove('chat-open');
+             }
+        });
 
 
         // --- Profile System ---
@@ -1727,6 +1767,8 @@
                 document.body.classList.remove('leaderboard-open'); // Assume leaderboard is always visible on desktop
                 document.body.classList.remove('chat-open'); // Chat is a fixed box on desktop
                 leaderboardSidebar.style.transform = 'translateX(0)';
+
+                // Reset chat to desktop state
                 chatContainer.style.position = 'fixed';
                 chatContainer.style.width = 'var(--chat-width)';
                 chatContainer.style.height = 'var(--chat-height)';
@@ -1737,23 +1779,87 @@
                 chatContainer.style.left = 'auto';
                 chatContainer.style.borderRadius = 'var(--radius-md)';
                 chatContainer.style.background = 'rgba(20, 20, 20, 0.9)';
-                mobileChatToggleBtn.style.display = 'none';
+                 chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
+                 chatContainer.style.cursor = 'default';
+
+                 chatBubbleIcon.style.display = 'none'; // Hide bubble icon on desktop
+                 chatHeader.style.display = 'flex'; // Show chat header on desktop
+                 chatBody.style.display = 'flex'; // Show chat body on desktop
+                 chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
+
 
             } else {
-                // On mobile, ensure leaderboard is hidden and chat is positioned correctly
+                // On mobile, ensure leaderboard is hidden and chat is positioned correctly as a bubble
                  leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard
-                 mobileChatToggleBtn.style.display = 'flex'; // Show mobile chat toggle
-                 // Chat position handled by .chat-container and .chat-open class
+
+                 // Set chat to mobile bubble state
+                 if (!document.body.classList.contains('chat-open')) {
+                     chatContainer.style.position = 'fixed';
+                     chatContainer.style.width = 'var(--chat-bubble-size)';
+                     chatContainer.style.height = 'var(--chat-bubble-size)';
+                     chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
+                     chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
+                     chatContainer.style.right = '1rem';
+                     chatContainer.style.top = 'auto';
+                     chatContainer.style.left = 'auto';
+                     chatContainer.style.borderRadius = '50%';
+                     chatContainer.style.background = 'var(--accent-pink)';
+                     chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
+                     chatContainer.style.cursor = 'pointer';
+
+                     chatBubbleIcon.style.display = 'flex'; // Show bubble icon on mobile
+                     chatHeader.style.display = 'none'; // Hide chat header in bubble state
+                     chatBody.style.display = 'none'; // Hide chat body in bubble state
+                     chatInput.parentElement.style.display = 'none'; // Hide chat input area in bubble state
+                 }
             }
         });
 
         // Initial check for mobile layout on load
         if (window.innerWidth <= 768) {
             leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard on mobile
-            mobileChatToggleBtn.style.display = 'flex'; // Show mobile chat toggle
+
+            // Set chat to mobile bubble state on load
+            chatContainer.style.position = 'fixed';
+            chatContainer.style.width = 'var(--chat-bubble-size)';
+            chatContainer.style.height = 'var(--chat-bubble-size)';
+            chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
+            chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
+            chatContainer.style.right = '1rem';
+            chatContainer.style.top = 'auto';
+            chatContainer.style.left = 'auto';
+            chatContainer.style.borderRadius = '50%';
+            chatContainer.style.background = 'var(--accent-pink)';
+            chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
+            chatContainer.style.cursor = 'pointer';
+
+            chatBubbleIcon.style.display = 'flex'; // Show bubble icon on mobile
+            chatHeader.style.display = 'none'; // Hide chat header in bubble state
+            chatBody.style.display = 'none'; // Hide chat body in bubble state
+            chatInput.parentElement.style.display = 'none'; // Hide chat input area in bubble state
+
+
         } else {
              leaderboardSidebar.style.transform = 'translateX(0)'; // Ensure leaderboard is visible on desktop
-             mobileChatToggleBtn.style.display = 'none'; // Hide mobile chat toggle on desktop
+
+             // Set chat to desktop state on load
+            chatContainer.style.position = 'fixed';
+            chatContainer.style.width = 'var(--chat-width)';
+            chatContainer.style.height = 'var(--chat-height)';
+            chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
+            chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
+            chatContainer.style.right = '1rem';
+            chatContainer.style.top = 'auto';
+            chatContainer.style.left = 'auto';
+            chatContainer.style.borderRadius = 'var(--radius-md)';
+            chatContainer.style.background = 'rgba(20, 20, 20, 0.9)';
+            chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
+            chatContainer.style.cursor = 'default';
+
+            chatBubbleIcon.style.display = 'none'; // Hide bubble icon on desktop
+            chatHeader.style.display = 'flex'; // Show chat header on desktop
+            chatBody.style.display = 'flex'; // Show chat body on desktop
+            chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
         }
 
         // --- End of New Script ---
