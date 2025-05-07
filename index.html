@@ -1,1171 +1,654 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DegenJack</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* Basic Reset and Body Styles */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: #111; /* Dark background */
-            color: #eee;
-            overflow: hidden; /* Prevent scrolling */
-            display: flex;
-            flex-direction: column;
-            height: 100vh; /* Full viewport height */
-        }
-
-        /* Custom Scrollbar for Chat */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #333;
-            border-radius: 3px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #555;
-            border-radius: 3px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #777;
-        }
-
-        /* Layout Zones */
-        #top-bar {
-            flex-shrink: 0; /* Prevent shrinking */
-            background-color: #0a0a0a; /* Slightly darker */
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #222;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-        }
-
-        #game-table {
-            flex-grow: 1; /* Take available space */
-            background-color: #1a1a1a; /* Middle dark */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        #bottom-bar {
-            flex-shrink: 0; /* Prevent shrinking */
-            background-color: #0a0a0a; /* Slightly darker */
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 2px solid #222;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
-
-        /* Top Bar Styles */
-        .wallet-info, .xp-progress, .recent-plays {
-            display: flex;
-            align-items: center;
-        }
-
-        .wallet-info span {
-            margin-right: 10px;
-        }
-
-        .xp-bar-container {
-            width: 150px;
-            height: 8px;
-            background-color: #333;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 0 10px;
-        }
-
-        .xp-bar-fill {
-            height: 100%;
-            width: 0%; /* Initial width */
-            background: linear-gradient(90deg, #8b5cf6, #e879f9); /* Purple gradient */
-            transition: width 0.5s ease-in-out;
-        }
-
-        .recent-plays-ticker {
-            width: 200px;
-            overflow: hidden;
-            white-space: nowrap;
-            font-style: italic;
-            color: #aaa;
-            font-size: 0.8em;
-        }
-
-        .recent-play-item {
-            margin-right: 15px;
-            display: inline-block;
-        }
-
-        .win { color: #10b981; /* Green */ }
-        .loss { color: #ef4444; /* Red */ }
-
-        .menu-icon {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            fill: #eee;
-        }
-
-        /* Game Table Styles */
-        .dealer-hand, .player-hand {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            width: 60px;
-            height: 90px;
-            background-color: #fff;
-            border-radius: 6px;
-            margin: 0 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
-        }
-
-        .card-back {
-            background-color: #4a4a4a; /* Dark grey back */
-            color: transparent; /* Hide text on back */
-        }
-
-        .card.flipped {
-            transform: rotateY(180deg);
-        }
-
-        .player-seats {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .player-seat {
-            width: 150px;
-            margin: 0 10px;
-            padding: 10px;
-            background-color: #2a2a2a;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 2px solid transparent;
-            transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-        }
-
-        .player-seat.active {
-            border-color: #a78bfa; /* Purple glow */
-            box-shadow: 0 0 10px #a78bfa;
-        }
-
-        .player-info {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .avatar {
-            width: 30px;
-            height: 30px;
-            background-color: #5b21b6; /* Violet */
-            border-radius: 50%;
-            margin-right: 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2em;
-        }
-
-        .username {
-            font-size: 0.9em;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .xp-badge {
-            background-color: #facc15; /* Yellow */
-            color: #333;
-            font-size: 0.7em;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-
-        .action-buttons {
-            margin-top: 10px;
-        }
-
-        .action-buttons button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: bold;
-            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-        }
-
-        .action-buttons button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .hit-button {
-            background-color: #10b981; /* Green */
-            color: #0a0a0a;
-            margin-right: 5px;
-        }
-
-        .hit-button:hover:not(:disabled) {
-            background-color: #059669;
-            box-shadow: 0 0 8px #10b981;
-        }
-
-        .stand-button {
-            background-color: #ec4899; /* Pink */
-            color: #0a0a0a;
-        }
-
-        .stand-button:hover:not(:disabled) {
-            background-color: #db2777;
-            box-shadow: 0 0 8px #ec4899;
-        }
-
-        .turn-timer-bar {
-            width: 100%;
-            height: 3px;
-            background-color: #333;
-            margin-top: 5px;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .turn-timer-fill {
-            height: 100%;
-            width: 100%; /* Initial width */
-            background-color: #3b82f6; /* Blue */
-            transition: width linear; /* Transition handled by JS */
-        }
-
-
-        /* Bottom Bar Styles */
-        .betting-controls {
-            display: flex;
-            align-items: center;
-        }
-
-        .betting-controls input[type="range"] {
-            width: 150px;
-            margin: 0 10px;
-            accent-color: #10b981; /* Green accent */
-        }
-
-        .quick-bet-buttons button {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            background-color: #333;
-            color: #eee;
-            cursor: pointer;
-            font-size: 0.8em;
-            margin-right: 5px;
-            transition: background-color 0.3s ease-in-out;
-        }
-
-        .quick-bet-buttons button:hover {
-            background-color: #555;
-        }
-
-        .join-leave-button {
-             padding: 8px 15px;
-             border: none;
-             border-radius: 5px;
-             cursor: pointer;
-             font-size: 0.9em;
-             font-weight: bold;
-             transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-             margin-left: 20px;
-         }
-
-         .join-button {
-            background-color: #10b981; /* Green */
-            color: #0a0a0a;
-         }
-
-         .join-button:hover {
-            background-color: #059669;
-            box-shadow: 0 0 8px #10b981;
-         }
-
-         .leave-button {
-            background-color: #ef4444; /* Red */
-            color: #0a0a0a;
-         }
-
-         .leave-button:hover {
-            background-color: #d92d2d;
-            box-shadow: 0 0 8px #ef4444;
-         }
-
-        .chat-container {
-            width: 300px;
-            height: 120px;
-            background-color: #1a1a1a;
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
-        }
-
-        .chat-feed {
-            flex-grow: 1;
-            overflow-y: auto;
-            font-size: 0.8em;
-            color: #bbb;
-            margin-bottom: 5px;
-        }
-
-        .chat-message {
-            margin-bottom: 3px;
-        }
-
-        .chat-sender {
-            font-weight: bold;
-            color: #60a5fa; /* Blue */
-            margin-right: 5px;
-        }
-
-         .chat-badge {
-             color: #facc15; /* Yellow */
-             margin-right: 5px;
-         }
-
-        .chat-input-area {
-            display: flex;
-        }
-
-        .chat-input-area input[type="text"] {
-            flex-grow: 1;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px 0 0 4px;
-            background-color: #333;
-            color: #eee;
-            font-size: 0.9em;
-            outline: none;
-        }
-
-        .chat-input-area button {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 0 4px 4px 0;
-            background-color: #3b82f6; /* Blue */
-            color: #fff;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.3s ease-in-out;
-        }
-
-        .chat-input-area button:hover {
-            background-color: #2563eb;
-        }
-
-        /* Crate Animation Placeholder */
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
-        }
-
-        .crate-icon {
-            width: 30px;
-            height: 30px;
-            fill: #facc15; /* Yellow */
-            cursor: pointer;
-            animation: bounce 1s infinite;
-            margin-left: 10px;
-        }
-
-        /* Placeholder for Confetti Canvas */
-        #confetti-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Allow clicks through */
-            z-index: 10; /* Above game elements */
-        }
-
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="DegenJack: Web3 Blackjack with Solana. Join, bet, win big!">
+  <title>DegenJack | Web3 Blackjack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #111111;
+      color: #ffffff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    #top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    #wallet-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #wallet-info button {
+      background: #7b61ff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    #wallet-info button:hover {
+      transform: scale(1.05);
+    }
+    #xp-progress {
+      flex: 1;
+      text-align: center;
+    }
+    #xp-bar {
+      width: 200px;
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      overflow: hidden;
+      display: inline-block;
+      margin: 0 10px;
+    }
+    #xp-fill {
+      height: 100%;
+      background: linear-gradient(to right, #00ff00, #ff00ff);
+      transition: width 0.5s ease;
+    }
+    #ticker {
+      flex: 1;
+      text-align: right;
+      font-size: 14px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    #ticker span {
+      display: inline-block;
+      animation: tickerSlide 10s linear infinite;
+    }
+    @keyframes tickerSlide {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    #settings-menu {
+      position: absolute;
+      right: 20px;
+      top: 60px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 10px;
+      display: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+    #settings-menu.active {
+      display: block;
+    }
+    #game-table {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px 100px;
+      position: relative;
+    }
+    #dealer-hand {
+      position: absolute;
+      top: 80px;
+      display: flex;
+      gap: 10px;
+    }
+    #player-seats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 100px;
+    }
+    .player-seat {
+      background: #222;
+      border-radius: 8px;
+      padding: 10px;
+      width: 200px;
+      text-align: center;
+      position: relative;
+      transition: box-shadow 0.3s;
+    }
+    .player-seat.active {
+      box-shadow: 0 0 15px #ff00ff;
+    }
+    .player-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin: 0 auto 5px;
+    }
+    .player-cards {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .card {
+      width: 60px;
+      height: 90px;
+      background: #fff;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-size: 14px;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+    }
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+    #action-buttons {
+      display: none;
+      gap: 10px;
+      justify-content: center;
+    }
+    .player-seat.active #action-buttons {
+      display: flex;
+    }
+    #action-buttons button {
+      background: #00ff00;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    #action-buttons button.stand {
+      background: #ff00ff;
+    }
+    #action-buttons button:hover {
+      transform: scale(1.05);
+    }
+    #turn-timer {
+      width: 100%;
+      height: 5px;
+      background: #333;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 5px;
+      display: none;
+    }
+    .player-seat.active #turn-timer {
+      display: block;
+    }
+    #timer-fill {
+      height: 100%;
+      background: #ff00ff;
+      transition: width 0.1s linear;
+    }
+    #bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: #1a1a1a;
+      display: flex;
+      padding: 10px;
+      box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.5);
+    }
+    #bet-controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #bet-slider {
+      width: 100%;
+    }
+    #quick-bets {
+      display: flex;
+      gap: 5px;
+    }
+    #quick-bets button {
+      background: #7b61ff;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    #quick-bets button:hover {
+      transform: scale(1.05);
+    }
+    #join-leave {
+      background: #00ff00;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    #join-leave.leave {
+      background: #ff00ff;
+    }
+    #join-leave:hover {
+      transform: scale(1.05);
+    }
+    #chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    #chat-feed {
+      height: 60px;
+      overflow-y: auto;
+      background: #222;
+      border-radius: 8px;
+      padding: 5px;
+      font-size: 12px;
+    }
+    #chat-feed div {
+      margin-bottom: 5px;
+    }
+    #chat-input {
+      display: flex;
+      gap: 5px;
+    }
+    #chat-input input {
+      flex: 1;
+      background: #333;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+    }
+    #chat-input button {
+      background: #7b61ff;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    #chat-input button:hover {
+      transform: scale(1.05);
+    }
+    #crate-animation {
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      background: url('/assets/crates/crate_level1.png');
+      background-size: cover;
+      cursor: pointer;
+      display: none;
+    }
+    #crate-animation.active {
+      display: block;
+      animation: crateDrop 1s ease-out;
+    }
+    @keyframes crateDrop {
+      0% { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+      100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+    @media (max-width: 1366px) {
+      .player-seat { width: 180px; }
+      .card { width: 50px; height: 75px; font-size: 12px; }
+      #xp-bar { width: 150px; }
+    }
+    @media (prefers-reduced-motion) {
+      .card, #xp-fill, #ticker span, #crate-animation { transition: none; animation: none; }
+    }
+  </style>
 </head>
 <body>
-
+  <div id="app">
     <div id="top-bar">
-        <div class="wallet-info">
-            <span id="wallet-address">Not Connected</span>
-            <span id="wallet-balance">-- SOL</span>
-            <button id="connect-wallet-button">Connect Wallet</button>
-            <button id="disconnect-wallet-button" style="display: none;">Disconnect</button>
-        </div>
-        <div class="xp-progress">
-            <span id="user-level">Level 1</span>
-            <div class="xp-bar-container">
-                <div id="xp-bar-fill" class="xp-bar-fill"></div>
-            </div>
-            <span id="user-xp">0/100 XP</span>
-            <svg id="crate-icon" class="crate-icon" style="display: none;" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" d="M7.293 2.293a1 1 0 011.414 0L10 3.586l1.293-1.293a1 1 0 111.414 1.414L11.414 5l1.293 1.293a1 1 0 11-1.414 1.414L10 6.414l-1.293 1.293a1 1 0 01-1.414-1.414L8.586 5l-1.293-1.293a1 1 0 010-1.414zM10 14a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2zM5 10a1 1 0 11-2 0 1 1 0 012 0zm10 0a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path>
-            </svg>
-        </div>
-        <div class="recent-plays">
-            <div id="recent-plays-ticker" class="recent-plays-ticker">
-                <span>No recent plays...</span>
-            </div>
-            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-            <div id="settings-dropdown" style="display: none; position: absolute; top: 50px; right: 20px; background-color: #333; border-radius: 5px; padding: 10px; z-index: 20;">
-                Settings content here...
-            </div>
-        </div>
+      <div id="wallet-info">
+        <span id="wallet-address">Not Connected</span>
+        <span id="wallet-balance">0.00 SOL</span>
+        <button id="wallet-connect">Connect Wallet</button>
+      </div>
+      <div id="xp-progress">
+        Level: <span id="level">1</span>
+        <div id="xp-bar"><div id="xp-fill" style="width: 0%"></div></div>
+        XP: <span id="xp">0</span>
+      </div>
+      <div id="ticker">
+        <span id="ticker-content">Waiting for plays...</span>
+      </div>
+      <button id="settings-toggle">☰</button>
+      <div id="settings-menu">
+        <button id="toggle-animations">Toggle Animations</button>
+        <button id="disconnect-wallet">Disconnect Wallet</button>
+      </div>
     </div>
-
     <div id="game-table">
-        <div class="dealer-hand">
-            <h3>Dealer</h3>
-            <div id="dealer-cards" class="player-hand">
-                </div>
-        </div>
-        <div id="player-seats" class="player-seats">
-            </div>
+      <div id="dealer-hand"></div>
+      <div id="player-seats"></div>
+      <div id="crate-animation"></div>
     </div>
-
     <div id="bottom-bar">
-        <div class="betting-controls">
-            <span id="current-bet-display">Bet: 0.00 SOL</span>
-            <input type="range" id="bet-slider" min="0" max="10" step="0.01" value="0">
-            <div class="quick-bet-buttons">
-                <button data-bet-amount="0.01">+0.01</button>
-                <button data-bet-amount="0.1">+0.1</button>
-                <button data-bet-amount="MAX">MAX</button>
-            </div>
-            <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
-             <span id="spectator-status" style="display: none; color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
+      <div id="bet-controls">
+        <input type="range" id="bet-slider" min="0.01" max="1" step="0.01" value="0.01">
+        <div id="quick-bets">
+          <button onclick="updateBet(0.01)">+0.01</button>
+          <button onclick="updateBet(0.1)">+0.1</button>
+          <button onclick="updateBet('max')">MAX</button>
         </div>
-        <div class="chat-container">
-            <div id="chat-feed" class="chat-feed custom-scrollbar">
-                </div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Type message...">
-                <button id="send-chat-button">Send</button>
-            </div>
+        <button id="join-leave" onclick="toggleTable()">Join Table</button>
+      </div>
+      <div id="chat">
+        <div id="chat-feed"></div>
+        <div id="chat-input">
+          <input type="text" id="chat-message" placeholder="Type a message...">
+          <button onclick="sendChat()">Send</button>
         </div>
+      </div>
     </div>
+  </div>
+  <script>
+    const gameState = {
+      wallet: null,
+      publicKey: null,
+      balance: 0,
+      isConnected: false,
+      tableId: null,
+      players: [],
+      dealerHand: [],
+      currentTurn: null,
+      xp: 0,
+      level: 1,
+      betAmount: 0.01,
+      isSeated: false,
+      isSpectator: false,
+      tickerMessages: [],
+      socket: null,
+      animationsEnabled: true
+    };
 
-    <canvas id="confetti-canvas"></canvas>
+    const socket = new WebSocket('wss://your-server-url'); // Replace with actual server URL
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ type: 'joinGame' }));
+    };
+    socket.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      handleGameEvent(msg);
+    };
+    socket.onclose = () => {
+      addChatMessage('System', 'Disconnected from server.');
+    };
 
-    <script>
-        // --- Global State (Placeholder) ---
-        const gameState = {
-            walletAddress: null,
-            walletBalance: 0,
-            userXP: 0,
-            userLevel: 1,
-            dealerHand: [],
-            players: [], // Array of player objects { id, name, level, avatar, hand, isUser, timer }
-            activePlayerId: null,
-            turnTimerDuration: 10, // seconds
-            betAmount: 0,
-            chatMessages: [], // Array of { sender, message, badge }
-            recentPlays: [], // Array of { player, amount, win }
-            isSpectator: false,
-            isSeated: false,
-            websocket: null,
-            confettiCanvas: null,
-            confettiCtx: null,
-            // Add other state properties as needed
-        };
+    function handleGameEvent(msg) {
+      switch (msg.type) {
+        case 'table_state':
+          gameState.tableId = msg.data.tableId;
+          gameState.players = msg.data.players;
+          gameState.dealerHand = msg.data.dealerHand;
+          gameState.currentTurn = msg.data.currentTurn;
+          gameState.isSeated = msg.data.players.some(p => p.publicKey === gameState.publicKey?.toString());
+          gameState.isSpectator = !gameState.isSeated;
+          updateTable();
+          break;
+        case 'card_dealt':
+          if (msg.data.playerId) {
+            const player = gameState.players.find(p => p.publicKey === msg.data.playerId);
+            if (player) player.cards.push(msg.data.card);
+          } else {
+            gameState.dealerHand.push(msg.data.card);
+          }
+          updateTable();
+          break;
+        case 'turn_changed':
+          gameState.currentTurn = msg.data.playerId;
+          updateTable();
+          startTurnTimer(msg.data.timeLeft);
+          break;
+        case 'round_end':
+          gameState.dealerHand = msg.data.dealerHand; // Reveal dealer cards
+          updateTable();
+          setTimeout(() => {
+            gameState.dealerHand = [];
+            gameState.players.forEach(p => p.cards = []);
+            updateTable();
+          }, 3000);
+          break;
+        case 'xp_update':
+          gameState.xp = msg.data.xp;
+          if (msg.data.level > gameState.level) {
+            gameState.level = msg.data.level;
+            gameState.xp = 0;
+            showCrate();
+          }
+          updateXP();
+          break;
+        case 'chat_message':
+          addChatMessage(msg.data.username, msg.data.message, msg.data.badge);
+          break;
+        case 'recent_play':
+          gameState.tickerMessages.push(`${msg.data.username} ${msg.data.won ? 'won' : 'lost'} ${msg.data.amount.toFixed(2)} SOL`);
+          updateTicker();
+          break;
+        case 'player_joined':
+        case 'player_left':
+          gameState.players = msg.data.players;
+          updateTable();
+          break;
+      }
+    }
 
-        // --- DOM Elements ---
-        const dom = {
-            walletAddress: document.getElementById('wallet-address'),
-            walletBalance: document.getElementById('wallet-balance'),
-            connectWalletButton: document.getElementById('connect-wallet-button'),
-            disconnectWalletButton: document.getElementById('disconnect-wallet-button'),
-            userLevel: document.getElementById('user-level'),
-            xpBarFill: document.getElementById('xp-bar-fill'),
-            userXP: document.getElementById('user-xp'),
-            crateIcon: document.getElementById('crate-icon'),
-            recentPlaysTicker: document.getElementById('recent-plays-ticker'),
-            settingsDropdown: document.getElementById('settings-dropdown'), // Placeholder
-            dealerCards: document.getElementById('dealer-cards'),
-            playerSeats: document.getElementById('player-seats'),
-            currentBetDisplay: document.getElementById('current-bet-display'),
-            betSlider: document.getElementById('bet-slider'),
-            quickBetButtons: document.querySelectorAll('.quick-bet-buttons button'),
-            joinLeaveButton: document.getElementById('join-leave-button'),
-            spectatorStatus: document.getElementById('spectator-status'),
-            chatFeed: document.getElementById('chat-feed'),
-            chatInput: document.getElementById('chat-input'),
-            sendChatButton: document.getElementById('send-chat-button'),
-            confettiCanvas: document.getElementById('confetti-canvas'),
-        };
+    async function connectWallet() {
+      if (!window.solana) {
+        alert('Please install a Solana wallet (e.g., Phantom)');
+        return;
+      }
+      try {
+        await window.solana.connect();
+        gameState.publicKey = window.solana.publicKey;
+        gameState.isConnected = true;
+        document.getElementById('wallet-address').textContent = gameState.publicKey.toString().slice(0, 4) + '...' + gameState.publicKey.toString().slice(-4);
+        document.getElementById('wallet-connect').style.display = 'none';
+        updateBalance();
+      } catch (err) {
+        console.error('Wallet connection failed:', err);
+      }
+    }
 
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Confetti Canvas
-            dom.confettiCtx = dom.confettiCanvas.getContext('2d');
-            resizeCanvas(); // Set initial size
-            window.addEventListener('resize', resizeCanvas); // Resize on window resize
+    async function disconnectWallet() {
+      if (window.solana && gameState.isConnected) {
+        await window.solana.disconnect();
+        gameState.isConnected = false;
+        gameState.publicKey = null;
+        document.getElementById('wallet-address').textContent = 'Not Connected';
+        document.getElementById('wallet-balance').textContent = '0.00 SOL';
+        document.getElementById('wallet-connect').style.display = 'inline-block';
+      }
+    }
 
-            // Set initial UI state
-            updateUI();
+    async function updateBalance() {
+      if (!gameState.isConnected) return;
+      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
+      const balance = await connection.getBalance(gameState.publicKey);
+      gameState.balance = balance / solanaWeb3.LAMPORTS_PER_SOL;
+      document.getElementById('wallet-balance').textContent = gameState.balance.toFixed(2) + ' SOL';
+    }
 
-            // Setup Event Listeners
-            setupEventListeners();
+    function toggleTable() {
+      if (gameState.isSeated) {
+        socket.send(JSON.stringify({ type: 'leaveTable', tableId: gameState.tableId }));
+        gameState.isSeated = false;
+        document.getElementById('join-leave').textContent = 'Join Table';
+        document.getElementById('join-leave').classList.remove('leave');
+      } else {
+        socket.send(JSON.stringify({ type: 'joinTable' }));
+        document.getElementById('join-leave').textContent = 'Leave Table';
+        document.getElementById('join-leave').classList.add('leave');
+      }
+    }
 
-            // Attempt to auto-connect wallet
-            checkAutoConnectWallet();
+    function updateBet(amount) {
+      if (amount === 'max') {
+        gameState.betAmount = gameState.balance;
+      } else {
+        gameState.betAmount = Math.min(gameState.balance, gameState.betAmount + amount);
+      }
+      document.getElementById('bet-slider').value = gameState.betAmount;
+      socket.send(JSON.stringify({ type: 'betChanged', amount: gameState.betAmount }));
+    }
 
-            // Connect to WebSocket
-            connectWebSocket();
+    function sendAction(action) {
+      socket.send(JSON.stringify({ type: 'action', action }));
+    }
 
-            // Placeholder: Simulate some initial game state for testing UI layout
-            simulateInitialGameState();
-        });
+    function updateTable() {
+      const seats = document.getElementById('player-seats');
+      seats.innerHTML = '';
+      gameState.players.forEach(player => {
+        const isActive = player.publicKey === gameState.currentTurn && player.publicKey === gameState.publicKey?.toString();
+        const seat = document.createElement('div');
+        seat.className = `player-seat ${isActive ? 'active' : ''}`;
+        seat.innerHTML = `
+          <img src="/assets/emotes/${player.avatar || 'default.png'}" class="player-avatar">
+          <div>${player.username || player.publicKey.slice(0, 4) + '...'}</div>
+          <div>Level: ${player.level || 1}</div>
+          <div class="player-cards">
+            ${player.cards.map(card => `
+              <div class="card ${card.faceUp ? 'flipped' : ''}">
+                <img src="/assets/cards/${card.suit}_${card.rank}.png" style="width: 100%; height: 100%;">
+              </div>
+            `).join('')}
+          </div>
+          ${isActive ? `
+            <div id="action-buttons">
+              <button onclick="sendAction('hit')">Hit</button>
+              <button class="stand" onclick="sendAction('stand')">Stand</button>
+            </div>
+            <div id="turn-timer"><div id="timer-fill"></div></div>
+          ` : ''}
+        `;
+        seats.appendChild(seat);
+      });
 
-        // Resize Canvas function
-        function resizeCanvas() {
-            dom.confettiCanvas.width = window.innerWidth;
-            dom.confettiCanvas.height = window.innerHeight;
+      const dealerHand = document.getElementById('dealer-hand');
+      dealerHand.innerHTML = gameState.dealerHand.map(card => `
+        <div class="card ${card.faceUp ? 'flipped' : ''}">
+          <img src="/assets/cards/${card.faceUp ? `${card.suit}_${card.rank}.png` : 'card_back.png'}" style="width: 100%; height: 100%;">
+        </div>
+      `).join('');
+
+      document.getElementById('join-leave').disabled = !gameState.isConnected;
+    }
+
+    function startTurnTimer(timeLeft) {
+      if (!gameState.currentTurn || gameState.currentTurn !== gameState.publicKey?.toString()) return;
+      const timerFill = document.querySelector('#timer-fill');
+      if (!timerFill) return;
+      const start = Date.now();
+      const duration = timeLeft * 1000;
+      function update() {
+        const elapsed = Date.now() - start;
+        const progress = Math.max(0, 1 - elapsed / duration);
+        timerFill.style.width = `${progress * 100}%`;
+        if (progress > 0 && gameState.currentTurn === gameState.publicKey?.toString()) {
+          requestAnimationFrame(update);
         }
+      }
+      update();
+    }
 
+    function updateXP() {
+      document.getElementById('xp').textContent = gameState.xp;
+      document.getElementById('level').textContent = gameState.level;
+      document.getElementById('xp-fill').style.width = `${gameState.xp}%`;
+    }
 
-        // --- Solana Wallet Integration (using window.solana) ---
-        async function checkAutoConnectWallet() {
-            if (window.solana && window.solana.isConnected) {
-                try {
-                    // Attempt to connect silently if already authorized
-                    await window.solana.connect({ onlyIfTrusted: true });
-                    handleWalletConnected(window.solana.publicKey);
-                } catch (error) {
-                    console.error('Auto-connect failed:', error);
-                    // Handle cases where auto-connect is not possible or user rejected
-                }
-            }
+    function showCrate() {
+      if (!gameState.animationsEnabled) return;
+      const crate = document.getElementById('crate-animation');
+      crate.classList.add('active');
+      crate.onclick = () => {
+        crate.style.background = 'url(/assets/crates/crate_open.png)';
+        setTimeout(() => crate.classList.remove('active'), 1000);
+      };
+      setTimeout(() => {
+        if (crate.classList.contains('active')) {
+          crate.classList.remove('active');
         }
-
-        async function connectWallet() {
-            if (window.solana) {
-                try {
-                    const response = await window.solana.connect();
-                    handleWalletConnected(response.publicKey);
-                } catch (error) {
-                    console.error('Wallet connection failed:', error);
-                    // Handle specific errors (e.g., user rejected)
-                }
-            } else {
-                alert('Solana wallet not found! Please install Phantom, Backpack, Solflare, or Coinbase wallet.');
-            }
-        }
-
-        async function disconnectWallet() {
-            if (window.solana && window.solana.isConnected) {
-                try {
-                    await window.solana.disconnect();
-                    handleWalletDisconnected();
-                } catch (error) {
-                    console.error('Wallet disconnection failed:', error);
-                }
-            }
-        }
-
-        function handleWalletConnected(publicKey) {
-            gameState.walletAddress = publicKey.toBase58();
-            dom.walletAddress.textContent = `${gameState.walletAddress.slice(0, 4)}...${gameState.walletAddress.slice(-4)}`;
-            dom.connectWalletButton.style.display = 'none';
-            dom.disconnectWalletButton.style.display = 'inline-block';
-            // Placeholder: Fetch balance (requires more web3.js interaction)
-            fetchWalletBalance(publicKey);
-            updateUI(); // Update UI based on connected state
-        }
-
-        function handleWalletDisconnected() {
-            gameState.walletAddress = null;
-            gameState.walletBalance = 0;
-            dom.walletAddress.textContent = 'Not Connected';
-            dom.walletBalance.textContent = '-- SOL';
-            dom.connectWalletButton.style.display = 'inline-block';
-            dom.disconnectWalletButton.style.display = 'none';
-            updateUI(); // Update UI based on disconnected state
-        }
-
-        async function fetchWalletBalance(publicKey) {
-             // Placeholder: In a real app, use Solana Web3.js Connection object
-             // Example:
-             // const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-             // const balance = await connection.getBalance(publicKey);
-             // gameState.walletBalance = balance / 10**9; // Convert lamports to SOL
-             // dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
-
-             // Simulate fetching balance
-             setTimeout(() => {
-                 gameState.walletBalance = Math.random() * 5 + 1; // Random balance between 1 and 6
-                 dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
-             }, 500);
-         }
-
-
-        // --- WebSocket Integration ---
-        function connectWebSocket() {
-            // Replace with your actual WebSocket server URL
-            const wsUrl = "wss://your-game-server-url";
-            gameState.websocket = new WebSocket(wsUrl);
-
-            gameState.websocket.onopen = () => {
-                console.log("WebSocket Connected");
-                // Send initial message, e.g., join game, if wallet is connected
-                if (gameState.walletAddress) {
-                     sendMessage({ type: 'joinGame', wallet: gameState.walletAddress });
-                } else {
-                     // Maybe join as spectator if not connected? Depends on backend logic.
-                     sendMessage({ type: 'joinGameAsSpectator' });
-                }
-            };
-
-            gameState.websocket.onmessage = (event) => {
-                const msg = JSON.parse(event.data);
-                console.log("WebSocket Message:", msg);
-                handleGameEvent(msg);
-            };
-
-            gameState.websocket.onerror = (error) => {
-                console.error("WebSocket Error:", error);
-                // Handle errors, attempt reconnect
-            };
-
-            gameState.websocket.onclose = () => {
-                console.log("WebSocket Disconnected");
-                // Handle disconnection, attempt reconnect
-            };
-        }
-
-        function sendMessage(message) {
-            if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) {
-                gameState.websocket.send(JSON.stringify(message));
-            } else {
-                console.warn("WebSocket not connected. Cannot send message:", message);
-                // Maybe queue messages or try to reconnect
-            }
-        }
-
-        // Handle incoming WebSocket messages
-        function handleGameEvent(msg) {
-            switch (msg.type) {
-                case 'table_state':
-                    // Update entire table state
-                    gameState.players = msg.data.players;
-                    gameState.dealerHand = msg.data.dealerHand;
-                    gameState.activePlayerId = msg.data.activePlayerId;
-                    gameState.isSpectator = msg.data.isSpectator;
-                    gameState.isSeated = msg.data.isSeated; // Assuming backend sends this
-                    updateUI();
-                    break;
-                case 'card_dealt':
-                    // Add card to specific player or dealer hand
-                    // msg.data should contain { playerId, card } or { target: 'dealer', card }
-                    if (msg.data.target === 'dealer') {
-                        gameState.dealerHand.push(msg.data.card);
-                        renderDealerHand();
-                    } else {
-                        const player = gameState.players.find(p => p.id === msg.data.playerId);
-                        if (player) {
-                            player.hand.push(msg.data.card);
-                            renderPlayerSeats(); // Re-render all seats for simplicity
-                        }
-                    }
-                    break;
-                case 'turn_changed':
-                    gameState.activePlayerId = msg.data.playerId;
-                    // Start or reset turn timer animation
-                    startTurnTimer(msg.data.duration || gameState.turnTimerDuration);
-                    renderPlayerSeats(); // Update active player highlight
-                    break;
-                case 'round_end':
-                    // Handle round end logic (reveal dealer cards, show results)
-                    gameState.dealerHand = msg.data.dealerHand; // Full dealer hand revealed
-                    // Update player results (win/loss status)
-                    // msg.data might contain results for each player
-                    updateUI(); // Update all relevant UI elements
-                    // Trigger confetti or other win/loss animations
-                    if (msg.data.userWon) {
-                         triggerConfetti();
-                    }
-                    break;
-                case 'xp_update':
-                    // Update user XP and level
-                    gameState.userXP = msg.data.newXP;
-                    gameState.userLevel = msg.data.newLevel;
-                    updateXPBar();
-                    if (msg.data.levelUp) {
-                        showCrateIcon();
-                    }
-                    break;
-                case 'crate_awarded':
-                    // Trigger crate animation/display
-                    showCrateIcon();
-                    break;
-                case 'chat_message':
-                    // Add new chat message
-                    gameState.chatMessages.push(msg.data);
-                    addChatMessageToFeed(msg.data);
-                    break;
-                case 'recent_play':
-                    // Add new recent play to the ticker
-                    gameState.recentPlays.unshift(msg.data); // Add to the beginning
-                    // Keep ticker length reasonable
-                    if (gameState.recentPlays.length > 10) {
-                        gameState.recentPlays.pop();
-                    }
-                    updateRecentPlaysTicker();
-                    break;
-                // Handle other event types as needed
-                default:
-                    console.warn("Unknown WebSocket message type:", msg.type);
-            }
-        }
-
-        // --- UI Rendering Functions ---
-
-        function updateUI() {
-            // Update wallet info (already done in handleWalletConnected/Disconnected)
-            // Update XP bar and level
-            updateXPBar();
-            // Update recent plays ticker
-            updateRecentPlaysTicker();
-            // Render game table elements
-            renderDealerHand();
-            renderPlayerSeats();
-            // Update betting controls and join/leave button
-            updateBettingControls();
-            // Render chat messages (initial load)
-            renderChatFeed();
-        }
-
-        function updateXPBar() {
-            dom.userLevel.textContent = `Level ${gameState.userLevel}`;
-            const xpProgress = gameState.userXP % 100; // Assuming 100 XP per level
-            dom.xpBarFill.style.width = `${xpProgress}%`;
-            dom.userXP.textContent = `${xpProgress}/100 XP`;
-        }
-
-        function showCrateIcon() {
-            dom.crateIcon.style.display = 'inline-block';
-            // Add logic for crate opening animation on click
-            dom.crateIcon.onclick = openCrate; // Assign click handler
-        }
-
-        function openCrate() {
-             console.log("Crate opened!");
-             // Placeholder: Implement crate opening animation (Canvas or image sequence)
-             // For now, just hide the icon
-             dom.crateIcon.style.display = 'none';
-             // Placeholder: Show crate contents (inline, no popup)
-             // Maybe a temporary text display or simple animation near the icon
-             alert("You got a reward!"); // Replace with inline display
-        }
-
-
-        function updateRecentPlaysTicker() {
-            dom.recentPlaysTicker.innerHTML = ''; // Clear current ticker
-            if (gameState.recentPlays.length === 0) {
-                dom.recentPlaysTicker.textContent = 'No recent plays...';
-                return;
-            }
-            gameState.recentPlays.forEach(play => {
-                const span = document.createElement('span');
-                span.classList.add('recent-play-item', play.win ? 'win' : 'loss');
-                span.textContent = `${play.player}: ${play.win ? '+' : '-'}${play.amount.toFixed(2)} SOL`;
-                dom.recentPlaysTicker.appendChild(span);
-            });
-            // Implement smooth scrolling animation for the ticker if needed
-        }
-
-        function renderDealerHand() {
-            dom.dealerCards.innerHTML = ''; // Clear current cards
-             if (gameState.dealerHand.length === 0) {
-                  const placeholder = document.createElement('div');
-                  placeholder.classList.add('card', 'card-back');
-                  dom.dealerCards.appendChild(placeholder);
-                  return;
-             }
-            gameState.dealerHand.forEach((card, index) => {
-                const cardElement = document.createElement('div');
-                cardElement.classList.add('card');
-                 // For the first card, show back initially
-                 if (index === 0 && !gameState.dealerHand[0].revealed) { // Assuming a 'revealed' property
-                      cardElement.classList.add('card-back');
-                 } else {
-                     cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
-                 }
-                // Add card flip animation class if needed
-                // if (card.justDealt) { cardElement.classList.add('flipped'); }
-                dom.dealerCards.appendChild(cardElement);
-            });
-        }
-
-        function renderPlayerSeats() {
-            dom.playerSeats.innerHTML = ''; // Clear current seats
-            gameState.players.forEach(player => {
-                const seatElement = document.createElement('div');
-                seatElement.classList.add('player-seat');
-                if (player.id === gameState.activePlayerId) {
-                    seatElement.classList.add('active');
-                }
-
-                // Player Info
-                const playerInfo = document.createElement('div');
-                playerInfo.classList.add('player-info');
-                const avatar = document.createElement('div');
-                avatar.classList.add('avatar');
-                avatar.textContent = player.avatar || '😊'; // Placeholder avatar
-                const username = document.createElement('span');
-                username.classList.add('username');
-                username.textContent = player.name || 'Player';
-                const xpBadge = document.createElement('span');
-                xpBadge.classList.add('xp-badge');
-                xpBadge.textContent = player.level || 1;
-                playerInfo.appendChild(avatar);
-                playerInfo.appendChild(username);
-                playerInfo.appendChild(xpBadge);
-                seatElement.appendChild(playerInfo);
-
-                // Player Hand
-                const playerHand = document.createElement('div');
-                playerHand.classList.add('player-hand');
-                if (player.hand && player.hand.length > 0) {
-                    player.hand.forEach(card => {
-                        const cardElement = document.createElement('div');
-                        cardElement.classList.add('card');
-                         // If it's not the user's hand, maybe show some cards face down? Depends on game rules.
-                         // For simplicity, showing all cards face up for now.
-                        cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
-                        playerHand.appendChild(cardElement);
-                    });
-                } else {
-                     const placeholder = document.createElement('div');
-                     placeholder.classList.add('card', 'card-back');
-                     playerHand.appendChild(placeholder);
-                }
-                seatElement.appendChild(playerHand);
-
-                // Action Buttons (Hit/Stand)
-                const actionButtons = document.createElement('div');
-                actionButtons.classList.add('action-buttons');
-                actionButtons.style.display = (player.id === gameState.walletAddress && player.id === gameState.activePlayerId && !gameState.isSpectator) ? 'block' : 'none';
-
-                const hitButton = document.createElement('button');
-                hitButton.classList.add('hit-button');
-                hitButton.textContent = 'Hit';
-                hitButton.onclick = () => sendPlayerAction('hit');
-
-                const standButton = document.createElement('button');
-                standButton.classList.add('stand-button');
-                standButton.textContent = 'Stand';
-                standButton.onclick = () => sendPlayerAction('stand');
-
-                actionButtons.appendChild(hitButton);
-                actionButtons.appendChild(standButton);
-                seatElement.appendChild(actionButtons);
-
-                // Turn Timer Bar
-                const timerBar = document.createElement('div');
-                timerBar.classList.add('turn-timer-bar');
-                timerBar.style.display = (player.id === gameState.activePlayerId) ? 'block' : 'none';
-                const timerFill = document.createElement('div');
-                timerFill.classList.add('turn-timer-fill');
-                 // Timer fill width will be controlled by startTurnTimer function
-                timerBar.appendChild(timerFill);
-                seatElement.appendChild(timerBar);
-
-
-                dom.playerSeats.appendChild(seatElement);
-            });
-
-             // Add empty seats if less than 5 players
-             for (let i = gameState.players.length; i < 5; i++) {
-                 const emptySeat = document.createElement('div');
-                 emptySeat.classList.add('player-seat');
-                 emptySeat.style.backgroundColor = '#333'; // Slightly lighter for empty
-                 emptySeat.style.border = '2px dashed #555';
-                 emptySeat.innerHTML = `<div style="color: #777; font-size: 0.9em;">Empty Seat</div>`;
-                 dom.playerSeats.appendChild(emptySeat);
-             }
-        }
-
-        function startTurnTimer(duration) {
-            const activePlayerSeat = document.querySelector('.player-seat.active .turn-timer-fill');
-            if (activePlayerSeat) {
-                // Reset timer animation
-                activePlayerSeat.style.transition = 'none';
-                activePlayerSeat.style.width = '100%';
-                // Force reflow to apply width: 100% immediately
-                activePlayerSeat.offsetHeight;
-                // Start animation
-                activePlayerSeat.style.transition = `width ${duration}s linear`;
-                activePlayerSeat.style.width = '0%';
-            }
-        }
-
-
-        function updateBettingControls() {
-            dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
-            dom.betSlider.value = gameState.betAmount;
-
-            if (gameState.isSeated) {
-                dom.joinLeaveButton.textContent = 'Leave Table';
-                dom.joinLeaveButton.classList.remove('join-button');
-                dom.joinLeaveButton.classList.add('leave-button');
-                // Disable betting controls if seated and not active player or spectator
-                const disableBetting = gameState.isSeated && !gameState.isSpectator && gameState.activePlayerId !== gameState.walletAddress;
-                 dom.betSlider.disabled = disableBetting;
-                 dom.quickBetButtons.forEach(button => button.disabled = disableBetting);
-
-            } else {
-                dom.joinLeaveButton.textContent = 'Join Table';
-                dom.joinLeaveButton.classList.remove('leave-button');
-                dom.joinLeaveButton.classList.add('join-button');
-                 // Enable betting controls if not seated
-                 dom.betSlider.disabled = false;
-                 dom.quickBetButtons.forEach(button => button.disabled = false);
-            }
-
-            // Show spectator status if applicable
-            dom.spectatorStatus.style.display = gameState.isSpectator ? 'inline-block' : 'none';
-             // Disable chat input for spectators
-             dom.chatInput.disabled = gameState.isSpectator;
-             dom.sendChatButton.disabled = gameState.isSpectator;
-             dom.chatInput.placeholder = gameState.isSpectator ? "Spectators cannot chat" : "Type message...";
-        }
-
-        function renderChatFeed() {
-            dom.chatFeed.innerHTML = ''; // Clear current feed
-            gameState.chatMessages.forEach(msg => {
-                addChatMessageToFeed(msg);
-            });
-        }
-
-        function addChatMessageToFeed(msg) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message');
-            messageElement.innerHTML = `<span class="chat-sender">[${msg.sender}]</span><span class="chat-badge">[${msg.badge}]</span> ${msg.message}`;
-            dom.chatFeed.appendChild(messageElement);
-            // Auto-scroll to the bottom
-            dom.chatFeed.scrollTop = dom.chatFeed.scrollHeight;
-        }
-
-        // --- Event Handlers ---
-
-        function setupEventListeners() {
-            dom.connectWalletButton.addEventListener('click', connectWallet);
-            dom.disconnectWalletButton.addEventListener('click', disconnectWallet);
-
-            dom.betSlider.addEventListener('input', (event) => {
-                gameState.betAmount = parseFloat(event.target.value);
-                dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
-                // Optional: Send bet update to server on slider change or on a separate "Place Bet" button
-                 // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
-            });
-
-            dom.quickBetButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const amount = event.target.dataset.betAmount;
-                    if (amount === 'MAX') {
-                        // Placeholder: Implement MAX bet logic (e.g., based on wallet balance or table limit)
-                        gameState.betAmount = 10; // Example MAX bet
-                    } else {
-                        gameState.betAmount = Math.max(0, gameState.betAmount + parseFloat(amount));
-                    }
-                    // Clamp bet amount to max slider value
-                    gameState.betAmount = Math.min(gameState.betAmount, parseFloat(dom.betSlider.max));
-                    dom.betSlider.value = gameState.betAmount;
-                    dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
-                     // Optional: Send bet update
-                     // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
-                });
-            });
-
-            dom.joinLeaveButton.addEventListener('click', () => {
-                if (gameState.isSeated) {
-                    sendMessage({ type: 'leaveTable' });
-                } else {
-                    sendMessage({ type: 'joinTable', bet: gameState.betAmount }); // Send bet when joining
-                }
-            });
-
-            dom.sendChatButton.addEventListener('click', sendChatMessage);
-            dom.chatInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') {
-                    sendChatMessage();
-                }
-            });
-
-             // Placeholder for Settings Menu Toggle
-             const menuIcon = document.querySelector('.menu-icon');
-             menuIcon.addEventListener('click', () => {
-                 const dropdown = dom.settingsDropdown;
-                 dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-             });
-
-             // Close settings dropdown if clicked outside
-             document.addEventListener('click', (event) => {
-                 if (!menuIcon.contains(event.target) && !dom.settingsDropdown.contains(event.target)) {
-                     dom.settingsDropdown.style.display = 'none';
-                 }
-             });
-        }
-
-        function sendPlayerAction(action) {
-             if (gameState.walletAddress && gameState.walletAddress === gameState.activePlayerId && !gameState.isSpectator) {
-                  sendMessage({ type: 'player_action', action: action });
-             } else {
-                 console.warn("Cannot send action: Not your turn, not connected, or spectator.");
-             }
-        }
-
-        function sendChatMessage() {
-            const message = dom.chatInput.value.trim();
-            if (message && !gameState.isSpectator) {
-                sendMessage({ type: 'chat_message', message: message });
-                dom.chatInput.value = ''; // Clear input
-            }
-        }
-
-
-        // --- Animation Placeholders ---
-
-        // Placeholder for Confetti Animation (Canvas)
-        function triggerConfetti() {
-            console.log("Triggering confetti!");
-            // Basic Confetti Simulation (replace with a more robust implementation)
-            const confettiCount = 100;
-            const colors = ['#10b981', '#ec4899', '#a78bfa', '#facc15']; // Green, Pink, Purple, Yellow
-            const particles = [];
-
-            for (let i = 0; i < confettiCount; i++) {
-                particles.push({
-                    x: Math.random() * dom.confettiCanvas.width,
-                    y: dom.confettiCanvas.height, // Start from bottom
-                    radius: Math.random() * 5 + 2,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    speedX: Math.random() * 10 - 5, // Random horizontal speed
-                    speedY: Math.random() * -15 - 5, // Upward speed
-                    gravity: 0.5,
-                    dampening: 0.9, // Reduce speed over time
-                    rotation: Math.random() * 360,
-                    rotationSpeed: Math.random() * 20 - 10,
-                });
-            }
-
-            function updateConfetti() {
-                dom.confettiCtx.clearRect(0, 0, dom.confettiCanvas.width, dom.confettiCanvas.height);
-
-                particles.forEach(p => {
-                    p.speedY += p.gravity;
-                    p.x += p.speedX;
-                    p.y += p.speedY;
-                    p.speedX *= p.dampening;
-                    p.speedY *= p.dampening;
-                    p.rotation += p.rotationSpeed;
-
-                    // Draw particle (simplified square for now)
-                    dom.confettiCtx.save();
-                    dom.confettiCtx.translate(p.x, p.y);
-                    dom.confettiCtx.rotate(p.rotation * Math.PI / 180);
-                    dom.confettiCtx.fillStyle = p.color;
-                    dom.confettiCtx.fillRect(-p.radius / 2, -p.radius / 2, p.radius, p.radius);
-                    dom.confettiCtx.restore();
-                });
-
-                // Remove particles that are off-screen
-                particles.filter(p => p.y < dom.confettiCanvas.height);
-
-                if (particles.length > 0) {
-                    requestAnimationFrame(updateConfetti);
-                }
-            }
-
-            updateConfetti(); // Start animation
-        }
-
-
-        // --- Placeholder Simulation Data (for initial UI testing) ---
-        function simulateInitialGameState() {
-             gameState.players = [
-                 { id: 'player1', name: 'CryptoKing', level: 7, avatar: '😎', hand: [{value: 'K', suit: '♥'}, {value: '5', suit: '♦'}], isUser: false, timer: 10 },
-                 { id: 'user-wallet-id', name: 'You', level: 5, avatar: '😊', hand: [{value: 'Q', suit: '♠'}, {value: '8', suit: '♣'}], isUser: true, timer: 10 }, // Replace 'user-wallet-id' with actual connected wallet ID
-                 { id: 'player3', name: 'DegenJane', level: 3, avatar: '😂', hand: [{value: '2', suit: '♥'}, {value: '7', suit: '♦'}], isUser: false, timer: 10 },
-             ];
-             gameState.dealerHand = [{value: '?', suit: '?'}, {value: '10', suit: '♠'}]; // Dealer shows one card
-             gameState.activePlayerId = 'user-wallet-id'; // Set user as active initially
-             gameState.betAmount = 0.5;
-             gameState.isSeated = true;
-             gameState.chatMessages = [
-                 { sender: 'Anon', message: 'gm degens!', badge: '1' },
-                 { sender: 'CryptoKing', message: 'let\'s go!', badge: '7' },
-             ];
-             gameState.recentPlays = [
-                 { player: 'Whale', amount: 2.0, win: true },
-                 { player: 'You', amount: 0.5, win: false },
-                 { player: 'DegenJane', amount: 0.1, win: true },
-             ];
-             gameState.userXP = 75; // Example XP
-             gameState.userLevel = 5; // Example Level
-
-
-             // Update UI with simulated data
-             updateUI();
-             // Start the timer animation for the active player
-             startTurnTimer(gameState.turnTimerDuration);
-        }
-
-
-    </script>
-
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-
+      }, 5000);
+    }
+
+    function addChatMessage(username, message, badge = '🥉') {
+      const feed = document.getElementById('chat-feed');
+      const div = document.createElement('div');
+      div.innerHTML = `<span>${username} [${badge}]</span>: ${message}`;
+      feed.appendChild(div);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function sendChat() {
+      const input = document.getElementById('chat-message');
+      if (!input.value.trim() || !gameState.isConnected) return;
+      socket.send(JSON.stringify({ type: 'chat_message', message: input.value }));
+      input.value = '';
+    }
+
+    function updateTicker() {
+      const ticker = document.getElementById('ticker-content');
+      ticker.textContent = gameState.tickerMessages.slice(-5).join(' | ');
+    }
+
+    document.getElementById('wallet-connect').onclick = connectWallet;
+    document.getElementById('disconnect-wallet').onclick = disconnectWallet;
+    document.getElementById('settings-toggle').onclick = () => {
+      document.getElementById('settings-menu').classList.toggle('active');
+    };
+    document.getElementById('toggle-animations').onclick = () => {
+      gameState.animationsEnabled = !gameState.animationsEnabled;
+      document.getElementById('toggle-animations').textContent = `Animations: ${gameState.animationsEnabled ? 'On' : 'Off'}`;
+    };
+    document.getElementById('bet-slider').oninput = (e) => {
+      gameState.betAmount = parseFloat(e.target.value);
+      socket.send(JSON.stringify({ type: 'betChanged', amount: gameState.betAmount }));
+    };
+
+    if (window.solana && window.solana.isConnected) {
+      connectWallet();
+    }
+  </script>
 </body>
 </html>
