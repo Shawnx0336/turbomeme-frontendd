@@ -16,7 +16,9 @@
             overflow: hidden; /* Prevent scrolling */
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Full viewport height */
+            /* Use 100dvh for dynamic viewport height on mobile */
+            height: 100dvh;
+            min-height: 100vh; /* Fallback for browsers that don't support dvh */
             /* Ensure full coverage on mobile */
             width: 100%;
             box-sizing: border-box;
@@ -35,20 +37,22 @@
         .hidden { display: none !important; }
         .block { display: block !important; }
         .flex { display: flex !important; }
+        .grid { display: grid !important; }
+
 
         /* Custom Scrollbar for Chat */
         .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+            width: 0.375rem; /* Use rem */
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #333;
-            border-radius: 3px;
+            border-radius: 0.1875rem; /* Use rem */
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #555;
-            border-radius: 3px;
+            border-radius: 0.1875rem; /* Use rem */
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -88,6 +92,8 @@
             box-sizing: border-box;
             overflow: hidden; /* Prevent game table content from causing scroll */
             position: relative; /* Needed for absolute positioning of near-miss, next-hand */
+            /* Add padding at the bottom to prevent game table content from being hidden by the fixed bottom bar */
+            padding-bottom: calc(8rem + env(safe-area-inset-bottom)); /* Adjust 8rem based on bottom bar height */
         }
 
         #bottom-bar {
@@ -356,6 +362,12 @@
              box-shadow: none;
          }
 
+         /* Button Active State */
+         button:active {
+             transform: scale(0.96);
+             filter: brightness(1.1);
+         }
+
 
         .turn-timer-bar {
             width: 100%;
@@ -503,6 +515,25 @@
             background-color: #555;
         }
 
+         /* Chip Button Styles */
+         .chip-button {
+             background-size: cover;
+             background-position: center;
+             color: transparent; /* Hide text if using image background */
+             font-size: 0; /* Hide text if using image background */
+             position: relative; /* For pseudo-elements or overlays */
+         }
+
+         .green-chip { background-image: url('/assets/ui/green-chip.png'); } /* Placeholder */
+         .purple-chip { background-image: url('/assets/ui/purple-chip.png'); } /* Placeholder */
+         .max-chip {
+             background-image: url('/assets/ui/max-chip.png'); /* Placeholder */
+             color: #fff; /* Show text for MAX button */
+             font-size: 0.9rem; /* Use rem */
+             text-align: center;
+         }
+
+
         .join-leave-button {
              padding: 0.75rem 1.5625rem; /* Increased padding (12px 25px) */
              border: none;
@@ -569,6 +600,18 @@
             margin-bottom: 0.1875rem; /* Use rem */
             word-break: break-word; /* Break long words */
         }
+
+         /* New Message Flash Animation */
+         @keyframes flash-bg {
+             0% { background-color: #333; }
+             50% { background-color: transparent; }
+             100% { background-color: #333; }
+         }
+
+         .chat-message.flash {
+             animation: flash-bg 1s ease-in-out;
+         }
+
 
         .chat-sender {
             font-weight: bold;
@@ -746,6 +789,43 @@
              animation: slide-left 15s linear infinite; /* Adjust duration as needed */
          }
 
+         /* Phase 2 - Profile/Lounge Section Placeholders */
+         #profile-lounge-section {
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background-color: rgba(0, 0, 0, 0.9); /* Semi-transparent dark background */
+             z-index: 200; /* Above everything */
+             display: none; /* Hidden by default */
+             flex-direction: column;
+             align-items: center;
+             justify-content: center;
+             padding-top: env(safe-area-inset-top);
+             padding-bottom: env(safe-area-inset-bottom);
+             box-sizing: border-box;
+         }
+
+         #profile-lounge-content {
+             background-color: #1a1a1a;
+             border-radius: 1rem;
+             padding: 1.5rem;
+             max-width: 90%;
+             max-height: 90%;
+             overflow-y: auto;
+             box-sizing: border-box;
+         }
+
+         #profile-lounge-close {
+             position: absolute;
+             top: calc(1rem + env(safe-area-inset-top));
+             right: calc(1rem + env(safe-area-inset-right));
+             font-size: 2rem;
+             color: #eee;
+             cursor: pointer;
+         }
+
 
         /* REMOVE Mobile Specific Styles */
         /* @media (max-width: 768px) {
@@ -805,7 +885,7 @@
 
     <div id="top-bar">
         <div class="top-bar-section wallet-info">
-            <span id="wallet-address">Not Connected</span>
+            <span id="wallet-icon">👤</span> <span id="wallet-address">Not Connected</span>
             <span id="wallet-balance">-- SOL</span>
             <button id="connect-wallet-button">Connect Wallet</button>
             <button id="disconnect-wallet-button" class="hidden">Disconnect</button>
@@ -828,19 +908,27 @@
             </div>
              <div id="leaderboard" style="font-size: 0.8em; margin-left: 10px;">
                  </div>
+             <span id="referral-count" style="color: #facc15; font-size: 0.8em; margin-left: 10px;">👥 0 referrals</span>
+
             <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
             <div id="settings-dropdown" class="hidden" style="position: absolute; top: 50px; right: 20px; background-color: #333; border-radius: 5px; padding: 10px; z-index: 20;">
-                Settings content here...
+                <div style="margin-bottom: 10px;">
+                    <span>Game Mode:</span>
+                    <button id="free-mode-toggle" style="background: #555; color: #eee; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">🔁 SOL Mode</button>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <button id="profile-tab-button" style="background: none; border: none; color: #eee; text-align: left; padding: 5px; cursor: pointer;">👤 Profile</button>
+                    <button id="lounge-tab-button" style="background: none; border: none; color: #eee; text-align: left; padding: 5px; cursor: pointer;">🛋️ Lounge</button>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="game-table">
         <div class="dealer-anchor">
-            <h3>Dealer</h3>
-            <div id="dealer-cards" class="player-hand">
+            <h3>Dealer <span id="dealer-emoji">🃏</span></h3> <div id="dealer-cards" class="player-hand">
                 </div>
         </div>
         <div id="player-seats" class="player-seats">
@@ -860,14 +948,13 @@
             <span id="current-bet-display">Bet: 0.00 SOL</span>
             <input type="range" id="bet-slider" min="0" max="10" step="0.01" value="0">
             <div class="quick-bet-buttons">
-                <button data-bet-amount="0.01">+0.01</button>
-                <button data-bet-amount="0.1">+0.1</button>
-                <button data-bet-amount="MAX">MAX</button>
+                <button data-bet-amount="0.01" class="chip-button green-chip">+0.01</button>
+                <button data-bet-amount="0.1" class="chip-button purple-chip">+0.1</button>
+                <button data-bet-amount="MAX" class="chip-button max-chip">🔥MAX Bet</button>
             </div>
             <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
              <span id="spectator-status" class="hidden" style="color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
-             <button id="refer-friends-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #5b21b6; color: #fff; font-weight: bold; cursor: pointer; min-width: 48px; min-height: 48px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">Refer Friends</button>
-        </div>
+             <button id="refer-friends-button" style="margin-left: 10px; padding: 8px 15px; border: none; border-radius: 5px; background-color: #5b21b6; color: #fff; font-weight: bold; cursor: pointer; min-width: 48px; min-height: 48px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">🎁 Invite & Earn 0.05 SOL</button> </div>
         <div class="bottom-bar-section chat-container">
             <div id="chat-feed" class="chat-feed custom-scrollbar">
                 </div>
@@ -882,12 +969,59 @@
 
     <canvas id="confetti-canvas"></canvas>
 
+    <div id="profile-lounge-section" class="hidden">
+        <div id="profile-lounge-content">
+            <span id="profile-lounge-close">&times;</span>
+            <h2>Profile / Lounge</h2>
+            <div id="profile-content">
+                <h3>👤 Your Profile</h3>
+                <p>Avatar: <span id="profile-avatar">😊</span></p>
+                <p>Level: <span id="profile-level">1</span></p>
+                <div class="xp-bar-container" style="width: 100%;">
+                    <div id="profile-xp-bar-fill" class="xp-bar-fill"></div>
+                </div>
+                <p>XP: <span id="profile-xp">0/100</span></p>
+                <p>Win %: <span id="profile-win-rate">--</span></p>
+                <p>Highest Wager: <span id="profile-highest-wager">--</span></p>
+                <p>Longest Streak: <span id="profile-longest-streak">--</span></p>
+                <h4>Badges:</h4>
+                <ul id="profile-badges">
+                    </ul>
+                <p>Favorite Game: <span id="profile-favorite-game">Blackjack</span></p>
+            </div>
+            <div id="lounge-content" class="hidden">
+                <h3>🛋️ Lounge</h3>
+                <h4>Games:</h4>
+                <div id="game-tabs">
+                    <button data-game="blackjack" class="game-tab-button">Blackjack</button>
+                    <button data-game="dice" class="game-tab-button">Dice (Coming Soon)</button>
+                    <button data-game="roulette" class="game-tab-button">Roulette (Coming Soon)</button>
+                    <button data-game="war" class="game-tab-button">War (Coming Soon)</button>
+                </div>
+                <h4>Live Leaderboards:</h4>
+                <div id="lounge-leaderboards">
+                    </div>
+                <div id="lounge-chat" style="height: 200px; background: #222; margin-top: 10px; padding: 10px; overflow-y: auto;">
+                    Lounge chat messages...
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <audio id="card-deal-sound" src="/assets/sounds/card-deal.mp3" preload="auto"></audio>
     <audio id="win-sound" src="/assets/sounds/win.mp3" preload="auto"></audio>
     <audio id="loss-sound" src="/assets/sounds/loss.mp3" preload="auto"></audio>
     <audio id="button-click-sound" src="/assets/sounds/button-click.mp3" preload="auto"></audio>
     <audio id="coin-drop-sound" src="/assets/sounds/coin-drop.mp3" preload="auto"></audio>
-    <audio id="background-loop-sound" src="/assets/sounds/background-loop.mp3" preload="auto" loop></audio> <script>
+    <audio id="background-loop-sound" src="/assets/sounds/background-loop.mp3" preload="auto" loop></audio>
+    <audio id="chip-sound" src="/assets/sounds/chip.mp3" preload="auto"></audio>
+
+    <div id="floating-emoji-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20;"></div>
+
+
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <script>
         // --- Global State ---
         const gameState = {
             walletAddress: null,
@@ -909,11 +1043,14 @@
             chatVisible: window.innerWidth > 768, // Chat visible by default on desktop
             otherHandsVisible: false, // State for mobile other hands toggle
             backgroundSoundPlaying: false,
+            isFreeMode: false, // Phase 2: Free Mode state
+            referralCount: parseInt(localStorage.getItem('referralCount') || '0'), // New: Referral count
             // Add other state properties as needed
         };
 
         // --- DOM Elements ---
         const dom = {
+            walletIcon: document.getElementById('wallet-icon'), // New wallet icon
             walletAddress: document.getElementById('wallet-address'),
             walletBalance: document.getElementById('wallet-balance'),
             connectWalletButton: document.getElementById('connect-wallet-button'),
@@ -926,10 +1063,31 @@
             crateIcon: document.getElementById('crate-icon'),
             recentPlaysTicker: document.getElementById('recent-plays-ticker'),
             leaderboard: document.getElementById('leaderboard'), // New
+            referralCount: document.getElementById('referral-count'), // New: Referral count
             settingsDropdown: document.getElementById('settings-dropdown'), // Placeholder
+            freeModeToggle: document.getElementById('free-mode-toggle'), // Phase 2: Free Mode Toggle
+            profileTabButton: document.getElementById('profile-tab-button'), // Phase 2: Profile Tab Button
+            loungeTabButton: document.getElementById('lounge-tab-button'), // Phase 2: Lounge Tab Button
+            profileLoungeSection: document.getElementById('profile-lounge-section'), // Phase 2: Profile/Lounge Section
+            profileLoungeClose: document.getElementById('profile-lounge-close'), // Phase 2: Profile/Lounge Close Button
+            profileContent: document.getElementById('profile-content'), // Phase 2: Profile Content
+            loungeContent: document.getElementById('lounge-content'), // Phase 2: Lounge Content
+            profileAvatar: document.getElementById('profile-avatar'), // Phase 2: Profile Avatar
+            profileLevel: document.getElementById('profile-level'), // Phase 2: Profile Level
+            profileXpBarFill: document.getElementById('profile-xp-bar-fill'), // Phase 2: Profile XP Bar
+            profileXP: document.getElementById('profile-xp'), // Phase 2: Profile XP
+            profileWinRate: document.getElementById('profile-win-rate'), // Phase 2: Profile Win Rate
+            profileHighestWager: document.getElementById('profile-highest-wager'), // Phase 2: Profile Highest Wager
+            profileLongestStreak: document.getElementById('profile-longest-streak'), // Phase 2: Profile Longest Streak
+            profileBadges: document.getElementById('profile-badges'), // Phase 2: Profile Badges
+            profileFavoriteGame: document.getElementById('profile-favorite-game'), // Phase 2: Profile Favorite Game
+            gameTabs: document.getElementById('game-tabs'), // Phase 2: Game Tabs
+            loungeLeaderboards: document.getElementById('lounge-leaderboards'), // Phase 2: Lounge Leaderboards
+            loungeChat: document.getElementById('lounge-chat'), // Phase 2: Lounge Chat
             dealerCards: document.getElementById('dealer-cards'),
             playerSeats: document.getElementById('player-seats'),
             dealerAnchor: document.querySelector('.dealer-anchor'), // New dealer anchor
+            dealerEmoji: document.getElementById('dealer-emoji'), // New dealer emoji
             hotTableBanner: document.getElementById('hot-table-banner'), // New
             nearMissPopup: document.getElementById('near-miss-popup'), // New
             hotStreakBar: document.getElementById('hot-streak-bar'), // New
@@ -947,6 +1105,7 @@
             toggleChatButton: document.getElementById('toggle-chat'), // New
             nextHandButton: document.getElementById('next-hand-button'), // New
             confettiCanvas: document.getElementById('confetti-canvas'),
+            floatingEmojiContainer: document.getElementById('floating-emoji-container'), // New: Floating emoji container
             // Audio Elements
             cardDealSound: document.getElementById('card-deal-sound'),
             winSound: document.getElementById('win-sound'),
@@ -954,6 +1113,7 @@
             buttonClickSound: document.getElementById('button-click-sound'),
             coinDropSound: document.getElementById('coin-drop-sound'), // New Coin Drop Sound
             backgroundLoopSound: document.getElementById('background-loop-sound'), // New Background Loop
+            chipSound: document.getElementById('chip-sound'), // New Chip Sound
         };
 
         // --- Initialization ---
@@ -983,6 +1143,7 @@
 
              // Play background sound on first user interaction (e.g., click anywhere)
              document.body.addEventListener('click', playBackgroundSound, { once: true });
+             document.body.addEventListener('touchstart', playBackgroundSound, { once: true }); // Add touchstart fallback
         });
 
         // Resize Canvas function
@@ -1058,6 +1219,7 @@
             dom.disconnectWalletButton.classList.remove('hidden');
             dom.phantomDeeplink.classList.add('hidden');
             dom.walletGuidance.classList.add('hidden');
+            dom.walletIcon.classList.remove('hidden'); // Show wallet icon
             // Placeholder: Fetch balance (requires more web3.js interaction)
             fetchWalletBalance(publicKey);
             updateUI(); // Update UI based on connected state
@@ -1072,6 +1234,7 @@
             dom.disconnectWalletButton.classList.add('hidden');
              dom.phantomDeeplink.classList.add('hidden'); // Hide deeplink on disconnect
              dom.walletGuidance.classList.add('hidden'); // Hide guidance on disconnect
+             dom.walletIcon.classList.add('hidden'); // Hide wallet icon
             updateUI(); // Update UI based on disconnected state
         }
 
@@ -1123,6 +1286,8 @@
                      // Maybe join as spectator if not connected? Depends on backend logic.
                      sendMessage({ type: 'joinGameAsSpectator' });
                 }
+                 // Trigger confetti on join (optional addictive UX)
+                triggerConfettiOnJoin();
             };
 
             gameState.websocket.onmessage = (event) => {
@@ -1199,6 +1364,8 @@
                          triggerHaptic([100, 50, 100]); // Win haptic
                          // Show win banner/badge (placeholder)
                          showWinBanner(msg.data.winAmount);
+                         // Trigger floating win emojis
+                         triggerFloatingWinEmojis();
                     } else if (msg.data.userLost) {
                          playSound(dom.lossSound); // Play loss sound
                          triggerHaptic([200]); // Loss haptic
@@ -1216,6 +1383,8 @@
                     updateXPBar();
                     if (msg.data.levelUp) {
                         showCrateIcon();
+                         // Add sparkles/shine animation on level up (placeholder)
+                         triggerLevelUpAnimation();
                     }
                     break;
                 case 'crate_awarded':
@@ -1248,9 +1417,10 @@
                  case 'near_miss':
                      // Trigger near miss animation
                      showNearMissPopup(msg.data.message || 'Almost!');
+                     triggerHaptic([50]); // Haptic feedback for near miss
                      break;
                  case 'hot_streak_update':
-                     // Update hot streak bar
+                     // Update hot streak bar and potentially display streak emoji
                      updateHotStreakBar(msg.data.streakCount);
                      break;
                  case 'leaderboard_update':
@@ -1288,6 +1458,12 @@
              updateOtherHandsVisibility();
              // Update leaderboard
              updateLeaderboard(gameState.leaderboard || []); // Pass current leaderboard state
+
+             // Update Free Mode Toggle text
+             updateFreeModeToggleText();
+
+             // Update referral count display
+             updateReferralCountDisplay();
         }
 
         function updateXPBar() {
@@ -1313,6 +1489,18 @@
              alert("You got a reward!"); // Replace with inline display
         }
 
+         // Placeholder for Level Up Animation
+         function triggerLevelUpAnimation() {
+             console.log("Triggering level up animation!");
+             // Example: Briefly change text color or add a sparkle effect
+             dom.userLevel.style.transition = 'color 0.3s ease-in-out';
+             dom.userLevel.style.color = '#facc15'; // Yellow sparkle color
+             setTimeout(() => {
+                 dom.userLevel.style.color = '#eee'; // Revert color
+             }, 500);
+             // Could also add a particle effect around the level text
+         }
+
 
         function updateRecentPlaysTicker() {
             dom.recentPlaysTicker.innerHTML = ''; // Clear current ticker
@@ -1320,13 +1508,25 @@
                 dom.recentPlaysTicker.textContent = 'No recent plays...';
                 return;
             }
+            // Create a single span for the ticker content
+            const tickerContent = document.createElement('span');
             gameState.recentPlays.forEach(play => {
                 const span = document.createElement('span');
                 span.classList.add('recent-play-item', play.win ? 'win' : 'loss');
-                span.textContent = `${play.player}: ${play.win ? '+' : '-'}${play.amount.toFixed(2)} SOL`;
-                dom.recentPlaysTicker.appendChild(span);
+                span.textContent = `${play.player}: ${play.win ? '+' : '-'}${play.amount.toFixed(2)} SOL • `; // Added bullet point
+                tickerContent.appendChild(span);
             });
-            // Implement smooth scrolling animation for the ticker if needed
+             // Remove the last bullet point
+             if (tickerContent.lastChild) {
+                 tickerContent.lastChild.textContent = tickerContent.lastChild.textContent.slice(0, -2);
+             }
+
+            dom.recentPlaysTicker.appendChild(tickerContent);
+
+            // Apply animation to the ticker content span
+            tickerContent.style.animation = 'none'; // Reset animation
+            tickerContent.offsetHeight; // Trigger reflow
+            tickerContent.style.animation = `slide-left 15s linear infinite`; // Apply animation
         }
 
         function updateLeaderboard(leaderboardData) {
@@ -1345,6 +1545,11 @@
                  entrySpan.textContent = `${index + 1}. ${entry.player}: ${entry.wins} Wins | `;
                  dom.leaderboard.appendChild(entrySpan);
              });
+        }
+
+        // New: Update Referral Count Display
+        function updateReferralCountDisplay() {
+            dom.referralCount.textContent = `👥 ${gameState.referralCount} referrals`;
         }
 
 
@@ -1386,6 +1591,9 @@
             gameState.players.forEach(player => {
                 const seatElement = document.createElement('div');
                 seatElement.classList.add('player-seat');
+                 // Add ID to seat for easier targeting in updateOtherHandsVisibility
+                 seatElement.id = `player-seat-${player.id}`;
+
                  if (player.id === gameState.walletAddress) {
                      seatElement.classList.add('is-user'); // Mark the user's seat
                  }
@@ -1413,19 +1621,14 @@
                 // Player Hand
                 const playerHand = document.createElement('div');
                 playerHand.classList.add('player-hand');
+                // Hand visibility handled by updateOtherHandsVisibility
+
                 if (player.hand && player.hand.length > 0) {
                     player.hand.forEach(card => {
                         const cardElement = document.createElement('div');
                         cardElement.classList.add('card');
-                         // On mobile, hide other players' cards unless toggled
-                         if (isMobile && !player.isUser && !gameState.otherHandsVisible) {
-                             cardElement.classList.add('card-back');
-                         } else {
-                             cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
-                             // In a real app, use an image: cardElement.style.backgroundImage = `url('/assets/cards/${card.value}_${card.suit}.png')`;
-                             // cardElement.style.backgroundSize = 'cover';
-                             // cardElement.style.color = 'transparent';
-                         }
+                         // Card back/face handled by updateOtherHandsVisibility and renderDealerHand
+                         cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
                          // Add deal animation class
                          cardElement.classList.add('deal-animation');
                          // Remove animation class after it finishes
@@ -1496,8 +1699,16 @@
                     const hotStreakFill = document.createElement('div');
                     hotStreakFill.classList.add('hot-streak-fill');
                     hotStreakBar.appendChild(hotStreakFill);
-                    seatElement.appendChild(hotStreakBar);
+                    seatElement.appendChild(hotStreakFill);
                 }
+
+                 // Add Streak Emoji Placeholder
+                 const streakEmoji = document.createElement('span');
+                 streakEmoji.classList.add('streak-emoji', 'hidden'); // Hidden by default
+                 streakEmoji.style.fontSize = '1.5rem'; // Use rem
+                 streakEmoji.style.marginLeft = '0.5rem'; // Use rem
+                 streakEmoji.textContent = '🔥'; // Default streak emoji
+                 seatElement.appendChild(streakEmoji);
 
 
                 dom.playerSeats.appendChild(seatElement);
@@ -1530,6 +1741,8 @@
 
         function updateHotStreakBar(streakCount) {
              const userHotStreakFill = document.getElementById('user-hot-streak-bar')?.querySelector('.hot-streak-fill');
+             const userStreakEmoji = document.querySelector('.player-seat.is-user .streak-emoji');
+
              if (userHotStreakFill) {
                  // Assuming streakCount is between 0 and some max value (e.g., 5 or 10)
                  // Adjust width calculation based on your max streak logic
@@ -1539,8 +1752,14 @@
                  // Use class 'hidden'
                  if (streakCount > 0) {
                      userHotStreakFill.parentElement.classList.remove('hidden');
+                     if (userStreakEmoji) userStreakEmoji.classList.remove('hidden'); // Show emoji
+                     // Update emoji based on streak count (placeholder)
+                     if (streakCount >= 5) userStreakEmoji.textContent = '👑';
+                     else if (streakCount >= 3) userStreakEmoji.textContent = '🔥';
+                     else userStreakEmoji.textContent = '👍';
                  } else {
                      userHotStreakFill.parentElement.classList.add('hidden');
+                     if (userStreakEmoji) userStreakEmoji.classList.add('hidden'); // Hide emoji
                  }
              }
         }
@@ -1551,6 +1770,7 @@
             setTimeout(() => {
                 dom.nearMissPopup.classList.remove('show');
             }, 1500); // Show for 1.5 seconds
+             triggerHaptic([50]); // Haptic feedback for near miss
         }
 
         // Placeholder for Win Banner/Badge
@@ -1619,6 +1839,12 @@
 
             // Auto-scroll to the bottom
             dom.chatFeed.scrollTop = dom.chatFeed.scrollHeight;
+
+            // Add flash animation to the new message
+            messageElement.classList.add('flash');
+            messageElement.addEventListener('animationend', () => {
+                messageElement.classList.remove('flash');
+            }, { once: true });
         }
 
         function updateChatContainerVisibility() {
@@ -1729,7 +1955,7 @@
                     dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
                      // Optional: Send bet update
                      // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
-                     playSound(dom.buttonClickSound); // Play sound
+                     playSound(dom.chipSound); // Play chip sound
                      triggerHaptic([50]); // Haptic feedback
                 });
             });
@@ -1791,6 +2017,40 @@
 
              // Refer Friends Button
              dom.referFriendsButton.addEventListener('click', shareReferral);
+
+             // Phase 2: Free Mode Toggle
+             dom.freeModeToggle.addEventListener('click', () => {
+                 gameState.isFreeMode = !gameState.isFreeMode;
+                 updateFreeModeToggleText();
+                 // Placeholder: Send update to backend or handle state change
+                 console.log(`Free Mode: ${gameState.isFreeMode}`);
+                 playSound(dom.buttonClickSound); // Play sound
+             });
+
+             // Phase 2: Profile/Lounge Tab Buttons
+             dom.profileTabButton.addEventListener('click', () => {
+                 showProfileLoungeSection('profile');
+                 playSound(dom.buttonClickSound);
+             });
+             dom.loungeTabButton.addEventListener('click', () => {
+                 showProfileLoungeSection('lounge');
+                 playSound(dom.buttonClickSound);
+             });
+             dom.profileLoungeClose.addEventListener('click', () => {
+                 dom.profileLoungeSection.classList.add('hidden');
+                 playSound(dom.buttonClickSound);
+             });
+
+             // Phase 2: Game Tab Buttons (within Lounge)
+             dom.gameTabs.querySelectorAll('.game-tab-button').forEach(button => {
+                 button.addEventListener('click', (event) => {
+                     const game = event.target.dataset.game;
+                     console.log(`Switched to game tab: ${game}`);
+                     // Placeholder: Load content for the selected game tab
+                     // This would involve fetching data and updating the loungeLeaderboards/loungeChat areas
+                      playSound(dom.buttonClickSound);
+                 });
+             });
         }
 
         function sendPlayerAction(action) {
@@ -1812,6 +2072,54 @@
             }
         }
 
+        // Phase 2: Update Free Mode Toggle Text
+        function updateFreeModeToggleText() {
+             dom.freeModeToggle.textContent = gameState.isFreeMode ? '✅ Free Mode' : '🔁 SOL Mode';
+             // Optional: Update UI elements based on mode (e.g., bet currency symbol)
+        }
+
+        // Phase 2: Show Profile/Lounge Section
+        function showProfileLoungeSection(section) {
+             dom.profileLoungeSection.classList.remove('hidden');
+             // Toggle content visibility
+             if (section === 'profile') {
+                 dom.profileContent.classList.remove('hidden');
+                 dom.loungeContent.classList.add('hidden');
+                 // Placeholder: Populate profile data
+                 updateProfileDisplay();
+             } else if (section === 'lounge') {
+                 dom.profileContent.classList.add('hidden');
+                 dom.loungeContent.classList.remove('hidden');
+                 // Placeholder: Load initial lounge content (e.g., Blackjack leaderboard)
+                 loadLoungeContent('blackjack');
+             }
+        }
+
+        // Phase 2: Placeholder for Populating Profile Data
+        function updateProfileDisplay() {
+             dom.profileAvatar.textContent = gameState.players.find(p => p.id === gameState.walletAddress)?.avatar || '😊';
+             dom.profileLevel.textContent = gameState.userLevel;
+             const xpProgress = gameState.userXP % 100;
+             dom.profileXpBarFill.style.width = `${xpProgress}%`;
+             dom.profileXP.textContent = `${xpProgress}/100`;
+             // Placeholder: Fetch and display other profile data (Win %, Wager, Streak, Badges)
+             dom.profileWinRate.textContent = '55%';
+             dom.profileHighestWager.textContent = '10 SOL';
+             dom.profileLongestStreak.textContent = '5';
+             dom.profileFavoriteGame.textContent = 'Blackjack'; // Example
+             // Placeholder: Render badges
+             dom.profileBadges.innerHTML = '<li>Risk Lord</li><li>Low Roller</li>'; // Example badges
+        }
+
+        // Phase 2: Placeholder for Loading Lounge Content
+        function loadLoungeContent(game) {
+             console.log(`Loading lounge content for: ${game}`);
+             // Placeholder: Fetch and display leaderboards and chat for the selected game
+             dom.loungeLeaderboards.innerHTML = `Leaderboard for ${game}...`;
+             dom.loungeChat.innerHTML = `Chat for ${game}...`;
+        }
+
+
         // --- Sound and Haptics ---
         function playSound(audioElement) {
              if (audioElement) {
@@ -1822,7 +2130,7 @@
 
          function playBackgroundSound() {
              if (dom.backgroundLoopSound && !gameState.backgroundSoundPlaying) {
-                 dom.backgroundLoopSound.volume = 0.3; // Adjust volume as needed
+                 dom.backgroundLoopSound.volume = 0.1; // Adjust volume as needed
                  dom.backgroundLoopSound.play().then(() => {
                      gameState.backgroundSoundPlaying = true;
                  }).catch(error => console.error("Error playing background sound:", error));
@@ -1917,6 +2225,32 @@
                 }, { once: true });
             }
             playSound(dom.coinDropSound); // Play coin drop sound
+        }
+
+        // New: Placeholder for Floating Win Emojis
+        function triggerFloatingWinEmojis() {
+             console.log("Triggering floating win emojis!");
+             const emojiCount = window.innerWidth < 768 ? 10 : 20; // Adjust count for mobile
+             const emojis = ['🎉', '💰', '💸', '✨', '👑']; // Win emojis
+             const container = dom.floatingEmojiContainer;
+
+             for (let i = 0; i < emojiCount; i++) {
+                 const emoji = document.createElement('span');
+                 emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                 emoji.classList.add('floating-emoji');
+                 // Random start position near the center/bottom of the screen
+                 emoji.style.left = `${50 + (Math.random() - 0.5) * 20}vw`;
+                 emoji.style.bottom = `${Math.random() * 10}vh`; // Start near the bottom
+                 emoji.style.fontSize = `${Math.random() * 1 + 1}rem`; // Random size
+                 emoji.style.opacity = Math.random() * 0.5 + 0.5; // Random opacity
+
+                 container.appendChild(emoji);
+
+                 // Remove emoji element after animation
+                 emoji.addEventListener('animationend', () => {
+                     emoji.remove();
+                 }, { once: true });
+             }
         }
 
 
@@ -2048,6 +2382,9 @@
                  { player: 'Whale', wins: 3 },
              ];
 
+             // Simulate referral count
+             gameState.referralCount = parseInt(localStorage.getItem('referralCount') || '0');
+
 
              // Update UI with simulated data
              updateUI();
@@ -2086,6 +2423,13 @@
              setInterval(() => {
                  showMysteryEvent({ type: 'bonus_round', message: 'Double Payouts!', duration: 10000 }); // Bonus round for 10 seconds
              }, 60000); // Every 60 seconds (1 minute)
+
+             // Simulate referral count increase (for testing)
+             setInterval(() => {
+                 gameState.referralCount++;
+                 localStorage.setItem('referralCount', gameState.referralCount);
+                 updateReferralCountDisplay();
+             }, 30000); // Every 30 seconds
         }
 
 
