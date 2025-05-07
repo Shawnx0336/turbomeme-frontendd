@@ -4,52 +4,96 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#121212">
-  <meta name="description" content="Play SOL Crash: Bet SOL, ride the rocket, win big!">
-  <title>SOL Crash | 1000x Multipliers</title>
-  <link rel="manifest" href="/manifest.json">
+  <meta name="description" content="SOL Crash Game - Bet SOL and cash out before the rocket crashes!">
+  <title>SOL Crash | 1000x Multipliers | Play with Solana</title>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
   <style>
     :root {
       --primary: #7B61FF;
+      --primary-dark: #5a43d6;
       --secondary: #FF6BEC;
+      --secondary-dark: #e055d3;
+      --danger: #F87171;
+      --danger-dark: #dc2626;
+      --success: #4ADE80;
+      --success-dark: #22c55e;
+      --warning: #FBBF24;
+      --warning-dark: #f59e0b;
       --bg: #121212;
+      --bg-light: #1a1a1a;
       --card-bg: #1E1E1E;
+      --card-border: #333;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A1A1AA;
     }
+    
     * {
       -webkit-tap-highlight-color: transparent;
       -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
     }
+    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(45deg, #121212, #1E1E1E, #121212);
-      background-size: 200% 200%;
-      animation: backgroundPulse 10s ease infinite;
-      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
       touch-action: manipulation;
+      line-height: 1.5;
     }
-    @keyframes backgroundPulse {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+    
     #app {
       display: flex;
       flex-direction: column;
       height: 100vh;
       height: -webkit-fill-available;
       overflow: hidden;
+      position: relative;
     }
+    
+    /* Header with balance */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--card-border);
+    }
+    
+    .header-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .balance-display {
+      background: var(--card-bg);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    /* Main game area */
     #game {
       flex: 1;
       padding: 15px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      gap: 12px;
     }
+    
+    /* Multiplier display with animation */
     #multiplier {
       font-size: 3.5rem;
       font-weight: 800;
@@ -57,30 +101,34 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-align: center;
-      margin: 10px 0;
+      margin: 5px 0;
       line-height: 1;
-      position: relative;
+      text-shadow: 0 2px 10px rgba(123, 97, 255, 0.3);
+      transition: transform 0.1s ease-out;
     }
-    #multiplier.near-crash {
-      animation: flickerTilt 0.2s infinite;
+    
+    #multiplier.animating {
+      transform: scale(1.05);
     }
-    @keyframes flickerTilt {
-      0% { transform: rotate(0deg); opacity: 1; }
-      50% { transform: rotate(2deg); opacity: 0.8; }
-      100% { transform: rotate(-2deg); opacity: 1; }
-    }
+    
+    /* Graph container with rocket animation */
     #graph-container {
       flex: 1;
       min-height: 200px;
       background: var(--card-bg);
       border-radius: 12px;
       position: relative;
-      margin: 0 0 15px;
+      margin: 0 0 10px;
       overflow: hidden;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    #graph-container.bonus-mode {
-      background: linear-gradient(to top, #FFD700, #FF6BEC);
+    
+    #graph {
+      width: 100%;
+      height: 100%;
     }
+    
     #rocket-line {
       position: absolute;
       bottom: 0;
@@ -89,113 +137,303 @@
       width: 3px;
       background: linear-gradient(to top, var(--primary), var(--secondary));
       height: 0;
+      z-index: 1;
     }
+    
     #rocket {
       position: absolute;
       bottom: 0;
       left: 50%;
-      transform: translateX(-50%);
-      width: 24px;
-      background: url('rocket-sprite.png') no-repeat;
-      background-size: 200%;
-      animation: rocketGlow 0.5s infinite alternate;
-      filter: blur(1px) drop-shadow(0 0 5px #FF6BEC);
+      transform: translateX(-50%) translateY(50%);
+      width: 28px;
+      height: 28px;
       transition: bottom 0.05s linear;
+      image-rendering: crisp-edges;
+      z-index: 2;
+      filter: drop-shadow(0 0 5px rgba(123, 97, 255, 0.5));
     }
-    #rocket.bonus-mode {
-      filter: drop-shadow(0 0 10px #00FF00);
-    }
-    @keyframes rocketGlow {
-      from { filter: blur(1px) drop-shadow(0 0 5px #FF6BEC); }
-      to { filter: blur(1px) drop-shadow(0 0 10px #FFD700); }
-    }
-    #game.shake {
-      animation: shake 0.3s ease-in-out;
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      50% { transform: translateX(-5px); }
-    }
-    .controls.sticky {
-      position: fixed;
-      bottom: calc(10px + env(safe-area-inset-bottom));
-      right: 10px;
+    
+    .graph-grid {
+      position: absolute;
+      width: 100%;
+      height: 100%;
       display: flex;
-      gap: 8px;
-      z-index: 50;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0 10px;
     }
+    
+    .grid-line {
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    
+    .grid-label {
+      position: absolute;
+      right: 0;
+      top: -10px;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+    
+    /* Controls section */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    
     button {
       background: var(--primary);
       color: white;
       border: none;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 10px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 1rem;
       cursor: pointer;
       transition: all 0.2s;
       user-select: none;
-      min-width: 48px;
-      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
+    
     button:active:not(:disabled) {
-      transform: scale(0.98);
+      transform: scale(0.97);
+      background: var(--primary-dark);
     }
+    
     button:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
+      cursor: not-allowed;
     }
-    button.idle {
-      animation: craveAttention 1s infinite;
-      box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+    
+    .btn-secondary {
+      background: var(--secondary);
     }
-    @keyframes craveAttention {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    
+    .btn-secondary:active:not(:disabled) {
+      background: var(--secondary-dark);
     }
-    button.pulse {
-      animation: pulse 1s infinite;
+    
+    .btn-danger {
+      background: var(--danger);
     }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
+    
+    .btn-danger:active:not(:disabled) {
+      background: var(--danger-dark);
     }
+    
+    .btn-success {
+      background: var(--success);
+    }
+    
+    .btn-success:active:not(:disabled) {
+      background: var(--success-dark);
+    }
+    
+    .btn-warning {
+      background: var(--warning);
+      color: #000;
+    }
+    
+    .btn-warning:active:not(:disabled) {
+      background: var(--warning-dark);
+    }
+    
+    /* Bet amount input */
+    .bet-input-container {
+      position: relative;
+      grid-column: span 2;
+    }
+    
+    .bet-amount-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    
+    .bet-amount-btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 0.8rem;
+      background: var(--card-bg);
+    }
+    
     input {
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
       background: var(--card-bg);
       color: white;
       font-size: 1rem;
       width: 100%;
       -webkit-appearance: none;
+      font-weight: 500;
     }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    /* Mobile tabs */
     .mobile-tabs {
       display: flex;
-      border-top: 1px solid #333;
+      border-top: 1px solid var(--card-border);
       background: var(--card-bg);
-      padding-bottom: env(safe-area-inset-bottom);
+      position: relative;
+      z-index: 10;
     }
+    
     .tab-button {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
       text-align: center;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      position: relative;
     }
+    
     .tab-button.active {
-      border-bottom: 2px solid var(--primary);
+      color: var(--text-primary);
     }
+    
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+    }
+    
+    /* Tab content */
     .tab-content {
       display: none;
       padding: 15px;
       overflow-y: auto;
       max-height: 40vh;
-      -webkit-overflow-scrolling: touch;
+      background: var(--bg-light);
     }
+    
     .tab-content.active {
       display: block;
+      animation: fadeIn 0.3s ease-out;
     }
+    
+    /* Chat specific styles */
+    .chat-messages {
+      display: flex;
+      flex-direction: column-reverse;
+      min-height: 100px;
+    }
+    
+    .chat-message {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--card-border);
+      word-break: break-word;
+    }
+    
+    .chat-user {
+      color: var(--secondary);
+      font-weight: bold;
+      margin-right: 6px;
+    }
+    
+    .chat-input-container {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+    
+    .chat-send-btn {
+      padding: 0 14px;
+      font-size: 0.9rem;
+    }
+    
+    /* Stats table */
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .stats-table th {
+      text-align: left;
+      padding: 8px 0;
+      color: var(--text-secondary);
+      font-weight: normal;
+      border-bottom: 1px solid var(--card-border);
+    }
+    
+    .stats-table td {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+    
+    .stats-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .stats-table .highlight {
+      color: var(--primary);
+      font-weight: bold;
+    }
+    
+    /* Wallet section */
+    .wallet-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .wallet-info {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .wallet-address {
+      font-family: monospace;
+      word-break: break-all;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 5px;
+    }
+    
+    /* History section */
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+    
+    .history-multiplier {
+      color: var(--success);
+      font-weight: bold;
+    }
+    
+    .history-crashed {
+      color: var(--danger);
+      font-weight: bold;
+    }
+    
+    /* Mobile modals */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -208,577 +446,891 @@
       justify-content: center;
       align-items: center;
       padding: 15px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-out;
     }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
     .modal-content {
       background: var(--card-bg);
-      border-radius: 12px;
+      border-radius: 15px;
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       max-height: 80vh;
       overflow-y: auto;
       padding: 20px;
-      padding-bottom: calc(20px + env(safe-area-inset-bottom));
       -webkit-overflow-scrolling: touch;
+      transform: translateY(20px);
+      transition: transform 0.2s ease-out;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
+    
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin: 0;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 5px;
+    }
+    
+    .modal-body {
+      margin-bottom: 20px;
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+    }
+    
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      max-width: 90%;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+    
+    .toast.error {
+      border-left: 4px solid var(--danger);
+    }
+    
+    .toast.warning {
+      border-left: 4px solid var(--warning);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes rocketPulse {
+      0% { transform: translateX(-50%) translateY(50%) scale(1); }
+      50% { transform: translateX(-50%) translateY(50%) scale(1.1); }
+      100% { transform: translateX(-50%) translateY(50%) scale(1); }
+    }
+    
+    .rocket-pulse {
+      animation: rocketPulse 0.5s infinite;
+    }
+    
+    /* Performance optimizations */
     .will-change {
       will-change: transform, opacity;
     }
-    .progress-bar-container {
-      background: #333;
-      border-radius: 8px;
-      height: 8px;
-      margin-top: 8px;
+    
+    /* iPhone notch/padding */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      body {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .mobile-tabs {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
     }
-    .progress-bar {
-      background: linear-gradient(to right, #7B61FF, #FF6BEC);
-      height: 100%;
-      border-radius: 8px;
-    }
-    .crash-flash {
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 0, 0, 0.5);
-      animation: flash 0.3s ease-out;
-      z-index: 100;
-    }
-    @keyframes flash {
-      from { opacity: 1; }
-      to { opacity: 0; }
-    }
-    .try-again {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #FF6BEC;
-      padding: 10px 20px;
-      border-radius: 8px;
-      animation: pop 0.5s ease-out;
-      z-index: 90;
-    }
-    @keyframes pop {
-      from { transform: translateX(-50%) scale(0); }
-      to { transform: translateX(-50%) scale(1); }
-    }
-    .confetti {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: #FFD700;
-      animation: confettiFall 2s linear forwards;
-    }
-    @keyframes confettiFall {
-      0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-    }
-    .quick-deposit {
-      position: fixed;
-      bottom: 150px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #FF6BEC;
-      padding: 10px 20px;
-      border-radius: 8px;
-    }
-    .shake {
-      animation: shakeButton 0.5s infinite;
-    }
-    @keyframes shakeButton {
-      0% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-5px); }
-      100% { transform: translateX(-50%) translateY(0); }
+    
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+      #multiplier {
+        font-size: 4.5rem;
+      }
+      
+      .controls {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      
+      .bet-input-container {
+        grid-column: span 3;
+      }
+      
+      .tab-content {
+        max-height: 50vh;
+      }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <div style="position: fixed; top: 10px; left: 10px; font-size: 0.8rem; color: #888;">
-      Played: <span x-text="`${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`"></span>
+    <!-- Header with balance -->
+    <div class="header">
+      <h1 class="header-title">
+        <span>🚀 SOL CRASH</span>
+      </h1>
+      <div class="balance-display" x-text="`${balance.toFixed(2)} SOL`"></div>
     </div>
-    <div style="position: fixed; top: 10px; right: 10px; font-size: 0.8rem; color: #888;">
-      Live Players: <span x-text="livePlayers"></span>
-    </div>
+    
+    <!-- Main Game Area -->
     <div id="game">
-      <h1 style="text-align: center; font-size: 1.5rem; margin: 0;">🚀 SOL CRASH</h1>
-      <div id="multiplier" x-text="`${multiplier.toFixed(2)}x`" class="will-change"></div>
-      <div id="graph-container" :class="{ 'bonus-mode': isBonusMode }">
+      <div id="multiplier" 
+           x-text="`${multiplier.toFixed(2)}x`" 
+           :class="{ 'animating': gameRunning }" 
+           class="will-change"></div>
+      
+      <div id="graph-container">
+        <!-- Graph grid lines -->
+        <div class="graph-grid">
+          <div class="grid-line"><span class="grid-label">10x</span></div>
+          <div class="grid-line"><span class="grid-label">5x</span></div>
+          <div class="grid-line"><span class="grid-label">2x</span></div>
+          <div class="grid-line"><span class="grid-label">1x</span></div>
+        </div>
+        
         <div id="rocket-line" class="will-change"></div>
-        <div id="rocket" :class="{ 'bonus-mode': isBonusMode }" class="will-change"></div>
+        <img id="rocket" 
+             src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMy4xMyAyMi4xOUwxMS4zIDIwLjM3Yy0uNjguNjgtMS42LjY4LTIuMjggMC0uNjgtLjY4LS42OC0xLjYgMC0yLjI4TDEzLjEzIDE0bDEuNzYtMS43NmMuNjgtLjY4IDEuNi0uNjggMi4yOCAwIC42OC42OC42OCAxLjYgMCAyLjI4TDE1LjQxIDE0bDMuNTQgMy41NGMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2em0tMS40MS02LjgybC0xLjc2LTEuNzZjLS42OC0uNjgtLjY4LTEuNiAwLTIuMjguNjgtLjY4IDEuNi0uNjggMi4yOCAwbDEuNzYgMS43NiAxLjc2LTEuNzZjLjY4LS42OCAxLjYtLjY4IDIuMjggMCAuNjguNjguNjggMS42IDAgMi4yOGwtMS43NiAxLjc2IDEuNzYgMS43NmMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2LTEuNzYgMS43Ni0uNjguNjgtMS42LS42OC0uNjgtMS42em0tNi42IDYuNmwtLjY4LS42OC0xLjYuNjgtLjY4IDEuNi42OC42OCAxLjYtLjY4LjY4LTEuNnptLS42OC0xMC42bC42OC0xLjYgMS42LS42OC42OC42OC0uNjggMS42LTEuNi42OC0uNjgtLjY4eiIvPjwvc3ZnPg==" 
+             alt="Rocket" 
+             class="will-change"
+             :class="{ 'rocket-pulse': gameRunning }">
       </div>
-      <div class="controls sticky">
-        <input type="number" x-model="betAmount" min="0.01" step="0.01" placeholder="0.01 SOL" inputmode="decimal">
-        <button id="start-btn" @click="startGame()" :disabled="gameRunning">BET</button>
-        <button id="auto-btn" @click="toggleAuto()" :style="autoPlay ? 'background: var(--secondary)' : ''">AUTO</button>
-        <button id="cashout-btn" @click="cashOut()" :disabled="!gameRunning || !canCashout">CASH OUT</button>
-        <div class="progress-bar-container mt-2">
-          <span class="text-xs">Hot Streak</span>
-          <div class="progress-bar" :style="'width: ' + (consecutiveLosses * 20) + '%'"></div>
-          <span class="text-xs" x-text="consecutiveLosses >= 5 ? 'Win Imminent!' : 'Keep Playing!'"></span>
+
+      <div class="controls">
+        <div class="bet-input-container">
+          <input type="number" 
+                 x-model="betAmount" 
+                 min="0.01" 
+                 step="0.01" 
+                 placeholder="0.01 SOL" 
+                 inputmode="decimal"
+                 :disabled="gameRunning">
+          <div class="bet-amount-buttons">
+            <button class="bet-amount-btn" @click="adjustBet(0.5)" :disabled="gameRunning">½</button>
+            <button class="bet-amount-btn" @click="adjustBet(2)" :disabled="gameRunning">2x</button>
+            <button class="bet-amount-btn" @click="setMaxBet()" :disabled="gameRunning">MAX</button>
+          </div>
         </div>
-        <div class="progress-bar-container mt-2">
-          <span class="text-xs">Lucky Drop</span>
-          <div class="progress-bar" :style="'width: ' + (totalLosses / 0.5 * 100) + '%'"></div>
-          <span class="text-xs" x-text="totalLosses >= 0.4 ? 'Lucky Drop Incoming!' : 'Keep Playing!'"></span>
-        </div>
+        
+        <button id="start-btn" 
+                @click="startGame()" 
+                :disabled="gameRunning || betAmount <= 0 || balance < betAmount">
+          🚀 BET
+        </button>
+        
+        <button id="auto-btn" 
+                @click="toggleAuto()" 
+                :class="{ 'btn-secondary': autoPlay }"
+                :disabled="gameRunning && !canCashout">
+          <span x-text="autoPlay ? 'AUTO ON' : 'AUTO'"></span>
+        </button>
+        
+        <button id="cashout-btn" 
+                @click="cashOut()" 
+                class="btn-success"
+                :disabled="!gameRunning || !canCashout"
+                x-text="`CASH OUT (${(betAmount * multiplier).toFixed(2)} SOL)`">
+        </button>
       </div>
     </div>
+
+    <!-- Mobile Tabs -->
     <div class="mobile-tabs">
-      <div class="tab-button" :class="{ 'active': activeTab === 'chat' }" @click="activeTab = 'chat'">💬 Chat</div>
-      <div class="tab-button" :class="{ 'active': activeTab === 'wallet' }" @click="activeTab = 'wallet'">💰 Wallet</div>
-      <div class="tab-button" :class="{ 'active': activeTab === 'stats' }" @click="activeTab = 'stats'">📊 Stats</div>
-      <div class="tab-button" :class="{ 'active': activeTab === 'missions' }" @click="activeTab = 'missions'">🎯 Missions</div>
+      <div class="tab-button active" @click="activeTab = 'chat'">💬 Chat</div>
+      <div class="tab-button" @click="activeTab = 'wallet'">💰 Wallet</div>
+      <div class="tab-button" @click="activeTab = 'stats'">📊 Stats</div>
+      <div class="tab-button" @click="activeTab = 'history'">📝 History</div>
     </div>
+
+    <!-- Tab Contents -->
     <div class="tab-content" :class="{ 'active': activeTab === 'chat' }">
-      <template x-for="message in chatMessages" :key="message.id">
-        <div style="padding: 8px 0; border-bottom: 1px solid #333;" :class="{ 'bg-yellow-500/20 animate-pulse': message.isBigWin }">
-          <span style="color: var(--secondary); font-weight: bold;" x-text="message.user"></span>: <span x-text="message.text"></span>
-        </div>
-      </template>
-    </div>
-    <div class="tab-content" :class="{ 'active': activeTab === 'wallet' }">
-      <div style="padding: 10px;">
-        <div style="font-size: 1.5rem; margin: 10px 0;" x-text="`${balance.toFixed(2)} SOL`"></div>
-        <div x-show="firstDepositMade">Next Bonus: <span x-text="`${(0.2 - totalDeposited).toFixed(2)} SOL to 0.02 SOL`"></span></div>
-        <div class="progress-bar-container">
-          <div class="progress-bar" :style="'width: ' + (totalDeposited / 0.2 * 100) + '%'"></div>
-        </div>
-        <button @click="connectWallet()" x-show="!userLoggedIn" style="width: 100%; margin: 5px 0;">CONNECT WALLET</button>
-        <button @click="openModal('deposit')" x-show="userLoggedIn" style="width: 100%; margin: 5px 0;">DEPOSIT</button>
-        <button @click="openModal('withdraw')" x-show="userLoggedIn" style="width: 100%; margin: 5px 0; background: #F87171;">WITHDRAW</button>
-        <button @click="shareReferral()" style="width: 100%; margin: 5px 0;">INVITE & EARN 0.005 SOL</button>
+      <div class="chat-messages" x-html="chatMessages"></div>
+      <div class="chat-input-container" x-show="userLoggedIn">
+        <input type="text" class="chat-input" placeholder="Type a message..." x-model="chatMessage">
+        <button class="chat-send-btn" @click="sendChatMessage()">Send</button>
+      </div>
+      <div x-show="!userLoggedIn" style="text-align: center; padding: 10px; color: var(--text-secondary);">
+        Connect wallet to chat
       </div>
     </div>
+    
+    <div class="tab-content" :class="{ 'active': activeTab === 'wallet' }">
+      <div class="wallet-info" x-show="userLoggedIn">
+        <div style="font-size: 1.5rem; margin-bottom: 5px;" x-text="`${balance.toFixed(2)} SOL`"></div>
+        <div class="wallet-address" x-text="shortWalletAddress"></div>
+      </div>
+      
+      <div class="wallet-actions">
+        <button @click="connectWallet()" x-show="!userLoggedIn" style="width: 100%;">🔗 CONNECT WALLET</button>
+        <button @click="openModal('deposit')" x-show="userLoggedIn" style="width: 100%;">💵 DEPOSIT SOL</button>
+        <button @click="openModal('withdraw')" x-show="userLoggedIn" style="width: 100%;" class="btn-danger">💸 WITHDRAW</button>
+        <button @click="disconnectWallet()" x-show="userLoggedIn" style="width: 100%; background: #333;">🚪 DISCONNECT</button>
+      </div>
+      
+      <div style="margin-top: 20px;" x-show="userLoggedIn">
+        <h3 style="margin-bottom: 10px;">TRANSACTION HISTORY</h3>
+        <div style="max-height: 150px; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card-border);" 
+               x-show="transactions.length === 0">
+            <span style="color: var(--text-secondary);">No transactions yet</span>
+          </div>
+          <template x-for="tx in transactions">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card-border);">
+              <span x-text="tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'"></span>
+              <span :class="{ 'text-success': tx.type === 'deposit', 'text-danger': tx.type === 'withdraw' }" 
+                    x-text="`${tx.type === 'deposit' ? '+' : '-'}${tx.amount.toFixed(2)} SOL`"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+    
     <div class="tab-content" :class="{ 'active': activeTab === 'stats' }">
-      <div style="padding: 10px;">
-        <h3>TOP WINS</h3>
-        <template x-for="leader in leaderboard" :key="leader.username">
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-            <span x-text="leader.username"></span>
-            <span x-text="`${leader.winnings.toFixed(2)} SOL`"></span>
+      <h3 style="margin-bottom: 15px;">GAME STATISTICS</h3>
+      
+      <table class="stats-table">
+        <tr>
+          <td>Total Bets</td>
+          <td x-text="stats.totalBets"></td>
+        </tr>
+        <tr>
+          <td>Total Wagered</td>
+          <td x-text="`${stats.totalWagered.toFixed(2)} SOL`"></td>
+        </tr>
+        <tr>
+          <td>Total Won</td>
+          <td x-text="`${stats.totalWon.toFixed(2)} SOL`"></td>
+        </tr>
+        <tr>
+          <td>Biggest Win</td>
+          <td class="highlight" x-text="`${stats.biggestWin.toFixed(2)}x`"></td>
+        </tr>
+        <tr>
+          <td>Current Streak</td>
+          <td x-text="`${stats.currentStreak} ${stats.currentStreak > 0 ? 'Wins' : 'Losses'}`"></td>
+        </tr>
+      </table>
+      
+      <h3 style="margin: 20px 0 10px;">TOP WINS</h3>
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Multiplier</th>
+            <th>Win</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SOL_Whale</td>
+            <td>12.34x</td>
+            <td>8.42 SOL</td>
+          </tr>
+          <tr>
+            <td>CryptoDegen</td>
+            <td>9.87x</td>
+            <td>5.21 SOL</td>
+          </tr>
+          <tr>
+            <td>LuckyWinner</td>
+            <td>8.15x</td>
+            <td>4.32 SOL</td>
+          </tr>
+          <tr>
+            <td>You</td>
+            <td x-text="`${stats.biggestWin.toFixed(2)}x`"></td>
+            <td x-text="`${(stats.biggestWin * betAmount).toFixed(2)} SOL`"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="tab-content" :class="{ 'active': activeTab === 'history' }">
+      <h3 style="margin-bottom: 15px;">YOUR HISTORY</h3>
+      
+      <div style="margin-bottom: 10px;">
+        <button @click="toggleHistoryFilter()" style="width: 100%; padding: 10px; font-size: 0.9rem;">
+          <span x-text="showAllHistory ? 'Showing All' : 'Showing Recent'"></span>
+        </button>
+      </div>
+      
+      <div style="max-height: 300px; overflow-y: auto;">
+        <div style="text-align: center; padding: 20px; color: var(--text-secondary);" x-show="gameHistory.length === 0">
+          No game history yet
+        </div>
+        
+        <template x-for="(game, index) in filteredHistory" :key="index">
+          <div class="history-item">
+            <div>
+              <div x-text="new Date(game.timestamp).toLocaleString()"></div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);" 
+                   x-text="`Bet: ${game.betAmount.toFixed(2)} SOL`"></div>
+            </div>
+            <div style="text-align: right;">
+              <template x-if="game.cashedOut">
+                <div class="history-multiplier" x-text="`${game.multiplier.toFixed(2)}x`"></div>
+              </template>
+              <template x-if="!game.cashedOut">
+                <div class="history-crashed" x-text="`CRASHED`"></div>
+              </template>
+              <div style="font-size: 0.9rem;" 
+                   :class="{ 'history-multiplier': game.cashedOut, 'history-crashed': !game.cashedOut }"
+                   x-text="game.cashedOut ? `+${(game.betAmount * game.multiplier).toFixed(2)} SOL` : `-${game.betAmount.toFixed(2)} SOL`">
+              </div>
+            </div>
           </div>
         </template>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-          <span>You</span>
-          <span x-text="`${biggestWin.toFixed(2)}x (${(biggestWin * betAmount).toFixed(2)} SOL)`"></span>
-        </div>
       </div>
     </div>
-    <div class="tab-content" :class="{ 'active': activeTab === 'missions' }">
-      <div style="padding: 10px;">
-        <h3>DAILY MISSIONS</h3>
-        <div x-text="missions.bet5 ? '✅ Bet 5 times' : 'Bet 5 times (0/5)'"></div>
-        <button @click="claimMissionReward('bet5')" :disabled="!missions.bet5">Claim 0.005 SOL</button>
-      </div>
-    </div>
-    <div x-show="modalOpen" class="modal-overlay" @click.self="closeModal()">
+
+    <!-- Modals -->
+    <div class="modal-overlay" :class="{ 'active': modalOpen }" @click.self="closeModal()">
       <div class="modal-content">
         <template x-if="modalType === 'deposit'">
           <div>
-            <h2>DEPOSIT SOL</h2>
-            <p>Send SOL to this address:</p>
-            <p style="word-break: break-all; background: #333; padding: 10px; border-radius: 4px; font-family: monospace;">7eSH...fT9q</p>
-            <p>Minimum deposit: 0.1 SOL</p>
-            <button @click="closeModal()" style="width: 100%; margin-top: 15px;">CLOSE</button>
+            <div class="modal-header">
+              <h2 class="modal-title">DEPOSIT SOL</h2>
+              <button class="modal-close" @click="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p>Send SOL to this wallet address:</p>
+              <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin: 10px 0; word-break: break-all; font-family: monospace;"
+                   x-text="walletAddress"></div>
+              <p>Minimum deposit: <strong>0.1 SOL</strong></p>
+              <p style="color: var(--warning);">⚠️ Deposits may take 1-2 minutes to process</p>
+              
+              <div style="margin-top: 20px;">
+                <label for="deposit-amount">Or enter amount to generate QR code:</label>
+                <input type="number" id="deposit-amount" x-model="depositAmount" placeholder="0.1 SOL" style="margin-top: 8px;">
+              </div>
+              
+              <div style="text-align: center; margin: 15px 0; padding: 15px; background: var(--bg); border-radius: 8px;"
+                   x-show="depositAmount >= 0.1">
+                <div style="margin-bottom: 10px;">Scan to deposit</div>
+                <div style="width: 150px; height: 150px; margin: 0 auto; background: #FFF; padding: 10px;">
+                  <!-- QR code would go here -->
+                  <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: #000;">
+                    QR Code
+                  </div>
+                </div>
+                <div style="margin-top: 10px; font-weight: bold;" x-text="`${depositAmount} SOL`"></div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button @click="copyWalletAddress()" style="flex: 1;">📋 COPY ADDRESS</button>
+              <button @click="closeModal()" style="flex: 1; background: var(--bg);">CLOSE</button>
+            </div>
           </div>
         </template>
+        
         <template x-if="modalType === 'withdraw'">
           <div>
-            <h2>WITHDRAW SOL</h2>
-            <p>Available: <span x-text="balance.toFixed(2)"></span> SOL</p>
-            <p style="color: var(--secondary);">⚠️ First withdrawals take 24 hours</p>
-            <input type="number" x-model="withdrawAmount" placeholder="0.1 SOL" style="width: 100%; margin: 10px 0;">
-            <button @click="requestWithdraw()" style="width: 100%;">REQUEST</button>
-            <button @click="offerDouble()" style="width: 100%; margin-top: 10px; background: gold; color: black;">DOUBLE OR NOTHING</button>
+            <div class="modal-header">
+              <h2 class="modal-title">WITHDRAW SOL</h2>
+              <button class="modal-close" @click="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p>Available: <strong x-text="`${balance.toFixed(2)} SOL`"></strong></p>
+              
+              <div style="margin: 15px 0;">
+                <label for="withdraw-amount">Amount to withdraw:</label>
+                <input type="number" id="withdraw-amount" x-model="withdrawAmount" :max="balance" step="0.01" 
+                       placeholder="0.1 SOL" style="margin-top: 8px;">
+              </div>
+              
+              <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <p style="color: var(--warning); margin: 0;">⚠️ First withdrawals take 24 hours to process</p>
+              </div>
+              
+              <div style="margin-top: 20px;">
+                <label for="withdraw-address">Destination address:</label>
+                <input type="text" id="withdraw-address" x-model="withdrawAddress" placeholder="Your SOL address" style="margin-top: 8px;">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button @click="requestWithdraw()" style="flex: 1;" :disabled="withdrawAmount <= 0 || withdrawAmount > balance">REQUEST</button>
+              <button @click="offerDouble()" style="flex: 1; background: var(--warning); color: #000;">DOUBLE OR NOTHING</button>
+            </div>
+          </div>
+        </template>
+        
+        <template x-if="modalType === 'double'">
+          <div>
+            <div class="modal-header">
+              <h2 class="modal-title">DOUBLE OR NOTHING</h2>
+              <button class="modal-close" @click="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p>You're about to bet <strong x-text="`${withdrawAmount} SOL`"></strong> for a chance to double it!</p>
+              
+              <div style="text-align: center; margin: 20px 0;">
+                <div style="font-size: 2rem; margin: 10px 0;">2x</div>
+                <div style="color: var(--text-secondary);">50% chance to win</div>
+              </div>
+              
+              <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <p style="margin: 0;">If you win, you'll get <strong x-text="`${withdrawAmount * 2} SOL`"></strong> sent to your wallet immediately.</p>
+                <p style="margin: 10px 0 0 0;">If you lose, your withdrawal will be canceled.</p>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button @click="playDoubleGame(true)" style="flex: 1; background: var(--success);">PLAY</button>
+              <button @click="closeModal()" style="flex: 1; background: var(--danger);">CANCEL</button>
+            </div>
           </div>
         </template>
       </div>
     </div>
+    
+    <!-- Toast notifications -->
+    <div class="toast" :class="[toast.type, { 'show': toast.show }]" x-show="toast.show" @click="toast.show = false">
+      <span x-text="toast.message"></span>
+    </div>
   </div>
+
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.data('crashApp', () => ({
+        // Game State
         gameRunning: false,
         multiplier: 1.00,
         crashAt: 2.0,
-        betAmount: 0.01,
+        betAmount: 0.05,
         balance: 0.05,
         autoPlay: false,
-        canCashout: false,
-        biggestWin: 0,
+        canCashout: true,
+        gameHistory: [],
+        showAllHistory: false,
+        
+        // Stats
+        stats: {
+          totalBets: 0,
+          totalWagered: 0,
+          totalWon: 0,
+          biggestWin: 0,
+          currentStreak: 0
+        },
+        
+        // Wallet State
+        walletAddress: '7eSH5kLfT9qJ3mXpN8bVcR2wA6yD4gF7hG',
+        shortWalletAddress: '7eSH...fT9q',
+        userLoggedIn: false,
+        transactions: [],
+        
+        // UI State
         modalOpen: false,
         modalType: '',
         activeTab: 'chat',
-        userLoggedIn: false,
+        depositAmount: 0.1,
         withdrawAmount: 0.1,
-        consecutiveLosses: 0,
-        consecutiveBets: 0,
-        totalBets: 0,
-        totalSpent: 0,
-        totalLosses: 0,
-        totalDeposited: 0,
-        firstDepositMade: false,
-        timeSpent: 0,
-        lastAction: Date.now(),
-        roundCount: 0,
-        isMysteryRound: false,
-        isBonusMode: false,
-        hapticTriggered1_5x: false,
-        whooshPlayed: false,
-        livePlayers: 973,
-        missions: { bet5: false },
-        leaderboard: [
-          { username: 'SolWhale', winnings: 8.42 },
-          { username: 'CryptoDegen', winnings: 5.21 },
-          { username: 'Anon326', winnings: 3.45 }
-        ],
-        chatMessages: [
-          { id: Date.now(), user: 'SolWhale', text: 'Just won 5 SOL! 🚀', isBigWin: true },
-          { id: Date.now() + 1, user: 'System', text: 'Welcome to SOL Crash!', isBigWin: false }
-        ],
-        audioContext: null,
-        sounds: {},
+        withdrawAddress: '',
+        
+        // Chat
+        chatMessage: '',
+        chatMessages: `
+          <div class="chat-message">
+            <span class="chat-user" style="color: var(--secondary);">SOL_Whale:</span> Just won 5 SOL! 🚀
+          </div>
+          <div class="chat-message">
+            <span class="chat-user" style="color: var(--primary);">System:</span> Welcome to SOL Crash! Place your bets and cash out before the rocket crashes!
+          </div>
+        `,
+        
+        // Toast
+        toast: {
+          show: false,
+          type: 'success',
+          message: ''
+        },
+        
+        // Computed properties
+        get filteredHistory() {
+          return this.showAllHistory 
+            ? this.gameHistory 
+            : this.gameHistory.slice(0, 10);
+        },
+        
         init() {
-          screen.orientation?.lock('portrait').catch(() => {});
+          // Try to lock orientation on mobile
+          try {
+            screen.orientation?.lock('portrait');
+          } catch (e) {}
+          
+          // Prevent zooming
           document.addEventListener('gesturestart', (e) => e.preventDefault());
-          history.pushState(null, null, window.location.href);
-          window.addEventListener('popstate', () => history.pushState(null, null, window.location.href));
-          document.body.addEventListener('touchstart', () => {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
-          }, { once: true });
+          
+          // Load from localStorage
+          this.loadFromStorage();
+          
+          // Initialize fake chat updates
+          this.initChat();
+          
+          // Initialize fake socket connection
+          this.initSocket();
+        },
+        
+        loadFromStorage() {
+          const savedData = localStorage.getItem('solCrashData');
+          if (savedData) {
+            try {
+              const data = JSON.parse(savedData);
+              this.balance = data.balance || 0.05;
+              this.betAmount = data.betAmount || 0.05;
+              this.stats = data.stats || this.stats;
+              this.gameHistory = data.gameHistory || [];
+              this.userLoggedIn = data.userLoggedIn || false;
+            } catch (e) {
+              console.error('Failed to load saved data', e);
+            }
+          }
+        },
+        
+        saveToStorage() {
+          const data = {
+            balance: this.balance,
+            betAmount: this.betAmount,
+            stats: this.stats,
+            gameHistory: this.gameHistory,
+            userLoggedIn: this.userLoggedIn
+          };
+          localStorage.setItem('solCrashData', JSON.stringify(data));
+        },
+        
+        initChat() {
+          // Fake chat updates
           setInterval(() => {
-            const messages = [
-              `cashed out at ${(Math.random() * 30 + 5).toFixed(1)}x (${(Math.random() * 15 + 2).toFixed(1)} SOL) 🔥`,
-              `just rage quit at ${(Math.random() * 0.5 + 1).toFixed(2)}x 😭`,
-              `GRAVITY ${(Math.random() * 50 + 50).toFixed(1)}x with ${(Math.random() * 0.1 + 0.01).toFixed(2)} SOL 🤑`
+            if (Math.random() > 0.3) return; // 70% chance of message
+            
+            const users = [
+              { name: 'SOL_Whale', color: 'var(--secondary)' },
+              { name: 'CryptoDegen', color: 'var(--primary)' },
+              { name: 'LuckyWinner', color: 'var(--success)' },
+              { name: 'NewPlayer', color: 'var(--warning)' }
             ];
-            this.addFakeChatMessage(messages[Math.floor(Math.random() * messages.length)]);
-          }, Math.random() * 3000 + 5000);
+            
+            const messages = [
+              `Cashed out at ${(Math.random() * 10 + 1).toFixed(2)}x!`,
+              `Won ${(Math.random() * 5 + 0.5).toFixed(2)} SOL 🤑`,
+              'Why did I cash out early??',
+              'BRO THIS GAME IS LIT 🔥',
+              'Deposited 5 SOL 💰',
+              'Withdrawal pending...',
+              'Almost hit 10x today!',
+              'New high score! 🎉'
+            ];
+            
+            const user = users[Math.floor(Math.random() * users.length)];
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            
+            this.addMessage(user.name, msg, user.color);
+          }, 5000 + Math.random() * 5000); // Random interval between 5-10s
+        },
+        
+        initSocket() {
+          // Simulate socket connection
           setInterval(() => {
-            this.timeSpent++;
-            if (this.timeSpent === 300) {
-              this.showToast('🔥 HOT SESSION – Most wins come after 7 minutes!', 'info');
+            if (Math.random() > 0.7) { // 30% chance of crash event
+              const crashMultiplier = (Math.random() * 10 + 1).toFixed(2);
+              this.addMessage('System', `Game crashed at ${crashMultiplier}x!`, 'var(--primary)');
             }
-          }, 1000);
-          setInterval(() => {
-            this.livePlayers = Math.floor(Math.random() * 400 + 800);
           }, 10000);
-          setInterval(() => {
-            this.showToast('Bonus Mode in 30s! All Wins x1.1!', 'info', 30000);
-            let countdown = 30;
-            const timer = setInterval(() => {
-              countdown--;
-              if (countdown <= 0) {
-                clearInterval(timer);
-                this.isBonusMode = true;
-                this.showToast('Bonus Mode Active! All Wins x1.1!', 'success', 60000);
-                setTimeout(() => this.isBonusMode = false, 60000);
-              }
-            }, 1000);
-          }, Math.random() * 300000 + 600000);
-          this.initAudio();
-          this.initWaveform();
-          this.handleIdle();
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js');
-          }
-          setInterval(() => {
-            if (Notification.permission === 'granted') {
-              new Notification('Crash Event Starting! Bet Now!');
-            }
-          }, 24 * 60 * 60 * 1000);
         },
-        initAudio() {
-          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          const loadSound = async (url, name) => {
-            const response = await fetch(url);
-            const arrayBuffer = await response.arrayBuffer();
-            this.sounds[name] = await this.audioContext.decodeAudioData(arrayBuffer);
-          };
-          Promise.all([
-            loadSound('https://www.soundjay.com/misc/sounds/whoosh-2.mp3', 'whoosh'),
-            loadSound('https://www.soundjay.com/money/sounds/coins-jingle-1.mp3', 'win'),
-            loadSound('https://www.soundjay.com/human/sounds/applause-1.mp3', 'bigwin'),
-            loadSound('https://www.soundjay.com/misc/sounds/glass-break-1.mp3', 'shatter'),
-            loadSound('https://www.soundjay.com/buttons/sounds/button-click-1.mp3', 'chime'),
-            loadSound('https://www.soundjay.com/misc/sounds/casino-ambience.mp3', 'ambient')
-          ]);
-          document.body.addEventListener('click', () => {
-            if (this.audioContext.state === 'suspended') this.audioContext.resume();
-            this.playSound('ambient', true);
-          }, { once: true });
-        },
-        playSound(name, loop = false) {
-          if (this.sounds[name]) {
-            const source = this.audioContext.createBufferSource();
-            source.buffer = this.sounds[name];
-            source.loop = loop;
-            source.connect(this.audioContext.destination);
-            source.start(0);
-          }
-        },
-        initWaveform() {
-          const canvas = document.createElement('canvas');
-          canvas.style.position = 'absolute';
-          canvas.width = 200;
-          canvas.height = 50;
-          document.getElementById('multiplier').appendChild(canvas);
-          const ctx = canvas.getContext('2d');
-          const animateWave = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            for (let x = 0; x < canvas.width; x++) {
-              const y = Math.sin(x * 0.05 + Date.now() * 0.002) * this.multiplier * 5;
-              ctx.lineTo(x, canvas.height / 2 + y);
-            }
-            ctx.strokeStyle = '#FF6BEC';
-            ctx.stroke();
-            requestAnimationFrame(animateWave);
-          };
-          animateWave();
-        },
-        handleIdle() {
-          setInterval(() => {
-            if (!this.gameRunning && Date.now() - this.lastAction > 2000) {
-              document.querySelector('#start-btn').classList.add('idle');
-              document.querySelector('#cashout-btn').classList.add('idle');
-            } else {
-              document.querySelector('#start-btn').classList.remove('idle');
-              document.querySelector('#cashout-btn').classList.remove('idle');
-            }
-            if (!this.gameRunning && Date.now() - this.lastAction > 10000) {
-              document.querySelector('#start-btn').classList.add('pulse');
-              this.playSound('chime');
-            }
-          }, 500);
-        },
+        
+        // Game Methods
         startGame() {
           if (this.gameRunning) return;
           if (this.balance < this.betAmount) {
+            this.showToast('Not enough balance', 'error');
             this.openModal('deposit');
             return;
           }
+          
           this.gameRunning = true;
           this.multiplier = 1.00;
           this.canCashout = true;
           this.balance -= this.betAmount;
-          this.totalSpent += this.betAmount;
-          this.lastAction = Date.now();
-          this.hapticTriggered1_5x = false;
-          this.whooshPlayed = false;
-          const random = Math.random();
-          this.crashAt = random < 0.9 ? 9 + Math.random() * 0.9 : 1 + Math.random() * 100;
-          if (this.balance > 0.5) this.crashAt = Math.min(this.crashAt, 2.5);
-          if (this.balance < 0.02) this.crashAt = Math.max(this.crashAt, 3.0);
-          this.roundCount++;
-          if (this.roundCount % 15 === 0) {
-            this.isMysteryRound = true;
-            this.crashAt = 1.5 + Math.random() * 3.5;
-            this.showToast('💫 Mystery Bonus Round: Win up to 5x!', 'success');
-          }
-          this.consecutiveBets++;
-          if (this.consecutiveBets >= 3) {
-            this.crashAt += 0.5;
-            this.showToast('Streak Bonus! Next Crash +0.5x!', 'success');
-            this.consecutiveBets = 0;
-          }
-          this.totalBets++;
-          if (this.totalBets >= 5) this.missions.bet5 = true;
-          this.triggerHaptic([50]);
+          
+          // Generate crash point (simplified for demo)
+          const r = Math.random();
+          this.crashAt = 1 + Math.pow(r * 100, 0.7) / 10;
+          
+          // Dynamic difficulty based on balance
+          if (this.balance > 1) this.crashAt = Math.min(this.crashAt, 3.0);
+          if (this.balance < 0.1) this.crashAt = Math.max(this.crashAt, 2.0);
+          
+          // Update stats
+          this.stats.totalBets++;
+          this.stats.totalWagered += this.betAmount;
+          
+          this.saveToStorage();
           this.animateGame();
         },
+        
         animateGame() {
           if (!this.gameRunning) return;
+          
           this.multiplier += 0.01;
+          
+          // Update rocket position
           const lineHeight = (this.multiplier - 1) * 30;
           document.getElementById('rocket-line').style.height = `${lineHeight}px`;
           document.getElementById('rocket').style.bottom = `${lineHeight}px`;
-          if (this.multiplier >= 1.5 && !this.hapticTriggered1_5x) {
-            this.triggerHaptic([50, 30, 50]);
-            this.hapticTriggered1_5x = true;
-          }
-          if (this.multiplier > 5 && !this.whooshPlayed) {
-            this.playSound('whoosh');
-            this.whooshPlayed = true;
-          }
-          if (this.crashAt - this.multiplier < 0.5) {
-            document.getElementById('multiplier').classList.add('near-crash');
-          }
-          if (this.multiplier >= 10) document.getElementById('game').classList.add('shake');
+          
+          // Crash check
           if (this.multiplier >= this.crashAt) {
             this.gameRunning = false;
-            this.consecutiveLosses++;
-            this.totalLosses += this.betAmount;
-            this.playSound('shatter');
-            document.getElementById('game').classList.add('shake');
-            const flash = document.createElement('div');
-            flash.className = 'crash-flash';
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 300);
-            const retry = document.createElement('div');
-            retry.className = 'try-again';
-            retry.textContent = 'Try Again!';
-            retry.onclick = () => this.startGame();
-            document.body.appendChild(retry);
-            setTimeout(() => retry.remove(), 5000);
-            if (this.crashAt >= 9 && this.crashAt < 10) {
-              this.showToast('Just Missed 10x! One More Try!', 'error');
-            }
-            if (this.consecutiveLosses >= 3 || this.totalLosses >= 0.5) {
-              this.balance += 0.01;
-              this.showToast('You’re due! Free 0.01 SOL Drop Added!', 'success');
-              this.consecutiveLosses = 0;
-              this.totalLosses = 0;
-            }
+            this.canCashout = false;
+            
+            // Add to history
+            this.gameHistory.unshift({
+              betAmount: this.betAmount,
+              multiplier: this.multiplier,
+              cashedOut: false,
+              timestamp: new Date().toISOString()
+            });
+            
+            // Update stats
+            this.stats.currentStreak = Math.min(0, this.stats.currentStreak - 1);
+            
             setTimeout(() => {
-              alert(`CRASHED AT ${this.crashAt.toFixed(2)}x!`);
-              if (this.autoPlay) this.startGame();
-              else document.querySelector('#start-btn').focus();
-            }, 50);
+              this.showToast(`Crashed at ${this.crashAt.toFixed(2)}x!`, 'error');
+              
+              if (this.autoPlay) {
+                setTimeout(() => this.startGame(), 1500);
+              }
+            }, 100);
+            
+            this.saveToStorage();
           } else {
             requestAnimationFrame(() => this.animateGame());
           }
         },
+        
         cashOut() {
           if (!this.gameRunning || !this.canCashout) return;
-          const winnings = this.betAmount * this.multiplier * (this.isBonusMode ? 1.1 : 1);
+          
+          const winnings = this.betAmount * this.multiplier;
           this.balance += winnings;
-          if (this.multiplier > this.biggestWin) this.biggestWin = this.multiplier;
-          this.consecutiveLosses = 0;
-          this.totalLosses = 0;
+          
+          // Add to history
+          this.gameHistory.unshift({
+            betAmount: this.betAmount,
+            multiplier: this.multiplier,
+            cashedOut: true,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Update stats
+          if (this.multiplier > this.stats.biggestWin) {
+            this.stats.biggestWin = this.multiplier;
+          }
+          this.stats.totalWon += winnings;
+          this.stats.currentStreak = Math.max(0, this.stats.currentStreak + 1);
+          
+          this.addMessage('You', `Cashed out at ${this.multiplier.toFixed(2)}x! Won ${winnings.toFixed(2)} SOL`, 'var(--primary)');
+          this.showToast(`+${winnings.toFixed(2)} SOL!`, 'success');
+          
           this.gameRunning = false;
-          this.lastAction = Date.now();
-          this.isMysteryRound = false;
-          this.triggerHaptic([100, 50, 100]);
-          if (this.multiplier >= 5) {
-            this.playSound('bigwin');
-            for (let i = 0; i < 50; i++) {
-              const confetti = document.createElement('div');
-              confetti.className = 'confetti';
-              confetti.style.left = `${Math.random() * window.innerWidth}px`;
-              document.body.appendChild(confetti);
-              setTimeout(() => confetti.remove(), 2000);
-            }
-          } else {
-            this.playSound('win');
+          this.saveToStorage();
+          
+          if (this.autoPlay) {
+            setTimeout(() => this.startGame(), 1000);
           }
-          this.addMessage('You', `Cashed out at ${this.multiplier.toFixed(2)}x! Won ${winnings.toFixed(2)} SOL`);
-          this.updateLeaderboard('You', winnings);
-          this.showToast(`You’d have won ${(this.betAmount * this.multiplier * 1.8).toFixed(2)} SOL with 0.05 SOL! Deposit Now?`, 'info', 5000);
-          const depositBtn = document.createElement('button');
-          depositBtn.className = 'quick-deposit shake';
-          depositBtn.textContent = 'Quick Deposit';
-          depositBtn.onclick = () => this.openModal('deposit');
-          document.body.appendChild(depositBtn);
-          setTimeout(() => depositBtn.remove(), 5000);
-          if (Notification.permission === 'default') {
-            Notification.requestPermission().then(permission => {
-              if (permission === 'granted') {
-                new Notification('Bonus Drop Live! Bet Now!');
-              }
-            });
-          }
-          if (this.autoPlay) setTimeout(() => this.startGame(), 500);
         },
+        
+        toggleAuto() {
+          this.autoPlay = !this.autoPlay;
+          if (this.autoPlay && !this.gameRunning) {
+            this.startGame();
+          }
+        },
+        
+        adjustBet(multiplier) {
+          this.betAmount = Math.max(0.01, (this.betAmount * multiplier).toFixed(2));
+        },
+        
+        setMaxBet() {
+          this.betAmount = Math.max(0.01, this.balance.toFixed(2));
+        },
+        
+        toggleHistoryFilter() {
+          this.showAllHistory = !this.showAllHistory;
+        },
+        
+        // Wallet Methods
+        connectWallet() {
+          this.userLoggedIn = true;
+          this.addMessage('System', 'Wallet connected!', 'var(--primary)');
+          this.showToast('Wallet connected', 'success');
+          this.saveToStorage();
+        },
+        
+        disconnectWallet() {
+          this.userLoggedIn = false;
+          this.addMessage('System', 'Wallet disconnected', 'var(--primary)');
+          this.showToast('Wallet disconnected', 'warning');
+          this.saveToStorage();
+        },
+        
+        copyWalletAddress() {
+          navigator.clipboard.writeText(this.walletAddress);
+          this.showToast('Address copied!', 'success');
+        },
+        
+        requestWithdraw() {
+          if (this.withdrawAmount <= 0 || this.withdrawAmount > this.balance) {
+            this.showToast('Invalid amount', 'error');
+            return;
+          }
+          
+          if (!this.withdrawAddress || this.withdrawAddress.length < 32) {
+            this.showToast('Invalid address', 'error');
+            return;
+          }
+          
+          this.balance -= parseFloat(this.withdrawAmount);
+          this.transactions.unshift({
+            type: 'withdraw',
+            amount: parseFloat(this.withdrawAmount),
+            timestamp: new Date().toISOString(),
+            status: 'pending'
+          });
+          
+          this.addMessage('System', `Withdrawal requested for ${this.withdrawAmount} SOL`, 'var(--primary)');
+          this.showToast('Withdrawal requested!', 'success');
+          this.closeModal();
+          this.saveToStorage();
+        },
+        
+        offerDouble() {
+          if (this.withdrawAmount <= 0 || this.withdrawAmount > this.balance) {
+            this.showToast('Invalid amount', 'error');
+            return;
+          }
+          
+          this.modalType = 'double';
+        },
+        
+        playDoubleGame(confirmed) {
+          if (!confirmed) return;
+          
+          const win = Math.random() > 0.5; // 50% chance
+          
+          if (win) {
+            this.balance += parseFloat(this.withdrawAmount) * 2;
+            this.transactions.unshift({
+              type: 'deposit',
+              amount: parseFloat(this.withdrawAmount) * 2,
+              timestamp: new Date().toISOString(),
+              status: 'completed'
+            });
+            
+            this.addMessage('System', `You doubled your ${this.withdrawAmount} SOL withdrawal!`, 'var(--success)');
+            this.showToast(`+${(this.withdrawAmount * 2).toFixed(2)} SOL!`, 'success');
+          } else {
+            this.transactions.unshift({
+              type: 'withdraw',
+              amount: parseFloat(this.withdrawAmount),
+              timestamp: new Date().toISOString(),
+              status: 'canceled'
+            });
+            
+            this.addMessage('System', `Lost your ${this.withdrawAmount} SOL withdrawal`, 'var(--danger)');
+            this.showToast('Withdrawal canceled', 'error');
+          }
+          
+          this.closeModal();
+          this.saveToStorage();
+        },
+        
+        // UI Methods
         openModal(type) {
+          if (!this.userLoggedIn && type !== 'deposit') {
+            this.showToast('Connect wallet first', 'error');
+            return;
+          }
+          
           this.modalType = type;
           this.modalOpen = true;
           document.body.style.overflow = 'hidden';
+          
+          // Reset amounts
+          if (type === 'deposit') {
+            this.depositAmount = 0.1;
+          } else if (type === 'withdraw') {
+            this.withdrawAmount = Math.min(0.1, this.balance);
+            this.withdrawAddress = this.walletAddress;
+          }
         },
+        
         closeModal() {
           this.modalOpen = false;
           document.body.style.overflow = '';
         },
-        connectWallet() {
-          this.userLoggedIn = true;
-          this.addMessage('System', 'Wallet connected!');
-          setTimeout(() => this.openModal('deposit'), 300);
-        },
-        deposit() {
-          this.totalDeposited += parseFloat(this.depositAmount);
-          if (!this.firstDepositMade && this.totalDeposited >= 0.1) {
-            this.balance += 0.01;
-            this.showToast('+0.01 SOL FREE for First Deposit!', 'success');
-            this.firstDepositMade = true;
-          }
-          this.closeModal();
-        },
-        requestWithdraw() {
-          if (confirm('Withdraw now or try Double or Nothing for 2x?')) {
-            this.showToast('Withdrawal queued (24h processing).', 'success');
-          } else {
-            if (Math.random() > 0.4) {
-              this.balance += parseFloat(this.withdrawAmount);
-              this.showToast('Doubled! Withdrawal increased!', 'success');
-            } else {
-              this.showToast('Lost! Withdrawal canceled.', 'error');
-              this.withdrawAmount = 0.1;
-            }
-          }
-          this.closeModal();
-        },
-        offerDouble() {
-          if (Math.random() > 0.4) {
-            this.balance += parseFloat(this.withdrawAmount);
-            this.showToast('Doubled! Withdrawal increased!', 'success');
-          } else {
-            this.showToast('Lost! Withdrawal canceled.', 'error');
-            this.withdrawAmount = 0.1;
-          }
-          this.closeModal();
-        },
-        addMessage(user, msg) {
-          this.chatMessages = [{ id: Date.now(), user, text: msg, isBigWin: msg.includes('Cashed out') }, ...this.chatMessages.slice(0, 19)];
-        },
-        addFakeChatMessage(text) {
-          const users = ['SolWhale', 'DegenLad', 'Anon326', 'CryptoKing'];
-          this.chatMessages = [{
-            id: Date.now(),
-            user: users[Math.floor(Math.random() * users.length)],
-            text,
-            isBigWin: text.includes('cashed out') || text.includes('hit')
-          }, ...this.chatMessages.slice(0, 19)];
-          if (Math.random() < 0.2 && !this.gameRunning) {
-            this.chatMessages = [{
-              id: Date.now(),
-              user: 'System',
-              text: '10x Streak Active! Cash out big! 🔥',
-              isBigWin: true
-            }, ...this.chatMessages.slice(0, 19)];
+        
+        addMessage(user, msg, color = 'var(--text-primary)') {
+          this.chatMessages = `
+            <div class="chat-message">
+              <span class="chat-user" style="color: ${color}">${user}:</span> ${msg}
+            </div>
+            ${this.chatMessages}
+          `;
+          
+          // Limit chat history
+          if (this.chatMessages.split('<div class="chat-message">').length > 50) {
+            const messages = this.chatMessages.split('<div class="chat-message">');
+            messages.pop();
+            this.chatMessages = messages.join('<div class="chat-message">');
           }
         },
-        updateLeaderboard(username, winnings) {
-          this.leaderboard = [{ username, winnings }, ...this.leaderboard.filter(l => l.username !== username).slice(0, 4)];
-          if (winnings > this.leaderboard[0].winnings) {
-            this.showToast(`${username} broke the record with ${winnings.toFixed(2)} SOL!`, 'success', 5000);
-          }
+        
+        sendChatMessage() {
+          if (!this.chatMessage.trim()) return;
+          
+          this.addMessage('You', this.chatMessage, 'var(--primary)');
+          this.chatMessage = '';
         },
-        shareReferral() {
-          const text = 'Join SOL Crash & get 0.01 SOL free! 🚀 https://solcrash.app?ref=123';
-          if (navigator.share) {
-            navigator.share({ text });
-          } else {
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`);
-          }
-        },
-        claimMissionReward(mission) {
-          if (this.missions[mission]) {
-            this.balance += 0.005;
-            this.showToast('Claimed 0.005 SOL!', 'success');
-            this.missions[mission] = false;
-          }
-        },
-        showToast(message, type, duration = 3000) {
-          const toast = document.createElement('div');
-          toast.className = `toast ${type}`;
-          toast.textContent = message;
-          document.body.appendChild(toast);
-          setTimeout(() => toast.remove(), duration);
-        },
-        triggerHaptic(pattern) {
-          if (navigator.vibrate) navigator.vibrate(pattern);
-        },
-        toggleAuto() {
-          this.autoPlay = !this.autoPlay;
+        
+        showToast(message, type = 'success') {
+          this.toast.message = message;
+          this.toast.type = type;
+          this.toast.show = true;
+          
+          setTimeout(() => {
+            this.toast.show = false;
+          }, 3000);
         }
       }));
     });
