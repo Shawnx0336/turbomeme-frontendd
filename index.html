@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#121212">
+  <meta name="description" content="Play CryptoDrop Crash: Stake SOL, watch the multiplier, and cash out before it busts!">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>SOL Crash | 1000x Multipliers</title>
   <link rel="manifest" href="/manifest.json">
   <script>
@@ -22,6 +24,7 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 
   <style>
+    /* --- Root Variables for Theming --- */
     :root {
       --primary: #7B61FF; /* Purple */
       --secondary: #FF6BEC; /* Pink */
@@ -32,17 +35,19 @@
       --warning: #FBBF24; /* Yellow for warnings */
       --info: #60A5FA; /* Blue for info */
     }
+    /* --- Global Styles and Resets --- */
     * {
-      -webkit-tap-highlight-color: transparent;
-      -webkit-overflow-scrolling: touch; /* Improve scrolling on iOS */
+      -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+      -webkit-overflow-scrolling: touch; /* Improve scrolling performance on iOS */
+      box-sizing: border-box; /* Include padding and border in element's total width and height */
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* System fonts */
       background: var(--bg);
       color: white;
       margin: 0;
       padding: 0;
-      overscroll-behavior: none;
+      overscroll-behavior: none; /* Prevent pull-to-refresh */
       touch-action: manipulation; /* Prevent double-tap zoom */
       display: flex; /* Use flexbox for main layout */
       flex-direction: column;
@@ -53,6 +58,7 @@
       background-size: 200% 200%;
       animation: backgroundPulse 10s ease infinite;
     }
+    /* Keyframes for the pulsing background animation */
     @keyframes backgroundPulse {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -65,7 +71,7 @@
       flex-direction: column;
       overflow: hidden; /* Prevent overflow */
     }
-    /* Game Area */
+    /* --- Main Game Area Styles --- */
     #game {
       flex: 1;
       padding: 15px;
@@ -76,6 +82,7 @@
       /* Add camera shake effect */
       transition: transform 0.1s ease-in-out;
     }
+    /* Keyframes and class for camera shake effect */
     #game.shake {
       animation: cameraShake 0.3s ease-in-out;
     }
@@ -85,7 +92,7 @@
          40%, 80% { transform: translateX(2px) translateY(2px); }
      }
 
-
+    /* --- Multiplier Display Styles --- */
     #multiplier {
       font-size: 3.5rem;
       font-weight: 800;
@@ -100,7 +107,7 @@
       transition: text-shadow 0.1s ease-out, transform 0.1s ease-out; /* Smooth glow/tilt transition */
       position: relative; /* Needed for waveform canvas */
     }
-    /* Multiplier color and glow based on value */
+    /* Multiplier color and glow based on game state and value */
     #multiplier.state-waiting { color: var(--primary); -webkit-text-fill-color: var(--primary); text-shadow: none; }
     #multiplier.state-betting { color: var(--warning); -webkit-text-fill-color: var(--warning); text-shadow: 0 0 8px rgba(251, 191, 36, 0.7); }
     #multiplier.state-running {
@@ -114,6 +121,7 @@
     #multiplier.state-running.glow-jackpot { text-shadow: 0 0 20px rgba(244, 114, 182, 1); animation: multiplierJackpotGlow 0.8s ease-in-out infinite alternate; }
     #multiplier.state-crashed { color: var(--loss); -webkit-text-fill-color: var(--loss); text-shadow: 0 0 10px rgba(248, 113, 133, 0.7); }
 
+    /* Keyframes for jackpot glow animation */
     @keyframes multiplierJackpotGlow {
         from { text-shadow: 0 0 20px rgba(244, 114, 182, 1); }
         to { text-shadow: 0 0 30px rgba(255, 215, 0, 1); } /* Gold flash */
@@ -137,7 +145,7 @@
       100% { transform: rotate(-2deg); opacity: 1; }
     }
 
-
+    /* --- Graph and Rocket Styles --- */
     #graph-container {
       flex: 1;
       min-height: 200px; /* Ensure minimum height */
@@ -148,19 +156,54 @@
       overflow: hidden;
       touch-action: none; /* Prevent touch scrolling/zooming on graph */
     }
+     /* Bonus mode background for graph container */
+    #graph-container.bonus-mode {
+      background: linear-gradient(45deg, #FFD700, #FF6BEC, #FFD700);
+      background-size: 200% 200%;
+      animation: backgroundPulse 5s ease infinite; /* Faster pulse in bonus mode */
+    }
      #graph-canvas {
          width: 100%;
          height: 100%;
          display: block;
      }
+     /* Waveform Canvas behind multiplier */
+     #waveform-canvas {
+         position: absolute;
+         top: 50%;
+         left: 0;
+         width: 100%;
+         height: 100px;
+         transform: translateY(-50%);
+         pointer-events: none; /* Allow clicks/touches to pass through */
+         z-index: 1; /* Below multiplier text */
+     }
 
-    /* Controls */
+
+    /* --- Controls Styles --- */
     .controls {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr; /* Default mobile layout */
       gap: 8px;
       margin-bottom: 15px;
     }
+    /* Sticky controls for mobile thumb zone */
+    .controls.sticky {
+      position: fixed;
+      bottom: calc(10px + env(safe-area-inset-bottom)); /* Respect safe area */
+      right: 10px;
+      display: flex;
+      flex-direction: column; /* Stack buttons vertically */
+      gap: 8px;
+      z-index: 50;
+      width: auto; /* Adjust width */
+      max-width: 150px; /* Limit width */
+    }
+     .controls.sticky button {
+         width: 100%; /* Make buttons fill sticky container */
+     }
+
+
     button {
       background: var(--primary);
       color: white;
@@ -171,51 +214,54 @@
       font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s;
-      user-select: none;
-      min-height: 48px; /* Fat finger friendly */
+      user-select: none; /* Prevent text selection */
+      min-height: 48px; /* Fat finger friendly touch target */
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 5px;
+      will-change: transform, opacity, background-color, box-shadow; /* Optimize for animation */
     }
     button:active:not(:disabled) {
-      transform: scale(0.98);
+      transform: scale(0.98); /* Visual feedback on press */
     }
     button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      box-shadow: none;
     }
      /* Specific button styles */
-    #start-btn { background: var(--win); }
-    #auto-btn { background: var(--info); }
+    #start-btn { background: var(--win); } /* Green for BET */
+    #auto-btn { background: var(--info); } /* Blue for AUTO */
     #cashout-btn { background: var(--win); } /* Default cashout is green */
     #cashout-btn.state-betting { background: var(--warning); } /* Yellow during betting */
     #cashout-btn.state-cashing-out { background: var(--secondary); } /* Pink when cashing out */
+    #cashout-btn.state-crashed { background: var(--loss); } /* Red when crashed */
 
 
-    /* Sticky cashout button (Mobile only) */
-    #cashout-btn-sticky {
-      position: fixed;
-      bottom: 80px; /* Above mobile tabs */
-      left: 15px; /* Match padding */
-      right: 15px; /* Match padding */
-      z-index: 50;
-      font-size: 1.1rem;
-      padding: 15px;
-      border-radius: 8px;
-      background: var(--win); /* Default green */
-      color: white;
-      font-weight: bold;
-      text-align: center;
-      display: none; /* Hidden by default, shown by JS/Alpine */
-      transition: all 0.2s;
-      will-change: transform, opacity;
+    /* Idle pulse animation for buttons */
+    button.idle {
+      animation: craveAttention 1s infinite;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); /* Red glow */
     }
-     #cashout-btn-sticky.state-betting { background: var(--warning); }
-     #cashout-btn-sticky.state-cashing-out { background: var(--secondary); }
-     #cashout-btn-sticky.state-crashed { background: var(--loss); }
+     /* Keyframes for idle attention animation */
+    @keyframes craveAttention {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 0, 1); }
+    }
+
+    /* Pulse animation for BET button when idle */
+    button.pulse {
+      animation: buttonPulse 1s infinite;
+    }
+    @keyframes buttonPulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); } /* Green glow */
+      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+    }
 
 
+    /* Cashout pulse animation */
     .cashout-pulse {
       animation: pulse 1s infinite;
     }
@@ -224,6 +270,8 @@
       70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
       100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
     }
+
+    /* Input field styles */
     input {
       padding: 12px;
       border-radius: 8px;
@@ -232,10 +280,20 @@
       color: white;
       font-size: 1rem;
       width: 100%;
-      -webkit-appearance: none;
+      -webkit-appearance: none; /* Remove default styles */
       box-sizing: border-box; /* Include padding in width */
     }
-    /* Mobile tabs */
+     /* Hide number input spin buttons */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    /* --- Mobile Tabs Styles --- */
     .mobile-tabs {
       display: flex;
       border-top: 1px solid #333;
@@ -246,6 +304,7 @@
       right: 0;
       z-index: 40; /* Below sticky cashout button */
       width: 100%;
+      justify-content: space-around; /* Distribute tabs evenly */
     }
     .tab-button {
       flex: 1;
@@ -254,12 +313,14 @@
       font-size: 0.8rem;
       color: #aaa; /* Default color */
       transition: color 0.2s;
+      cursor: pointer;
+      user-select: none;
     }
     .tab-button.active {
       border-bottom: 2px solid var(--primary);
       color: white;
     }
-    /* Tab content */
+    /* --- Tab Content Styles --- */
     .tab-content {
       display: none;
       padding: 15px;
@@ -267,6 +328,8 @@
       -webkit-overflow-scrolling: touch;
       flex-direction: column; /* Use flex column for content */
       gap: 15px; /* Space between sections in tabs */
+      /* Max height for scrollable tab content on mobile */
+      max-height: calc(100vh - 150px); /* Adjust based on header, game area, and tabs height */
     }
     .tab-content.active {
       display: flex; /* Show as flex column */
@@ -284,7 +347,7 @@
          box-shadow: none;
      }
 
-    /* Modals */
+    /* --- Modal Styles --- */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -341,22 +404,23 @@
       justify-content: center;
       align-items: center;
     }
-    /* Confetti */
+    /* Confetti particle styles */
     .confetti {
-      position: fixed;
+      position: fixed; /* Fixed position relative to viewport */
       width: 8px;
       height: 8px;
-      background: #f472b6;
+      background: #f472b6; /* Default color, overridden by JS */
       opacity: 0.8;
       animation: confettiFall 2s linear forwards;
-      pointer-events: none;
-      z-index: 20;
+      pointer-events: none; /* Allow clicks/touches to pass through */
+      z-index: 20; /* Above game elements */
     }
+    /* Keyframes for confetti falling animation */
     @keyframes confettiFall {
       0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
       100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
     }
-    /* Win streak */
+    /* Win streak animation styles */
     .win-streak {
       position: fixed;
       top: 20px;
@@ -366,10 +430,11 @@
       padding: 8px 16px;
       border-radius: 20px;
       font-weight: bold;
-      z-index: 30;
+      z-index: 30; /* Above game elements */
       animation: streakPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275);
       box-shadow: 0 0 10px rgba(123, 97, 255, 0.5);
     }
+    /* Keyframes for win streak pop animation */
     @keyframes streakPop {
       0% { transform: scale(0) rotate(-15deg); opacity: 0; }
       70% { transform: scale(1.15) rotate(5deg); }
@@ -390,9 +455,12 @@
        #cashout-btn-sticky {
            bottom: calc(80px + env(safe-area-inset-bottom));
        }
+       .modal-content {
+           padding-bottom: calc(20px + env(safe-area-inset-bottom));
+       }
     }
 
-    /* Desktop Layout */
+    /* --- Desktop Layout Styles --- */
     @media (min-width: 768px) {
         #app {
             flex-direction: row; /* Side by side */
@@ -405,6 +473,7 @@
             max-width: none; /* Remove max-width */
             margin: 0;
         }
+        /* Desktop Chat Sidebar */
         #chat {
             display: flex; /* Show chat sidebar */
             flex-direction: column;
@@ -413,6 +482,7 @@
             overflow-y: auto;
             padding: 15px;
         }
+        /* Desktop Wallet Sidebar */
         #wallet {
              display: flex; /* Show wallet sidebar */
              flex-direction: column;
@@ -421,19 +491,30 @@
              overflow-y: auto;
              padding: 15px;
         }
+        /* Hide mobile tabs on desktop */
         .mobile-tabs {
-            display: none; /* Hide mobile tabs on desktop */
+            display: none;
         }
+        /* Hide mobile tab content on desktop */
         .tab-content {
-            display: none !important; /* Hide tab content */
+            display: none !important;
         }
+         /* Hide sticky cashout button on desktop */
          #cashout-btn-sticky {
-             display: none !important; /* Hide sticky button on desktop */
+             display: none !important;
          }
+         /* Desktop controls layout */
          .controls {
              grid-template-columns: 1fr 1fr 1fr; /* Bet | Auto | Cash Out */
+             position: static; /* Remove sticky positioning */
+             flex-direction: row; /* Arrange horizontally */
+             max-width: none; /* Remove max-width */
+             right: auto;
+             bottom: auto;
+             padding: 0;
          }
-          #cashout-btn { /* Desktop cashout button */
+          /* Desktop cashout button */
+          #cashout-btn {
               position: static; /* Remove sticky positioning */
               transform: none;
               width: auto;
@@ -441,7 +522,8 @@
               font-size: 0.9rem; /* Match other buttons */
               padding: 12px; /* Match other buttons */
           }
-           .tab-content.active { /* Ensure tab content is hidden on desktop even if active */
+           /* Ensure tab content is hidden on desktop even if active */
+           .tab-content.active {
                display: none !important;
            }
     }
@@ -450,12 +532,28 @@
 </head>
 <body>
   <div id="app">
-    <div id="chat">
-        <h3>RECENT ACTIVITY</h3>
-        <div x-html="chatMessages" style="flex: 1; overflow-y: auto; padding: 5px;" x-ref="chatFeed"></div>
+    <div class="session-timer">
+      Played: <span x-text="`${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`"></span>
     </div>
 
-    <div id="game">
+    <div class="player-counter">
+      Live Players: <span x-text="livePlayers"></span>
+    </div>
+
+    <div id="chat">
+        <h3>RECENT ACTIVITY</h3>
+        <div style="flex: 1; overflow-y: auto; padding: 5px;" x-ref="chatFeed">
+             <template x-for="message in chatMessages" :key="message.id">
+               <div style="padding: 8px 0; border-bottom: 1px solid #333;"
+                    :class="{ 'bg-yellow-500/20 animate-pulse': message.isBigWin }">
+                 <span style="color: var(--secondary); font-weight: bold; margin-right: 5px;" x-text="message.user"></span>:
+                 <span x-text="message.text"></span>
+               </div>
+             </template>
+        </div>
+    </div>
+
+    <div id="game" :class="{ 'shake': multiplier >= 10 }">
       <h1 style="text-align: center; font-size: 1.5rem; margin: 0;">🚀 SOL CRASH</h1>
       <div id="multiplier" x-text="`${multiplier.toFixed(2)}x`" class="will-change"
            :class="{
@@ -472,9 +570,9 @@
             1.00x
         </div>
 
-      <div id="graph-container">
+      <div id="graph-container" :class="{ 'bonus-mode': isBonusMode }" x-ref="graphContainer">
         <canvas id="graph-canvas" x-ref="graphCanvas"></canvas>
-         <canvas id="waveform-canvas" x-ref="waveformCanvas" style="position: absolute; top: 50%; left: 0; width: 100%; height: 100px; transform: translateY(-50%); pointer-events: none;"></canvas>
+         <canvas id="waveform-canvas" x-ref="waveformCanvas" style="position: absolute; top: 50%; left: 0; width: 100%; height: 100px; transform: translateY(-50%); pointer-events: none; z-index: 1;"></canvas>
       </div>
 
       <div style="text-align: center; margin-bottom: 15px; font-size: 1.2rem;">
@@ -486,9 +584,8 @@
           <span x-show="gameRunning && playerCashedOut" style="color: var(--win);">Cashed Out @ <span x-text="playerCashOutPoint.toFixed(2)"></span>x</span>
       </div>
 
-
       <div class="controls">
-        <input type="number" x-model="betAmount" min="0.01" step="0.01" placeholder="0.01 SOL" inputmode="decimal">
+        <input type="number" x-model="betAmount" min="0.01" step="0.01" placeholder="0.01 SOL" inputmode="decimal" aria-label="Bet amount">
         <button id="start-btn" @click="placeBet()" :disabled="gameRunning || !userLoggedIn || balance < betAmount || betAmount < 0.01"
                 :class="{ 'pulse': !gameRunning && Date.now() - lastAction > 10000 }"> <span x-show="!gameRunning && !waitingForNextRound">BET</span>
             <span x-show="waitingForNextRound">BETTING (<span x-text="autoCountdown.toFixed(1)"></span>s)</span>
@@ -506,14 +603,13 @@
       <div class="progress-bar-container mt-2">
         <span class="text-xs">Hot Streak</span>
         <div class="progress-bar" :style="'width: ' + (consecutiveLosses * 20) + '%'"></div>
-        <span class="text-xs" x-text="consecutiveLosses >= 5 ? 'Win Imminent!' : 'Keep Playing!'"></span>
+        <span class="text-xs" x-text="consecutiveLosses >= 4 ? 'Win Imminent!' : 'Keep Playing!'"></span>
       </div>
        <div class="progress-bar-container mt-2">
          <span class="text-xs">Lucky Drop</span>
          <div class="progress-bar" :style="'width: ' + (totalLosses / 0.5 * 100) + '%'"></div>
          <span class="text-xs" x-text="totalLosses >= 0.4 ? 'Lucky Drop Incoming!' : 'Keep Playing!'"></span>
        </div>
-
 
       <div style="text-align: center; margin-top: 15px;">
         <button @click="openModal('provably-fair')" style="background: none; text-decoration: underline; color: #aaa;">Verify Fairness</button>
@@ -531,18 +627,12 @@
       <div style="margin-top: 20px;">
         <h3>TOP WINS</h3>
          <div style="margin-top: 10px;">
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-            <span>SOL_Whale</span>
-            <span>12.34x (8.42 SOL)</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-            <span>CryptoDegen</span>
-            <span>9.87x (5.21 SOL)</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-            <span>You</span>
-            <span x-text="`${biggestWin.toFixed(2)}x (${(biggestWin * betAmount).toFixed(2)} SOL)`">0.00x (0.00 SOL)</span>
-          </div>
+          <template x-for="(player, index) in leaderboard" :key="index">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
+              <span x-text="player.username"></span>
+              <span x-text="`${player.multiplier.toFixed(2)}x (${player.winnings.toFixed(2)} SOL)`"></span>
+            </div>
+          </template>
         </div>
       </div>
        <button @click="shareReferral()" style="width: 100%; margin-top: 20px;">INVITE & EARN 0.005 SOL</button>
@@ -552,13 +642,21 @@
       <div class="tab-button active" @click="activeTab = 'chat'">💬 Chat</div>
       <div class="tab-button" @click="activeTab = 'wallet'">💰 Wallet</div>
       <div class="tab-button" @click="activeTab = 'stats'">📊 Stats</div>
-      <div class="tab-button" @click="activeTab = 'missions'">🎯 Missions</div> </div>
+      <div class="tab-button" @click="activeTab = 'missions'">🎯 Missions</div>
+    </div>
 
     <div class="tab-content" :class="{ 'active': activeTab === 'chat' }">
         <h3>RECENT ACTIVITY</h3>
-        <div x-html="chatMessages" style="flex: 1; overflow-y: auto; padding: 5px;" x-ref="chatFeed"></div>
+        <div style="flex: 1; overflow-y: auto; padding: 5px;" x-ref="chatFeed">
+             <template x-for="message in chatMessages" :key="message.id">
+               <div style="padding: 8px 0; border-bottom: 1px solid #333;"
+                    :class="{ 'bg-yellow-500/20 animate-pulse': message.isBigWin }">
+                 <span style="color: var(--secondary); font-weight: bold; margin-right: 5px;" x-text="message.user"></span>:
+                 <span x-text="message.text"></span>
+               </div>
+             </template>
+        </div>
     </div>
-
     <div class="tab-content" :class="{ 'active': activeTab === 'wallet' }">
       <div style="padding: 10px;">
         <h3>YOUR WALLET</h3>
@@ -578,23 +676,16 @@
          </div>
       </div>
     </div>
-
     <div class="tab-content" :class="{ 'active': activeTab === 'stats' }">
       <div style="padding: 10px;">
         <h3>TOP WINS</h3>
         <div style="margin-top: 10px;">
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-            <span>SOL_Whale</span>
-            <span>12.34x (8.42 SOL)</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-            <span>CryptoDegen</span>
-            <span>9.87x (5.21 SOL)</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
-            <span>You</span>
-            <span x-text="`${biggestWin.toFixed(2)}x (${(biggestWin * betAmount).toFixed(2)} SOL)`">0.00x (0.00 SOL)</span>
-          </div>
+          <template x-for="(player, index) in leaderboard" :key="index">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333;">
+              <span x-text="player.username"></span>
+              <span x-text="`${player.multiplier.toFixed(2)}x (${player.winnings.toFixed(2)} SOL)`"></span>
+            </div>
+          </template>
         </div>
          <div style="margin-top: 20px;">
              <h3>SESSION STATS</h3>
@@ -606,24 +697,20 @@
          </div>
       </div>
     </div>
-
      <div class="tab-content" :class="{ 'active': activeTab === 'missions' }">
        <div style="padding: 10px;">
          <h3>DAILY MISSIONS</h3>
-         <div style="margin-bottom: 10px;">
+         <div style="margin: 10px 0;">
            <div x-text="missions.bet5 ? '✅ Bet 5 times' : `Bet 5 times (${totalBets}/5)`" style="font-size: 0.9rem; color: #ccc;"></div>
            <button @click="claimMissionReward('bet5')" :disabled="!missions.bet5" style="width: 100%; margin-top: 5px;">Claim 0.005 SOL</button>
          </div>
+          <div style="margin: 10px 0;">
+            <div x-text="missions.cashout3x ? '✅ Cash out at 3x+' : 'Cash out at 3x+'" style="font-size: 0.9rem; color: #ccc;"></div>
+            <button @click="claimMissionReward('cashout3x')" :disabled="!missions.cashout3x" style="width: 100%; margin-top: 5px;">Claim NFT Shard</button>
           </div>
+       </div>
      </div>
 
-
-    <div id="autoplay-overlay" x-show="autoPlay && autoCountdown > 0" @click="autoPlay = false">
-      <div style="background: var(--card-bg); padding: 20px; border-radius: 12px; text-align: center;">
-        <p style="font-size: 1.2rem;">Next bet in <span x-text="autoCountdown.toFixed(1)"></span>s...</p>
-        <button style="background: var(--loss); margin-top: 10px;">CANCEL AUTO</button>
-      </div>
-    </div>
 
     <div x-show="modalOpen" class="modal-overlay" @click.self="closeModal()">
       <div class="modal-content">
@@ -632,7 +719,7 @@
             <h2>DEPOSIT SOL</h2>
             <p>Send SOL to this address:</p>
             <p style="word-break: break-all; background: #333; padding: 10px; border-radius: 4px; font-family: monospace;">7eSH...fT9q</p>
-            <p style="color: var(--secondary);">🎁 First deposit gets 0.01 SOL bonus!</p>
+            <p x-show="!firstDepositMade" style="color: gold;">🎁 First deposit gets 0.01 SOL bonus!</p>
              <input type="number" x-model="depositAmount" placeholder="0.1 SOL" style="width: 100%; margin: 10px 0;">
              <button @click="simulateDeposit()" style="width: 100%;">SIMULATE DEPOSIT</button> <button @click="closeModal()" style="width: 100%; margin-top: 15px;">CLOSE</button>
           </div>
@@ -686,82 +773,102 @@
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.data('crashApp', () => ({
-        // Game State
-        gameRunning: false,
-        multiplier: 1.00,
-        crashAt: 2.0,
-        betAmount: 0.01,
-        balance: 0.05, // Starting balance
-        autoPlay: false,
-        autoCountdown: 3,
-        canCashout: false,
-        biggestWin: 0,
-        lossStreak: 0,
-        consecutiveBets: 0, // For streak bonus
-        roundCount: 0, // For mystery drops
-        isMysteryRound: false, // Is current round a mystery round?
+        // --- Game State Variables ---
+        gameRunning: false, // Is the crash game active?
+        multiplier: 1.00, // The current game multiplier
+        crashAt: 2.0, // The multiplier the game will crash at
+        betAmount: 0.01, // Amount in the bet input field
+        balance: 0.05, // Player's current balance (frontend simulation)
+        autoPlay: false, // Is auto-play enabled?
+        autoCountdown: 3, // Countdown for auto-play/next round
+        canCashout: false, // Can the player cash out in the current round?
+        biggestWin: 0, // Highest multiplier cashed out by the player
 
-        // UI State
-        modalOpen: false,
-        modalType: '',
-        activeTab: 'chat',
-        userLoggedIn: false, // Mock login state
-        withdrawAmount: 0.1,
-        depositAmount: 0.1, // For deposit modal input
+        // --- UI State Variables ---
+        modalOpen: false, // Is a modal open?
+        modalType: '', // Type of modal to show ('deposit', 'withdraw', 'free_drop', 'provably-fair')
+        activeTab: 'chat', // Currently active mobile tab ('chat', 'wallet', 'stats', 'missions')
+        userLoggedIn: false, // Mock login state (replace with actual wallet connection check)
+        withdrawAmount: 0.1, // Amount in the withdraw input field
+        depositAmount: 0.1, // Amount in the deposit input field
+        timeSpent: 0, // Session timer (seconds)
+        livePlayers: Math.floor(Math.random() * 400 + 800), // Fake live player count
+        isIdle: false, // Is the user idle? (for idle timer trap)
+        lastAction: Date.now(), // Timestamp of the last user interaction
 
-        // Fake Data & Addiction Metrics
-        chatMessages: `
-          <div style="padding: 8px 0; border-bottom: 1px solid #333;">
-            <span style="color: var(--secondary); font-weight: bold;">SOL_Whale:</span> Just won 5 SOL! 🚀
-          </div>
-          <div style="padding: 8px 0; border-bottom: 1px solid #333;">
-            <span style="color: var(--secondary); font-weight: bold;">System:</span> Welcome to SOL Crash!
-          </div>
-        `,
-        livePlayers: 1000, // Fake live player count
-        timeSpent: 0, // Session timer
-        lastAction: Date.now(), // Timestamp of last user action (for idle timer)
+        // --- Player Stats & Addiction Metrics ---
+        consecutiveLosses: 0, // Consecutive rounds the player busted
         totalLosses: 0, // Total amount lost (for recovery meter)
+        consecutiveBets: 0, // Consecutive rounds a bet was placed (for streak bonus)
+        roundCount: 0, // Total rounds played (for mystery drops)
+        isMysteryRound: false, // Is the current round a mystery round?
+        isBonusMode: false, // Is bonus mode active? (Group Multiplier Event)
         totalDeposited: 0, // Total amount deposited (for bonus progress)
         firstDepositMade: false, // Flag for first deposit bonus
         luckRating: 'Calculating...', // Fabricated luck score
+        sessionRounds: 0, // Rounds played in current session
+        sessionWins: 0, // Rounds where player cashed out
+        sessionSpent: 0, // SOL spent in current session
+        sessionWon: 0, // SOL won in current session
 
-        missions: { bet5: false }, // Daily missions state
+
+        // --- Daily Missions State ---
+        missions: {
+          bet5: false, // Mission: Bet 5 times
+          cashout3x: false // Mission: Cash out at 3x+
+        },
         totalBets: 0, // Counter for missions
 
-        // Graph variables
-        graphCanvas: null,
-        graphCtx: null,
-        graphPoints: [],
-        graphScaleX: 1,
-        graphScaleY: 1,
+        // --- Leaderboard Data (Frontend Simulation) ---
+        leaderboard: [
+          { username: 'SOL_Whale', multiplier: 12.34, winnings: 8.42 },
+          { username: 'CryptoDegen', multiplier: 9.87, winnings: 5.21 },
+          { username: 'You', multiplier: 0, winnings: 0 } // Player's spot on the leaderboard
+        ],
+
+        // --- Chat Messages (Frontend Simulation) ---
+        chatMessages: [
+          { id: 1, user: 'SOL_Whale', text: 'Just won 5 SOL! 🚀', isBigWin: true },
+          { id: 2, user: 'System', text: 'Welcome to SOL Crash!' }
+        ],
+
+        // --- Graph Variables ---
+        graphCanvas: null, // Canvas element for the graph
+        graphCtx: null, // 2D rendering context for the graph
+        graphPoints: [], // Array of {x, y} points for the graph line
+        graphScaleX: 1, // X-axis scale for the graph
+        graphScaleY: 1, // Y-axis scale for the graph
         graphContainer: null, // Reference to the graph container div
-        waveformCanvas: null, // Waveform canvas
-        waveformCtx: null, // Waveform context
+        waveformCanvas: null, // Canvas element for the waveform
+        waveformCtx: null, // 2D rendering context for the waveform
 
-        // Haptic feedback triggers
-        hapticTriggered1_5x: false,
-        hapticTriggered5x: false,
-        hapticTriggered10x: false,
+        // --- Haptic Feedback Triggers ---
+        hapticTriggered1_5x: false, // Has haptic been triggered at 1.5x?
+        hapticTriggered5x: false, // Has haptic been triggered at 5x?
+        hapticTriggered10x: false, // Has haptic been triggered at 10x?
 
-        // Audio
+        // --- Audio Management ---
         sounds: {}, // Howler sounds object
+        audioContext: null, // Web Audio API context (for Howler)
 
 
+        // --- Initialization Function ---
         init() {
-          // Lock orientation on mobile
+          console.log('Initializing CryptoDrop Crash App...');
+
+          // Lock orientation to portrait on mobile
           screen.orientation?.lock('portrait').catch(() => {});
 
-          // Prevent zooming
+          // Prevent zooming via gestures and double-tap
           document.addEventListener('gesturestart', (e) => e.preventDefault());
-          document.addEventListener('dblclick', (e) => e.preventDefault()); // Prevent double-tap zoom
+          document.addEventListener('dblclick', (e) => e.preventDefault());
 
-          // Prevent Chrome Android back button exits
+          // Prevent Chrome Android back button exits using history manipulation
           history.pushState(null, null, window.location.href);
           window.addEventListener('popstate', () => history.pushState(null, null, window.location.href));
 
 
-          // Auto-engage Fullscreen API on first tap
+          // Auto-engage Fullscreen API and resume audio context on first touch
           document.body.addEventListener('touchstart', () => {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
              // Resume audio context on first touch
@@ -773,12 +880,13 @@
 
           // Initialize graph canvas and drawing
           this.initGraph();
-          this.initWaveform(); // Initialize waveform
+          // Initialize waveform canvas and drawing
+          this.initWaveform();
 
-          // Initialize audio
+          // Initialize audio sounds using Howler.js
           this.initAudio();
 
-          // Fake chat updates
+          // Start fake chat updates
           setInterval(() => {
             const users = ['SOL_Whale', 'CryptoDegen', 'Anonymous', 'VIP_User', 'CrashMaster', 'SolanaMax', 'JackpotJunkie', 'Anon**123'];
             const messages = [
@@ -799,24 +907,24 @@
             this.addMessage(user, msg);
           }, Math.random() * 3000 + 5000); // Add a fake message every 5-8 seconds
 
-          // Autoplay countdown timer
+          // Autoplay countdown timer logic
           setInterval(() => {
             if (this.autoPlay && !this.gameRunning && this.autoCountdown > 0) {
               this.autoCountdown = Math.max(0, this.autoCountdown - 0.1); // Decrement by 0.1 for smoother display
               if (this.autoCountdown <= 0.01) { // Check near zero
                 this.autoCountdown = 0;
-                this.startGame();
-                this.autoCountdown = 3; // Reset countdown
+                this.startGame(); // Start game if countdown finishes and auto-play is on
+                this.autoCountdown = 3; // Reset countdown for next time
               }
             }
           }, 100); // Update every 100ms
 
-          // Live players counter
+          // Live players counter fluctuation
           setInterval(() => {
             this.livePlayers = Math.floor(Math.random() * 400 + 800); // Randomly fluctuate
           }, 10000);
 
-          // Session timer
+          // Session timer logic
           setInterval(() => {
             this.timeSpent++;
             // Time-based sunk-cost nudge
@@ -825,27 +933,29 @@
             }
           }, 1000);
 
-          // Mobile Idle Timer Trap
+          // Mobile Idle Timer Trap logic
           setInterval(() => this.handleIdle(), 500); // Check idle state every 500ms
 
-          // Group Multiplier Events
+          // Group Multiplier Events logic
           setInterval(() => this.triggerBonusMode(), Math.random() * 300000 + 600000); // Every 10-15 minutes
 
 
-          // Start the initial countdown
+          // Start the initial countdown before the very first round
           this.startInitialCountdown();
 
            // Check for sticky cashout button visibility on scroll
            window.addEventListener('scroll', () => this.handleScroll());
-           this.handleScroll(); // Initial check
+           this.handleScroll(); // Initial check on page load
 
-           // Update last action timestamp on user interaction
+           // Update last action timestamp on user interaction (for idle timer)
            document.body.addEventListener('click', () => this.lastAction = Date.now());
            document.body.addEventListener('touchstart', () => this.lastAction = Date.now());
 
 
+          console.log('CryptoDrop Crash App Initialized.');
         },
 
+        // --- Game Logic ---
         // Start the initial countdown before the very first round
         startInitialCountdown() {
              this.waitingForNextRound = true;
@@ -856,119 +966,141 @@
              if (this.countdownInterval) clearInterval(this.countdownInterval);
              this.countdownInterval = setInterval(() => {
                  this.autoCountdown = Math.max(0, this.autoCountdown - 0.1);
-                 // Update sticky button countdown during betting phase
+                 // Update sticky button countdown display during betting phase
                  this.updateStickyButton();
                  if (this.autoCountdown <= 0.01) {
                      clearInterval(this.countdownInterval);
                      this.waitingForNextRound = false;
-                     this.startGame();
-                     this.autoCountdown = 3; // Reset to standard betting countdown
+                     this.startGame(); // Start game when countdown finishes
+                     this.autoCountdown = 3; // Reset to standard betting countdown for subsequent rounds
                  }
-             }, 100);
+             }, 100); // Update every 0.1 seconds for smoother countdown
         },
 
 
-        // Game Logic
-        startGame() {
-          if (this.gameRunning) return;
-          if (this.balance < this.betAmount) {
-            this.openModal('deposit');
-            this.autoPlay = false; // Turn off auto if insufficient balance
-            return;
+        // Place a bet for the next round (triggered by BET button click)
+        placeBet() {
+          // Prevent placing bet if game is running, already in betting phase, or insufficient balance
+          if (this.gameRunning || this.waitingForNextRound || this.balance < this.betAmount || this.betAmount < 0.01 || !this.userLoggedIn) {
+              if (!this.userLoggedIn) this.showToast('Please connect wallet to bet.', 'info');
+              else if (this.balance < this.betAmount) this.showToast('Insufficient balance.', 'error');
+              else if (this.betAmount < 0.01) this.showToast('Minimum bet is 0.01 SOL.', 'error');
+              return;
           }
 
-          // Reset haptic triggers for the new round
-          this.hapticTriggered1_5x = false;
-          this.hapticTriggered5x = false;
-          this.hapticTriggered10x = false;
+          // Deduct bet amount immediately (frontend simulation)
+          this.balance -= this.betAmount;
 
-          this.gameRunning = true;
-          this.multiplier = 1.00;
-          this.canCashout = true;
-          this.balance -= this.betAmount; // Deduct bet immediately (frontend sim)
-          this.playerCashedOut = false; // Reset cashout status
-          this.playerCashOutPoint = 0; // Reset cashout point
-          this.graphPoints = [{ x: 0, y: 1.00 }]; // Start graph at 1.00x
-          this.roundCount++; // Increment round count for mystery drops
+          // Update player stats
+          this.sessionSpent += this.betAmount;
+          this.sessionRounds++;
           this.totalBets++; // Increment total bets for missions
 
-          // Update session stats
-          this.sessionRounds++;
-          this.sessionSpent += this.betAmount;
+          // Update missions
+          if (this.totalBets >= 5) this.missions.bet5 = true;
 
-          // Dynamic RNG based on balance and loss streak, and Mystery Round
-          const baseRandom = Math.random();
-          let crashMultiplier;
+          this.showToast(`Bet placed: ${this.betAmount.toFixed(2)} SOL`, 'success');
+          this.playSound('chime'); // Play chime sound on bet placement
 
-          if (this.isMysteryRound) {
-              // Guaranteed win in Mystery Round
-              crashMultiplier = 1.5 + Math.random() * 3.5; // Crash between 1.5x and 5x
-              this.isMysteryRound = false; // Reset mystery round flag
-          } else if (this.lossStreak >= 3 && !this.userLoggedIn) {
-              // Force a win after 3+ losses in free mode
-              crashMultiplier = parseFloat((Math.random() * 3 + 2.0).toFixed(2)); // Guarantee crash >= 2.0x
-               this.showToast("Feeling lucky? We've boosted your odds!", 'info', 3000); // Add a nudge
-          } else {
-              // Standard RNG (more likely to crash early, with Near-Miss Trick)
-              if (baseRandom < 0.9) { // 90% chance to trigger near-miss logic
-                 const nearMissTarget = 9 + Math.random() * 1; // Target 9x to 10x
-                 crashMultiplier = nearMissTarget - (Math.random() * 0.5); // Crash within 0.5x below the target
-                 crashMultiplier = Math.max(1.01, crashMultiplier); // Ensure it's at least 1.01
-              } else {
-                 // Standard RNG for other cases
-                 if (baseRandom < 0.95) crashMultiplier = parseFloat((Math.random() * 5 + 5.01).toFixed(2));
-                 else crashMultiplier = parseFloat((Math.random() * 10 + 10.01).toFixed(2));
-              }
-          }
+          // In a real application, this would send a bet request to the backend via Socket.IO
+          // this.socket.emit('placeBet', { amount: this.betAmount, address: this.walletAddress });
 
-          this.crashAt = parseFloat(crashMultiplier.toFixed(2)); // Ensure 2 decimal places
-
-          this.animateGame();
-
-           // Update mission progress
-           if (this.totalBets >= 5 && !this.missions.bet5) {
-               this.missions.bet5 = true;
-           }
-
-           // Trigger Mystery Drop if round count reached
-           if (this.roundCount % 15 === 0 && this.roundCount > 0) {
-               this.triggerMysteryDrop();
-           }
+          // The game will start automatically when the countdown finishes
         },
 
-        animateGame() {
-          if (!this.gameRunning) return;
 
-          // Increase multiplier (faster rise)
-          const speed = 0.02 + Math.pow(this.multiplier, 1.5) * 0.001; // Speed increases with multiplier
+        // Start the game round and multiplier growth animation
+        startGame() {
+            if (this.gameRunning) return;
+
+            // Reset haptic triggers for the new round
+            this.hapticTriggered1_5x = false;
+            this.hapticTriggered5x = false;
+            this.hapticTriggered10x = false;
+            this.whooshPlayed = false; // Reset whoosh sound trigger
+
+            this.gameRunning = true;
+            this.waitingForNextRound = false; // Game is running, not waiting
+            this.multiplier = 1.00; // Start multiplier at 1.00x
+            this.playerCashedOut = false; // Player hasn't cashed out yet
+            this.playerCashOutPoint = 0; // Reset cashout point
+            this.graphPoints = [{ x: Date.now(), y: 1.00 }]; // Start graph at current time and 1.00x
+            this.roundCount++; // Increment round count for mystery drops
+
+            // Determine the crash point for this round
+            const baseRandom = Math.random();
+            let crashMultiplier;
+
+            if (this.isMysteryRound) {
+                // Guaranteed win in Mystery Round (crash between 1.5x and 5x)
+                crashMultiplier = 1.5 + Math.random() * 3.5;
+                this.isMysteryRound = false; // Reset mystery round flag after setting crash point
+            } else if (this.consecutiveLosses >= 3 && !this.userLoggedIn) {
+                // Force a win after 3+ losses in free mode (guarantee crash >= 2.0x)
+                crashMultiplier = parseFloat((Math.random() * 3 + 2.0).toFixed(2));
+                this.showToast("Feeling lucky? We've boosted your odds!", 'info', 3000); // Add a nudge
+            } else {
+                // Standard RNG with Near-Miss Trick bias
+                if (baseRandom < 0.9) { // 90% chance to trigger near-miss bias
+                   const nearMissTarget = 9 + Math.random() * 1; // Target 9x to 10x
+                   crashMultiplier = nearMissTarget - (Math.random() * 0.5); // Crash within 0.5x below the target
+                   crashMultiplier = Math.max(1.01, crashMultiplier); // Ensure it's at least 1.01x
+                } else {
+                   // Standard RNG for other cases (higher multipliers less likely)
+                   if (baseRandom < 0.95) crashMultiplier = parseFloat((Math.random() * 5 + 5.01).toFixed(2)); // 5.01x to 10.01x
+                   else crashMultiplier = parseFloat((Math.random() * 10 + 10.01).toFixed(2)); // 10.01x+
+                }
+            }
+
+            this.crashAt = parseFloat(crashMultiplier.toFixed(2)); // Ensure 2 decimal places
+
+            this.animateGame(); // Start the multiplier animation loop
+            this.playSound('ambient', true); // Ensure ambient sound is playing and looping
+
+             // Trigger Mystery Drop event if round count reached
+             if (this.roundCount % 15 === 0 && this.roundCount > 0) {
+                 this.triggerMysteryDrop();
+             }
+        },
+
+        // Animate the multiplier and update the graph
+        animateGame() {
+          if (!this.gameRunning) return; // Stop animation if game is not running
+
+          // Increase multiplier (speed increases with multiplier)
+          const speed = 0.02 + Math.pow(this.multiplier, 1.5) * 0.001; // Exponential speed increase
           this.multiplier += speed;
           this.multiplier = parseFloat(this.multiplier.toFixed(2)); // Keep to 2 decimal places
 
           // Update graph points
-          const elapsed = Date.now() - (this.graphPoints.length > 0 ? this.graphPoints[0].x : Date.now()); // Calculate elapsed time from start
+          const elapsed = Date.now() - (this.graphPoints[0]?.x || Date.now()); // Calculate elapsed time from start
            if(this.graphPoints.length === 1) this.graphPoints[0].x = Date.now(); // Set start time on first frame
            this.graphPoints.push({ x: Date.now(), y: this.multiplier });
-           this.drawGraph(); // Redraw graph
+           this.drawGraph(); // Redraw graph on each frame
 
-          // Update multiplier display color and glow
+          // Update multiplier display text, color, and glow based on state and value
           const multiplierDisplay = document.getElementById('multiplier');
           if (multiplierDisplay) {
               multiplierDisplay.textContent = this.multiplier.toFixed(2) + "x";
+              // Remove previous state/glow classes
               multiplierDisplay.classList.remove('state-waiting', 'state-betting', 'state-crashed', 'glow-medium', 'glow-high', 'glow-jackpot', 'jitter', 'near-crash');
+              // Add current state class
               multiplierDisplay.classList.add('state-running');
 
+              // Add glow classes based on multiplier value
               if (this.multiplier >= 10) {
                   multiplierDisplay.classList.add('glow-jackpot');
               } else if (this.multiplier >= 5) {
                    multiplierDisplay.classList.add('glow-high');
+                   // Add jitter near bust for high multipliers
                    if (this.crashAt - this.multiplier <= 0.5 && this.crashAt > 1.5) {
-                       multiplierDisplay.classList.add('jitter'); // Add jitter near bust
+                       multiplierDisplay.classList.add('jitter');
                    }
               } else if (this.multiplier >= 2) {
                   multiplierDisplay.classList.add('glow-medium');
               }
 
-              // Flicker and tilt when nearing crash
+              // Add flicker and tilt effect when nearing crash (within 0.5x)
               if (this.gameRunning && this.crashAt - this.multiplier < 0.5 && this.crashAt > 1.5) {
                  multiplierDisplay.classList.add('near-crash');
               } else {
@@ -976,120 +1108,149 @@
               }
           }
 
-          // Update sticky button multiplier display
+          // Update sticky cashout button multiplier display
           this.updateStickyButton();
 
-          // Haptic feedback at certain multipliers
+          // Haptic feedback at specific multiplier milestones
           if (this.multiplier >= 1.5 && !this.hapticTriggered1_5x) {
-            this.vibrate([50, 30, 50]);
+            this.vibrate([50, 30, 50]); // Mid vibration at 1.5x
             this.hapticTriggered1_5x = true;
           }
           if (this.multiplier >= 5.0 && !this.hapticTriggered5x) {
-            this.vibrate([70, 40, 70]);
+            this.vibrate([70, 40, 70]); // Stronger vibration at 5x
             this.hapticTriggered5x = true;
              this.playSound('whoosh'); // Play whoosh sound past 5x
           }
           if (this.multiplier >= 10.0 && !this.hapticTriggered10x) {
-            this.vibrate([100, 50, 100]);
+            this.vibrate([100, 50, 100]); // Heavy buzz at 10x
             this.hapticTriggered10x = true;
-             document.getElementById('game').classList.add('shake'); // Camera shake at 10x
+             // Trigger camera shake effect at 10x
+             document.getElementById('game').classList.add('shake');
              setTimeout(() => document.getElementById('game').classList.remove('shake'), 300);
           }
 
 
           // Check for crash
           if (this.multiplier >= this.crashAt) {
-            this.gameRunning = false;
+            this.gameRunning = false; // Game stops
             this.canCashout = false; // Cannot cash out after crash
-            this.multiplier = this.crashAt; // Set final multiplier to crash point
+            this.multiplier = this.crashAt; // Set final multiplier to the exact crash point
 
-            // Delayed crash effect and message
+            // Delayed crash effects and game over sequence
             setTimeout(() => {
               this.vibrate([200, 100, 200]); // Strong crash haptic
               this.playSound('shatter'); // Play shatter sound
 
-              // Red screen flash
+              // Red screen flash effect
               const flash = document.createElement('div');
               flash.className = 'crash-flash';
               document.body.appendChild(flash);
               setTimeout(() => flash.remove(), 300);
 
-              // UI shake
+              // UI shake effect
               document.getElementById('game').classList.add('shake');
               setTimeout(() => document.getElementById('game').classList.remove('shake'), 300);
 
+              // Update multiplier display to show crashed state
+              if (multiplierDisplay) {
+                 multiplierDisplay.textContent = `CRASHED AT ${this.crashAt.toFixed(2)}x`;
+                 multiplierDisplay.classList.remove('state-running', 'glow-medium', 'glow-high', 'glow-jackpot', 'jitter', 'near-crash');
+                 multiplierDisplay.classList.add('state-crashed');
+              }
 
-              this.addMessage('System', `CRASHED AT ${this.crashAt.toFixed(2)}x! 💥`);
 
-               // Add crash point to recent crashes
+              this.addMessage('System', `CRASHED AT ${this.crashAt.toFixed(2)}x! 💥`); // Add crash message to chat
+
+               // Add crash point to recent crashes history
                this.recentCrashes = [this.crashAt, ...this.recentCrashes.slice(0, 4)];
 
               // Check if player busted
               if (!this.playerCashedOut) {
-                  this.lossStreak++; // Increment loss streak
-                  this.totalLosses += this.betAmount; // Add to total losses for recovery meter
+                  this.consecutiveLosses++; // Increment consecutive losses
+                  this.totalLosses += this.betAmount; // Add to total amount lost for recovery meter
                   this.showToast(`Busted at ${this.crashAt.toFixed(2)}x! You lost ${this.betAmount.toFixed(3)} SOL.`, 'error', 5000);
 
-                  // Loss recovery bribe modal (Free Drop)
+                  // Loss recovery bribe modal (Free Drop) - triggered after 3 consecutive losses in free mode
                   if (this.lossStreak >= 3 && !this.userLoggedIn) {
                       this.openModal('free_drop'); // Open free drop modal
                   }
-                   // Lucky Drop Recovery Meter check
-                   if (this.totalLosses >= 0.5) {
+                   // Lucky Drop Recovery Meter check - triggered after a certain amount lost
+                   if (this.totalLosses >= 0.5) { // Example threshold
                        this.balance += 0.01; // Add free SOL
                        this.showToast('Lucky Drop! Free 0.01 SOL Added!', 'success', 5000);
                        this.totalLosses = 0; // Reset total losses after lucky drop
                    }
 
               } else {
+                  // Player cashed out before the crash
                   this.lossStreak = 0; // Reset loss streak on cashout
                   this.totalLosses = 0; // Reset total losses on cashout
-                  // Player cashed out, win message handled in cashOut()
+                  // Win message and effects are handled in cashOut()
               }
 
               this.lastRoundEndTime = Date.now(); // Record round end time
 
-              // Start next round countdown after a break (Auto-Looping Replay)
+              // Start next round countdown after a short break (Auto-Looping Replay)
               setTimeout(() => {
                   if (this.autoPlay) {
                       this.startGame(); // Auto-start next game if auto-play is on
                   } else {
                       this.startInitialCountdown(); // Start countdown if auto-play is off
-                      document.getElementById('start-btn').focus(); // Focus BET button for quick retry
+                      // Focus the BET button for quick manual retry
+                      document.getElementById('start-btn').focus();
                   }
               }, 500); // 500ms break before retry/countdown
 
             }, 50); // Short delay for immediate visual stop
 
           } else {
+            // Continue animation loop
             requestAnimationFrame(() => this.animateGame());
           }
         },
 
+        // Handle player cash out (triggered by CASH OUT button click)
         cashOut() {
-          if (!this.gameRunning || !this.canCashout || this.playerCashedOut) return;
+          // Prevent cashing out if game is not running, already cashed out, or no bet placed
+          if (!this.gameRunning || this.playerCashedOut || this.betAmount === 0) return;
+
+          this.lastAction = Date.now(); // Update last action timestamp
 
           this.playerCashedOut = true; // Mark player as cashed out
-          this.playerCashOutPoint = this.multiplier; // Record cashout multiplier
-          this.canCashout = false; // Disable cashout button
+          this.playerCashOutPoint = this.multiplier; // Record the multiplier at cashout
+          this.canCashout = false; // Disable cashout button after cashing out
 
-          // Calculate winnings, applying bonus mode if active
+          // Calculate winnings, applying bonus mode multiplier if active
           const winnings = this.betAmount * this.playerCashOutPoint * (this.isBonusMode ? 1.1 : 1);
-          this.balance += winnings; // Add winnings to balance
+          this.balance += winnings; // Add winnings to balance (frontend simulation)
 
-          this.lossStreak = 0; // Reset loss streak on win
-          this.totalLosses = 0; // Reset total losses on win
+          // Reset loss streaks on a successful cashout
+          this.lossStreak = 0;
+          this.totalLosses = 0;
 
-          // Update biggest win if applicable
+          // Update biggest win if the current cashout multiplier is higher
           if (this.playerCashOutPoint > this.biggestWin) {
             this.biggestWin = this.playerCashOutPoint;
+             // Update player's entry in the leaderboard (frontend sim)
+             const playerIndex = this.leaderboard.findIndex(p => p.username === 'You');
+             if (playerIndex !== -1) {
+                 this.leaderboard[playerIndex] = { username: 'You', multiplier: this.playerCashOutPoint, winnings: winnings };
+             } else {
+                 this.leaderboard.push({ username: 'You', multiplier: this.playerCashOutPoint, winnings: winnings });
+             }
+             // Sort leaderboard (frontend sim)
+             this.leaderboard.sort((a, b) => b.multiplier - a.multiplier);
           }
 
+          // Check for missions completed by cashing out
+          if (this.playerCashOutPoint >= 3) this.missions.cashout3x = true;
+
+
+          // Trigger win celebration effects
           this.vibrate([100, 50, 100]); // Win haptic
-           // Play win sound (coin clinks for <5x, cheers for >=5x)
+           // Play win sound (coin clinks for <5x, crowd cheers for >=5x)
            if (this.playerCashOutPoint >= 5) this.playSound('bigwin');
            else this.playSound('win');
-
 
           this.addMessage('You', `Cashed out at ${this.playerCashOutPoint.toFixed(2)}x! Won ${winnings.toFixed(2)} SOL 🎉`); // Add win message to chat
           this.createConfetti(); // Trigger confetti animation
@@ -1097,19 +1258,16 @@
 
           this.showToast(`Cashed out at ${this.playerCashOutPoint.toFixed(2)}x! Won ${winnings.toFixed(3)} SOL`, 'success', 5000);
 
-          // Simulate "Almost Made It" toast if the crash point was higher
-          if (this.crashAt > this.playerCashOutPoint + 0.5) { // Trigger if crash was significantly higher
+          // Simulate "Almost Made It" toast if the crash point was significantly higher
+          if (this.crashAt > this.playerCashOutPoint + 0.5) { // Trigger if crash was more than 0.5x higher
               this.showAlmostMadeItToast(this.playerCashOutPoint, this.crashAt);
           }
 
-           // Post-Win Nudge
+           // Post-Win Nudge to encourage depositing
            this.showPostWinNudge();
 
 
-          // If auto-play is on, the next round will start automatically after the break
-          // No need to manually start game here
-
-           // Request notification permission after first cashout
+          // Request push notification permission after the first cashout
            if (Notification.permission === 'default') {
              Notification.requestPermission().then(permission => {
                if (permission === 'granted') {
@@ -1118,13 +1276,17 @@
              });
            }
 
+          // If auto-play is on, the next round will start automatically after the break
+          // The game animation loop will continue until the crash point is reached
         },
 
+        // Toggle auto-play mode
         toggleAuto() {
           this.autoPlay = !this.autoPlay;
           this.autoCountdown = 3; // Reset countdown when toggled
           if (this.autoPlay && !this.gameRunning && !this.waitingForNextRound) {
-            this.startInitialCountdown(); // Start countdown if game is idle
+            // If toggling auto-play on and game is idle, start the initial countdown
+            this.startInitialCountdown();
           }
            this.showToast(this.autoPlay ? 'Auto-play ENABLED' : 'Auto-play DISABLED', 'info', 2000);
         },
@@ -1165,14 +1327,16 @@
             // Draw background grid (simplified)
             ctx.strokeStyle = '#2a2a2a'; // Darker gray for grid
             ctx.lineWidth = 0.5;
-            const gridSpacing = 50; // px
-            for (let i = 0; i < width; i += gridSpacing) {
+            const gridSpacingX = Math.max(50, width / 10); // Adaptive grid spacing
+            const gridSpacingY = Math.max(50, height / 5);
+
+            for (let i = 0; i < width; i += gridSpacingX) {
                 ctx.beginPath();
                 ctx.moveTo(i, 0);
                 ctx.lineTo(i, height);
                 ctx.stroke();
             }
-             for (let i = 0; i < height; i += gridSpacing) {
+             for (let i = 0; i < height; i += gridSpacingY) {
                 ctx.beginPath();
                 ctx.moveTo(0, i);
                 ctx.lineTo(width, i);
@@ -1196,8 +1360,8 @@
             const maxTime = this.graphPoints[this.graphPoints.length - 1].x - this.graphPoints[0].x;
             const maxMultiplier = Math.max(...this.graphPoints.map(p => p.y), 2.0); // Ensure scale goes at least to 2x
 
-            this.graphScaleX = width / (maxTime + 500); // Add padding based on time
-            this.graphScaleY = height / (maxMultiplier * 1.1); // Add padding above max multiplier
+            this.graphScaleX = width / (maxTime + 500); // Add some padding based on time
+            this.graphScaleY = height / (maxMultiplier * 1.1); // Add some padding above max multiplier
 
             // Draw the multiplier line
             ctx.strokeStyle = this.gameRunning ? '#7B61FF' : var(--loss); // Purple when running, Red when crashed
@@ -1256,7 +1420,7 @@
              ctx.fillStyle = '#aaa';
              ctx.font = '10px Sora';
              ctx.textAlign = 'center';
-             for (let i = 0; i <= maxTime; i += 1000) { // Every 1 second
+             for (let i = 0; i <= maxTime + 1000; i += 1000) { // Every 1 second, add some buffer
                  const x = (i + (this.graphPoints[0]?.x || 0)) * this.graphScaleX; // Adjust for start time
                  if (x >= 0 && x <= width) {
                      ctx.fillText(`${Math.floor(i / 1000)}s`, x, height + 15);
@@ -1266,7 +1430,7 @@
              // Draw Y-axis labels (multipliers)
              ctx.textAlign = 'right';
              ctx.textBaseline = 'middle';
-             for (let i = 1; i <= maxMultiplier; i += 1) { // Every 1x
+             for (let i = 1; i <= maxMultiplier + 1; i += 1) { // Every 1x, add some buffer
                   const y = height - (i * this.graphScaleY);
                   if (y > 0) { // Avoid drawing above canvas
                      ctx.fillText(`${i}.00x`, -5, y);
@@ -1332,7 +1496,8 @@
         },
 
 
-        // Mobile UX (Handle sticky cashout button visibility)
+        // --- Mobile UX ---
+        // Handles scroll events to show/hide the sticky cashout button on mobile
         handleScroll() {
            const gameArea = document.getElementById('game'); // Use the main game area
            const stickyButton = document.getElementById('cashout-btn-sticky');
@@ -1388,6 +1553,7 @@
         },
 
 
+        // --- Haptic Feedback ---
         // Triggers haptic feedback (vibration) on supported devices
         vibrate(pattern) {
           if ("vibrate" in navigator) {
@@ -1399,6 +1565,7 @@
           }
         },
 
+        // --- Chat ---
         // Scrolls the chat feed to the top (most recent messages)
         scrollToChatTop() { // Renamed to scroll to top for column-reverse
           this.$nextTick(() => {
@@ -1409,6 +1576,50 @@
           });
         },
 
+        // Adds a message to the chat feed
+        addMessage(user, msg) {
+           const messageDiv = document.createElement('div');
+           messageDiv.style.cssText = 'padding: 8px 0; border-bottom: 1px solid #333;';
+
+           const userSpan = document.createElement('span');
+           userSpan.style.cssText = 'color: var(--secondary); font-weight: bold; margin-right: 5px;';
+           userSpan.textContent = `${user}:`;
+
+           const msgSpan = document.createElement('span');
+           msgSpan.textContent = msg;
+
+           messageDiv.appendChild(userSpan);
+           messageDiv.appendChild(msgSpan);
+
+           const chatFeed = this.$refs.chatFeed;
+           if (chatFeed) {
+               // Add new message to the top (since flex-direction is column-reverse)
+               chatFeed.prepend(messageDiv);
+               // Limit chat history
+               while (chatFeed.children.length > 50) { // Keep last 50 messages
+                   chatFeed.removeChild(chatFeed.lastChild);
+               }
+               this.scrollToChatTop(); // Scroll to show the newest message
+           }
+        },
+
+        // Adds a fake chat message (for FOMO)
+        addFakeChatMessage(user, msg) {
+             const isBigWin = msg.includes('cashed out') || msg.includes('hit'); // Simple check for big win messages
+             const message = {
+                 id: Date.now() + Math.random(), // Unique ID
+                 user: user,
+                 text: msg,
+                 isBigWin: isBigWin
+             };
+             this.chatMessages.unshift(message); // Add to the beginning of the array
+             // Keep chat history limited (handled by the template loop rendering the array)
+             this.chatMessages = this.chatMessages.slice(0, 50);
+             this.scrollToChatTop(); // Scroll to show the new message
+        },
+
+
+        // --- Toast Notifications ---
         // Shows a temporary toast notification
         showToast(message, type = 'info', duration = 3000) {
           const toastContainer = document.getElementById('toast-container'); // Use the dedicated container
@@ -1462,29 +1673,33 @@
 
 
         // --- Modal System ---
+        // Opens a specific modal
         openModal(type) {
           this.modalType = type;
           this.modalOpen = true;
-          document.body.style.overflow = 'hidden'; // Prevent body scroll
+          document.body.style.overflow = 'hidden'; // Prevent body scroll when modal is open
         },
 
+        // Closes the currently open modal
         closeModal() {
           this.modalOpen = false;
           document.body.style.overflow = ''; // Restore body scroll
         },
 
         // --- Wallet & Monetization ---
+        // Simulates wallet connection
         connectWallet() {
-          // Simulate wallet connection
+          // In a real app, this would integrate with Solana wallet providers (Phantom, Solflare)
+          // using @solana/web3.js
           this.userLoggedIn = true;
           this.balance = 0.1; // Demo balance after connecting
           this.showToast('Wallet connected!', 'success');
           this.addMessage('System', 'Wallet connected! Deposit to play!');
-          // Prompt deposit after connecting (optional, can be triggered by other events)
+          // Optional: Prompt deposit after connecting
           // setTimeout(() => this.openModal('deposit'), 500);
         },
 
-        // Simulate a deposit
+        // Simulates a deposit transaction
         simulateDeposit() {
              const depositAmount = parseFloat(this.depositAmount);
              if (isNaN(depositAmount) || depositAmount < 0.01) {
@@ -1499,48 +1714,49 @@
                  this.totalDeposited += depositAmount; // Track total deposited for bonus
 
                  // Check for first deposit bonus
-                 if (!this.firstDepositMade && this.totalDeposited >= 0.1) {
+                 if (!this.firstDepositMade && this.totalDeposited >= 0.1) { // Example threshold for first bonus
                    this.balance += 0.01; // Add bonus
                    this.showToast('+0.01 SOL FREE for First Deposit!', 'success', 5000);
                    this.firstDepositMade = true;
-                 } else if (this.firstDepositMade && this.totalDeposited >= 0.2) {
-                    // Example for next bonus tier
-                    this.balance += 0.02;
+                 } else if (this.firstDepositMade && this.totalDeposited >= 0.2) { // Example for next bonus tier
+                    this.balance += 0.02; // Add bonus
                     this.showToast('Bonus Claimed: +0.02 SOL!', 'success', 5000);
                     this.totalDeposited = 0; // Reset for next tier (example logic)
                  }
 
 
                  this.showToast(`Deposit successful! Balance: ${this.balance.toFixed(2)} SOL`, 'success', 3000);
-                 this.closeModal();
+                 this.closeModal(); // Close deposit modal after simulation
              }, 1500); // Simulate processing time
         },
 
 
+        // Simulates a withdrawal request
         requestWithdraw() {
           if (this.withdrawAmount > this.balance) {
             this.showToast('Not enough balance!', 'error');
             return;
           }
-          if (this.withdrawAmount < 0.1) {
+          if (this.withdrawAmount < 0.1) { // Minimum withdrawal amount
                this.showToast('Minimum withdrawal is 0.1 SOL.', 'error');
                return;
           }
 
           // Simulate withdrawal request
           this.showToast('Withdrawal requested! Processing will take 24 hours.', 'info', 5000);
-          // In a real app, balance deduction happens after transaction confirmation
+          // In a real application, this would initiate a backend process for withdrawal
           // For simulation, we'll just close the modal
           this.closeModal();
         },
 
+        // Offers the "Double or Nothing" gamble during withdrawal
         offerDouble() {
           const riskAmount = parseFloat(this.withdrawAmount);
           if (riskAmount > this.balance) {
-             thisToast('Not enough balance to double!', 'error');
+             this.showToast('Not enough balance to double!', 'error');
              return;
           }
-          if (riskAmount < 0.1) {
+          if (riskAmount < 0.1) { // Minimum amount to risk
               this.showToast('Minimum amount to double is 0.1 SOL.', 'error');
               return;
           }
@@ -1557,62 +1773,72 @@
                 this.showToast('You lost! Double or Nothing failed.', 'error', 5000);
                 // Balance already deducted
               }
-               this.withdrawAmount = 0.1; // Reset withdraw amount input
-               this.closeModal();
+               this.withdrawAmount = 0.1; // Reset withdraw amount input in modal
+               this.closeModal(); // Close modal after outcome
           }, 2000); // Simulate processing time
         },
 
         // --- Chat ---
+        // Adds a message to the chat feed
         addMessage(user, msg) {
-           const messageDiv = document.createElement('div');
-           messageDiv.style.cssText = 'padding: 8px 0; border-bottom: 1px solid #333;';
-
-           const userSpan = document.createElement('span');
-           userSpan.style.cssText = 'color: var(--secondary); font-weight: bold; margin-right: 5px;';
-           userSpan.textContent = `${user}:`;
-
-           const msgSpan = document.createElement('span');
-           msgSpan.textContent = msg;
-
-           messageDiv.appendChild(userSpan);
-           messageDiv.appendChild(msgSpan);
-
-           const chatFeed = this.$refs.chatFeed;
-           if (chatFeed) {
-               // Add new message to the top (since flex-direction is column-reverse)
-               chatFeed.prepend(messageDiv);
-               // Limit chat history
-               while (chatFeed.children.length > 50) { // Keep last 50 messages
-                   chatFeed.removeChild(chatFeed.lastChild);
-               }
-               this.scrollToChatTop(); // Scroll to show the newest message
-           }
+           // Create a new message object
+           const message = {
+               id: Date.now() + Math.random(), // Unique ID
+               user: user,
+               text: msg,
+               isBigWin: msg.includes('🔥') || msg.includes('🤑') || msg.includes('🚀') // Simple check for big win emojis/text
+           };
+           // Add the new message to the beginning of the chatMessages array
+           this.chatMessages.unshift(message);
+           // Keep chat history limited (handled by the template loop rendering the array)
+           this.chatMessages = this.chatMessages.slice(0, 50); // Keep last 50 messages
+           // Scroll to the top to show the newest message
+           this.scrollToChatTop();
         },
 
+        // Adds a fake chat message (for FOMO)
+        addFakeChatMessage(user, msg) {
+             const isBigWin = msg.includes('🔥') || msg.includes('🤑') || msg.includes('🚀'); // Simple check for big win emojis/text
+             const message = {
+                 id: Date.now() + Math.random(), // Unique ID
+                 user: user,
+                 text: msg,
+                 isBigWin: isBigWin
+             };
+             this.chatMessages.unshift(message); // Add to the beginning of the array
+             // Keep chat history limited (handled by the template loop rendering the array)
+             this.chatMessages = this.chatMessages.slice(0, 50);
+             this.scrollToChatTop(); // Scroll to show the newest message
+        },
+
+
         // --- Addictive Elements ---
+        // Creates confetti animation
         createConfetti() {
           for (let i = 0; i < 50; i++) {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
-            confetti.style.left = `${Math.random() * 100}vw`;
-            confetti.style.backgroundColor = ['#f472b6', '#7b61ff', '#34d399', '#FBBF24', '#FFD700'][Math.floor(Math.random() * 5)]; // Added gold
-            confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+            confetti.style.left = `${Math.random() * 100}vw`; // Random horizontal position
+            confetti.style.backgroundColor = ['#f472b6', '#7b61ff', '#34d399', '#FBBF24', '#FFD700'][Math.floor(Math.random() * 5)]; // Random color including gold
+            confetti.style.animationDelay = `${Math.random() * 0.5}s`; // Random delay
             document.body.appendChild(confetti);
-            setTimeout(() => confetti.remove(), 2000);
+            setTimeout(() => confetti.remove(), 2000); // Remove after animation
           }
         },
 
+        // Shows a temporary win streak animation
         showWinStreak() {
           const streak = document.createElement('div');
           streak.className = 'win-streak';
           streak.textContent = `WINNER! ${this.playerCashOutPoint.toFixed(2)}x`; // Use actual cashout point
           document.body.appendChild(streak);
-          setTimeout(() => streak.remove(), 3000);
+          setTimeout(() => streak.remove(), 3000); // Remove after animation
         },
 
-         // Show post-win deposit nudge toast
+         // Show post-win deposit nudge toast and shaking button
          showPostWinNudge() {
-             const potentialWin = this.betAmount * this.playerCashOutPoint * 1.8; // Example calculation
+             // Calculate potential win with a higher bet amount (example 0.05 SOL)
+             const potentialWin = 0.05 * (this.playerCashOutPoint || 1) * (this.isBonusMode ? 1.1 : 1); // Use 0.05 SOL as example
              this.showToast(`You’d have won ${potentialWin.toFixed(2)} SOL with a 0.05 SOL bet! Deposit Now?`, 'info', 5000);
 
              // Show shaking quick deposit button
@@ -1636,6 +1862,21 @@
             // The special crash logic is handled in startGame()
         },
 
+        // Trigger Group Multiplier Bonus Mode
+        triggerBonusMode() {
+            this.showToast('Bonus Mode in 30s! All Wins x1.1!', 'info', 30000); // Announce upcoming bonus
+            let countdown = 30;
+            const timer = setInterval(() => {
+              countdown--;
+              if (countdown <= 0) {
+                clearInterval(timer);
+                this.isBonusMode = true; // Activate bonus mode
+                this.showToast('Bonus Mode Active! All Wins x1.1!', 'success', 60000); // Announce active bonus
+                setTimeout(() => this.isBonusMode = false, 60000); // Bonus lasts for 60 seconds
+              }
+            }, 1000);
+        },
+
 
         // Provably Fair (Frontend Simulation)
         hashCode(str) {
@@ -1650,7 +1891,7 @@
 
          // --- Audio Management (using Howler.js) ---
          initAudio() {
-             // Load sounds
+             // Load sounds using Howler.js
              this.sounds = {
                  whoosh: new Howl({ src: ['https://www.soundjay.com/misc/sounds/whoosh-2.mp3'], volume: 0.5 }),
                  win: new Howl({ src: ['https://www.soundjay.com/money/sounds/coins-jingle-1.mp3'], volume: 0.7 }),
@@ -1660,7 +1901,7 @@
                  ambient: new Howl({ src: ['https://www.soundjay.com/misc/sounds/casino-ambience.mp3'], loop: true, volume: 0.1 })
              };
 
-             // Play ambient sound on first user interaction
+             // Play ambient sound on first user interaction to bypass autoplay restrictions
              document.body.addEventListener('click', () => {
                  if (!this.sounds.ambient.playing()) {
                      this.sounds.ambient.play();
@@ -1668,6 +1909,7 @@
              }, { once: true }); // Only trigger on the first click
          },
 
+         // Plays a loaded sound by name
          playSound(name, loop = false) {
              if (this.sounds[name]) {
                  this.sounds[name].loop(loop).play();
@@ -1675,17 +1917,54 @@
          },
 
          // --- Daily Missions ---
+         // Claims the reward for a completed mission
          claimMissionReward(missionKey) {
              if (this.missions[missionKey]) {
                  // Simulate claiming reward
-                 this.balance += 0.005; // Add reward to balance
+                 this.balance += 0.005; // Example reward amount
                  this.showToast('Claimed 0.005 SOL!', 'success', 3000);
-                 this.missions[missionKey] = false; // Mark mission as claimed (reset daily in real app)
+                 this.missions[missionKey] = false; // Mark mission as claimed (in a real app, this would reset daily)
                  // Reset mission counter if needed
                  if (missionKey === 'bet5') this.totalBets = 0;
+                  // Add other mission reward logic here
              } else {
                  this.showToast('Mission not complete!', 'info', 2000);
              }
+         },
+
+         // --- Viral Growth ---
+         // Shares a referral link (simulated)
+         shareReferral() {
+            const text = 'Join SOL Crash & get 0.01 SOL free! 🎰 https://solcrash.app?ref=123'; // Replace with actual referral link structure
+            if (navigator.share) {
+              // Use Web Share API if available (for native sharing)
+              navigator.share({
+                title: 'SOL Crash',
+                text: text,
+                url: 'https://solcrash.app' // Replace with actual URL
+              }).catch((error) => console.error('Error sharing:', error));
+            } else {
+              // Fallback to opening Twitter Web Intent
+              window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+            }
+         },
+
+         // Updates the leaderboard (frontend simulation)
+         updateLeaderboard(username, multiplier, winnings) {
+            // Create a new leaderboard entry
+            const newEntry = { username, multiplier, winnings };
+            // Add the new entry and filter out the old entry for the same user
+            const updatedLeaderboard = [newEntry, ...this.leaderboard.filter(l => l.username !== username)];
+            // Sort the leaderboard by multiplier (descending)
+            updatedLeaderboard.sort((a, b) => b.multiplier - a.multiplier);
+            // Keep only the top 5 players
+            this.leaderboard = updatedLeaderboard.slice(0, 5);
+
+            // Announce new record if applicable
+            if (this.leaderboard[0] === newEntry && this.leaderboard.length > 1) {
+                this.showToast(`${username} set a new record: ${multiplier.toFixed(2)}x!`, 'success', 5000);
+                // Optional: Add a visual flash effect to the leaderboard entry
+            }
          }
 
       }));
