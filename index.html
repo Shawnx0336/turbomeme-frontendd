@@ -1,1339 +1,1171 @@
 <!DOCTYPE html>
-<html lang="en" x-data="crashApp" x-init="init()">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#121212">
-  <meta name="description" content="SOL Crash Game - Bet SOL and cash out before the rocket crashes!">
-  <title>SOL Crash | 1000x Multipliers | Play with Solana</title>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
-  <style>
-    :root {
-      --primary: #7B61FF;
-      --primary-dark: #5a43d6;
-      --secondary: #FF6BEC;
-      --secondary-dark: #e055d3;
-      --danger: #F87171;
-      --danger-dark: #dc2626;
-      --success: #4ADE80;
-      --success-dark: #22c55e;
-      --warning: #FBBF24;
-      --warning-dark: #f59e0b;
-      --bg: #121212;
-      --bg-light: #1a1a1a;
-      --card-bg: #1E1E1E;
-      --card-border: #333;
-      --text-primary: #FFFFFF;
-      --text-secondary: #A1A1AA;
-    }
-    
-    * {
-      -webkit-tap-highlight-color: transparent;
-      -webkit-overflow-scrolling: touch;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: var(--bg);
-      color: var(--text-primary);
-      margin: 0;
-      padding: 0;
-      overscroll-behavior: none;
-      touch-action: manipulation;
-      line-height: 1.5;
-    }
-    
-    #app {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      height: -webkit-fill-available;
-      overflow: hidden;
-      position: relative;
-    }
-    
-    /* Header with balance */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 15px;
-      background: var(--bg-light);
-      border-bottom: 1px solid var(--card-border);
-    }
-    
-    .header-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .balance-display {
-      background: var(--card-bg);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    
-    /* Main game area */
-    #game {
-      flex: 1;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      gap: 12px;
-    }
-    
-    /* Multiplier display with animation */
-    #multiplier {
-      font-size: 3.5rem;
-      font-weight: 800;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-align: center;
-      margin: 5px 0;
-      line-height: 1;
-      text-shadow: 0 2px 10px rgba(123, 97, 255, 0.3);
-      transition: transform 0.1s ease-out;
-    }
-    
-    #multiplier.animating {
-      transform: scale(1.05);
-    }
-    
-    /* Graph container with rocket animation */
-    #graph-container {
-      flex: 1;
-      min-height: 200px;
-      background: var(--card-bg);
-      border-radius: 12px;
-      position: relative;
-      margin: 0 0 10px;
-      overflow: hidden;
-      border: 1px solid var(--card-border);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    #graph {
-      width: 100%;
-      height: 100%;
-    }
-    
-    #rocket-line {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 3px;
-      background: linear-gradient(to top, var(--primary), var(--secondary));
-      height: 0;
-      z-index: 1;
-    }
-    
-    #rocket {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%) translateY(50%);
-      width: 28px;
-      height: 28px;
-      transition: bottom 0.05s linear;
-      image-rendering: crisp-edges;
-      z-index: 2;
-      filter: drop-shadow(0 0 5px rgba(123, 97, 255, 0.5));
-    }
-    
-    .graph-grid {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 0 10px;
-    }
-    
-    .grid-line {
-      border-top: 1px dashed rgba(255, 255, 255, 0.1);
-      position: relative;
-    }
-    
-    .grid-label {
-      position: absolute;
-      right: 0;
-      top: -10px;
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-    }
-    
-    /* Controls section */
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 5px;
-    }
-    
-    button {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 10px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    
-    button:active:not(:disabled) {
-      transform: scale(0.97);
-      background: var(--primary-dark);
-    }
-    
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .btn-secondary {
-      background: var(--secondary);
-    }
-    
-    .btn-secondary:active:not(:disabled) {
-      background: var(--secondary-dark);
-    }
-    
-    .btn-danger {
-      background: var(--danger);
-    }
-    
-    .btn-danger:active:not(:disabled) {
-      background: var(--danger-dark);
-    }
-    
-    .btn-success {
-      background: var(--success);
-    }
-    
-    .btn-success:active:not(:disabled) {
-      background: var(--success-dark);
-    }
-    
-    .btn-warning {
-      background: var(--warning);
-      color: #000;
-    }
-    
-    .btn-warning:active:not(:disabled) {
-      background: var(--warning-dark);
-    }
-    
-    /* Bet amount input */
-    .bet-input-container {
-      position: relative;
-      grid-column: span 2;
-    }
-    
-    .bet-amount-buttons {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-    }
-    
-    .bet-amount-btn {
-      flex: 1;
-      padding: 8px;
-      font-size: 0.8rem;
-      background: var(--card-bg);
-    }
-    
-    input {
-      padding: 14px;
-      border-radius: 10px;
-      border: 1px solid var(--card-border);
-      background: var(--card-bg);
-      color: white;
-      font-size: 1rem;
-      width: 100%;
-      -webkit-appearance: none;
-      font-weight: 500;
-    }
-    
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    
-    /* Mobile tabs */
-    .mobile-tabs {
-      display: flex;
-      border-top: 1px solid var(--card-border);
-      background: var(--card-bg);
-      position: relative;
-      z-index: 10;
-    }
-    
-    .tab-button {
-      flex: 1;
-      padding: 14px;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      transition: all 0.2s;
-      position: relative;
-    }
-    
-    .tab-button.active {
-      color: var(--text-primary);
-    }
-    
-    .tab-button.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
-      height: 3px;
-      background: var(--primary);
-      border-radius: 3px 3px 0 0;
-    }
-    
-    /* Tab content */
-    .tab-content {
-      display: none;
-      padding: 15px;
-      overflow-y: auto;
-      max-height: 40vh;
-      background: var(--bg-light);
-    }
-    
-    .tab-content.active {
-      display: block;
-      animation: fadeIn 0.3s ease-out;
-    }
-    
-    /* Chat specific styles */
-    .chat-messages {
-      display: flex;
-      flex-direction: column-reverse;
-      min-height: 100px;
-    }
-    
-    .chat-message {
-      padding: 10px 0;
-      border-bottom: 1px solid var(--card-border);
-      word-break: break-word;
-    }
-    
-    .chat-user {
-      color: var(--secondary);
-      font-weight: bold;
-      margin-right: 6px;
-    }
-    
-    .chat-input-container {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    
-    .chat-input {
-      flex: 1;
-      padding: 10px;
-      font-size: 0.9rem;
-    }
-    
-    .chat-send-btn {
-      padding: 0 14px;
-      font-size: 0.9rem;
-    }
-    
-    /* Stats table */
-    .stats-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    
-    .stats-table th {
-      text-align: left;
-      padding: 8px 0;
-      color: var(--text-secondary);
-      font-weight: normal;
-      border-bottom: 1px solid var(--card-border);
-    }
-    
-    .stats-table td {
-      padding: 10px 0;
-      border-bottom: 1px solid var(--card-border);
-    }
-    
-    .stats-table tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .stats-table .highlight {
-      color: var(--primary);
-      font-weight: bold;
-    }
-    
-    /* Wallet section */
-    .wallet-actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    
-    .wallet-info {
-      background: var(--card-bg);
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-    
-    .wallet-address {
-      font-family: monospace;
-      word-break: break-all;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      margin-top: 5px;
-    }
-    
-    /* History section */
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--card-border);
-    }
-    
-    .history-multiplier {
-      color: var(--success);
-      font-weight: bold;
-    }
-    
-    .history-crashed {
-      color: var(--danger);
-      font-weight: bold;
-    }
-    
-    /* Mobile modals */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.9);
-      z-index: 100;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 15px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease-out;
-    }
-    
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-    
-    .modal-content {
-      background: var(--card-bg);
-      border-radius: 15px;
-      width: 100%;
-      max-width: 420px;
-      max-height: 80vh;
-      overflow-y: auto;
-      padding: 20px;
-      -webkit-overflow-scrolling: touch;
-      transform: translateY(20px);
-      transition: transform 0.2s ease-out;
-      border: 1px solid var(--card-border);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    }
-    
-    .modal-overlay.active .modal-content {
-      transform: translateY(0);
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    
-    .modal-title {
-      font-size: 1.3rem;
-      font-weight: bold;
-      margin: 0;
-    }
-    
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 5px;
-    }
-    
-    .modal-body {
-      margin-bottom: 20px;
-    }
-    
-    .modal-footer {
-      display: flex;
-      gap: 10px;
-    }
-    
-    /* Toast notifications */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--card-bg);
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      opacity: 0;
-      transition: opacity 0.3s, transform 0.3s;
-      max-width: 90%;
-    }
-    
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-    
-    .toast.success {
-      border-left: 4px solid var(--success);
-    }
-    
-    .toast.error {
-      border-left: 4px solid var(--danger);
-    }
-    
-    .toast.warning {
-      border-left: 4px solid var(--warning);
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes rocketPulse {
-      0% { transform: translateX(-50%) translateY(50%) scale(1); }
-      50% { transform: translateX(-50%) translateY(50%) scale(1.1); }
-      100% { transform: translateX(-50%) translateY(50%) scale(1); }
-    }
-    
-    .rocket-pulse {
-      animation: rocketPulse 0.5s infinite;
-    }
-    
-    /* Performance optimizations */
-    .will-change {
-      will-change: transform, opacity;
-    }
-    
-    /* iPhone notch/padding */
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      body {
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      .mobile-tabs {
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-    }
-    
-    /* Responsive adjustments */
-    @media (min-width: 768px) {
-      #multiplier {
-        font-size: 4.5rem;
-      }
-      
-      .controls {
-        grid-template-columns: 1fr 1fr 1fr;
-      }
-      
-      .bet-input-container {
-        grid-column: span 3;
-      }
-      
-      .tab-content {
-        max-height: 50vh;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DegenJack</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basic Reset and Body Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #111; /* Dark background */
+            color: #eee;
+            overflow: hidden; /* Prevent scrolling */
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Full viewport height */
+        }
+
+        /* Custom Scrollbar for Chat */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* Layout Zones */
+        #top-bar {
+            flex-shrink: 0; /* Prevent shrinking */
+            background-color: #0a0a0a; /* Slightly darker */
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #222;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        #game-table {
+            flex-grow: 1; /* Take available space */
+            background-color: #1a1a1a; /* Middle dark */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #bottom-bar {
+            flex-shrink: 0; /* Prevent shrinking */
+            background-color: #0a0a0a; /* Slightly darker */
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid #222;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        /* Top Bar Styles */
+        .wallet-info, .xp-progress, .recent-plays {
+            display: flex;
+            align-items: center;
+        }
+
+        .wallet-info span {
+            margin-right: 10px;
+        }
+
+        .xp-bar-container {
+            width: 150px;
+            height: 8px;
+            background-color: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            width: 0%; /* Initial width */
+            background: linear-gradient(90deg, #8b5cf6, #e879f9); /* Purple gradient */
+            transition: width 0.5s ease-in-out;
+        }
+
+        .recent-plays-ticker {
+            width: 200px;
+            overflow: hidden;
+            white-space: nowrap;
+            font-style: italic;
+            color: #aaa;
+            font-size: 0.8em;
+        }
+
+        .recent-play-item {
+            margin-right: 15px;
+            display: inline-block;
+        }
+
+        .win { color: #10b981; /* Green */ }
+        .loss { color: #ef4444; /* Red */ }
+
+        .menu-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            fill: #eee;
+        }
+
+        /* Game Table Styles */
+        .dealer-hand, .player-hand {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 60px;
+            height: 90px;
+            background-color: #fff;
+            border-radius: 6px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card-back {
+            background-color: #4a4a4a; /* Dark grey back */
+            color: transparent; /* Hide text on back */
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .player-seats {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .player-seat {
+            width: 150px;
+            margin: 0 10px;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .player-seat.active {
+            border-color: #a78bfa; /* Purple glow */
+            box-shadow: 0 0 10px #a78bfa;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            background-color: #5b21b6; /* Violet */
+            border-radius: 50%;
+            margin-right: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+        }
+
+        .username {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .xp-badge {
+            background-color: #facc15; /* Yellow */
+            color: #333;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+
+        .action-buttons {
+            margin-top: 10px;
+        }
+
+        .action-buttons button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .action-buttons button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hit-button {
+            background-color: #10b981; /* Green */
+            color: #0a0a0a;
+            margin-right: 5px;
+        }
+
+        .hit-button:hover:not(:disabled) {
+            background-color: #059669;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        .stand-button {
+            background-color: #ec4899; /* Pink */
+            color: #0a0a0a;
+        }
+
+        .stand-button:hover:not(:disabled) {
+            background-color: #db2777;
+            box-shadow: 0 0 8px #ec4899;
+        }
+
+        .turn-timer-bar {
+            width: 100%;
+            height: 3px;
+            background-color: #333;
+            margin-top: 5px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .turn-timer-fill {
+            height: 100%;
+            width: 100%; /* Initial width */
+            background-color: #3b82f6; /* Blue */
+            transition: width linear; /* Transition handled by JS */
+        }
+
+
+        /* Bottom Bar Styles */
+        .betting-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .betting-controls input[type="range"] {
+            width: 150px;
+            margin: 0 10px;
+            accent-color: #10b981; /* Green accent */
+        }
+
+        .quick-bet-buttons button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #333;
+            color: #eee;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-right: 5px;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .quick-bet-buttons button:hover {
+            background-color: #555;
+        }
+
+        .join-leave-button {
+             padding: 8px 15px;
+             border: none;
+             border-radius: 5px;
+             cursor: pointer;
+             font-size: 0.9em;
+             font-weight: bold;
+             transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+             margin-left: 20px;
+         }
+
+         .join-button {
+            background-color: #10b981; /* Green */
+            color: #0a0a0a;
+         }
+
+         .join-button:hover {
+            background-color: #059669;
+            box-shadow: 0 0 8px #10b981;
+         }
+
+         .leave-button {
+            background-color: #ef4444; /* Red */
+            color: #0a0a0a;
+         }
+
+         .leave-button:hover {
+            background-color: #d92d2d;
+            box-shadow: 0 0 8px #ef4444;
+         }
+
+        .chat-container {
+            width: 300px;
+            height: 120px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-feed {
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 0.8em;
+            color: #bbb;
+            margin-bottom: 5px;
+        }
+
+        .chat-message {
+            margin-bottom: 3px;
+        }
+
+        .chat-sender {
+            font-weight: bold;
+            color: #60a5fa; /* Blue */
+            margin-right: 5px;
+        }
+
+         .chat-badge {
+             color: #facc15; /* Yellow */
+             margin-right: 5px;
+         }
+
+        .chat-input-area {
+            display: flex;
+        }
+
+        .chat-input-area input[type="text"] {
+            flex-grow: 1;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            background-color: #333;
+            color: #eee;
+            font-size: 0.9em;
+            outline: none;
+        }
+
+        .chat-input-area button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            background-color: #3b82f6; /* Blue */
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .chat-input-area button:hover {
+            background-color: #2563eb;
+        }
+
+        /* Crate Animation Placeholder */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .crate-icon {
+            width: 30px;
+            height: 30px;
+            fill: #facc15; /* Yellow */
+            cursor: pointer;
+            animation: bounce 1s infinite;
+            margin-left: 10px;
+        }
+
+        /* Placeholder for Confetti Canvas */
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks through */
+            z-index: 10; /* Above game elements */
+        }
+
+    </style>
 </head>
 <body>
-  <div id="app">
-    <!-- Header with balance -->
-    <div class="header">
-      <h1 class="header-title">
-        <span>🚀 SOL CRASH</span>
-      </h1>
-      <div class="balance-display" x-text="`${balance.toFixed(2)} SOL`"></div>
-    </div>
-    
-    <!-- Main Game Area -->
-    <div id="game">
-      <div id="multiplier" 
-           x-text="`${multiplier.toFixed(2)}x`" 
-           :class="{ 'animating': gameRunning }" 
-           class="will-change"></div>
-      
-      <div id="graph-container">
-        <!-- Graph grid lines -->
-        <div class="graph-grid">
-          <div class="grid-line"><span class="grid-label">10x</span></div>
-          <div class="grid-line"><span class="grid-label">5x</span></div>
-          <div class="grid-line"><span class="grid-label">2x</span></div>
-          <div class="grid-line"><span class="grid-label">1x</span></div>
-        </div>
-        
-        <div id="rocket-line" class="will-change"></div>
-        <img id="rocket" 
-             src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMy4xMyAyMi4xOUwxMS4zIDIwLjM3Yy0uNjguNjgtMS42LjY4LTIuMjggMC0uNjgtLjY4LS42OC0xLjYgMC0yLjI4TDEzLjEzIDE0bDEuNzYtMS43NmMuNjgtLjY4IDEuNi0uNjggMi4yOCAwIC42OC42OC42OCAxLjYgMCAyLjI4TDE1LjQxIDE0bDMuNTQgMy41NGMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2em0tMS40MS02LjgybC0xLjc2LTEuNzZjLS42OC0uNjgtLjY4LTEuNiAwLTIuMjguNjgtLjY4IDEuNi0uNjggMi4yOCAwbDEuNzYgMS43NiAxLjc2LTEuNzZjLjY4LS42OCAxLjYtLjY4IDIuMjggMCAuNjguNjguNjggMS42IDAgMi4yOGwtMS43NiAxLjc2IDEuNzYgMS43NmMuNjguNjguNjggMS42IDAgMi4yOC0uNjguNjgtMS42LjY4LTIuMjggMGwtMS43Ni0xLjc2LTEuNzYgMS43Ni0uNjguNjgtMS42LS42OC0uNjgtMS42em0tNi42IDYuNmwtLjY4LS42OC0xLjYuNjgtLjY4IDEuNi42OC42OCAxLjYtLjY4LjY4LTEuNnptLS42OC0xMC42bC42OC0xLjYgMS42LS42OC42OC42OC0uNjggMS42LTEuNi42OC0uNjgtLjY4eiIvPjwvc3ZnPg==" 
-             alt="Rocket" 
-             class="will-change"
-             :class="{ 'rocket-pulse': gameRunning }">
-      </div>
 
-      <div class="controls">
-        <div class="bet-input-container">
-          <input type="number" 
-                 x-model="betAmount" 
-                 min="0.01" 
-                 step="0.01" 
-                 placeholder="0.01 SOL" 
-                 inputmode="decimal"
-                 :disabled="gameRunning">
-          <div class="bet-amount-buttons">
-            <button class="bet-amount-btn" @click="adjustBet(0.5)" :disabled="gameRunning">½</button>
-            <button class="bet-amount-btn" @click="adjustBet(2)" :disabled="gameRunning">2x</button>
-            <button class="bet-amount-btn" @click="setMaxBet()" :disabled="gameRunning">MAX</button>
-          </div>
+    <div id="top-bar">
+        <div class="wallet-info">
+            <span id="wallet-address">Not Connected</span>
+            <span id="wallet-balance">-- SOL</span>
+            <button id="connect-wallet-button">Connect Wallet</button>
+            <button id="disconnect-wallet-button" style="display: none;">Disconnect</button>
         </div>
-        
-        <button id="start-btn" 
-                @click="startGame()" 
-                :disabled="gameRunning || betAmount <= 0 || balance < betAmount">
-          🚀 BET
-        </button>
-        
-        <button id="auto-btn" 
-                @click="toggleAuto()" 
-                :class="{ 'btn-secondary': autoPlay }"
-                :disabled="gameRunning && !canCashout">
-          <span x-text="autoPlay ? 'AUTO ON' : 'AUTO'"></span>
-        </button>
-        
-        <button id="cashout-btn" 
-                @click="cashOut()" 
-                class="btn-success"
-                :disabled="!gameRunning || !canCashout"
-                x-text="`CASH OUT (${(betAmount * multiplier).toFixed(2)} SOL)`">
-        </button>
-      </div>
+        <div class="xp-progress">
+            <span id="user-level">Level 1</span>
+            <div class="xp-bar-container">
+                <div id="xp-bar-fill" class="xp-bar-fill"></div>
+            </div>
+            <span id="user-xp">0/100 XP</span>
+            <svg id="crate-icon" class="crate-icon" style="display: none;" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 2.293a1 1 0 011.414 0L10 3.586l1.293-1.293a1 1 0 111.414 1.414L11.414 5l1.293 1.293a1 1 0 11-1.414 1.414L10 6.414l-1.293 1.293a1 1 0 01-1.414-1.414L8.586 5l-1.293-1.293a1 1 0 010-1.414zM10 14a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2zM5 10a1 1 0 11-2 0 1 1 0 012 0zm10 0a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div class="recent-plays">
+            <div id="recent-plays-ticker" class="recent-plays-ticker">
+                <span>No recent plays...</span>
+            </div>
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+            <div id="settings-dropdown" style="display: none; position: absolute; top: 50px; right: 20px; background-color: #333; border-radius: 5px; padding: 10px; z-index: 20;">
+                Settings content here...
+            </div>
+        </div>
     </div>
 
-    <!-- Mobile Tabs -->
-    <div class="mobile-tabs">
-      <div class="tab-button active" @click="activeTab = 'chat'">💬 Chat</div>
-      <div class="tab-button" @click="activeTab = 'wallet'">💰 Wallet</div>
-      <div class="tab-button" @click="activeTab = 'stats'">📊 Stats</div>
-      <div class="tab-button" @click="activeTab = 'history'">📝 History</div>
-    </div>
-
-    <!-- Tab Contents -->
-    <div class="tab-content" :class="{ 'active': activeTab === 'chat' }">
-      <div class="chat-messages" x-html="chatMessages"></div>
-      <div class="chat-input-container" x-show="userLoggedIn">
-        <input type="text" class="chat-input" placeholder="Type a message..." x-model="chatMessage">
-        <button class="chat-send-btn" @click="sendChatMessage()">Send</button>
-      </div>
-      <div x-show="!userLoggedIn" style="text-align: center; padding: 10px; color: var(--text-secondary);">
-        Connect wallet to chat
-      </div>
-    </div>
-    
-    <div class="tab-content" :class="{ 'active': activeTab === 'wallet' }">
-      <div class="wallet-info" x-show="userLoggedIn">
-        <div style="font-size: 1.5rem; margin-bottom: 5px;" x-text="`${balance.toFixed(2)} SOL`"></div>
-        <div class="wallet-address" x-text="shortWalletAddress"></div>
-      </div>
-      
-      <div class="wallet-actions">
-        <button @click="connectWallet()" x-show="!userLoggedIn" style="width: 100%;">🔗 CONNECT WALLET</button>
-        <button @click="openModal('deposit')" x-show="userLoggedIn" style="width: 100%;">💵 DEPOSIT SOL</button>
-        <button @click="openModal('withdraw')" x-show="userLoggedIn" style="width: 100%;" class="btn-danger">💸 WITHDRAW</button>
-        <button @click="disconnectWallet()" x-show="userLoggedIn" style="width: 100%; background: #333;">🚪 DISCONNECT</button>
-      </div>
-      
-      <div style="margin-top: 20px;" x-show="userLoggedIn">
-        <h3 style="margin-bottom: 10px;">TRANSACTION HISTORY</h3>
-        <div style="max-height: 150px; overflow-y: auto;">
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card-border);" 
-               x-show="transactions.length === 0">
-            <span style="color: var(--text-secondary);">No transactions yet</span>
-          </div>
-          <template x-for="tx in transactions">
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card-border);">
-              <span x-text="tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'"></span>
-              <span :class="{ 'text-success': tx.type === 'deposit', 'text-danger': tx.type === 'withdraw' }" 
-                    x-text="`${tx.type === 'deposit' ? '+' : '-'}${tx.amount.toFixed(2)} SOL`"></span>
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
-    
-    <div class="tab-content" :class="{ 'active': activeTab === 'stats' }">
-      <h3 style="margin-bottom: 15px;">GAME STATISTICS</h3>
-      
-      <table class="stats-table">
-        <tr>
-          <td>Total Bets</td>
-          <td x-text="stats.totalBets"></td>
-        </tr>
-        <tr>
-          <td>Total Wagered</td>
-          <td x-text="`${stats.totalWagered.toFixed(2)} SOL`"></td>
-        </tr>
-        <tr>
-          <td>Total Won</td>
-          <td x-text="`${stats.totalWon.toFixed(2)} SOL`"></td>
-        </tr>
-        <tr>
-          <td>Biggest Win</td>
-          <td class="highlight" x-text="`${stats.biggestWin.toFixed(2)}x`"></td>
-        </tr>
-        <tr>
-          <td>Current Streak</td>
-          <td x-text="`${stats.currentStreak} ${stats.currentStreak > 0 ? 'Wins' : 'Losses'}`"></td>
-        </tr>
-      </table>
-      
-      <h3 style="margin: 20px 0 10px;">TOP WINS</h3>
-      <table class="stats-table">
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th>Multiplier</th>
-            <th>Win</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>SOL_Whale</td>
-            <td>12.34x</td>
-            <td>8.42 SOL</td>
-          </tr>
-          <tr>
-            <td>CryptoDegen</td>
-            <td>9.87x</td>
-            <td>5.21 SOL</td>
-          </tr>
-          <tr>
-            <td>LuckyWinner</td>
-            <td>8.15x</td>
-            <td>4.32 SOL</td>
-          </tr>
-          <tr>
-            <td>You</td>
-            <td x-text="`${stats.biggestWin.toFixed(2)}x`"></td>
-            <td x-text="`${(stats.biggestWin * betAmount).toFixed(2)} SOL`"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <div class="tab-content" :class="{ 'active': activeTab === 'history' }">
-      <h3 style="margin-bottom: 15px;">YOUR HISTORY</h3>
-      
-      <div style="margin-bottom: 10px;">
-        <button @click="toggleHistoryFilter()" style="width: 100%; padding: 10px; font-size: 0.9rem;">
-          <span x-text="showAllHistory ? 'Showing All' : 'Showing Recent'"></span>
-        </button>
-      </div>
-      
-      <div style="max-height: 300px; overflow-y: auto;">
-        <div style="text-align: center; padding: 20px; color: var(--text-secondary);" x-show="gameHistory.length === 0">
-          No game history yet
-        </div>
-        
-        <template x-for="(game, index) in filteredHistory" :key="index">
-          <div class="history-item">
-            <div>
-              <div x-text="new Date(game.timestamp).toLocaleString()"></div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary);" 
-                   x-text="`Bet: ${game.betAmount.toFixed(2)} SOL`"></div>
-            </div>
-            <div style="text-align: right;">
-              <template x-if="game.cashedOut">
-                <div class="history-multiplier" x-text="`${game.multiplier.toFixed(2)}x`"></div>
-              </template>
-              <template x-if="!game.cashedOut">
-                <div class="history-crashed" x-text="`CRASHED`"></div>
-              </template>
-              <div style="font-size: 0.9rem;" 
-                   :class="{ 'history-multiplier': game.cashedOut, 'history-crashed': !game.cashedOut }"
-                   x-text="game.cashedOut ? `+${(game.betAmount * game.multiplier).toFixed(2)} SOL` : `-${game.betAmount.toFixed(2)} SOL`">
-              </div>
-            </div>
-          </div>
-        </template>
-      </div>
-    </div>
-
-    <!-- Modals -->
-    <div class="modal-overlay" :class="{ 'active': modalOpen }" @click.self="closeModal()">
-      <div class="modal-content">
-        <template x-if="modalType === 'deposit'">
-          <div>
-            <div class="modal-header">
-              <h2 class="modal-title">DEPOSIT SOL</h2>
-              <button class="modal-close" @click="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-              <p>Send SOL to this wallet address:</p>
-              <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin: 10px 0; word-break: break-all; font-family: monospace;"
-                   x-text="walletAddress"></div>
-              <p>Minimum deposit: <strong>0.1 SOL</strong></p>
-              <p style="color: var(--warning);">⚠️ Deposits may take 1-2 minutes to process</p>
-              
-              <div style="margin-top: 20px;">
-                <label for="deposit-amount">Or enter amount to generate QR code:</label>
-                <input type="number" id="deposit-amount" x-model="depositAmount" placeholder="0.1 SOL" style="margin-top: 8px;">
-              </div>
-              
-              <div style="text-align: center; margin: 15px 0; padding: 15px; background: var(--bg); border-radius: 8px;"
-                   x-show="depositAmount >= 0.1">
-                <div style="margin-bottom: 10px;">Scan to deposit</div>
-                <div style="width: 150px; height: 150px; margin: 0 auto; background: #FFF; padding: 10px;">
-                  <!-- QR code would go here -->
-                  <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: #000;">
-                    QR Code
-                  </div>
+    <div id="game-table">
+        <div class="dealer-hand">
+            <h3>Dealer</h3>
+            <div id="dealer-cards" class="player-hand">
                 </div>
-                <div style="margin-top: 10px; font-weight: bold;" x-text="`${depositAmount} SOL`"></div>
-              </div>
+        </div>
+        <div id="player-seats" class="player-seats">
             </div>
-            <div class="modal-footer">
-              <button @click="copyWalletAddress()" style="flex: 1;">📋 COPY ADDRESS</button>
-              <button @click="closeModal()" style="flex: 1; background: var(--bg);">CLOSE</button>
-            </div>
-          </div>
-        </template>
-        
-        <template x-if="modalType === 'withdraw'">
-          <div>
-            <div class="modal-header">
-              <h2 class="modal-title">WITHDRAW SOL</h2>
-              <button class="modal-close" @click="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-              <p>Available: <strong x-text="`${balance.toFixed(2)} SOL`"></strong></p>
-              
-              <div style="margin: 15px 0;">
-                <label for="withdraw-amount">Amount to withdraw:</label>
-                <input type="number" id="withdraw-amount" x-model="withdrawAmount" :max="balance" step="0.01" 
-                       placeholder="0.1 SOL" style="margin-top: 8px;">
-              </div>
-              
-              <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <p style="color: var(--warning); margin: 0;">⚠️ First withdrawals take 24 hours to process</p>
-              </div>
-              
-              <div style="margin-top: 20px;">
-                <label for="withdraw-address">Destination address:</label>
-                <input type="text" id="withdraw-address" x-model="withdrawAddress" placeholder="Your SOL address" style="margin-top: 8px;">
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button @click="requestWithdraw()" style="flex: 1;" :disabled="withdrawAmount <= 0 || withdrawAmount > balance">REQUEST</button>
-              <button @click="offerDouble()" style="flex: 1; background: var(--warning); color: #000;">DOUBLE OR NOTHING</button>
-            </div>
-          </div>
-        </template>
-        
-        <template x-if="modalType === 'double'">
-          <div>
-            <div class="modal-header">
-              <h2 class="modal-title">DOUBLE OR NOTHING</h2>
-              <button class="modal-close" @click="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-              <p>You're about to bet <strong x-text="`${withdrawAmount} SOL`"></strong> for a chance to double it!</p>
-              
-              <div style="text-align: center; margin: 20px 0;">
-                <div style="font-size: 2rem; margin: 10px 0;">2x</div>
-                <div style="color: var(--text-secondary);">50% chance to win</div>
-              </div>
-              
-              <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <p style="margin: 0;">If you win, you'll get <strong x-text="`${withdrawAmount * 2} SOL`"></strong> sent to your wallet immediately.</p>
-                <p style="margin: 10px 0 0 0;">If you lose, your withdrawal will be canceled.</p>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button @click="playDoubleGame(true)" style="flex: 1; background: var(--success);">PLAY</button>
-              <button @click="closeModal()" style="flex: 1; background: var(--danger);">CANCEL</button>
-            </div>
-          </div>
-        </template>
-      </div>
     </div>
-    
-    <!-- Toast notifications -->
-    <div class="toast" :class="[toast.type, { 'show': toast.show }]" x-show="toast.show" @click="toast.show = false">
-      <span x-text="toast.message"></span>
-    </div>
-  </div>
 
-  <script>
-    document.addEventListener('alpine:init', () => {
-      Alpine.data('crashApp', () => ({
-        // Game State
-        gameRunning: false,
-        multiplier: 1.00,
-        crashAt: 2.0,
-        betAmount: 0.05,
-        balance: 0.05,
-        autoPlay: false,
-        canCashout: true,
-        gameHistory: [],
-        showAllHistory: false,
-        
-        // Stats
-        stats: {
-          totalBets: 0,
-          totalWagered: 0,
-          totalWon: 0,
-          biggestWin: 0,
-          currentStreak: 0
-        },
-        
-        // Wallet State
-        walletAddress: '7eSH5kLfT9qJ3mXpN8bVcR2wA6yD4gF7hG',
-        shortWalletAddress: '7eSH...fT9q',
-        userLoggedIn: false,
-        transactions: [],
-        
-        // UI State
-        modalOpen: false,
-        modalType: '',
-        activeTab: 'chat',
-        depositAmount: 0.1,
-        withdrawAmount: 0.1,
-        withdrawAddress: '',
-        
-        // Chat
-        chatMessage: '',
-        chatMessages: `
-          <div class="chat-message">
-            <span class="chat-user" style="color: var(--secondary);">SOL_Whale:</span> Just won 5 SOL! 🚀
-          </div>
-          <div class="chat-message">
-            <span class="chat-user" style="color: var(--primary);">System:</span> Welcome to SOL Crash! Place your bets and cash out before the rocket crashes!
-          </div>
-        `,
-        
-        // Toast
-        toast: {
-          show: false,
-          type: 'success',
-          message: ''
-        },
-        
-        // Computed properties
-        get filteredHistory() {
-          return this.showAllHistory 
-            ? this.gameHistory 
-            : this.gameHistory.slice(0, 10);
-        },
-        
-        init() {
-          // Try to lock orientation on mobile
-          try {
-            screen.orientation?.lock('portrait');
-          } catch (e) {}
-          
-          // Prevent zooming
-          document.addEventListener('gesturestart', (e) => e.preventDefault());
-          
-          // Load from localStorage
-          this.loadFromStorage();
-          
-          // Initialize fake chat updates
-          this.initChat();
-          
-          // Initialize fake socket connection
-          this.initSocket();
-        },
-        
-        loadFromStorage() {
-          const savedData = localStorage.getItem('solCrashData');
-          if (savedData) {
-            try {
-              const data = JSON.parse(savedData);
-              this.balance = data.balance || 0.05;
-              this.betAmount = data.betAmount || 0.05;
-              this.stats = data.stats || this.stats;
-              this.gameHistory = data.gameHistory || [];
-              this.userLoggedIn = data.userLoggedIn || false;
-            } catch (e) {
-              console.error('Failed to load saved data', e);
-            }
-          }
-        },
-        
-        saveToStorage() {
-          const data = {
-            balance: this.balance,
-            betAmount: this.betAmount,
-            stats: this.stats,
-            gameHistory: this.gameHistory,
-            userLoggedIn: this.userLoggedIn
-          };
-          localStorage.setItem('solCrashData', JSON.stringify(data));
-        },
-        
-        initChat() {
-          // Fake chat updates
-          setInterval(() => {
-            if (Math.random() > 0.3) return; // 70% chance of message
-            
-            const users = [
-              { name: 'SOL_Whale', color: 'var(--secondary)' },
-              { name: 'CryptoDegen', color: 'var(--primary)' },
-              { name: 'LuckyWinner', color: 'var(--success)' },
-              { name: 'NewPlayer', color: 'var(--warning)' }
-            ];
-            
-            const messages = [
-              `Cashed out at ${(Math.random() * 10 + 1).toFixed(2)}x!`,
-              `Won ${(Math.random() * 5 + 0.5).toFixed(2)} SOL 🤑`,
-              'Why did I cash out early??',
-              'BRO THIS GAME IS LIT 🔥',
-              'Deposited 5 SOL 💰',
-              'Withdrawal pending...',
-              'Almost hit 10x today!',
-              'New high score! 🎉'
-            ];
-            
-            const user = users[Math.floor(Math.random() * users.length)];
-            const msg = messages[Math.floor(Math.random() * messages.length)];
-            
-            this.addMessage(user.name, msg, user.color);
-          }, 5000 + Math.random() * 5000); // Random interval between 5-10s
-        },
-        
-        initSocket() {
-          // Simulate socket connection
-          setInterval(() => {
-            if (Math.random() > 0.7) { // 30% chance of crash event
-              const crashMultiplier = (Math.random() * 10 + 1).toFixed(2);
-              this.addMessage('System', `Game crashed at ${crashMultiplier}x!`, 'var(--primary)');
-            }
-          }, 10000);
-        },
-        
-        // Game Methods
-        startGame() {
-          if (this.gameRunning) return;
-          if (this.balance < this.betAmount) {
-            this.showToast('Not enough balance', 'error');
-            this.openModal('deposit');
-            return;
-          }
-          
-          this.gameRunning = true;
-          this.multiplier = 1.00;
-          this.canCashout = true;
-          this.balance -= this.betAmount;
-          
-          // Generate crash point (simplified for demo)
-          const r = Math.random();
-          this.crashAt = 1 + Math.pow(r * 100, 0.7) / 10;
-          
-          // Dynamic difficulty based on balance
-          if (this.balance > 1) this.crashAt = Math.min(this.crashAt, 3.0);
-          if (this.balance < 0.1) this.crashAt = Math.max(this.crashAt, 2.0);
-          
-          // Update stats
-          this.stats.totalBets++;
-          this.stats.totalWagered += this.betAmount;
-          
-          this.saveToStorage();
-          this.animateGame();
-        },
-        
-        animateGame() {
-          if (!this.gameRunning) return;
-          
-          this.multiplier += 0.01;
-          
-          // Update rocket position
-          const lineHeight = (this.multiplier - 1) * 30;
-          document.getElementById('rocket-line').style.height = `${lineHeight}px`;
-          document.getElementById('rocket').style.bottom = `${lineHeight}px`;
-          
-          // Crash check
-          if (this.multiplier >= this.crashAt) {
-            this.gameRunning = false;
-            this.canCashout = false;
-            
-            // Add to history
-            this.gameHistory.unshift({
-              betAmount: this.betAmount,
-              multiplier: this.multiplier,
-              cashedOut: false,
-              timestamp: new Date().toISOString()
-            });
-            
-            // Update stats
-            this.stats.currentStreak = Math.min(0, this.stats.currentStreak - 1);
-            
-            setTimeout(() => {
-              this.showToast(`Crashed at ${this.crashAt.toFixed(2)}x!`, 'error');
-              
-              if (this.autoPlay) {
-                setTimeout(() => this.startGame(), 1500);
-              }
-            }, 100);
-            
-            this.saveToStorage();
-          } else {
-            requestAnimationFrame(() => this.animateGame());
-          }
-        },
-        
-        cashOut() {
-          if (!this.gameRunning || !this.canCashout) return;
-          
-          const winnings = this.betAmount * this.multiplier;
-          this.balance += winnings;
-          
-          // Add to history
-          this.gameHistory.unshift({
-            betAmount: this.betAmount,
-            multiplier: this.multiplier,
-            cashedOut: true,
-            timestamp: new Date().toISOString()
-          });
-          
-          // Update stats
-          if (this.multiplier > this.stats.biggestWin) {
-            this.stats.biggestWin = this.multiplier;
-          }
-          this.stats.totalWon += winnings;
-          this.stats.currentStreak = Math.max(0, this.stats.currentStreak + 1);
-          
-          this.addMessage('You', `Cashed out at ${this.multiplier.toFixed(2)}x! Won ${winnings.toFixed(2)} SOL`, 'var(--primary)');
-          this.showToast(`+${winnings.toFixed(2)} SOL!`, 'success');
-          
-          this.gameRunning = false;
-          this.saveToStorage();
-          
-          if (this.autoPlay) {
-            setTimeout(() => this.startGame(), 1000);
-          }
-        },
-        
-        toggleAuto() {
-          this.autoPlay = !this.autoPlay;
-          if (this.autoPlay && !this.gameRunning) {
-            this.startGame();
-          }
-        },
-        
-        adjustBet(multiplier) {
-          this.betAmount = Math.max(0.01, (this.betAmount * multiplier).toFixed(2));
-        },
-        
-        setMaxBet() {
-          this.betAmount = Math.max(0.01, this.balance.toFixed(2));
-        },
-        
-        toggleHistoryFilter() {
-          this.showAllHistory = !this.showAllHistory;
-        },
-        
-        // Wallet Methods
-        connectWallet() {
-          this.userLoggedIn = true;
-          this.addMessage('System', 'Wallet connected!', 'var(--primary)');
-          this.showToast('Wallet connected', 'success');
-          this.saveToStorage();
-        },
-        
-        disconnectWallet() {
-          this.userLoggedIn = false;
-          this.addMessage('System', 'Wallet disconnected', 'var(--primary)');
-          this.showToast('Wallet disconnected', 'warning');
-          this.saveToStorage();
-        },
-        
-        copyWalletAddress() {
-          navigator.clipboard.writeText(this.walletAddress);
-          this.showToast('Address copied!', 'success');
-        },
-        
-        requestWithdraw() {
-          if (this.withdrawAmount <= 0 || this.withdrawAmount > this.balance) {
-            this.showToast('Invalid amount', 'error');
-            return;
-          }
-          
-          if (!this.withdrawAddress || this.withdrawAddress.length < 32) {
-            this.showToast('Invalid address', 'error');
-            return;
-          }
-          
-          this.balance -= parseFloat(this.withdrawAmount);
-          this.transactions.unshift({
-            type: 'withdraw',
-            amount: parseFloat(this.withdrawAmount),
-            timestamp: new Date().toISOString(),
-            status: 'pending'
-          });
-          
-          this.addMessage('System', `Withdrawal requested for ${this.withdrawAmount} SOL`, 'var(--primary)');
-          this.showToast('Withdrawal requested!', 'success');
-          this.closeModal();
-          this.saveToStorage();
-        },
-        
-        offerDouble() {
-          if (this.withdrawAmount <= 0 || this.withdrawAmount > this.balance) {
-            this.showToast('Invalid amount', 'error');
-            return;
-          }
-          
-          this.modalType = 'double';
-        },
-        
-        playDoubleGame(confirmed) {
-          if (!confirmed) return;
-          
-          const win = Math.random() > 0.5; // 50% chance
-          
-          if (win) {
-            this.balance += parseFloat(this.withdrawAmount) * 2;
-            this.transactions.unshift({
-              type: 'deposit',
-              amount: parseFloat(this.withdrawAmount) * 2,
-              timestamp: new Date().toISOString(),
-              status: 'completed'
-            });
-            
-            this.addMessage('System', `You doubled your ${this.withdrawAmount} SOL withdrawal!`, 'var(--success)');
-            this.showToast(`+${(this.withdrawAmount * 2).toFixed(2)} SOL!`, 'success');
-          } else {
-            this.transactions.unshift({
-              type: 'withdraw',
-              amount: parseFloat(this.withdrawAmount),
-              timestamp: new Date().toISOString(),
-              status: 'canceled'
-            });
-            
-            this.addMessage('System', `Lost your ${this.withdrawAmount} SOL withdrawal`, 'var(--danger)');
-            this.showToast('Withdrawal canceled', 'error');
-          }
-          
-          this.closeModal();
-          this.saveToStorage();
-        },
-        
-        // UI Methods
-        openModal(type) {
-          if (!this.userLoggedIn && type !== 'deposit') {
-            this.showToast('Connect wallet first', 'error');
-            return;
-          }
-          
-          this.modalType = type;
-          this.modalOpen = true;
-          document.body.style.overflow = 'hidden';
-          
-          // Reset amounts
-          if (type === 'deposit') {
-            this.depositAmount = 0.1;
-          } else if (type === 'withdraw') {
-            this.withdrawAmount = Math.min(0.1, this.balance);
-            this.withdrawAddress = this.walletAddress;
-          }
-        },
-        
-        closeModal() {
-          this.modalOpen = false;
-          document.body.style.overflow = '';
-        },
-        
-        addMessage(user, msg, color = 'var(--text-primary)') {
-          this.chatMessages = `
-            <div class="chat-message">
-              <span class="chat-user" style="color: ${color}">${user}:</span> ${msg}
+    <div id="bottom-bar">
+        <div class="betting-controls">
+            <span id="current-bet-display">Bet: 0.00 SOL</span>
+            <input type="range" id="bet-slider" min="0" max="10" step="0.01" value="0">
+            <div class="quick-bet-buttons">
+                <button data-bet-amount="0.01">+0.01</button>
+                <button data-bet-amount="0.1">+0.1</button>
+                <button data-bet-amount="MAX">MAX</button>
             </div>
-            ${this.chatMessages}
-          `;
-          
-          // Limit chat history
-          if (this.chatMessages.split('<div class="chat-message">').length > 50) {
-            const messages = this.chatMessages.split('<div class="chat-message">');
-            messages.pop();
-            this.chatMessages = messages.join('<div class="chat-message">');
-          }
-        },
-        
-        sendChatMessage() {
-          if (!this.chatMessage.trim()) return;
-          
-          this.addMessage('You', this.chatMessage, 'var(--primary)');
-          this.chatMessage = '';
-        },
-        
-        showToast(message, type = 'success') {
-          this.toast.message = message;
-          this.toast.type = type;
-          this.toast.show = true;
-          
-          setTimeout(() => {
-            this.toast.show = false;
-          }, 3000);
+            <button id="join-leave-button" class="join-leave-button join-button">Join Table</button>
+             <span id="spectator-status" style="display: none; color: #facc15; font-size: 0.9em; margin-left: 10px;">You are a spectator.</span>
+        </div>
+        <div class="chat-container">
+            <div id="chat-feed" class="chat-feed custom-scrollbar">
+                </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type message...">
+                <button id="send-chat-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <script>
+        // --- Global State (Placeholder) ---
+        const gameState = {
+            walletAddress: null,
+            walletBalance: 0,
+            userXP: 0,
+            userLevel: 1,
+            dealerHand: [],
+            players: [], // Array of player objects { id, name, level, avatar, hand, isUser, timer }
+            activePlayerId: null,
+            turnTimerDuration: 10, // seconds
+            betAmount: 0,
+            chatMessages: [], // Array of { sender, message, badge }
+            recentPlays: [], // Array of { player, amount, win }
+            isSpectator: false,
+            isSeated: false,
+            websocket: null,
+            confettiCanvas: null,
+            confettiCtx: null,
+            // Add other state properties as needed
+        };
+
+        // --- DOM Elements ---
+        const dom = {
+            walletAddress: document.getElementById('wallet-address'),
+            walletBalance: document.getElementById('wallet-balance'),
+            connectWalletButton: document.getElementById('connect-wallet-button'),
+            disconnectWalletButton: document.getElementById('disconnect-wallet-button'),
+            userLevel: document.getElementById('user-level'),
+            xpBarFill: document.getElementById('xp-bar-fill'),
+            userXP: document.getElementById('user-xp'),
+            crateIcon: document.getElementById('crate-icon'),
+            recentPlaysTicker: document.getElementById('recent-plays-ticker'),
+            settingsDropdown: document.getElementById('settings-dropdown'), // Placeholder
+            dealerCards: document.getElementById('dealer-cards'),
+            playerSeats: document.getElementById('player-seats'),
+            currentBetDisplay: document.getElementById('current-bet-display'),
+            betSlider: document.getElementById('bet-slider'),
+            quickBetButtons: document.querySelectorAll('.quick-bet-buttons button'),
+            joinLeaveButton: document.getElementById('join-leave-button'),
+            spectatorStatus: document.getElementById('spectator-status'),
+            chatFeed: document.getElementById('chat-feed'),
+            chatInput: document.getElementById('chat-input'),
+            sendChatButton: document.getElementById('send-chat-button'),
+            confettiCanvas: document.getElementById('confetti-canvas'),
+        };
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Confetti Canvas
+            dom.confettiCtx = dom.confettiCanvas.getContext('2d');
+            resizeCanvas(); // Set initial size
+            window.addEventListener('resize', resizeCanvas); // Resize on window resize
+
+            // Set initial UI state
+            updateUI();
+
+            // Setup Event Listeners
+            setupEventListeners();
+
+            // Attempt to auto-connect wallet
+            checkAutoConnectWallet();
+
+            // Connect to WebSocket
+            connectWebSocket();
+
+            // Placeholder: Simulate some initial game state for testing UI layout
+            simulateInitialGameState();
+        });
+
+        // Resize Canvas function
+        function resizeCanvas() {
+            dom.confettiCanvas.width = window.innerWidth;
+            dom.confettiCanvas.height = window.innerHeight;
         }
-      }));
-    });
-  </script>
+
+
+        // --- Solana Wallet Integration (using window.solana) ---
+        async function checkAutoConnectWallet() {
+            if (window.solana && window.solana.isConnected) {
+                try {
+                    // Attempt to connect silently if already authorized
+                    await window.solana.connect({ onlyIfTrusted: true });
+                    handleWalletConnected(window.solana.publicKey);
+                } catch (error) {
+                    console.error('Auto-connect failed:', error);
+                    // Handle cases where auto-connect is not possible or user rejected
+                }
+            }
+        }
+
+        async function connectWallet() {
+            if (window.solana) {
+                try {
+                    const response = await window.solana.connect();
+                    handleWalletConnected(response.publicKey);
+                } catch (error) {
+                    console.error('Wallet connection failed:', error);
+                    // Handle specific errors (e.g., user rejected)
+                }
+            } else {
+                alert('Solana wallet not found! Please install Phantom, Backpack, Solflare, or Coinbase wallet.');
+            }
+        }
+
+        async function disconnectWallet() {
+            if (window.solana && window.solana.isConnected) {
+                try {
+                    await window.solana.disconnect();
+                    handleWalletDisconnected();
+                } catch (error) {
+                    console.error('Wallet disconnection failed:', error);
+                }
+            }
+        }
+
+        function handleWalletConnected(publicKey) {
+            gameState.walletAddress = publicKey.toBase58();
+            dom.walletAddress.textContent = `${gameState.walletAddress.slice(0, 4)}...${gameState.walletAddress.slice(-4)}`;
+            dom.connectWalletButton.style.display = 'none';
+            dom.disconnectWalletButton.style.display = 'inline-block';
+            // Placeholder: Fetch balance (requires more web3.js interaction)
+            fetchWalletBalance(publicKey);
+            updateUI(); // Update UI based on connected state
+        }
+
+        function handleWalletDisconnected() {
+            gameState.walletAddress = null;
+            gameState.walletBalance = 0;
+            dom.walletAddress.textContent = 'Not Connected';
+            dom.walletBalance.textContent = '-- SOL';
+            dom.connectWalletButton.style.display = 'inline-block';
+            dom.disconnectWalletButton.style.display = 'none';
+            updateUI(); // Update UI based on disconnected state
+        }
+
+        async function fetchWalletBalance(publicKey) {
+             // Placeholder: In a real app, use Solana Web3.js Connection object
+             // Example:
+             // const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+             // const balance = await connection.getBalance(publicKey);
+             // gameState.walletBalance = balance / 10**9; // Convert lamports to SOL
+             // dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
+
+             // Simulate fetching balance
+             setTimeout(() => {
+                 gameState.walletBalance = Math.random() * 5 + 1; // Random balance between 1 and 6
+                 dom.walletBalance.textContent = `${gameState.walletBalance.toFixed(2)} SOL`;
+             }, 500);
+         }
+
+
+        // --- WebSocket Integration ---
+        function connectWebSocket() {
+            // Replace with your actual WebSocket server URL
+            const wsUrl = "wss://your-game-server-url";
+            gameState.websocket = new WebSocket(wsUrl);
+
+            gameState.websocket.onopen = () => {
+                console.log("WebSocket Connected");
+                // Send initial message, e.g., join game, if wallet is connected
+                if (gameState.walletAddress) {
+                     sendMessage({ type: 'joinGame', wallet: gameState.walletAddress });
+                } else {
+                     // Maybe join as spectator if not connected? Depends on backend logic.
+                     sendMessage({ type: 'joinGameAsSpectator' });
+                }
+            };
+
+            gameState.websocket.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                console.log("WebSocket Message:", msg);
+                handleGameEvent(msg);
+            };
+
+            gameState.websocket.onerror = (error) => {
+                console.error("WebSocket Error:", error);
+                // Handle errors, attempt reconnect
+            };
+
+            gameState.websocket.onclose = () => {
+                console.log("WebSocket Disconnected");
+                // Handle disconnection, attempt reconnect
+            };
+        }
+
+        function sendMessage(message) {
+            if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) {
+                gameState.websocket.send(JSON.stringify(message));
+            } else {
+                console.warn("WebSocket not connected. Cannot send message:", message);
+                // Maybe queue messages or try to reconnect
+            }
+        }
+
+        // Handle incoming WebSocket messages
+        function handleGameEvent(msg) {
+            switch (msg.type) {
+                case 'table_state':
+                    // Update entire table state
+                    gameState.players = msg.data.players;
+                    gameState.dealerHand = msg.data.dealerHand;
+                    gameState.activePlayerId = msg.data.activePlayerId;
+                    gameState.isSpectator = msg.data.isSpectator;
+                    gameState.isSeated = msg.data.isSeated; // Assuming backend sends this
+                    updateUI();
+                    break;
+                case 'card_dealt':
+                    // Add card to specific player or dealer hand
+                    // msg.data should contain { playerId, card } or { target: 'dealer', card }
+                    if (msg.data.target === 'dealer') {
+                        gameState.dealerHand.push(msg.data.card);
+                        renderDealerHand();
+                    } else {
+                        const player = gameState.players.find(p => p.id === msg.data.playerId);
+                        if (player) {
+                            player.hand.push(msg.data.card);
+                            renderPlayerSeats(); // Re-render all seats for simplicity
+                        }
+                    }
+                    break;
+                case 'turn_changed':
+                    gameState.activePlayerId = msg.data.playerId;
+                    // Start or reset turn timer animation
+                    startTurnTimer(msg.data.duration || gameState.turnTimerDuration);
+                    renderPlayerSeats(); // Update active player highlight
+                    break;
+                case 'round_end':
+                    // Handle round end logic (reveal dealer cards, show results)
+                    gameState.dealerHand = msg.data.dealerHand; // Full dealer hand revealed
+                    // Update player results (win/loss status)
+                    // msg.data might contain results for each player
+                    updateUI(); // Update all relevant UI elements
+                    // Trigger confetti or other win/loss animations
+                    if (msg.data.userWon) {
+                         triggerConfetti();
+                    }
+                    break;
+                case 'xp_update':
+                    // Update user XP and level
+                    gameState.userXP = msg.data.newXP;
+                    gameState.userLevel = msg.data.newLevel;
+                    updateXPBar();
+                    if (msg.data.levelUp) {
+                        showCrateIcon();
+                    }
+                    break;
+                case 'crate_awarded':
+                    // Trigger crate animation/display
+                    showCrateIcon();
+                    break;
+                case 'chat_message':
+                    // Add new chat message
+                    gameState.chatMessages.push(msg.data);
+                    addChatMessageToFeed(msg.data);
+                    break;
+                case 'recent_play':
+                    // Add new recent play to the ticker
+                    gameState.recentPlays.unshift(msg.data); // Add to the beginning
+                    // Keep ticker length reasonable
+                    if (gameState.recentPlays.length > 10) {
+                        gameState.recentPlays.pop();
+                    }
+                    updateRecentPlaysTicker();
+                    break;
+                // Handle other event types as needed
+                default:
+                    console.warn("Unknown WebSocket message type:", msg.type);
+            }
+        }
+
+        // --- UI Rendering Functions ---
+
+        function updateUI() {
+            // Update wallet info (already done in handleWalletConnected/Disconnected)
+            // Update XP bar and level
+            updateXPBar();
+            // Update recent plays ticker
+            updateRecentPlaysTicker();
+            // Render game table elements
+            renderDealerHand();
+            renderPlayerSeats();
+            // Update betting controls and join/leave button
+            updateBettingControls();
+            // Render chat messages (initial load)
+            renderChatFeed();
+        }
+
+        function updateXPBar() {
+            dom.userLevel.textContent = `Level ${gameState.userLevel}`;
+            const xpProgress = gameState.userXP % 100; // Assuming 100 XP per level
+            dom.xpBarFill.style.width = `${xpProgress}%`;
+            dom.userXP.textContent = `${xpProgress}/100 XP`;
+        }
+
+        function showCrateIcon() {
+            dom.crateIcon.style.display = 'inline-block';
+            // Add logic for crate opening animation on click
+            dom.crateIcon.onclick = openCrate; // Assign click handler
+        }
+
+        function openCrate() {
+             console.log("Crate opened!");
+             // Placeholder: Implement crate opening animation (Canvas or image sequence)
+             // For now, just hide the icon
+             dom.crateIcon.style.display = 'none';
+             // Placeholder: Show crate contents (inline, no popup)
+             // Maybe a temporary text display or simple animation near the icon
+             alert("You got a reward!"); // Replace with inline display
+        }
+
+
+        function updateRecentPlaysTicker() {
+            dom.recentPlaysTicker.innerHTML = ''; // Clear current ticker
+            if (gameState.recentPlays.length === 0) {
+                dom.recentPlaysTicker.textContent = 'No recent plays...';
+                return;
+            }
+            gameState.recentPlays.forEach(play => {
+                const span = document.createElement('span');
+                span.classList.add('recent-play-item', play.win ? 'win' : 'loss');
+                span.textContent = `${play.player}: ${play.win ? '+' : '-'}${play.amount.toFixed(2)} SOL`;
+                dom.recentPlaysTicker.appendChild(span);
+            });
+            // Implement smooth scrolling animation for the ticker if needed
+        }
+
+        function renderDealerHand() {
+            dom.dealerCards.innerHTML = ''; // Clear current cards
+             if (gameState.dealerHand.length === 0) {
+                  const placeholder = document.createElement('div');
+                  placeholder.classList.add('card', 'card-back');
+                  dom.dealerCards.appendChild(placeholder);
+                  return;
+             }
+            gameState.dealerHand.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                 // For the first card, show back initially
+                 if (index === 0 && !gameState.dealerHand[0].revealed) { // Assuming a 'revealed' property
+                      cardElement.classList.add('card-back');
+                 } else {
+                     cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
+                 }
+                // Add card flip animation class if needed
+                // if (card.justDealt) { cardElement.classList.add('flipped'); }
+                dom.dealerCards.appendChild(cardElement);
+            });
+        }
+
+        function renderPlayerSeats() {
+            dom.playerSeats.innerHTML = ''; // Clear current seats
+            gameState.players.forEach(player => {
+                const seatElement = document.createElement('div');
+                seatElement.classList.add('player-seat');
+                if (player.id === gameState.activePlayerId) {
+                    seatElement.classList.add('active');
+                }
+
+                // Player Info
+                const playerInfo = document.createElement('div');
+                playerInfo.classList.add('player-info');
+                const avatar = document.createElement('div');
+                avatar.classList.add('avatar');
+                avatar.textContent = player.avatar || '😊'; // Placeholder avatar
+                const username = document.createElement('span');
+                username.classList.add('username');
+                username.textContent = player.name || 'Player';
+                const xpBadge = document.createElement('span');
+                xpBadge.classList.add('xp-badge');
+                xpBadge.textContent = player.level || 1;
+                playerInfo.appendChild(avatar);
+                playerInfo.appendChild(username);
+                playerInfo.appendChild(xpBadge);
+                seatElement.appendChild(playerInfo);
+
+                // Player Hand
+                const playerHand = document.createElement('div');
+                playerHand.classList.add('player-hand');
+                if (player.hand && player.hand.length > 0) {
+                    player.hand.forEach(card => {
+                        const cardElement = document.createElement('div');
+                        cardElement.classList.add('card');
+                         // If it's not the user's hand, maybe show some cards face down? Depends on game rules.
+                         // For simplicity, showing all cards face up for now.
+                        cardElement.textContent = `${card.value}${card.suit}`; // Placeholder text
+                        playerHand.appendChild(cardElement);
+                    });
+                } else {
+                     const placeholder = document.createElement('div');
+                     placeholder.classList.add('card', 'card-back');
+                     playerHand.appendChild(placeholder);
+                }
+                seatElement.appendChild(playerHand);
+
+                // Action Buttons (Hit/Stand)
+                const actionButtons = document.createElement('div');
+                actionButtons.classList.add('action-buttons');
+                actionButtons.style.display = (player.id === gameState.walletAddress && player.id === gameState.activePlayerId && !gameState.isSpectator) ? 'block' : 'none';
+
+                const hitButton = document.createElement('button');
+                hitButton.classList.add('hit-button');
+                hitButton.textContent = 'Hit';
+                hitButton.onclick = () => sendPlayerAction('hit');
+
+                const standButton = document.createElement('button');
+                standButton.classList.add('stand-button');
+                standButton.textContent = 'Stand';
+                standButton.onclick = () => sendPlayerAction('stand');
+
+                actionButtons.appendChild(hitButton);
+                actionButtons.appendChild(standButton);
+                seatElement.appendChild(actionButtons);
+
+                // Turn Timer Bar
+                const timerBar = document.createElement('div');
+                timerBar.classList.add('turn-timer-bar');
+                timerBar.style.display = (player.id === gameState.activePlayerId) ? 'block' : 'none';
+                const timerFill = document.createElement('div');
+                timerFill.classList.add('turn-timer-fill');
+                 // Timer fill width will be controlled by startTurnTimer function
+                timerBar.appendChild(timerFill);
+                seatElement.appendChild(timerBar);
+
+
+                dom.playerSeats.appendChild(seatElement);
+            });
+
+             // Add empty seats if less than 5 players
+             for (let i = gameState.players.length; i < 5; i++) {
+                 const emptySeat = document.createElement('div');
+                 emptySeat.classList.add('player-seat');
+                 emptySeat.style.backgroundColor = '#333'; // Slightly lighter for empty
+                 emptySeat.style.border = '2px dashed #555';
+                 emptySeat.innerHTML = `<div style="color: #777; font-size: 0.9em;">Empty Seat</div>`;
+                 dom.playerSeats.appendChild(emptySeat);
+             }
+        }
+
+        function startTurnTimer(duration) {
+            const activePlayerSeat = document.querySelector('.player-seat.active .turn-timer-fill');
+            if (activePlayerSeat) {
+                // Reset timer animation
+                activePlayerSeat.style.transition = 'none';
+                activePlayerSeat.style.width = '100%';
+                // Force reflow to apply width: 100% immediately
+                activePlayerSeat.offsetHeight;
+                // Start animation
+                activePlayerSeat.style.transition = `width ${duration}s linear`;
+                activePlayerSeat.style.width = '0%';
+            }
+        }
+
+
+        function updateBettingControls() {
+            dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
+            dom.betSlider.value = gameState.betAmount;
+
+            if (gameState.isSeated) {
+                dom.joinLeaveButton.textContent = 'Leave Table';
+                dom.joinLeaveButton.classList.remove('join-button');
+                dom.joinLeaveButton.classList.add('leave-button');
+                // Disable betting controls if seated and not active player or spectator
+                const disableBetting = gameState.isSeated && !gameState.isSpectator && gameState.activePlayerId !== gameState.walletAddress;
+                 dom.betSlider.disabled = disableBetting;
+                 dom.quickBetButtons.forEach(button => button.disabled = disableBetting);
+
+            } else {
+                dom.joinLeaveButton.textContent = 'Join Table';
+                dom.joinLeaveButton.classList.remove('leave-button');
+                dom.joinLeaveButton.classList.add('join-button');
+                 // Enable betting controls if not seated
+                 dom.betSlider.disabled = false;
+                 dom.quickBetButtons.forEach(button => button.disabled = false);
+            }
+
+            // Show spectator status if applicable
+            dom.spectatorStatus.style.display = gameState.isSpectator ? 'inline-block' : 'none';
+             // Disable chat input for spectators
+             dom.chatInput.disabled = gameState.isSpectator;
+             dom.sendChatButton.disabled = gameState.isSpectator;
+             dom.chatInput.placeholder = gameState.isSpectator ? "Spectators cannot chat" : "Type message...";
+        }
+
+        function renderChatFeed() {
+            dom.chatFeed.innerHTML = ''; // Clear current feed
+            gameState.chatMessages.forEach(msg => {
+                addChatMessageToFeed(msg);
+            });
+        }
+
+        function addChatMessageToFeed(msg) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message');
+            messageElement.innerHTML = `<span class="chat-sender">[${msg.sender}]</span><span class="chat-badge">[${msg.badge}]</span> ${msg.message}`;
+            dom.chatFeed.appendChild(messageElement);
+            // Auto-scroll to the bottom
+            dom.chatFeed.scrollTop = dom.chatFeed.scrollHeight;
+        }
+
+        // --- Event Handlers ---
+
+        function setupEventListeners() {
+            dom.connectWalletButton.addEventListener('click', connectWallet);
+            dom.disconnectWalletButton.addEventListener('click', disconnectWallet);
+
+            dom.betSlider.addEventListener('input', (event) => {
+                gameState.betAmount = parseFloat(event.target.value);
+                dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
+                // Optional: Send bet update to server on slider change or on a separate "Place Bet" button
+                 // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
+            });
+
+            dom.quickBetButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const amount = event.target.dataset.betAmount;
+                    if (amount === 'MAX') {
+                        // Placeholder: Implement MAX bet logic (e.g., based on wallet balance or table limit)
+                        gameState.betAmount = 10; // Example MAX bet
+                    } else {
+                        gameState.betAmount = Math.max(0, gameState.betAmount + parseFloat(amount));
+                    }
+                    // Clamp bet amount to max slider value
+                    gameState.betAmount = Math.min(gameState.betAmount, parseFloat(dom.betSlider.max));
+                    dom.betSlider.value = gameState.betAmount;
+                    dom.currentBetDisplay.textContent = `Bet: ${gameState.betAmount.toFixed(2)} SOL`;
+                     // Optional: Send bet update
+                     // sendMessage({ type: 'betChanged', amount: gameState.betAmount });
+                });
+            });
+
+            dom.joinLeaveButton.addEventListener('click', () => {
+                if (gameState.isSeated) {
+                    sendMessage({ type: 'leaveTable' });
+                } else {
+                    sendMessage({ type: 'joinTable', bet: gameState.betAmount }); // Send bet when joining
+                }
+            });
+
+            dom.sendChatButton.addEventListener('click', sendChatMessage);
+            dom.chatInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+
+             // Placeholder for Settings Menu Toggle
+             const menuIcon = document.querySelector('.menu-icon');
+             menuIcon.addEventListener('click', () => {
+                 const dropdown = dom.settingsDropdown;
+                 dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+             });
+
+             // Close settings dropdown if clicked outside
+             document.addEventListener('click', (event) => {
+                 if (!menuIcon.contains(event.target) && !dom.settingsDropdown.contains(event.target)) {
+                     dom.settingsDropdown.style.display = 'none';
+                 }
+             });
+        }
+
+        function sendPlayerAction(action) {
+             if (gameState.walletAddress && gameState.walletAddress === gameState.activePlayerId && !gameState.isSpectator) {
+                  sendMessage({ type: 'player_action', action: action });
+             } else {
+                 console.warn("Cannot send action: Not your turn, not connected, or spectator.");
+             }
+        }
+
+        function sendChatMessage() {
+            const message = dom.chatInput.value.trim();
+            if (message && !gameState.isSpectator) {
+                sendMessage({ type: 'chat_message', message: message });
+                dom.chatInput.value = ''; // Clear input
+            }
+        }
+
+
+        // --- Animation Placeholders ---
+
+        // Placeholder for Confetti Animation (Canvas)
+        function triggerConfetti() {
+            console.log("Triggering confetti!");
+            // Basic Confetti Simulation (replace with a more robust implementation)
+            const confettiCount = 100;
+            const colors = ['#10b981', '#ec4899', '#a78bfa', '#facc15']; // Green, Pink, Purple, Yellow
+            const particles = [];
+
+            for (let i = 0; i < confettiCount; i++) {
+                particles.push({
+                    x: Math.random() * dom.confettiCanvas.width,
+                    y: dom.confettiCanvas.height, // Start from bottom
+                    radius: Math.random() * 5 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedX: Math.random() * 10 - 5, // Random horizontal speed
+                    speedY: Math.random() * -15 - 5, // Upward speed
+                    gravity: 0.5,
+                    dampening: 0.9, // Reduce speed over time
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 20 - 10,
+                });
+            }
+
+            function updateConfetti() {
+                dom.confettiCtx.clearRect(0, 0, dom.confettiCanvas.width, dom.confettiCanvas.height);
+
+                particles.forEach(p => {
+                    p.speedY += p.gravity;
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    p.speedX *= p.dampening;
+                    p.speedY *= p.dampening;
+                    p.rotation += p.rotationSpeed;
+
+                    // Draw particle (simplified square for now)
+                    dom.confettiCtx.save();
+                    dom.confettiCtx.translate(p.x, p.y);
+                    dom.confettiCtx.rotate(p.rotation * Math.PI / 180);
+                    dom.confettiCtx.fillStyle = p.color;
+                    dom.confettiCtx.fillRect(-p.radius / 2, -p.radius / 2, p.radius, p.radius);
+                    dom.confettiCtx.restore();
+                });
+
+                // Remove particles that are off-screen
+                particles.filter(p => p.y < dom.confettiCanvas.height);
+
+                if (particles.length > 0) {
+                    requestAnimationFrame(updateConfetti);
+                }
+            }
+
+            updateConfetti(); // Start animation
+        }
+
+
+        // --- Placeholder Simulation Data (for initial UI testing) ---
+        function simulateInitialGameState() {
+             gameState.players = [
+                 { id: 'player1', name: 'CryptoKing', level: 7, avatar: '😎', hand: [{value: 'K', suit: '♥'}, {value: '5', suit: '♦'}], isUser: false, timer: 10 },
+                 { id: 'user-wallet-id', name: 'You', level: 5, avatar: '😊', hand: [{value: 'Q', suit: '♠'}, {value: '8', suit: '♣'}], isUser: true, timer: 10 }, // Replace 'user-wallet-id' with actual connected wallet ID
+                 { id: 'player3', name: 'DegenJane', level: 3, avatar: '😂', hand: [{value: '2', suit: '♥'}, {value: '7', suit: '♦'}], isUser: false, timer: 10 },
+             ];
+             gameState.dealerHand = [{value: '?', suit: '?'}, {value: '10', suit: '♠'}]; // Dealer shows one card
+             gameState.activePlayerId = 'user-wallet-id'; // Set user as active initially
+             gameState.betAmount = 0.5;
+             gameState.isSeated = true;
+             gameState.chatMessages = [
+                 { sender: 'Anon', message: 'gm degens!', badge: '1' },
+                 { sender: 'CryptoKing', message: 'let\'s go!', badge: '7' },
+             ];
+             gameState.recentPlays = [
+                 { player: 'Whale', amount: 2.0, win: true },
+                 { player: 'You', amount: 0.5, win: false },
+                 { player: 'DegenJane', amount: 0.1, win: true },
+             ];
+             gameState.userXP = 75; // Example XP
+             gameState.userLevel = 5; // Example Level
+
+
+             // Update UI with simulated data
+             updateUI();
+             // Start the timer animation for the active player
+             startTurnTimer(gameState.turnTimerDuration);
+        }
+
+
+    </script>
+
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+
 </body>
 </html>
