@@ -1110,7 +1110,6 @@
              color: #000;
          }
 
-
         /* Double or Nothing Modal */
         #doubleOrNothingModal .modal-content h2 {
             color: var(--danger); /* Red title for loss prompt */
@@ -1692,6 +1691,7 @@
         let winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0'); // Load win streak
         let tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0'); // Load 10x wins
         // --- FIX: Store multiplier as numeric string ---
+        // Load current bet state from localStorage, default to null multiplier and 0 amount
         let currentBet = { multiplier: localStorage.getItem('solroulette_current_multiplier') || null, amount: parseFloat(localStorage.getItem('solroulette_current_amount') || '0') };
         let achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements') || '[]')); // Load achievements
         let playersOnline = 1247;
@@ -2205,6 +2205,9 @@
             } else {
                 spinTimer--;
             }
+            // --- FIX: Removed resetting currentBet here ---
+            // currentBet.multiplier = null;
+            // currentBet.amount = 0;
             updateUIDebounced(); // Update UI elements that depend on the timer state
         }
 
@@ -2334,6 +2337,9 @@
 
         // Place Bet
         function placeBet() {
+             // --- FIX: Add console log at the beginning of placeBet ---
+             console.log("Placing bet with:", currentBet);
+
             // Play bet confirmation sound
             playSound('click');
             if (navigator.vibrate) navigator.vibrate(80); // Haptic feedback on spin start
@@ -2453,9 +2459,10 @@
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
              localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
-             // --- FIX: Save current bet state ---
-             localStorage.setItem('solroulette_current_multiplier', currentBet.multiplier);
-             localStorage.setItem('solroulette_current_amount', currentBet.amount);
+             // --- FIX: Clear current bet state in localStorage ---
+             localStorage.removeItem('solroulette_current_multiplier');
+             localStorage.removeItem('solroulette_current_amount');
+             localStorage.setItem('solroulette_last_spin_result', lastSpinResult); // Save the actual result string
 
 
             // Start the spin animation immediately after placing the bet
@@ -2473,7 +2480,10 @@
              // --- FIX: Use lastSpinResult (string with 'x') ---
              let winningMultiplierString = lastSpinResult; // e.g., '2x'
              // --- FIX: Use currentBet.multiplier (numeric string) ---
-             let userPickedMultiplierNumericString = currentBet.multiplier; // e.g., '2'
+             // The bet has already been placed and currentBet is reset.
+             // We need to find the user's bet from the playerBets array to get their picked multiplier.
+             const userBet = playerBets.find(bet => bet.isUser);
+             let userPickedMultiplierNumericString = userBet ? userBet.multiplier : null; // e.g., '2'
 
 
              // Add outcome to recent spins
@@ -2745,6 +2755,9 @@
 
             // --- FIX: Store the actual winning multiplier string ---
             lastSpinResult = actualWinningMultiplierString;
+
+            // Save the last spin result to localStorage immediately
+            localStorage.setItem('solroulette_last_spin_result', lastSpinResult);
 
 
             // Determine if it's a near-miss fakeout (20% chance)
@@ -3392,6 +3405,11 @@
                  isGuestMode = true; // Explicitly set guest mode
                  localStorage.setItem('solroulette_is_guest', 'true');
                  // walletBalance is already set to 500 on initial load if fakeIntroShown is false
+                 // Ensure currentBet is reset when starting guest mode from onboarding
+                 currentBet = { multiplier: null, amount: 0 };
+                 localStorage.removeItem('solroulette_current_multiplier');
+                 localStorage.removeItem('solroulette_current_amount');
+
 
                  // Initialize other guest stats if they don't exist
                  if (localStorage.getItem('solroulette_guest_xp') === null) localStorage.setItem('solroulette_guest_xp', '0');
@@ -3408,8 +3426,8 @@
                  // Load guest stats after setting them
                  xp = parseInt(localStorage.getItem('solroulette_guest_xp'));
                  tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens'));
-                 totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered'));
-                 winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak'));
+                 totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered'));
+                 winStreak = parseInt(localStorage.getItem('solroulette_win_streak'));
                  tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins'));
                  achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements')));
                  guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count'));
@@ -3570,8 +3588,9 @@
              document.getElementById('autoDemoBanner').style.display = 'none';
              // Reset selected multiplier and amount in UI if needed, but keep state for manual play
              document.querySelectorAll('.multiplier-btn').forEach(btn => btn.classList.remove('active'));
-             currentBet = { multiplier: null, amount: 0 };
-             document.getElementById('betSlider').value = 0.5; // Reset slider visually
+             // Do NOT reset currentBet here, it should persist unless a spin happens
+             // currentBet = { multiplier: null, amount: 0 };
+             // document.getElementById('betSlider').value = 0.5; // Reset slider visually
              updateUIDebounced(); // Update UI
          }
 
@@ -3673,8 +3692,9 @@
             document.getElementById('solBalance').textContent = walletBalance.toFixed(2);
             //document.getElementById('userName').textContent = user.name; // Removed this line
             //document.getElementById('userAvatar').textContent = user.avatar; // Removed this line
-            // --- FIX: Bet Slider Fix - Format value ---
-            document.getElementById('betValue').textContent = `◎${parseFloat(document.getElementById('betSlider').value).toFixed(2)} SOL`; // Ensure 2 decimal places
+            // --- FIX: Bet Slider Fix - Update betValue text based on currentBet.amount ---
+            document.getElementById('betValue').textContent = `◎${currentBet.amount.toFixed(2)} SOL`; // Use currentBet.amount
+
 
             // Update XP bar and level
             const xpPercentage = (xp % 100);
@@ -3740,7 +3760,13 @@
                  betSlider.title = bettingAllowedByTimer ? '' : 'Betting is closed';
 
             } else { // Guest Mode or not connected
-                 connectWalletBtn.style.display = 'block';
+                 // --- FIX: Show Connect Wallet button only when not connected ---
+                 if (!user.wallet) {
+                     connectWalletBtn.style.display = 'block';
+                 } else {
+                     connectWalletBtn.style.display = 'none'; // Hide if wallet is connected (even in guest mode)
+                 }
+
                  // --- FIX: Show Place Bet button in Guest Mode ---
                  placeBetBtn.style.display = 'block'; // Always show place bet button in guest mode
                  guestModeBanner.style.display = 'block'; // Show guest banner for guest users
@@ -3857,6 +3883,7 @@
         // --- FIX: Bet Slider Fix - Update currentBet.amount and display ---
         document.getElementById('betSlider').addEventListener('input', (e) => {
              currentBet.amount = parseFloat(e.target.value);
+             localStorage.setItem('solroulette_current_amount', currentBet.amount); // Save to localStorage
              updateUIDebounced(); // Update the displayed bet value and button state
              // Dismiss onboarding tooltip/glow if active and user interacts with slider
              dismissOnboarding();
@@ -3891,6 +3918,7 @@
                 btn.classList.add('active');
                 // --- FIX: Multiplier Selection Fix - Set currentBet.multiplier correctly (numeric string) ---
                 currentBet.multiplier = btn.dataset.multiplier; // Set the multiplier as numeric string (e.g., "1.5")
+                localStorage.setItem('solroulette_current_multiplier', currentBet.multiplier); // Save to localStorage
                 console.log('currentBet.multiplier set to:', currentBet.multiplier);
 
 
@@ -4119,8 +4147,8 @@
                  // Load guest stats after setting them
                  xp = parseInt(localStorage.getItem('solroulette_guest_xp'));
                  tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens'));
-                 totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered'));
-                 winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak'));
+                 totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered'));
+                 winStreak = parseInt(localStorage.getItem('solroulette_win_streak'));
                  tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins'));
                  achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements')));
                  guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count'));
@@ -4192,18 +4220,18 @@
 
              // --- FIX: Initialization on Page Load (Guest Mode) ---
              // Default multiplier selection and bet amount for new/returning users if not already set
-             if (currentBet.multiplier === null) {
-                 currentBet.multiplier = '2'; // Default to '2' (numeric string)
-                 // Find the 2x button and add the active class
-                 const defaultMultiplierBtn = document.querySelector('.multiplier-btn[data-multiplier="2"]'); // Use numeric data-multiplier
-                 if (defaultMultiplierBtn) {
-                     defaultMultiplierBtn.classList.add('active');
-                 }
+             // These are now loaded from localStorage at the top.
+             // Ensure the UI reflects the loaded state.
+             if (currentBet.multiplier !== null) {
+                  const defaultMultiplierBtn = document.querySelector(`.multiplier-btn[data-multiplier="${currentBet.multiplier}"]`); // Use numeric data-multiplier
+                  if (defaultMultiplierBtn) {
+                      defaultMultiplierBtn.classList.add('active');
+                  }
              }
-             if (currentBet.amount === 0) {
-                 document.getElementById('betSlider').value = 0.5;
-                 currentBet.amount = 0.5;
+             if (currentBet.amount > 0) {
+                  document.getElementById('betSlider').value = currentBet.amount;
              }
+
 
              // Ensure UI is updated with the initial/loaded state
              updateUIDebounced();
