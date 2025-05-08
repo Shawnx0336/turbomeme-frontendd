@@ -446,6 +446,48 @@
             z-index: 999;
         }
 
+        /* Live Panel Toggle */
+        .live-panel-container {
+            position: fixed;
+            top: 120px; /* Position below timer/CTA */
+            left: 10px; /* Default position */
+            width: 250px; /* Increased width */
+            z-index: 10;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .live-panel-container.closed {
+             transform: translateX(calc(-100% + 60px)); /* Show only a small part */
+        }
+
+        .live-panel-toggle-btn {
+            position: absolute;
+            top: 0;
+            right: -40px; /* Position outside the panel */
+            width: 40px;
+            height: 40px;
+            background: var(--panel-background);
+            color: var(--accent);
+            border: none;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 11; /* Above the panel */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+        }
+         .live-panel-toggle-btn .unread-dot {
+             position: absolute;
+             top: 5px;
+             right: 5px;
+             width: 8px;
+             height: 8px;
+             background-color: var(--danger); /* Red dot */
+             border-radius: 50%;
+             display: none; /* Hidden by default */
+         }
+
 
         /* Bet Controls */
         .bet-controls {
@@ -703,18 +745,19 @@
 
         /* Unified Live Panel (Bets + Chat) */
         .live-panel {
-            position: absolute;
-            top: 120px; /* Position below timer/CTA */
-            left: 10px; /* Default position */
+            /* position: absolute; */ /* Removed absolute positioning */
+            /* top: 120px; */ /* Removed top positioning */
+            /* left: 10px; */ /* Removed left positioning */
             background: var(--panel-background);
             padding: 12px;
             border-radius: var(--panel-border-radius);
             max-height: 250px; /* Increased height */
             overflow: hidden; /* Hide content overflow */
             backdrop-filter: blur(6px);
-            width: 250px; /* Increased width */
+            width: 100%; /* Take full width of container */
+            height: 100%; /* Take full height of container */
             font-size: 0.85em;
-            z-index: 10;
+            /* z-index: 10; */ /* Z-index now handled by container */
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
@@ -735,12 +778,24 @@
             color: #aaa;
             border-bottom: 2px solid transparent;
             transition: color 0.2s, border-bottom-color 0.2s;
+            position: relative; /* Needed for unread dot */
         }
 
         .live-panel-tab.active {
             color: var(--accent);
             border-bottom-color: var(--accent);
         }
+         .live-panel-tab .unread-dot {
+             position: absolute;
+             top: 5px;
+             right: 5px;
+             width: 8px;
+             height: 8px;
+             background-color: var(--danger); /* Red dot */
+             border-radius: 50%;
+             display: none; /* Hidden by default */
+         }
+
 
         .live-panel-content {
             flex-grow: 1;
@@ -1362,13 +1417,28 @@
                  padding-bottom: 150px; /* Add padding to avoid content being hidden by sticky controls */
              }
              /* Adjust chat and bet feed position for smaller screens */
-             .live-panel {
+             .live-panel-container {
                  top: 80px; /* Move below header */
-                 left: 5px;
-                 width: calc(100% - 10px); /* Take up full screen width */
+                 left: 0; /* Start from the left edge */
+                 width: calc(100% - 50px); /* Take up almost full screen width, leave space for toggle */
                  max-height: 180px; /* Reduce max height */
-                 padding: 8px;
-                 right: 5px; /* Ensure it spans the width */
+                 padding: 0; /* Remove padding from container */
+                 right: auto; /* Reset right positioning */
+                 transform: translateX(calc(-100% + 50px)); /* Hide most of the panel, show 50px */
+             }
+             .live-panel-container.closed {
+                  transform: translateX(calc(-100% + 50px)); /* Keep hidden */
+             }
+             .live-panel-container.active {
+                 transform: translateX(0); /* Show fully */
+             }
+             .live-panel {
+                 padding: 8px; /* Reduced padding inside the panel */
+             }
+             .live-panel-toggle-btn {
+                 right: -50px; /* Position outside the panel */
+                 width: 50px;
+                 height: 40px;
              }
              .live-panel-tab {
                  padding: 6px 0; /* Reduced padding */
@@ -1572,14 +1642,27 @@
              }
 
              /* Unified Live Panel on Desktop */
-             .live-panel {
-                 position: static; /* Remove absolute positioning */
+             .live-panel-container {
+                 position: static; /* Remove fixed positioning */
                  max-height: none; /* Allow full height */
                  overflow: hidden; /* Keep overflow hidden for tab content */
                  width: 300px;
                  margin: 0;
                  align-self: stretch; /* Stretch to fill height */
                  margin-top: 180px; /* Space for header/timer/cta */
+                 transform: translateX(0); /* Ensure visible on desktop */
+             }
+              .live-panel-container.closed {
+                  transform: translateX(0); /* No transform on desktop */
+             }
+             .live-panel-container.active {
+                 transform: translateX(0); /* No transform on desktop */
+             }
+             .live-panel {
+                 padding: 12px; /* Reset padding */
+             }
+             .live-panel-toggle-btn {
+                 display: none; /* Hide toggle button on desktop */
              }
               .live-panel-tab {
                  padding: 8px 0; /* Reset padding */
@@ -1727,26 +1810,33 @@
 
         <div class="bonus-banner" id="bonusBanner">Double $SPIN next 10 spins! 🔥</div>
 
-        <div class="live-panel" id="livePanel">
-            <div class="live-panel-tabs">
-                <div class="live-panel-tab active" data-tab="bets">Live Bets</div>
-                <div class="live-panel-tab" data-tab="chat">Live Chat</div>
-            </div>
-            <div class="live-panel-content">
-                <div id="liveBetsContent" class="live-panel-content-tab active">
-                    <div class="bet-entry"><i class="fas fa-dice"></i> <span class="system">System:</span> Welcome to SolRoulette LIVE!</div>
-                </div>
-                <div id="liveChatContent" class="live-panel-content-tab">
-                    <div class="chat-feed" id="chatFeed">
-                         <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="chatInput" placeholder="Say something..." aria-label="Chat input">
-                        <button id="sendChatBtn" aria-label="Send chat message">Send</button>
-                    </div>
-                </div>
-            </div>
+        <div class="live-panel-container closed" id="livePanelContainer">
+             <div class="live-panel" id="livePanel">
+                 <div class="live-panel-tabs">
+                     <div class="live-panel-tab active" data-tab="bets">Live Bets <span class="unread-dot" id="betsUnreadDot"></span></div>
+                     <div class="live-panel-tab" data-tab="chat">Live Chat <span class="unread-dot" id="chatUnreadDot"></span></div>
+                 </div>
+                 <div class="live-panel-content">
+                     <div id="liveBetsContent" class="live-panel-content-tab active">
+                         <div class="bet-entry"><i class="fas fa-dice"></i> <span class="system">System:</span> Welcome to SolRoulette LIVE!</div>
+                     </div>
+                     <div id="liveChatContent" class="live-panel-content-tab">
+                         <div class="chat-feed" id="chatFeed">
+                              <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
+                         </div>
+                         <div class="chat-input">
+                             <input type="text" id="chatInput" placeholder="Say something..." aria-label="Chat input">
+                             <button id="sendChatBtn" aria-label="Send chat message">Send</button>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+             <button id="toggleLivePanel" class="live-panel-toggle-btn" aria-label="Toggle Live Panel">
+                 <i class="fas fa-chevron-right"></i>
+                 <span class="unread-dot" id="livePanelUnreadDot"></span>
+             </button>
         </div>
+
         <div class="leaderboard-panel" id="leaderboardPanel">
              <div class="leaderboard-tabs">
                  <div class="leaderboard-tab active" data-tab="wager">Top Wager</div>
@@ -2647,6 +2737,13 @@
             entry.innerHTML = `<i class="fas fa-dice"></i> <span class="user">${user}</span> bet <span class="amount">◎${amount.toFixed(2)}</span> on <span class="multiplier">${multiplier}x</span>`;
             feed.appendChild(entry);
             feed.scrollTop = feed.scrollHeight; // Auto-scroll to bottom
+
+             // Show unread dot if live panel is closed
+             const livePanelContainer = document.getElementById('livePanelContainer');
+             if (livePanelContainer.classList.contains('closed')) {
+                 document.getElementById('livePanelUnreadDot').style.display = 'block';
+                 document.getElementById('betsUnreadDot').style.display = 'block';
+             }
         }
 
         // Add Chat Message to Feed
@@ -2659,20 +2756,13 @@
             chatFeed.appendChild(msg); // Append to chatFeed
             chatFeed.scrollTop = chatFeed.scrollHeight; // Auto-scroll to bottom
 
-            // Show unread dot if chat is collapsed (now handled by tab switching)
-            // const chatBox = document.getElementById('liveChatContent'); // Use liveChatContent
-            // if (!chatBox.classList.contains('active')) { // Check if chat tab is not active
-            //     const chatTab = document.querySelector('.live-panel-tab[data-tab="chat"]');
-            //     if (chatTab) {
-            //         let unreadSpan = chatTab.querySelector('.unread-dot');
-            //         if (!unreadSpan) {
-            //             unreadSpan = document.createElement('span');
-            //             unreadSpan.className = 'unread-dot';
-            //             chatTab.appendChild(unreadSpan);
-            //         }
-            //         unreadSpan.style.display = 'inline-block'; // Show unread dot
-            //     }
-            // }
+            // Show unread dot if live panel is closed or on bets tab
+            const livePanelContainer = document.getElementById('livePanelContainer');
+            const chatTab = document.querySelector('.live-panel-tab[data-tab="chat"]');
+            if (livePanelContainer.classList.contains('closed') || !chatTab.classList.contains('active')) {
+                document.getElementById('livePanelUnreadDot').style.display = 'block';
+                document.getElementById('chatUnreadDot').style.display = 'block';
+            }
         }
 
         // Send Chat
@@ -3018,10 +3108,16 @@
                  document.getElementById('lowBalanceAlert').style.display = 'none'; // Hide alert in guest mode
              }
 
-
-             // Show result modal
-             // Pass correct values to showResultModal
-             showResultModal(userPickedMultiplierDisplayString, winningMultiplierString, userWon, userWinAmount, userLostAmount); // Pass lost amount
+             // Loss Popup Appears Without Any Bet - Fix: Only show result modal if user had a bet
+             const userBet = playerBets.find(bet => bet.isUser);
+             if (userBet) {
+                // Show result modal
+                // Pass correct values to showResultModal
+                showResultModal(userPickedMultiplierDisplayString, winningMultiplierString, userWon, userWinAmount, userLostAmount); // Pass lost amount
+             } else {
+                 // If no user bet, just log the result and update UI
+                 console.log("No user bet placed this round. Spin result:", winningMultiplierString);
+             }
 
 
              // Show "Enjoying the game?" modal after 3 guest spins
@@ -4380,7 +4476,7 @@
         // Add event listeners for buttons that had inline onclick
         document.getElementById('connectWalletBtn').addEventListener('click', openWalletModal); // Open wallet modal first
         document.getElementById('placeBetBtn').addEventListener('click', placeBet);
-        document.getElementById('sendChatBtn').addEventListener('click', sendChat);
+        // document.getElementById('sendChatBtn').addEventListener('click', sendChat); // Moved to Chat Toggle JS
         document.getElementById('claimModalBtn').addEventListener('click', openClaimModal);
         document.getElementById('closeWalletModalBtn').addEventListener('click', closeWalletModal);
         document.getElementById('justWatchingBtn').addEventListener('click', closeWalletModal); // "Just Watching" button
@@ -4447,6 +4543,13 @@
                     if (targetTabId === 'chat') {
                          const chatFeed = document.getElementById('chatFeed');
                          chatFeed.scrollTop = chatFeed.scrollHeight;
+                         document.getElementById('chatUnreadDot').style.display = 'none'; // Hide chat unread dot
+                    } else if (targetTabId === 'bets') {
+                         document.getElementById('betsUnreadDot').style.display = 'none'; // Hide bets unread dot
+                    }
+                    // Hide main live panel unread dot if either tab is active
+                    if (document.querySelector('.live-panel-tab.active')) {
+                         document.getElementById('livePanelUnreadDot').style.display = 'none';
                     }
                 }
                  resetIdleTimer(); // Reset idle timer on tab switch
@@ -4682,6 +4785,34 @@
 
          // Wallet Connection Mobile Fixes - Initialize on page load
          document.addEventListener('DOMContentLoaded', handleWalletConnection);
+
+         // Live Panel Toggle Logic
+         document.getElementById('toggleLivePanel').addEventListener('click', function() {
+             const livePanelContainer = document.getElementById('livePanelContainer');
+             const toggleBtn = document.getElementById('toggleLivePanel');
+             const icon = toggleBtn.querySelector('i');
+
+             livePanelContainer.classList.toggle('closed');
+             livePanelContainer.classList.toggle('active'); // Use active class for open state
+
+             // Change arrow direction
+             if (livePanelContainer.classList.contains('active')) {
+                 icon.classList.remove('fa-chevron-right');
+                 icon.classList.add('fa-chevron-left');
+                 // Hide unread dots when panel is opened
+                 document.getElementById('livePanelUnreadDot').style.display = 'none';
+                 document.getElementById('betsUnreadDot').style.display = 'none';
+                 document.getElementById('chatUnreadDot').style.display = 'none';
+             } else {
+                 icon.classList.remove('fa-chevron-left');
+                 icon.classList.add('fa-chevron-right');
+             }
+             resetIdleTimer(); // Reset idle timer on panel toggle
+             stopAutoDemo(); // Stop auto demo on panel toggle
+         });
+
+         // Event listener for Send Chat button (moved from general listeners)
+         document.getElementById('sendChatBtn').addEventListener('click', sendChat);
 
 
     </script>
