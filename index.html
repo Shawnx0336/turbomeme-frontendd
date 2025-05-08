@@ -1691,7 +1691,8 @@
         let totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered') || '0'); // Load total wagered
         let winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0'); // Load win streak
         let tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0'); // Load 10x wins
-        let currentBet = { multiplier: null, amount: 0 };
+        // --- FIX: Store multiplier as numeric string ---
+        let currentBet = { multiplier: localStorage.getItem('solroulette_current_multiplier') || null, amount: parseFloat(localStorage.getItem('solroulette_current_amount') || '0') };
         let achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements') || '[]')); // Load achievements
         let playersOnline = 1247;
         let playerBets = []; // Array to store bets for the current round
@@ -1702,7 +1703,8 @@
         let fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total') || '0'); // Track fake winnings
         let onboardingShown = localStorage.getItem('solroulette_onboarding_shown') === 'true'; // Track if onboarding tooltip has been shown
         let firstRealBetPlaced = localStorage.getItem('solroulette_first_real_bet_placed') === 'true'; // Track if a real bet has been placed
-        let lastSpinResult = null; // Store the actual result of the last spin
+        // --- FIX: Store actual spin result as string with 'x' ---
+        let lastSpinResult = localStorage.getItem('solroulette_last_spin_result') || null; // Store the actual result of the last spin
 
 
         // User Profile
@@ -1736,14 +1738,20 @@
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const sounds = {};
 
+        // --- FIX: Implement try...catch for sound loading ---
         async function loadSound(name, url) {
             try {
                 const response = await fetch(url);
+                if (!response.ok) {
+                     console.warn(`Failed to fetch sound ${name} from ${url}: ${response.status}`);
+                     return; // Exit if fetch fails
+                }
                 const arrayBuffer = await response.arrayBuffer();
                 const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
                 sounds[name] = audioBuffer;
             } catch (e) {
-                console.error(`Error loading sound ${name}:`, e);
+                console.error(`Error loading sound ${name} from ${url}:`, e);
+                // Fallback or silent failure for now due to CORS or other issues
             }
         }
 
@@ -1754,18 +1762,27 @@
             }
 
             const audioBuffer = sounds[name];
-            if (!audioBuffer || !audioContext) return;
+            // --- FIX: Check if the audio buffer exists before trying to play ---
+            if (!audioBuffer || !audioContext || audioContext.state === 'suspended') {
+                // console.warn(`Sound "${name}" not loaded, audio context not available, or suspended.`);
+                return; // Exit the function if sound is not available or context is suspended
+            }
 
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuffer;
+            try {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
 
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = volume;
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = volume;
 
-            source.connect(gainNode).connect(audioContext.destination);
-            source.loop = loop;
-            source.start(0);
-            return source; // Return source to stop looping sounds later
+                source.connect(gainNode).connect(audioContext.destination);
+                source.loop = loop;
+                source.start(0);
+                return source; // Return source to stop looping sounds later
+            } catch (e) {
+                console.error(`Error playing sound ${name}:`, e);
+                return null; // Return null if playing fails
+            }
         }
 
         // Preload sounds
@@ -1824,65 +1841,76 @@
             const size = Math.min(canvas.width, canvas.height);
             const centerX = size / 2;
             const centerY = size / 2;
-            const radius = size / 2 - 12; // Account for border
+            // --- FIX: Ensure radius is not negative ---
+            const radius = Math.max(0, size / 2 - 12); // Account for border, ensure non-negative
 
             ctx.clearRect(0, 0, size, size);
 
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.rotate(currentWheelRotation);
-
-            segments.forEach(segment => {
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, radius, segment.startAngle, segment.endAngle);
-                ctx.closePath();
-                // Correctly get CSS variable value
-                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(segment.color).trim();
-                ctx.fill();
-
-                // Draw text
+            // Only attempt to draw if the radius is positive
+            if (radius > 0) {
                 ctx.save();
-                // Rotate to the middle of the segment
-                ctx.rotate(segment.middleAngle);
-                ctx.fillStyle = '#FFF';
-                ctx.font = 'bold 24px "Inter", sans-serif';
+                ctx.translate(centerX, centerY);
+                ctx.rotate(currentWheelRotation);
+
+                segments.forEach(segment => {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.arc(0, 0, radius, segment.startAngle, segment.endAngle);
+                    ctx.closePath();
+                    // Correctly get CSS variable value
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(segment.color).trim();
+                    ctx.fill();
+
+                    // Draw text
+                    ctx.save();
+                    // Rotate to the middle of the segment
+                    ctx.rotate(segment.middleAngle);
+                    ctx.fillStyle = '#FFF';
+                    ctx.font = 'bold 24px "Inter", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    // Position text away from the center
+                    const textRadius = radius * 0.7;
+                    ctx.fillText(segment.multiplier, textRadius, 0);
+                    ctx.restore();
+                });
+
+                ctx.restore();
+
+                // Draw metallic texture effect (simple overlay)
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'; // Subtle white overlay
+                ctx.globalCompositeOperation = 'overlay'; // Blend mode
+                ctx.fill();
+                ctx.restore();
+
+                // Draw center circle
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius * 0.3, 0, 2 * Math.PI);
+                ctx.fillStyle = '#222';
+                ctx.fill();
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#444';
+                ctx.stroke();
+
+                // Draw center text
+                 // Correctly get CSS variable value
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+                ctx.font = 'bold 20px "Press Start 2P", cursive'; // Arcade font for center
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                // Position text away from the center
-                const textRadius = radius * 0.7;
-                ctx.fillText(segment.multiplier, textRadius, 0);
-                ctx.restore();
-            });
-
-            ctx.restore();
-
-            // Draw metallic texture effect (simple overlay)
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'; // Subtle white overlay
-            ctx.globalCompositeOperation = 'overlay'; // Blend mode
-            ctx.fill();
-            ctx.restore();
-
-            // Draw center circle
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius * 0.3, 0, 2 * Math.PI);
-            ctx.fillStyle = '#222';
-            ctx.fill();
-            ctx.lineWidth = 5;
-            ctx.strokeStyle = '#444';
-            ctx.stroke();
-
-            // Draw center text
-             // Correctly get CSS variable value
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-            ctx.font = 'bold 20px "Press Start 2P", cursive'; // Arcade font for center
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('SPIN', centerX, centerY);
+                ctx.fillText('SPIN', centerX, centerY);
+            } else {
+                 // Optionally draw a placeholder or message if canvas is too small
+                 ctx.fillStyle = '#555';
+                 ctx.font = '12px "Inter", sans-serif';
+                 ctx.textAlign = 'center';
+                 ctx.textBaseline = 'middle';
+                 ctx.fillText('Canvas too small', centerX, centerY);
+            }
         }
 
         function animateWheel(timestamp) {
@@ -1903,6 +1931,7 @@
             let currentTargetRotation = targetRotation;
              // Apply near-miss fakeout during the last part of the spin
             if (isNearMiss && progress > 0.7 && progress < 0.95) {
+                 // Calculate target rotation for 10x (with 'x' for the function)
                  const nearMissTarget = calculateCanvasTargetRotation('10x') + (Math.random() * 20 - 10); // Aim slightly past 10x
                  const nearMissProgress = (progress - 0.7) / (0.95 - 0.7); // Progress within the fakeout phase
                  currentTargetRotation = targetRotation + (nearMissTarget - targetRotation) * Math.sin(nearMissProgress * Math.PI / 2); // Ease into near miss
@@ -1928,9 +1957,9 @@
         }
 
          // Function to calculate target rotation for canvas
-         // This function maps the winning multiplier to a rotation angle
-         function calculateCanvasTargetRotation(winningMultiplier) {
-             const segment = segments.find(seg => seg.multiplier === winningMultiplier);
+         // This function maps the winning multiplier (string with 'x') to a rotation angle
+         function calculateCanvasTargetRotation(winningMultiplierString) {
+             const segment = segments.find(seg => seg.multiplier === winningMultiplierString);
              if (!segment) return 0;
 
              // We want the pointer to land on the middle of the segment
@@ -2087,6 +2116,9 @@
             const preSpinCtaElement = document.getElementById('preSpinCta');
             const rouletteCanvas = document.getElementById('rouletteCanvas');
 
+            // --- FIX: Add console log to check currentBet.multiplier in updateTimer ---
+            console.log('updateTimer running. currentBet.multiplier:', currentBet.multiplier);
+
 
             if (isSpinning) {
                  timerElement.textContent = `✨ Spinning...`;
@@ -2131,7 +2163,7 @@
                     currentTickSound = playSound('tick', 0.5, true); // Play tick sound on loop
                  }
                  // Increase pitch as timer nears 0 (mock pitch increase)
-                 if (currentTickSound && audioContext) {
+                 if (currentTickSound && audioContext && currentTickSound.playbackRate) { // Check playbackRate exists
                      const pitch = 1 + (10 - spinTimer) * 0.05; // Increase pitch by 0.05 for each second closer to 0
                      currentTickSound.playbackRate.setValueAtTime(pitch, audioContext.currentTime);
                  }
@@ -2185,14 +2217,14 @@
             document.getElementById('playersOnline').textContent = playersOnline;
 
             const fakeUsers = ['SolDegen', 'CryptoChad', 'MoonApe', 'WheelMaster', 'LuckyLuke', 'GambaGuy', 'AnonBets', 'SolSpinner', 'DeFiKing', 'NFTCollector'];
-            const multipliers = ['1.5x', '2x', '3x', '5x', '10x'];
+            const multipliers = ['1.5', '2', '3', '5', '10']; // Use numeric strings
 
             // Simulate fake bets
             if (Math.random() < 0.7) { // 70% chance to add a fake bet
                  const newBet = {
                     user: fakeUsers[Math.floor(Math.random() * fakeUsers.length)],
                     amount: parseFloat((Math.random() * 5).toFixed(2)),
-                    multiplier: multipliers[Math.floor(Math.random() * multipliers.length)]
+                    multiplier: multipliers[Math.floor(Math.random() * multipliers.length)] // Store as numeric string
                  };
                  // Add to the UI feed immediately to show active bets
                  addBetEntry(`@${newBet.user}`, newBet.amount, newBet.multiplier); // Pass amount as number
@@ -2238,7 +2270,8 @@
             const feed = document.getElementById('betFeed');
             const entry = document.createElement('div');
             entry.className = 'bet-entry';
-            entry.innerHTML = `<i class="fas fa-dice"></i> <span class="user">${user}</span> bet <span class="amount">◎${amount.toFixed(2)}</span> on <span class="multiplier">${multiplier}</span>`;
+            // --- FIX: Display multiplier with 'x' in the feed ---
+            entry.innerHTML = `<i class="fas fa-dice"></i> <span class="user">${user}</span> bet <span class="amount">◎${amount.toFixed(2)}</span> on <span class="multiplier">${multiplier}x</span>`;
             feed.appendChild(entry);
             feed.scrollTop = feed.scrollHeight; // Auto-scroll to bottom
         }
@@ -2305,17 +2338,17 @@
             playSound('click');
             if (navigator.vibrate) navigator.vibrate(80); // Haptic feedback on spin start
 
-            // --- FIX 5 & 6: Null Bet Bug & Error Toast ---
-            if (!currentBet.multiplier || currentBet.amount <= 0) {
+            // --- FIX: Null Bet Bug - Check for multiplier and amount > 0 ---
+            if (currentBet.multiplier === null || currentBet.amount <= 0) {
                 showMessageBox('Invalid Bet', 'Please select a multiplier and enter a bet amount greater than 0.');
                  if (navigator.vibrate) navigator.vibrate(200);
                 return; // Prevent placing bet if conditions not met
             }
 
 
-            const amount = parseFloat(document.getElementById('betSlider').value);
+            const amount = currentBet.amount; // Use currentBet.amount which is already set by slider input
 
-            // --- FIX 4 & 6: Fake SOL Deduction & Refill Modal ---
+            // --- FIX: Fake SOL Deduction & Refill Modal ---
             // Auto Refill Fake SOL if balance is too low in guest mode
             if (isGuestMode && walletBalance < amount) {
                  if (window.autoRefill) { // Check autoRefill flag
@@ -2346,18 +2379,21 @@
                 return;
             }
 
+            // --- FIX: Add console log before pushing bet ---
+            console.log('Pushing bet with multiplier:', currentBet.multiplier, 'and amount:', currentBet.amount);
 
             // Deduct bet amount immediately
             walletBalance -= amount;
             totalWagered += amount;
-            currentBet.amount = amount; // Store the actual bet amount
+            // currentBet.amount is already set
 
             // Add user's bet to the list of bets for the current round
-            playerBets.push({ user: user.name, amount, multiplier: currentBet.multiplier, isUser: true }); // Mark user's bet
+            // --- FIX: Store multiplier as numeric string ---
+            playerBets.push({ user: user.name, amount, multiplier: currentBet.multiplier, isUser: true }); // Store numeric string
 
             // Add user's bet to the live feed
-            addBetEntry('You', amount, currentBet.multiplier); // Pass amount as number for formatting in addBetEntry
-
+            // --- FIX: Pass multiplier as numeric string to addBetEntry ---
+            addBetEntry('You', amount, currentBet.multiplier); // Pass amount as number
 
             xp += 10; // Earn XP for placing a bet
             checkAchievements();
@@ -2380,13 +2416,13 @@
 
             // Show mock transaction feedback (only for real wallet, or maybe simulate for guest?)
             if (!isGuestMode) {
-                 addChatMessage('System', `Transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}!`, '✅', 'system');
+                 addChatMessage('System', `Transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}x!`, '✅', 'system'); // Display with 'x'
                  // Mark that a real bet is now possible/wallet is connected
                  firstRealBetPlaced = true;
                  localStorage.setItem('solroulette_first_real_bet_placed', 'true');
                  stopAutoDemo(); // Stop auto demo on first real bet
              } else {
-                 addChatMessage('System', `Fake transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}!`, '✅', 'system'); // Ensure amount is number
+                 addChatMessage('System', `Fake transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}x!`, '✅', 'system'); // Display with 'x'
              }
 
 
@@ -2417,6 +2453,9 @@
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
              localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
+             // --- FIX: Save current bet state ---
+             localStorage.setItem('solroulette_current_multiplier', currentBet.multiplier);
+             localStorage.setItem('solroulette_current_amount', currentBet.amount);
 
 
             // Start the spin animation immediately after placing the bet
@@ -2431,12 +2470,14 @@
              let userLostAmount = 0; // Track lost amount for result modal
              let userWon = false;
              // The winningMultiplier is already determined in spinWheel() and stored in lastSpinResult
-             let winningMultiplier = lastSpinResult;
-             let userPickedMultiplier = currentBet.multiplier; // Store what the user picked
+             // --- FIX: Use lastSpinResult (string with 'x') ---
+             let winningMultiplierString = lastSpinResult; // e.g., '2x'
+             // --- FIX: Use currentBet.multiplier (numeric string) ---
+             let userPickedMultiplierNumericString = currentBet.multiplier; // e.g., '2'
 
 
              // Add outcome to recent spins
-             recentSpins.unshift({ multiplier: winningMultiplier, won: userPickedMultiplier === winningMultiplier }); // Add to the beginning
+             recentSpins.unshift({ multiplier: winningMultiplierString, won: parseFloat(userPickedMultiplierNumericString) === parseFloat(winningMultiplierString.replace('x', '')) }); // Add to the beginning
              if (recentSpins.length > 10) {
                  recentSpins.pop(); // Keep only the last 10
              }
@@ -2446,27 +2487,33 @@
 
              playerBets.forEach(bet => {
                  // Use the numeric value of the multiplier for calculation
-                 const multiplierValue = parseFloat(bet.multiplier.replace('x', '')); // Parse numeric value
-                 if (bet.multiplier === winningMultiplier) {
-                     const winnings = bet.amount * multiplierValue;
+                 const betMultiplierNumeric = parseFloat(bet.multiplier); // Bet multiplier is numeric string
+                 const winningMultiplierNumeric = parseFloat(winningMultiplierString.replace('x', '')); // Winning multiplier is string with 'x'
+
+                 // --- FIX: Show Correct Result - Compare numeric values ---
+                 if (betMultiplierNumeric === winningMultiplierNumeric) {
+                     const winnings = bet.amount * betMultiplierNumeric;
                      // If the bet was by the current user
                      if (bet.isUser) {
                          walletBalance += winnings;
                          userWinAmount = winnings;
                          userWon = true;
-                         addChatMessage('System', `${user.name} won ◎${winnings.toFixed(2)} on ${winningMultiplier}! 🎉`, '🎉', 'system'); // Win notification in chat
+                         addChatMessage('System', `${user.name} won ◎${winnings.toFixed(2)} on ${winningMultiplierString}! 🎉`, '🎉', 'system'); // Win notification in chat
                          if (isGuestMode) {
                              fakeWinningsTotal += winnings - bet.amount; // Track net fake winnings
                              localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal);
                          }
                      } else {
-                         addChatMessage('System', `@${bet.user} won on ${winningMultiplier}! 🎉`, '🎉', 'system');
+                         addChatMessage('System', `@${bet.user} won on ${winningMultiplierString}! 🎉`, '🎉', 'system');
                      }
                  } else {
                      if (bet.isUser) {
-                         addChatMessage('System', `${user.name} busted on ${bet.multiplier}! 💀`, '💀', 'system'); // Loss notification in chat
-                         lastLossBet = { amount: bet.amount, multiplier: bet.multiplier }; // Store loss details
+                         // --- FIX: Display user's picked multiplier correctly in loss message ---
+                         addChatMessage('System', `${user.name} busted on ${bet.multiplier}x! 💀`, '💀', 'system'); // Loss notification in chat (display user's pick with 'x')
+                         lastLossBet = { amount: bet.amount, multiplier: bet.multiplier }; // Store loss details (numeric string)
                          userLostAmount = bet.amount; // Track lost amount
+                         // --- FIX: Log lost amount ---
+                         console.log('User lost. Amount:', userLostAmount);
                          if (isGuestMode) {
                              fakeWinningsTotal -= bet.amount; // Deduct lost amount from fake winnings
                              localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal);
@@ -2481,7 +2528,7 @@
              if (userWon) {
                  playSound('win');
                  triggerMoneyRain(); // Trigger money rain on win
-                 if (parseFloat(winningMultiplier) >= 5) {
+                 if (parseFloat(winningMultiplierString.replace('x', '')) >= 5) { // Check numeric value
                      playSound('win_10x'); // Play special sound for 5x+ wins
                      showFlash('win-10x'); // Yellow flash for 10x+
                      tenXWins++; // Increment 10x wins count
@@ -2492,10 +2539,10 @@
                  showConfetti(); // Show confetti on win
                  winStreak++;
                  lastLossBet = null; // Clear loss bet on win
-                 if (parseFloat(winningMultiplier) >= 5) showShareModal(userWinAmount, winningMultiplier);
+                 if (parseFloat(winningMultiplierString.replace('x', '')) >= 5) showShareModal(userWinAmount, winningMultiplierString); // Check numeric value
 
                  // Auto-populate chat input on win
-                 document.getElementById('chatInput').value = `🔥 Just hit ${winningMultiplier} on SolRoulette! 👑`;
+                 document.getElementById('chatInput').value = `🔥 Just hit ${winningMultiplierString} on SolRoulette! 👑`;
 
              } else {
                  playSound('sad_trombone'); // Sad trombone for losses
@@ -2514,6 +2561,7 @@
              } else {
                  // Show guest mode toast after each spin in guest mode
                  showGuestModeToast();
+                 // --- FIX: Auto Trigger Fake SOL Refill Modal ---
                  // Check if fake balance is low after the spin result and trigger refill modal
                  if (walletBalance < 0.01 && !document.getElementById('refillFakeSolModal').classList.contains('visible')) {
                      openRefillFakeSolModal();
@@ -2568,6 +2616,10 @@
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
              localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
+             // --- FIX: Clear current bet state in localStorage ---
+             localStorage.removeItem('solroulette_current_multiplier');
+             localStorage.removeItem('solroulette_current_amount');
+             localStorage.setItem('solroulette_last_spin_result', winningMultiplierString); // Save the actual result string
 
 
              // Check low balance after result (only in real wallet mode)
@@ -2578,7 +2630,9 @@
              }
 
              // Show result modal
-             showResultModal(userPickedMultiplier, winningMultiplier, userWon, userWinAmount, userLostAmount); // Pass lost amount
+             // --- FIX: Pass correct values to showResultModal ---
+             showResultModal(userPickedMultiplierNumericString + 'x', winningMultiplierString, userWon, userWinAmount, userLostAmount); // Pass lost amount
+
 
              // Show "Enjoying the game?" modal after 3 guest spins
              if (isGuestMode && guestSpinCount >= 3 && localStorage.getItem('solroulette_guest_modal_shown') === null) {
@@ -2593,7 +2647,8 @@
          }
 
          // Show Result Modal
-         function showResultModal(picked, landed, won, winAmount, lostAmount) { // Added lostAmount parameter
+         // --- FIX: Update parameters to match handleSpinResult ---
+         function showResultModal(pickedDisplay, landedDisplay, won, winAmount, lostAmount) { // Added lostAmount parameter
              const modal = document.getElementById('resultModal');
              const title = document.getElementById('resultModalTitle');
              const message = document.getElementById('resultModalMessage');
@@ -2604,13 +2659,13 @@
              if (won) {
                  title.textContent = 'You Won!';
                  title.classList.add('win');
-                 // Use the actual landed result and the picked multiplier
-                 message.textContent = `You picked ${picked}. Landed on ${landed}. You won ◎${winAmount.toFixed(2)}.`;
+                 // Use the actual landed result and the picked multiplier (with 'x' for display)
+                 message.textContent = `You picked ${pickedDisplay}. Landed on ${landedDisplay}. You won ◎${winAmount.toFixed(2)}.`;
              } else {
                  title.textContent = 'You Lost!';
                  title.classList.add('lose');
-                 // Use the actual landed result and the picked multiplier
-                 message.textContent = `You picked ${picked}. Landed on ${landed}. You lost ◎${lostAmount.toFixed(2)}.`; // Use lostAmount
+                 // Use the actual landed result and the picked multiplier (with 'x' for display)
+                 message.textContent = `You picked ${pickedDisplay}. Landed on ${landedDisplay}. You lost ◎${lostAmount.toFixed(2)}.`; // Use lostAmount
              }
 
              // Event listener for "Spin Again" button (already attached)
@@ -2668,35 +2723,36 @@
             const container = document.getElementById('wheelContainer');
 
             // Determine the actual winning multiplier (mock logic with psychological bait)
-            let actualWinningMultiplier;
+            let actualWinningMultiplierString; // Store the result as string with 'x'
             const lastSpinMultiplier = recentSpins.length > 0 ? recentSpins[0].multiplier : null;
 
             // Implement psychological bait logic
             if (lastSpinMultiplier === '1.5x' && Math.random() < 0.6) { // 60% chance 3x follows 1.5x
-                actualWinningMultiplier = '3x';
+                actualWinningMultiplierString = '3x';
             } else if (lastSpinMultiplier === '10x') { // 10x never lands twice in a row
-                 // Choose randomly from other multipliers
+                 // Choose randomly from other multipliers (strings with 'x')
                  const otherMultipliers = segments.filter(seg => seg.multiplier !== '10x').map(seg => seg.multiplier);
-                 actualWinningMultiplier = otherMultipliers[Math.floor(Math.random() * otherMultipliers.length)];
+                 actualWinningMultiplierString = otherMultipliers[Math.floor(Math.random() * otherMultipliers.length)];
             }
              else {
-                // Default random logic
+                // Default random logic (choose string with 'x')
                 const result = Math.random();
-                actualWinningMultiplier = result < 0.3 ? '1.5x' :
+                actualWinningMultiplierString = result < 0.3 ? '1.5x' :
                                           result < 0.5 ? '2x' :
                                           result < 0.7 ? '3x' :
                                           result < 0.85 ? '5x' : '10x';
             }
 
-            // --- Store the actual winning multiplier as the source of truth ---
-            lastSpinResult = actualWinningMultiplier;
+            // --- FIX: Store the actual winning multiplier string ---
+            lastSpinResult = actualWinningMultiplierString;
 
 
             // Determine if it's a near-miss fakeout (20% chance)
-            isNearMiss = Math.random() < 0.2 && actualWinningMultiplier !== '10x'; // Don't fakeout on actual 10x win
+            isNearMiss = Math.random() < 0.2 && parseFloat(actualWinningMultiplierString.replace('x', '')) !== 10; // Don't fakeout on actual 10x win
 
-            // Calculate the target rotation based on the actual winning multiplier
-            targetRotation = calculateCanvasTargetRotation(actualWinningMultiplier);
+            // Calculate the target rotation based on the actual winning multiplier string
+            // --- FIX: Calculate target rotation based on actualWinningMultiplierString ---
+            targetRotation = calculateCanvasTargetRotation(actualWinningMultiplierString);
 
             spinStartTime = null; // Reset start time for requestAnimationFrame
             spinAnimationId = requestAnimationFrame(animateWheel); // Start the animation loop
@@ -3017,6 +3073,9 @@
                  localStorage.removeItem('solroulette_guest_modal_shown'); // Reset enjoyment modal flag
                  localStorage.removeItem('solroulette_onboarding_shown'); // Reset onboarding tooltip flag
                  localStorage.removeItem('solroulette_first_real_bet_placed'); // Reset real bet flag
+                 localStorage.removeItem('solroulette_current_multiplier'); // Clear current bet state
+                 localStorage.removeItem('solroulette_current_amount');
+                 localStorage.removeItem('solroulette_last_spin_result'); // Clear last spin result
 
                  location.reload(); // Reload the page to restart in fresh guest mode
              }
@@ -3237,7 +3296,6 @@
              });
          });
 
-
          // Low Balance Alert
          function checkLowBalance() {
              if (!isGuestMode && user.wallet && walletBalance < 0.5) { // Only show in real wallet mode
@@ -3280,12 +3338,14 @@
                  // Attempt to place the same bet again
                  // Need to ensure betting is open and user has enough balance
                  if (!isSpinning && spinTimer > 3 && walletBalance >= lastLossBet.amount) {
-                     // Set current bet to the last loss bet details
+                     // Set current bet to the last loss bet details (multiplier is numeric string)
                      currentBet.multiplier = lastLossBet.multiplier;
                      document.getElementById('betSlider').value = lastLossBet.amount; // Set slider value
+                     currentBet.amount = lastLossBet.amount; // Ensure amount is set in state
                      // Find and activate the corresponding multiplier button (UI only)
                      document.querySelectorAll('.multiplier-btn').forEach(btn => {
                          btn.classList.remove('active');
+                         // --- FIX: Compare numeric strings ---
                          if (btn.dataset.multiplier === currentBet.multiplier) {
                              btn.classList.add('active');
                          }
@@ -3427,7 +3487,7 @@
                  const outcomeSpan = document.createElement('span');
                  // Determine color class based on the multiplier value
                  const multiplierValue = parseFloat(spin.multiplier.replace('x', ''));
-                 let colorClass = 'lose'; // Default to lose
+                 let colorClass = 'lose'; // Default to lose (danger color)
                  if (multiplierValue === 1.5 || multiplierValue === 5) {
                      colorClass = 'win'; // Use 'win' class for 1.5x and 5x (success color)
                  } else if (multiplierValue === 2) {
@@ -3438,7 +3498,7 @@
                       colorClass = 'danger'; // Use 'danger' color for 10x
                  }
                  outcomeSpan.className = `outcome ${colorClass}`;
-                 outcomeSpan.textContent = spin.multiplier;
+                 outcomeSpan.textContent = spin.multiplier; // Display with 'x'
                  recentSpinsDiv.appendChild(outcomeSpan);
              });
          }
@@ -3446,10 +3506,11 @@
          // Update Bet Summary Display
          function updateBetSummary() {
              const betSummaryDiv = document.getElementById('betSummary');
-             if (currentBet.multiplier && currentBet.amount > 0) {
-                 const potentialWin = currentBet.amount * parseFloat(currentBet.multiplier.replace('x', '')); // Use numeric value
+             // --- FIX: Check if multiplier is set (numeric string) ---
+             if (currentBet.multiplier !== null && currentBet.amount > 0) {
+                 const potentialWin = currentBet.amount * parseFloat(currentBet.multiplier); // Use numeric value
                  betSummaryDiv.innerHTML = `
-                     🧾 You bet ◎${currentBet.amount.toFixed(2)} on ${currentBet.multiplier}
+                     🧾 You bet ◎${currentBet.amount.toFixed(2)} on ${currentBet.multiplier}x
                      <br>
                      🎯 Potential Win: ◎${potentialWin.toFixed(2)}
                  `;
@@ -3471,18 +3532,18 @@
              isAutoDemo = true;
              document.getElementById('autoDemoBanner').style.display = 'block';
 
-             // Select a random multiplier (or a "baiting" one)
-             const multipliers = ['1.5x', '2x', '3x', '5x', '10x'];
+             // Select a random multiplier (numeric string)
+             const multipliers = ['1.5', '2', '3', '5', '10']; // Use numeric strings
              const randomMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
 
              // Select the multiplier button in the UI (visual only)
              document.querySelectorAll('.multiplier-btn').forEach(btn => {
                  btn.classList.remove('active');
-                 if (btn.dataset.multiplier + 'x' === randomMultiplier) { // Compare with 'x' suffix
+                 if (btn.dataset.multiplier === randomMultiplier) { // Compare numeric strings
                      btn.classList.add('active');
                  }
              });
-             currentBet.multiplier = randomMultiplier; // Set the state
+             currentBet.multiplier = randomMultiplier; // Set the state (numeric string)
 
              // Set a random bet amount (e.g., between 0.1 and 2 SOL)
              const randomAmount = parseFloat((Math.random() * 1.9 + 0.1).toFixed(2));
@@ -3606,10 +3667,13 @@
 
         // Update UI elements
         function updateUI() {
+            // --- FIX: Add console log to check state in updateUI ---
+            console.log('updateUI running. currentBet.multiplier:', currentBet.multiplier, 'currentBet.amount:', currentBet.amount, 'spinTimer:', spinTimer, 'isGuestMode:', isGuestMode, 'user.wallet:', user.wallet ? 'Connected' : 'Not Connected');
+
             document.getElementById('solBalance').textContent = walletBalance.toFixed(2);
             //document.getElementById('userName').textContent = user.name; // Removed this line
             //document.getElementById('userAvatar').textContent = user.avatar; // Removed this line
-            // --- FIX 2: Bet Slider Fix - Format value ---
+            // --- FIX: Bet Slider Fix - Format value ---
             document.getElementById('betValue').textContent = `◎${parseFloat(document.getElementById('betSlider').value).toFixed(2)} SOL`; // Ensure 2 decimal places
 
             // Update XP bar and level
@@ -3654,10 +3718,11 @@
 
 
             const bettingAllowedByTimer = !isSpinning && spinTimer > 3;
-            // --- FIX 5: Null Bet Bug - Check for multiplier and amount > 0 ---
-            const betIsValid = currentBet.multiplier !== null && parseFloat(betSlider.value) > 0;
+            // --- FIX: Check for multiplier (numeric string) and amount > 0 ---
+            const betIsValid = currentBet.multiplier !== null && currentBet.amount > 0;
 
 
+            // --- FIX: Enable Place Bet in Guest Mode ---
             if (user.wallet && !isGuestMode) { // Connected with real wallet
                  connectWalletBtn.style.display = 'none';
                  placeBetBtn.style.display = 'block';
@@ -3676,10 +3741,12 @@
 
             } else { // Guest Mode or not connected
                  connectWalletBtn.style.display = 'block';
-                 placeBetBtn.style.display = 'none';
+                 // --- FIX: Show Place Bet button in Guest Mode ---
+                 placeBetBtn.style.display = 'block'; // Always show place bet button in guest mode
                  guestModeBanner.style.display = 'block'; // Show guest banner for guest users
 
                  // In guest mode, placeBetBtn is ENABLED if bettingAllowedByTimer is true and a multiplier is selected and amount > 0
+                 // It does NOT require user.wallet to be connected.
                  placeBetBtn.disabled = !bettingAllowedByTimer || !betIsValid;
                  placeBetBtn.title = 'Fake SOL bets. Connect wallet to win real rewards.'; // Tooltip for guest mode Place Bet
 
@@ -3695,6 +3762,17 @@
 
              // Disable Spin Again button if betting is not allowed by timer
              spinAgainBtn.disabled = !bettingAllowedByTimer;
+
+            // --- FIX: Apply active class to multiplier button based on currentBet.multiplier (numeric string) ---
+            multiplierBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (currentBet.multiplier !== null && btn.dataset.multiplier === currentBet.multiplier) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // --- FIX: Log the disabled state of the place bet button ---
+            console.log('Place Bet button disabled state:', placeBetBtn.disabled);
 
 
              // Update token notification visibility (only in real wallet mode)
@@ -3776,7 +3854,7 @@
 
 
         // Event Listeners
-        // --- FIX 2: Bet Slider Fix - Update currentBet.amount and display ---
+        // --- FIX: Bet Slider Fix - Update currentBet.amount and display ---
         document.getElementById('betSlider').addEventListener('input', (e) => {
              currentBet.amount = parseFloat(e.target.value);
              updateUIDebounced(); // Update the displayed bet value and button state
@@ -3795,8 +3873,14 @@
 
         document.querySelectorAll('.multiplier-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                 // --- FIX: Multiplier Button Click Not Working (Guest Mode) - Add console log ---
+                 console.log('Multiplier button clicked:', btn.dataset.multiplier);
+
                  // Multiplier buttons are enabled even in guest mode, but placeBetBtn handles real betting
-                 if (isSpinning || spinTimer <= 3) return; // Cannot select during spin or countdown
+                 if (isSpinning || spinTimer <= 3) {
+                     console.log('Betting closed, ignoring multiplier click.');
+                     return; // Cannot select during spin or countdown
+                 }
 
                 playSound('click');
                 if (navigator.vibrate) navigator.vibrate(50);
@@ -3805,11 +3889,14 @@
                 document.querySelectorAll('.multiplier-btn').forEach(b => b.classList.remove('active'));
                 // Add active class to the clicked button
                 btn.classList.add('active');
-                // --- FIX 1: Multiplier Selection Fix - Set currentBet.multiplier correctly ---
-                currentBet.multiplier = btn.dataset.multiplier + 'x'; // Set the multiplier string (e.g., "1.5x")
+                // --- FIX: Multiplier Selection Fix - Set currentBet.multiplier correctly (numeric string) ---
+                currentBet.multiplier = btn.dataset.multiplier; // Set the multiplier as numeric string (e.g., "1.5")
+                console.log('currentBet.multiplier set to:', currentBet.multiplier);
+
 
                  // Enable place bet button if amount > 0 and wallet is connected and betting is allowed
                  // This logic is now handled in updateUI based on user.wallet and isSpinning/spinTimer
+                 // --- FIX: Multiplier Button Click Not Working (Guest Mode) - Trigger updateUI ---
                  updateUIDebounced(); // Update UI to reflect button state and potentially enable Place Bet
 
                  // Dismiss onboarding tooltip/glow if active
@@ -4063,7 +4150,7 @@
 
                  xp = parseInt(localStorage.getItem('solroulette_guest_xp') || '0');
                  tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens') || '0');
-                 totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
+                 totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered') || '0');
                  winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0');
                  tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
                  achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements') || '[]'));
@@ -4103,16 +4190,23 @@
                  resetIdleTimer(); // Start idle timer for connected users
              }
 
-             // Default multiplier selection for new guests or returning guests who haven't selected one
-             if (isGuestMode && currentBet.multiplier === null) {
-                 currentBet.multiplier = '2x'; // Default to 2x
+             // --- FIX: Initialization on Page Load (Guest Mode) ---
+             // Default multiplier selection and bet amount for new/returning users if not already set
+             if (currentBet.multiplier === null) {
+                 currentBet.multiplier = '2'; // Default to '2' (numeric string)
                  // Find the 2x button and add the active class
                  const defaultMultiplierBtn = document.querySelector('.multiplier-btn[data-multiplier="2"]'); // Use numeric data-multiplier
                  if (defaultMultiplierBtn) {
                      defaultMultiplierBtn.classList.add('active');
                  }
-                 updateUIDebounced(); // Update UI to show selected multiplier
              }
+             if (currentBet.amount === 0) {
+                 document.getElementById('betSlider').value = 0.5;
+                 currentBet.amount = 0.5;
+             }
+
+             // Ensure UI is updated with the initial/loaded state
+             updateUIDebounced();
 
 
             // simulateMultiplayer(); // Initial fake bets and chat messages - now handled by interval
