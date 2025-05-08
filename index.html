@@ -409,6 +409,43 @@
              100% { transform: translateX(0); opacity: 1; }
          }
 
+        /* Chat System Fixes */
+        .chat-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 300px;
+            height: 50vh;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .chat-container.active {
+            transform: translateY(0);
+        }
+
+        #toggle-chat {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+        }
+
 
         /* Bet Controls */
         .bet-controls {
@@ -1219,6 +1256,32 @@
                display: none; /* Hidden by default */
            }
 
+        /* Mobile UI Enhancements */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* Fix iOS height issues */
+        .full-height {
+            height: -webkit-fill-available;
+            height: 100vh;
+        }
+
+        /* Enhance touch targets */
+        button,
+        input[type="button"],
+        .clickable {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Add haptic feedback styles */
+        .haptic-feedback:active {
+            transform: scale(0.96);
+            transition: transform 0.1s ease-out;
+        }
+
 
         /* Responsive Design */
         @media (max-width: 767px) {
@@ -1745,7 +1808,9 @@
                 <button class="close-btn" id="closeWalletModalBtn" aria-label="Close wallet modal">&times;</button>
                 <h2>Connect Your Wallet</h2>
                 <p>Choose a wallet to connect and start betting.</p>
-                <button id="connectPhantomBtn">Connect Phantom (Mock)</button>
+                <button id="connectPhantomBtn" class="connect-wallet-button haptic-feedback" data-wallet="phantom" aria-label="Connect Phantom Wallet">
+                    Connect Phantom
+                </button>
                  <button class="secondary-btn" id="justWatchingBtn">Just Watching? Close</button>
             </div>
         </div>
@@ -1913,6 +1978,25 @@
 
 
     </div>
+
+    <button id="toggle-chat" aria-label="Toggle Chat">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+
+    <div class="chat-container">
+        <div class="live-panel-content" style="height: 100%;">
+             <div id="liveChatContent" class="live-panel-content-tab active" style="display: flex;">
+                 <div class="chat-feed" id="chatFeed" style="flex-grow: 1; overflow-y: auto; margin-bottom: 10px;">
+                     <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
+                 </div>
+                 <div class="chat-input" style="display: flex; gap: 6px; margin-top: auto; flex-shrink: 0;">
+                     <input type="text" id="chatInput" placeholder="Say something..." aria-label="Chat input" style="flex: 1; padding: 8px; border: none; border-radius: 8px; background: #333; color: #fff; font-size: 0.85em; outline: none;">
+                     <button id="sendChatBtn" aria-label="Send chat message" style="background: #9945FF; color: #fff; padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85em; transition: background 0.2s;">Send</button>
+                 </div>
+             </div>
+        </div>
+    </div>
+
 
     <script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
     <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.19/dist/index.js"></script>
@@ -2332,6 +2416,50 @@
                 connectWalletBtn.disabled = false;
             }
         }
+
+         // Wallet Connection Mobile Fixes
+         function handleWalletConnection() {
+             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+             // Deep linking configuration
+             const walletConfig = {
+                 phantom: {
+                     deepLink: 'https://phantom.app/ul/browse/',
+                     name: 'Phantom'
+                 },
+                 solflare: {
+                     deepLink: 'https://solflare.com/ul/v1/browse/',
+                     name: 'Solflare'
+                 }
+             };
+
+             function openWalletApp(wallet) {
+                 if (isMobile) {
+                     const currentURL = encodeURIComponent(window.location.href);
+                     const deepLink = walletConfig[wallet].deepLink + currentURL;
+
+                     // Store wallet choice in sessionStorage for return visit
+                     sessionStorage.setItem('preferredWallet', wallet);
+
+                     // Open wallet app
+                     window.location.href = deepLink;
+                 }
+             }
+
+             // Add click handlers to wallet buttons
+             document.querySelectorAll('[data-wallet]').forEach(button => {
+                 button.addEventListener('click', (e) => {
+                     const wallet = e.target.dataset.wallet;
+                     openWalletApp(wallet);
+
+                     // Add haptic feedback
+                     if (navigator.vibrate) {
+                         navigator.vibrate(50);
+                     }
+                 });
+             });
+         }
+
 
          function openWalletModal() {
              playSound('click');
@@ -3515,7 +3643,8 @@
                              <span class="value">${entry.value}</span>
                          `;
                          tabContentDiv.appendChild(entryDiv);
-                     });
+                     }
+                     );
                  }
              });
 
@@ -4255,7 +4384,7 @@
         document.getElementById('claimModalBtn').addEventListener('click', openClaimModal);
         document.getElementById('closeWalletModalBtn').addEventListener('click', closeWalletModal);
         document.getElementById('justWatchingBtn').addEventListener('click', closeWalletModal); // "Just Watching" button
-        document.getElementById('connectPhantomBtn').addEventListener('click', connectWallet); // Actual connect button inside modal
+        // document.getElementById('connectPhantomBtn').addEventListener('click', connectWallet); // Actual connect button inside modal - Now handled by handleWalletConnection
         document.getElementById('closeProfileModalBtn').addEventListener('click', closeProfileModal);
         document.getElementById('copyReferralLinkBtn').addEventListener('click', copyReferralLink);
         document.getElementById('resetGuestProgressBtn').addEventListener('click', resetGuestProgress); // Guest Reset Button
@@ -4539,6 +4668,20 @@
                  closeDailyRewardModal();
              }
          });
+
+         // Chat System Fixes - Toggle Chat Event Listener
+         document.getElementById('toggle-chat').addEventListener('click', function() {
+             const chatContainer = document.querySelector('.chat-container');
+             chatContainer.classList.toggle('active');
+
+             // Add haptic feedback if supported
+             if (navigator.vibrate) {
+                 navigator.vibrate(50);
+             }
+         });
+
+         // Wallet Connection Mobile Fixes - Initialize on page load
+         document.addEventListener('DOMContentLoaded', handleWalletConnection);
 
 
     </script>
