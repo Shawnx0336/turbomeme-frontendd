@@ -200,25 +200,37 @@
             max-width: 800px; /* Limit header width on larger screens */
             backdrop-filter: blur(6px);
             z-index: 10;
+            /* Added gap for spacing between header elements */
+            gap: 10px;
         }
          .site-title {
             font-size: 1.5em;
             font-weight: bold;
             color: var(--primary);
             text-shadow: 0 0 8px rgba(153, 69, 255, 0.5);
+            /* Prevent shrinking */
+            flex-shrink: 0;
         }
         .players-online, .user-profile {
             background: rgba(26, 26, 26, 0.5); /* More transparent */
             padding: 8px 12px;
             border-radius: var(--button-border-radius);
             font-size: 0.9em;
+             /* Added gap for spacing inside these elements */
+            gap: 8px;
+             /* Allow shrinking */
+            flex-shrink: 1;
+             min-width: 0; /* Allow flex items to shrink below content size */
         }
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 8px;
             cursor: pointer; /* Indicate clickable */
              transition: transform 0.2s;
+             /* Added gap for spacing inside user profile */
+             gap: 8px;
+             /* Added flex-wrap for smaller screens */
+             flex-wrap: wrap;
         }
         .user-profile:hover {
              transform: translateY(-2px);
@@ -232,7 +244,13 @@
             place-items: center;
             font-size: 0.9em;
             border: 2px solid var(--text);
+             flex-shrink: 0; /* Prevent shrinking */
         }
+         .user-info {
+             display: flex;
+             flex-direction: column;
+             min-width: 0; /* Allow text to wrap */
+         }
         .xp-bar {
             width: 70px; /* Slightly wider */
             height: 8px; /* Taller */
@@ -240,12 +258,28 @@
             border-radius: 4px; /* More rounded */
             overflow: hidden;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+             flex-shrink: 0; /* Prevent shrinking */
         }
         .xp-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--primary), #7A37CC); /* Gradient fill */
             transition: width 0.3s ease-in-out;
         }
+         .sol-balance-display {
+             font-weight: bold;
+             /* Added gap for icon spacing */
+             display: flex;
+             align-items: center;
+             gap: 4px;
+             flex-shrink: 0; /* Prevent shrinking */
+         }
+         .fake-winnings-display {
+              font-size: 0.8em;
+              color: #aaa;
+              margin-left: 10px;
+              flex-shrink: 0; /* Prevent shrinking */
+         }
+
 
         /* Global Timer */
         .global-timer {
@@ -260,6 +294,7 @@
             animation: pulse-glow 1.5s ease-in-out infinite alternate;
             z-index: 10;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+             white-space: nowrap; /* Prevent text wrapping */
         }
          .global-timer.urgent {
              background: linear-gradient(45deg, var(--danger), #FF6B8A); /* Red gradient */
@@ -280,6 +315,7 @@
              z-index: 10;
              box-shadow: 0 2px 10px rgba(0,0,0,0.3);
              color: var(--accent);
+             white-space: nowrap; /* Prevent text wrapping */
          }
 
 
@@ -345,10 +381,14 @@
              display: flex;
              gap: 5px;
              align-items: center;
+             /* Allow wrapping on small screens */
+             flex-wrap: wrap;
+             justify-content: center;
          }
          .recent-spins .label {
              font-weight: bold;
              color: var(--accent);
+             flex-shrink: 0; /* Prevent shrinking */
          }
          .recent-spins .outcome {
              padding: 3px 6px;
@@ -356,7 +396,14 @@
              font-weight: bold;
              /* Animation for slide-in */
              animation: slideInFromRight 0.3s ease-out;
+             flex-shrink: 0; /* Prevent shrinking */
          }
+         .recent-spins .outcome.win { background-color: var(--success); color: #000; }
+         .recent-spins .outcome.lose { background-color: var(--danger); color: #fff; }
+         .recent-spins .outcome.primary { background-color: var(--primary); color: #fff; }
+         .recent-spins .outcome.accent { background-color: var(--accent); color: #000; }
+
+
          @keyframes slideInFromRight {
              0% { transform: translateX(10px); opacity: 0; }
              100% { transform: translateX(0); opacity: 1; }
@@ -617,27 +664,73 @@
          }
 
 
-        /* Live Bet Feed */
-        .bet-feed {
+        /* Unified Live Panel (Bets + Chat) */
+        .live-panel {
             position: absolute;
-            top: 120px;
-            left: 10px;
+            top: 120px; /* Position below timer/CTA */
+            left: 10px; /* Default position */
             background: var(--panel-background);
             padding: 12px;
             border-radius: var(--panel-border-radius);
             max-height: 250px; /* Increased height */
-            overflow-y: auto;
+            overflow: hidden; /* Hide content overflow */
             backdrop-filter: blur(6px);
             width: 250px; /* Increased width */
             font-size: 0.85em;
             z-index: 10;
-             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
         }
-         .bet-feed-title {
+
+        .live-panel-tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #555;
+        }
+
+        .live-panel-tab {
+            flex-grow: 1;
+            text-align: center;
+            padding: 8px 0; /* Increased padding */
+            cursor: pointer;
             font-weight: bold;
-            margin-bottom: 8px;
+            color: #aaa;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-bottom-color 0.2s;
+        }
+
+        .live-panel-tab.active {
             color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .live-panel-content {
+            flex-grow: 1;
+            overflow-y: auto; /* Allow content to scroll */
+            padding-right: 5px; /* Space for scrollbar */
+        }
+         .live-panel-content::-webkit-scrollbar {
+            width: 6px;
          }
+         .live-panel-content::-webkit-scrollbar-track {
+            background: #333;
+            border-radius: 3px;
+         }
+         .live-panel-content::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+         }
+
+
+        /* Live Bets Feed (inside live-panel-content) */
+        #liveBetsContent {
+            display: none; /* Hidden by default */
+        }
+         #liveBetsContent.active {
+            display: block; /* Show when active */
+         }
+
         .bet-entry {
             padding: 8px 0;
             border-bottom: 1px solid #333;
@@ -662,70 +755,15 @@
             font-weight: bold;
          }
 
-        /* Chat Box */
-        .chat-box {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: var(--panel-background);
-            padding: 12px;
-            border-radius: var(--panel-border-radius);
-            max-height: 250px; /* Increased height */
-            overflow-y: auto;
-            backdrop-filter: blur(6px);
-            width: 250px; /* Increased width */
-            font-size: 0.85em;
-            z-index: 10;
-             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-             display: flex;
-             flex-direction: column;
+        /* Chat Box (inside live-panel-content) */
+        #liveChatContent {
+             display: none; /* Hidden by default */
+             flex-direction: column; /* Use flex column for chat layout */
+             height: 100%; /* Fill parent height */
         }
-         .chat-box-header {
-             display: flex;
-             justify-content: space-between;
-             align-items: center;
-             margin-bottom: 8px;
-             font-weight: bold;
-             color: var(--accent);
+         #liveChatContent.active {
+            display: flex; /* Show and use flex layout when active */
          }
-         .chat-box-header .close-chat-btn {
-             background: none;
-             border: none;
-             color: #aaa;
-             font-size: 1.2em;
-             cursor: pointer;
-             position: relative; /* Needed for unread dot */
-         }
-         .chat-box-header .close-chat-btn .unread-dot {
-             display: none;
-             position: absolute;
-             top: -5px;
-             right: -5px;
-             width: 10px;
-             height: 10px;
-             background: var(--danger);
-             border-radius: 50%;
-         }
-         .chat-box.collapsed {
-             width: 50px; /* Collapsed width */
-             height: 50px; /* Collapsed height */
-             padding: 8px;
-             overflow: hidden;
-             justify-content: center;
-             align-items: center;
-         }
-         .chat-box.collapsed .chat-feed,
-         .chat-box.collapsed .chat-input {
-             display: none;
-         }
-         .chat-box.collapsed .chat-box-header {
-             margin-bottom: 0;
-         }
-         .chat-box.collapsed .chat-box-header .close-chat-btn {
-             position: static; /* Reset position */
-             transform: none;
-         }
-
 
          .chat-feed {
             flex-grow: 1;
@@ -766,6 +804,7 @@
             display: flex;
             gap: 6px;
             margin-top: auto; /* Push to bottom */
+             flex-shrink: 0; /* Prevent shrinking */
         }
         .chat-input input {
             flex: 1;
@@ -890,13 +929,14 @@
             padding: 20px;
             border-radius: var(--panel-border-radius);
             text-align: center;
-            max-width: 90%;
+            max-width: 90%; /* Added max-width for mobile */
              width: 400px; /* Fixed width on larger screens */
              box-shadow: 0 8px 20px rgba(0,0,0,0.6);
              transform: translateY(-20px);
              opacity: 0;
              animation: enter 0.3s ease-out forwards;
              position: relative; /* For close button positioning */
+             margin: 20px; /* Added margin for mobile padding */
         }
          .modal-content h2 {
             color: var(--success);
@@ -1101,7 +1141,7 @@
             cursor: pointer;
         }
 
-         /* Refill Fake SOL Modal */
+         /* Refill Demo SOL Modal */
          #refillFakeSolModal .modal-content h2 {
              color: var(--primary);
          }
@@ -1183,6 +1223,58 @@
         /* Responsive Design */
         @media (max-width: 767px) {
              /* Mobile-only styles */
+             .header {
+                 padding: 8px 10px; /* Reduced padding */
+                 margin: 5px; /* Reduced margin */
+                 width: calc(100% - 10px); /* Adjust for margin */
+                 flex-wrap: wrap; /* Allow header items to wrap */
+                 justify-content: center; /* Center items when wrapped */
+                 gap: 8px; /* Reduced gap */
+             }
+             .site-title {
+                 font-size: 1.2em; /* Reduced font size */
+                  flex-basis: 100%; /* Take full width when wrapped */
+                 text-align: center;
+             }
+             .players-online, .user-profile {
+                 padding: 6px 10px; /* Reduced padding */
+                 font-size: 0.8em; /* Reduced font size */
+                 gap: 6px; /* Reduced gap */
+             }
+             .user-profile {
+                 flex-wrap: nowrap; /* Prevent wrapping inside user profile */
+                 min-width: 0; /* Allow shrinking */
+             }
+             .avatar {
+                 width: 24px; /* Reduced size */
+                 height: 24px;
+                 font-size: 0.8em;
+             }
+             .xp-bar {
+                 width: 50px; /* Reduced width */
+                 height: 6px; /* Reduced height */
+             }
+             .sol-balance-display {
+                 font-size: 0.9em; /* Reduced font size */
+             }
+              .fake-winnings-display {
+                 font-size: 0.7em; /* Reduced font size */
+                 margin-left: 5px; /* Reduced margin */
+             }
+
+
+             .global-timer {
+                 top: 65px; /* Adjusted position */
+                 padding: 8px 15px; /* Reduced padding */
+                 font-size: 0.9em; /* Reduced font size */
+             }
+              .pre-spin-cta {
+                 top: 100px; /* Adjusted position */
+                 padding: 6px 10px; /* Reduced padding */
+                 font-size: 0.9em; /* Reduced font size */
+             }
+
+
              .bet-controls {
                  position: fixed;
                  bottom: 0;
@@ -1190,8 +1282,10 @@
                  width: 100%;
                  border-radius: 0;
                  margin: 0;
-                 padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* Add safe area inset */
+                 padding: 10px; /* Reduced padding */
+                 padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* Add safe area inset */
                  box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+                 gap: 10px; /* Reduced gap */
              }
              .bet-slider::-webkit-slider-thumb {
                  width: 25px; /* Larger thumb */
@@ -1205,54 +1299,77 @@
                  padding-bottom: 150px; /* Add padding to avoid content being hidden by sticky controls */
              }
              /* Adjust chat and bet feed position for smaller screens */
-             .bet-feed {
+             .live-panel {
                  top: 80px; /* Move below header */
                  left: 5px;
-                 width: calc(50% - 10px); /* Take up half the screen width */
-                 max-height: 150px; /* Reduce max height */
+                 width: calc(100% - 10px); /* Take up full screen width */
+                 max-height: 180px; /* Reduce max height */
                  padding: 8px;
+                 right: 5px; /* Ensure it spans the width */
              }
-             .chat-box {
-                 bottom: 80px; /* Move above bet controls */
-                 right: 5px;
-                 width: calc(50% - 10px); /* Take up half the screen width */
-                 max-height: 150px; /* Reduce max height */
-                 padding: 8px;
+             .live-panel-tab {
+                 padding: 6px 0; /* Reduced padding */
+                 font-size: 0.8em; /* Reduced font size */
              }
-             .chat-box.collapsed {
-                 bottom: 80px; /* Maintain position when collapsed */
+             .live-panel-content {
+                 font-size: 0.8em; /* Reduced font size */
              }
+             .bet-entry, .chat-message {
+                 padding: 6px 0; /* Reduced padding */
+                 gap: 4px; /* Reduced gap */
+             }
+             .chat-input {
+                 gap: 4px; /* Reduced gap */
+             }
+             .chat-input input, .chat-input button {
+                 padding: 6px; /* Reduced padding */
+                 font-size: 0.8em; /* Reduced font size */
+             }
+
              .leaderboard-panel {
                  display: none; /* Hide leaderboard on small screens */
              }
              .token-notification {
                  bottom: auto; /* Remove fixed bottom position */
-                 top: 80px; /* Position near bet feed */
+                 top: 80px; /* Position near live panel */
                  right: 5px;
                  padding: 8px 12px;
+                 font-size: 0.8em; /* Reduced font size */
              }
              .achievement-popup {
                  bottom: auto; /* Remove fixed bottom position */
-                 top: 80px; /* Position near bet feed */
+                 top: 80px; /* Position near live panel */
                  left: 5px;
                  padding: 8px 12px;
+                 font-size: 0.8em; /* Reduced font size */
              }
              .low-balance-alert {
                  bottom: calc(150px + 20px); /* Position above bet controls */
+                 padding: 10px 15px; /* Reduced padding */
+                 font-size: 0.9em; /* Reduced font size */
              }
              .recent-spins {
                  bottom: 160px; /* Position above bet controls */
+                 padding: 6px 10px; /* Reduced padding */
+                 font-size: 0.7em; /* Reduced font size */
+                 gap: 3px; /* Reduced gap */
              }
              .bonus-banner {
                  top: 60px; /* Adjust position */
+                 font-size: 0.8em; /* Reduced font size */
+                 padding: 6px 12px; /* Reduced padding */
              }
              .fake-activity-banner {
                  top: 10px; /* Adjust position */
+                 font-size: 0.7em; /* Reduced font size */
+                 padding: 4px 8px; /* Reduced padding */
              }
              .ten-x-hit-banner {
                  top: 120px; /* Adjust position */
+                 font-size: 0.9em; /* Reduced font size */
+                 padding: 6px 12px; /* Reduced padding */
              }
-              /* Guest Mode Banner */
+              /* Demo Mode Banner */
              .guest-banner {
                  position: fixed;
                  top: 10px;
@@ -1279,8 +1396,10 @@
                  width: 100%;
                  border-radius: 0;
                  margin: 0;
-                 padding-bottom: calc(15px + env(safe-area-inset-bottom));
+                 padding: 10px; /* Reduced padding */
+                 padding-bottom: calc(10px + env(safe-area-inset-bottom));
                  box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+                 gap: 10px; /* Reduced gap */
              }
               /* Adjust padding when keyboard is open */
              body.keyboard-open .container {
@@ -1289,6 +1408,28 @@
              body.keyboard-open .bet-controls {
                  position: static; /* Make bet controls static when keyboard is open */
                  margin-bottom: 0;
+                 padding-bottom: 10px; /* Ensure bottom padding */
+             }
+
+             /* Modal Scaling on Mobile */
+             .modal-content {
+                padding: 15px; /* Reduced padding */
+                margin: 10px; /* Reduced margin */
+             }
+             .modal-content h2 {
+                font-size: 1.2em; /* Reduced font size */
+             }
+             .modal-content p {
+                font-size: 0.9em; /* Reduced font size */
+             }
+             .modal-content button {
+                padding: 8px 15px; /* Reduced padding */
+                font-size: 1em; /* Reduced font size */
+             }
+             .modal-content .close-btn {
+                font-size: 1.2em; /* Reduced size */
+                top: 5px;
+                right: 5px;
              }
         }
 
@@ -1307,51 +1448,127 @@
                  transform: translateX(-50%);
                  width: auto; /* Auto width */
                  max-width: 960px;
+                 /* Reset mobile specific styles */
+                 padding: 10px 15px;
+                 margin: 10px;
+                 flex-wrap: nowrap;
+                 justify-content: space-between;
+                 gap: 10px;
              }
+             .site-title {
+                 font-size: 1.5em;
+                 flex-basis: auto;
+                 text-align: left;
+             }
+             .players-online, .user-profile {
+                 padding: 8px 12px;
+                 font-size: 0.9em;
+                 gap: 8px;
+             }
+             .user-profile {
+                 flex-wrap: nowrap;
+             }
+             .avatar {
+                 width: 28px;
+                 height: 28px;
+                 font-size: 0.9em;
+             }
+              .xp-bar {
+                 width: 70px;
+                 height: 8px;
+             }
+             .sol-balance-display {
+                 font-size: 1em;
+             }
+              .fake-winnings-display {
+                 font-size: 0.8em;
+                 margin-left: 10px;
+             }
+
+
              .global-timer {
                  top: 100px; /* Adjusted position */
+                 padding: 10px 20px;
+                 font-size: 1em;
              }
+              .pre-spin-cta {
+                 top: 140px; /* Adjusted position */
+                 padding: 8px 15px;
+                 font-size: 1em;
+             }
+
+
             .wheel-container {
                  width: 400px;
                  height: 400px;
                  margin: 0; /* Remove auto margin */
-                 margin-top: 120px; /* Space for header/timer */
+                 margin-top: 180px; /* Space for header/timer/cta */
              }
              #rouletteCanvas {
                  /* Adjust canvas size if needed, but CSS width/height should handle scaling */
              }
-             .bet-feed {
+
+             /* Unified Live Panel on Desktop */
+             .live-panel {
                  position: static; /* Remove absolute positioning */
                  max-height: none; /* Allow full height */
-                 overflow-y: visible;
+                 overflow: hidden; /* Keep overflow hidden for tab content */
                  width: 300px;
                  margin: 0;
                  align-self: stretch; /* Stretch to fill height */
-                 margin-top: 120px; /* Space for header/timer */
+                 margin-top: 180px; /* Space for header/timer/cta */
              }
-             .chat-box {
-                 position: static; /* Remove absolute positioning */
-                 max-height: none; /* Allow full height */
-                 overflow-y: visible;
-                 width: 300px;
-                 margin: 0;
-                 align-self: stretch; /* Stretch to fill height */
-                 margin-top: 120px; /* Space for header/timer */
+              .live-panel-tab {
+                 padding: 8px 0; /* Reset padding */
+                 font-size: 0.85em; /* Reset font size */
              }
+             .live-panel-content {
+                 font-size: 0.85em; /* Reset font size */
+             }
+              .bet-entry, .chat-message {
+                 padding: 8px 0; /* Reset padding */
+                 gap: 6px; /* Reset gap */
+             }
+             .chat-input {
+                 gap: 6px; /* Reset gap */
+             }
+             .chat-input input, .chat-input button {
+                 padding: 8px; /* Reset padding */
+                 font-size: 0.85em; /* Reset font size */
+             }
+
+
              .bet-controls {
                  position: static; /* Remove absolute positioning */
                  width: 400px; /* Match wheel width */
                  margin: 20px 0 0 0; /* Space below wheel */
+                 padding: 15px; /* Reset padding */
+                 gap: 15px; /* Reset gap */
              }
+             body:not(.keyboard-open) .bet-controls {
+                 position: static; /* Ensure static positioning on desktop */
+                 padding-bottom: 15px; /* Ensure bottom padding */
+             }
+              body.keyboard-open .bet-controls {
+                 position: static; /* Ensure static positioning on desktop */
+                 margin-bottom: 0;
+                 padding-bottom: 15px; /* Ensure bottom padding */
+             }
+
+
              .token-notification {
                  bottom: auto;
                  top: 180px; /* Position below timer */
                  right: 10px;
+                 padding: 12px 20px;
+                 font-size: 1em;
              }
              .achievement-popup {
                  bottom: auto;
                  top: 180px; /* Position below timer */
                  left: 10px;
+                 padding: 12px;
+                 font-size: 0.85em;
              }
              .leaderboard-panel {
                  position: static; /* Remove absolute positioning */
@@ -1360,20 +1577,24 @@
                  width: 300px;
                  margin: 0;
                  align-self: stretch;
-                 margin-top: 120px;
+                 margin-top: 180px;
              }
              .low-balance-alert {
                  bottom: 20px;
                  left: auto;
                  right: 20px; /* Position on the right */
                  transform: none;
+                 padding: 15px 20px;
+                 font-size: 1em;
              }
               .bonus-banner {
                  top: 10px;
                  left: 50%;
                  transform: translateX(-50%);
+                 font-size: 0.9em;
+                 padding: 8px 15px;
              }
-             /* Guest Mode Banner */
+             /* Demo Mode Banner */
              .guest-banner {
                  position: fixed;
                  top: 10px;
@@ -1389,6 +1610,29 @@
              }
              .auto-demo-banner {
                  top: 10px; /* Position next to guest banner */
+                 font-size: 0.9em;
+                 padding: 8px 15px;
+             }
+
+             /* Modal Scaling on Desktop */
+             .modal-content {
+                padding: 20px;
+                margin: 20px;
+             }
+             .modal-content h2 {
+                font-size: 1.5em;
+             }
+             .modal-content p {
+                font-size: 1em;
+             }
+             .modal-content button {
+                padding: 10px 20px;
+                font-size: 1.1em;
+             }
+             .modal-content .close-btn {
+                font-size: 1.5em;
+                top: 10px;
+                right: 10px;
              }
         }
     </style>
@@ -1399,8 +1643,8 @@
     <div class="container">
         <div class="flash-screen" id="flashScreen"></div>
 
-        <div id="guestModeBanner" class="guest-banner" style="display: none;" title="You're playing with Fake SOL. Connect wallet to win real rewards.">
-             ⚠️ Guest Mode – Fake SOL Only
+        <div id="guestModeBanner" class="guest-banner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
+             ⚠️ Demo Mode – Demo SOL Only
         </div>
          <div id="autoDemoBanner" class="auto-demo-banner" style="display: none;">
              Auto demo in progress – Tap anything to join
@@ -1411,16 +1655,7 @@
             <div class="site-title">SolRoulette LIVE</div>
             <div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
             <div class="user-profile" id="userProfile">
-                <div class="avatar" id="userAvatar">😎</div>
-                <div>
-                    <div id="userName">Guest</div>
-                    <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width: 0%"></div></div>
                 </div>
-                <div><i class="fas fa-wallet"></i> <span id="solBalance">0.00</span> SOL</div>
-                 <div id="fakeWinningsDisplay" style="display: none; margin-left: 10px;" title="Your total fake winnings so far.">
-                     ◎<span id="fakeWinningsTotalDisplay">0.00</span> (Fake)
-                 </div>
-            </div>
         </div>
 
         <div class="global-timer" id="globalTimer">⏳ Next Spin: 25s</div>
@@ -1429,11 +1664,26 @@
 
         <div class="bonus-banner" id="bonusBanner">Double $SPIN next 10 spins! 🔥</div>
 
-        <div class="bet-feed" id="betFeed">
-            <div class="bet-feed-title">Live Bets</div>
-            <div class="bet-entry"><i class="fas fa-dice"></i> <span class="system">System:</span> Welcome to SolRoulette LIVE!</div>
+        <div class="live-panel" id="livePanel">
+            <div class="live-panel-tabs">
+                <div class="live-panel-tab active" data-tab="bets">Live Bets</div>
+                <div class="live-panel-tab" data-tab="chat">Live Chat</div>
+            </div>
+            <div class="live-panel-content">
+                <div id="liveBetsContent" class="live-panel-content-tab active">
+                    <div class="bet-entry"><i class="fas fa-dice"></i> <span class="system">System:</span> Welcome to SolRoulette LIVE!</div>
+                </div>
+                <div id="liveChatContent" class="live-panel-content-tab">
+                    <div class="chat-feed" id="chatFeed">
+                         <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Say something..." aria-label="Chat input">
+                        <button id="sendChatBtn" aria-label="Send chat message">Send</button>
+                    </div>
+                </div>
+            </div>
         </div>
-
         <div class="leaderboard-panel" id="leaderboardPanel">
              <div class="leaderboard-tabs">
                  <div class="leaderboard-tab active" data-tab="wager">Top Wager</div>
@@ -1483,23 +1733,6 @@
             <button class="place-bet" id="placeBetBtn" style="display: none;" title="Connect your wallet to place real bets">🔒 Place Bet</button>
         </div>
 
-        <div class="chat-box" id="chatBox">
-             <div class="chat-box-header">
-                 Live Chat
-                 <button class="close-chat-btn" id="toggleChatBtn" aria-label="Toggle chat">
-                     <i class="fas fa-times"></i>
-                     <span class="unread-dot"></span>
-                 </button>
-             </div>
-             <div class="chat-feed" id="chatFeed">
-                <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
-             </div>
-            <div class="chat-input">
-                <input type="text" id="chatInput" placeholder="Say something..." aria-label="Chat input">
-                <button id="sendChatBtn" aria-label="Send chat message">Send</button>
-            </div>
-        </div>
-
         <div class="token-notification" id="tokenNotification" style="display: none;">
             <i class="fas fa-coins"></i> Earned: <span id="tokenCount">0.000</span> $SPIN
             <button id="claimModalBtn" aria-label="Claim SPIN tokens">Claim</button>
@@ -1535,7 +1768,7 @@
                      <p>Total Wagered: <span id="profileTotalWagered">0.00 SOL</span></p>
                      <p>Win Streak: <span id="profileWinStreak">0</span></p>
                      <p>10x Wins: <span id="profileTenXWins">0</span></p>
-                     <p id="profileFakeWinnings" style="display: none;">Fake Winnings: <span id="fakeWinningsTotal">0.00</span> SOL</p>
+                     <p id="profileFakeWinnings" style="display: none;">Demo Winnings: <span id="fakeWinningsTotal">0.00</span> SOL</p>
 
 
                      <h3>Achievements</h3>
@@ -1582,6 +1815,7 @@
 
         <div class="modal-overlay" id="doubleOrNothingModal">
              <div class="modal-content">
+                 <button class="close-btn" id="closeDoubleOrNothingBtn" aria-label="Close double or nothing modal">&times;</button>
                  <h2>Want to win back your loss?</h2>
                  <p>Bet the same amount again on the same multiplier.</p>
                  <button id="tryAgainBetBtn">Try Again</button>
@@ -1591,6 +1825,7 @@
 
         <div class="modal-overlay" id="resultModal">
              <div class="modal-content">
+                 <button class="close-btn" id="closeResultModalBtn" aria-label="Close result modal">&times;</button>
                  <h2 id="resultModalTitle"></h2>
                  <p id="resultModalMessage"></p>
                  <button id="resultModalSpinAgainBtn">Spin Again</button>
@@ -1600,7 +1835,7 @@
          <div class="modal-overlay" id="onboardingModal">
              <div class="modal-content">
                  <h2>🎉 Welcome to SolRoulette LIVE!</h2>
-                 <p>Here’s ◎500 in Fake SOL to try your luck. Connect your wallet any time to win real rewards.</p>
+                 <p>Here’s ◎500 in Demo SOL to try your luck. Connect your wallet any time to win real rewards.</p>
                  <button id="onboardingStartBtn">Start Playing</button>
                  <button id="onboardingConnectBtn">Connect Wallet</button>
              </div>
@@ -1608,14 +1843,16 @@
 
          <div class="modal-overlay" id="refillFakeSolModal">
              <div class="modal-content">
+                 <button class="close-btn" id="closeRefillFakeSolModalBtn" aria-label="Close refill modal">&times;</button>
                  <h2>Out of SOL?</h2>
-                 <p>Looks like your fake SOL balance is low.</p>
-                 <button id="refillFakeSolBtn">Refill ◎500 fake SOL!</button>
+                 <p>Looks like your demo SOL balance is low.</p>
+                 <button id="refillFakeSolBtn">Refill ◎500 Demo SOL!</button>
              </div>
          </div>
 
          <div class="modal-overlay" id="idleModal">
              <div class="modal-content">
+                 <button class="close-btn" id="closeIdleModalBtn" aria-label="Close idle modal">&times;</button>
                  <h2>Still here?</h2>
                  <p>Try a spin and feel the rush 🔥</p>
                  <button id="closeIdleModalBtn">OK</button>
@@ -1628,6 +1865,7 @@
 
          <div class="modal-overlay" id="dailyRewardModal">
              <div class="modal-content">
+                 <button class="close-btn" id="closeDailyRewardModalBtn" aria-label="Close daily reward modal">&times;</button>
                  <h2>Daily Reward!</h2>
                  <p>Thanks for playing! Claim your bonus $SPIN.</p>
                  <p id="dailyRewardAmount">+0.05 $SPIN</p>
@@ -1649,6 +1887,7 @@
 
          <div class="modal-overlay" id="messageBox">
              <div class="modal-content">
+                 <button class="close-btn" id="closeMessageBoxBtn" aria-label="Close message box">&times;</button>
                  <h2 id="messageBoxTitle"></h2>
                  <p id="messageBoxContent"></p>
                  <button id="closeMessageBoxBtn">OK</button>
@@ -1661,7 +1900,7 @@
          </div>
 
           <div class="low-balance-alert" id="guestModeToast" style="background: rgba(153, 69, 255, 0.9); display: none;">
-             Guest Mode – Playing with Fake SOL. Connect wallet to win real rewards.
+             Demo Mode – Playing with Demo SOL. Connect wallet to win real rewards.
          </div>
 
          <div class="bonus-banner" id="fakeActivityBanner" style="background: rgba(0,0,0,0.6); color: #fff; animation: none; top: 50px; font-size: 0.8em; padding: 5px 10px;">
@@ -1690,20 +1929,22 @@
         let totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered') || '0'); // Load total wagered
         let winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0'); // Load win streak
         let tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0'); // Load 10x wins
-        // --- FIX: Store multiplier as numeric string ---
+        // Store multiplier as numeric string
         // Load current bet state from localStorage, default to null multiplier and 0 amount
         let currentBet = { multiplier: localStorage.getItem('solroulette_current_multiplier') || null, amount: parseFloat(localStorage.getItem('solroulette_current_amount') || '0') };
         let achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements') || '[]')); // Load achievements
         let playersOnline = 1247;
         let playerBets = []; // Array to store bets for the current round
         let lastLossBet = null; // Store details of the last losing bet for "Double or Nothing"
+        // Use isGuestMode to track if the user is in demo mode
         let isGuestMode = localStorage.getItem('solroulette_is_guest') === 'true'; // Track guest mode
         let guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0'); // Track guest spins for modal
         let recentSpins = JSON.parse(localStorage.getItem('solroulette_recent_spins') || '[]'); // Load recent spins
+        // Use fakeWinningsTotal to track demo winnings
         let fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total') || '0'); // Track fake winnings
         let onboardingShown = localStorage.getItem('solroulette_onboarding_shown') === 'true'; // Track if onboarding tooltip has been shown
         let firstRealBetPlaced = localStorage.getItem('solroulette_first_real_bet_placed') === 'true'; // Track if a real bet has been placed
-        // --- FIX: Store actual spin result as string with 'x' ---
+        // Store actual spin result as string with 'x'
         let lastSpinResult = localStorage.getItem('solroulette_last_spin_result') || null; // Store the actual result of the last spin
 
 
@@ -1738,7 +1979,7 @@
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const sounds = {};
 
-        // --- FIX: Implement try...catch for sound loading ---
+        // Implement try...catch for sound loading
         async function loadSound(name, url) {
             try {
                 const response = await fetch(url);
@@ -1762,7 +2003,7 @@
             }
 
             const audioBuffer = sounds[name];
-            // --- FIX: Check if the audio buffer exists before trying to play ---
+            // Check if the audio buffer exists before trying to play
             if (!audioBuffer || !audioContext || audioContext.state === 'suspended') {
                 // console.warn(`Sound "${name}" not loaded, audio context not available, or suspended.`);
                 return; // Exit the function if sound is not available or context is suspended
@@ -1841,7 +2082,7 @@
             const size = Math.min(canvas.width, canvas.height);
             const centerX = size / 2;
             const centerY = size / 2;
-            // --- FIX: Ensure radius is not negative ---
+            // Ensure radius is not negative
             const radius = Math.max(0, size / 2 - 12); // Account for border, ensure non-negative
 
             ctx.clearRect(0, 0, size, size);
@@ -2015,7 +2256,7 @@
                 user.wallet = adapter.publicKey.toString();
                 user.name = user.wallet.slice(0, 4) + '...' + user.wallet.slice(-4);
 
-                 // If coming from guest mode, save guest stats before switching
+                 // If coming from demo mode, save demo stats before switching
                  if (isGuestMode) {
                      localStorage.setItem('solroulette_guest_balance', walletBalance);
                      localStorage.setItem('solroulette_guest_xp', xp);
@@ -2025,10 +2266,10 @@
                      localStorage.setItem('solroulette_guest_ten_x_wins', tenXWins);
                       localStorage.setItem('solroulette_guest_achievements', JSON.stringify([...achievementsUnlocked]));
                       localStorage.setItem('solroulette_guest_spin_count', guestSpinCount); // Save guest spin count
-                      localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save fake winnings
+                      localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save demo winnings
                  }
 
-                isGuestMode = false; // Exit guest mode on real wallet connection
+                isGuestMode = false; // Exit demo mode on real wallet connection
 
                 // Mock balance - in a real app, fetch from the blockchain
                 walletBalance = parseFloat(localStorage.getItem('solroulette_wallet_balance') || (Math.random() * 10).toFixed(2)); // Load real balance or generate mock if first time
@@ -2116,7 +2357,7 @@
             const preSpinCtaElement = document.getElementById('preSpinCta');
             const rouletteCanvas = document.getElementById('rouletteCanvas');
 
-            // --- FIX: Add console log to check currentBet.multiplier in updateTimer ---
+            // Add console log to check currentBet.multiplier in updateTimer
             console.log('updateTimer running. currentBet.multiplier:', currentBet.multiplier);
 
 
@@ -2200,12 +2441,13 @@
                 }
                 spinTimer = 25; // Reset timer
                 playerBets = []; // Clear bets for the new round
-                document.getElementById('betFeed').innerHTML = '<div class="bet-feed-title">Live Bets</div>'; // Clear bet feed UI
+                // Clear bet feed UI (now inside live panel)
+                document.getElementById('liveBetsContent').innerHTML = ''; // Clear existing bet entries
                 // simulateMultiplayer(); // Simulate new bets for the next round - now handled by interval
             } else {
                 spinTimer--;
             }
-            // --- FIX: Removed resetting currentBet here ---
+            // Removed resetting currentBet here
             // currentBet.multiplier = null;
             // currentBet.amount = 0;
             updateUIDebounced(); // Update UI elements that depend on the timer state
@@ -2270,10 +2512,10 @@
 
         // Add Bet Entry to Feed
         function addBetEntry(user, amount, multiplier) {
-            const feed = document.getElementById('betFeed');
+            const feed = document.getElementById('liveBetsContent'); // Append to liveBetsContent
             const entry = document.createElement('div');
             entry.className = 'bet-entry';
-            // --- FIX: Display multiplier with 'x' in the feed ---
+            // Display multiplier with 'x' in the feed
             entry.innerHTML = `<i class="fas fa-dice"></i> <span class="user">${user}</span> bet <span class="amount">◎${amount.toFixed(2)}</span> on <span class="multiplier">${multiplier}x</span>`;
             feed.appendChild(entry);
             feed.scrollTop = feed.scrollHeight; // Auto-scroll to bottom
@@ -2289,12 +2531,20 @@
             chatFeed.appendChild(msg); // Append to chatFeed
             chatFeed.scrollTop = chatFeed.scrollHeight; // Auto-scroll to bottom
 
-            // Show unread dot if chat is collapsed
-            const chatBox = document.getElementById('chatBox');
-            if (chatBox.classList.contains('collapsed')) {
-                const unreadDot = chatBox.querySelector('.unread-dot');
-                if (unreadDot) unreadDot.style.display = 'block';
-            }
+            // Show unread dot if chat is collapsed (now handled by tab switching)
+            // const chatBox = document.getElementById('liveChatContent'); // Use liveChatContent
+            // if (!chatBox.classList.contains('active')) { // Check if chat tab is not active
+            //     const chatTab = document.querySelector('.live-panel-tab[data-tab="chat"]');
+            //     if (chatTab) {
+            //         let unreadSpan = chatTab.querySelector('.unread-dot');
+            //         if (!unreadSpan) {
+            //             unreadSpan = document.createElement('span');
+            //             unreadSpan.className = 'unread-dot';
+            //             chatTab.appendChild(unreadSpan);
+            //         }
+            //         unreadSpan.style.display = 'inline-block'; // Show unread dot
+            //     }
+            // }
         }
 
         // Send Chat
@@ -2315,7 +2565,7 @@
                          addChatMessage('System', `${user.name} tipped ${targetUser} ${tipAmount.toFixed(3)} $SPIN!`, '💸', 'system');
                          updateUIDebounced();
                      } else if (isGuestMode) {
-                         showMessageBox('Guest Mode Limitation', 'Connect your wallet to tip $SPIN.');
+                         showMessageBox('Demo Mode Limitation', 'Connect your wallet to tip $SPIN.');
                      }
                      else {
                          showMessageBox('Tip Failed', 'Invalid tip amount or insufficient $SPIN.');
@@ -2337,14 +2587,14 @@
 
         // Place Bet
         function placeBet() {
-             // --- FIX: Add console log at the beginning of placeBet ---
+             // Add console log at the beginning of placeBet
              console.log("Placing bet with:", currentBet);
 
             // Play bet confirmation sound
             playSound('click');
             if (navigator.vibrate) navigator.vibrate(80); // Haptic feedback on spin start
 
-            // --- FIX: Null Bet Bug - Check for multiplier and amount > 0 ---
+            // Null Bet Bug - Check for multiplier and amount > 0
             if (currentBet.multiplier === null || currentBet.amount <= 0) {
                 showMessageBox('Invalid Bet', 'Please select a multiplier and enter a bet amount greater than 0.');
                  if (navigator.vibrate) navigator.vibrate(200);
@@ -2354,8 +2604,8 @@
 
             const amount = currentBet.amount; // Use currentBet.amount which is already set by slider input
 
-            // --- FIX: Fake SOL Deduction & Refill Modal ---
-            // Auto Refill Fake SOL if balance is too low in guest mode
+            // Demo SOL Deduction & Refill Modal
+            // Auto Refill Demo SOL if balance is too low in guest mode
             if (isGuestMode && walletBalance < amount) {
                  if (window.autoRefill) { // Check autoRefill flag
                      refillFakeSol(); // Auto refill
@@ -2385,7 +2635,7 @@
                 return;
             }
 
-            // --- FIX: Add console log before pushing bet ---
+            // Add console log before pushing bet
             console.log('Pushing bet with multiplier:', currentBet.multiplier, 'and amount:', currentBet.amount);
 
             // Deduct bet amount immediately
@@ -2394,11 +2644,11 @@
             // currentBet.amount is already set
 
             // Add user's bet to the list of bets for the current round
-            // --- FIX: Store multiplier as numeric string ---
+            // Store multiplier as numeric string
             playerBets.push({ user: user.name, amount, multiplier: currentBet.multiplier, isUser: true }); // Store numeric string
 
             // Add user's bet to the live feed
-            // --- FIX: Pass multiplier as numeric string to addBetEntry ---
+            // Pass multiplier as numeric string to addBetEntry
             addBetEntry('You', amount, currentBet.multiplier); // Pass amount as number
 
             xp += 10; // Earn XP for placing a bet
@@ -2428,7 +2678,7 @@
                  localStorage.setItem('solroulette_first_real_bet_placed', 'true');
                  stopAutoDemo(); // Stop auto demo on first real bet
              } else {
-                 addChatMessage('System', `Fake transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}x!`, '✅', 'system'); // Display with 'x'
+                 addChatMessage('System', `Demo transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}x!`, '✅', 'system'); // Display with 'x'
              }
 
 
@@ -2443,7 +2693,7 @@
                  localStorage.setItem('solroulette_guest_achievements', JSON.stringify([...achievementsUnlocked]));
                  guestSpinCount++; // Increment guest spin count
                  localStorage.setItem('solroulette_guest_spin_count', guestSpinCount);
-                 localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save fake winnings
+                 localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save demo winnings
              } else {
                  localStorage.setItem('solroulette_wallet_balance', walletBalance); // Save balance
                  localStorage.setItem('solroulette_total_wagered', totalWagered);
@@ -2459,7 +2709,7 @@
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
              localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
-             // --- FIX: Clear current bet state in localStorage ---
+             // Clear current bet state in localStorage
              localStorage.removeItem('solroulette_current_multiplier');
              localStorage.removeItem('solroulette_current_amount');
              localStorage.setItem('solroulette_last_spin_result', lastSpinResult); // Save the actual result string
@@ -2477,13 +2727,14 @@
              let userLostAmount = 0; // Track lost amount for result modal
              let userWon = false;
              // The winningMultiplier is already determined in spinWheel() and stored in lastSpinResult
-             // --- FIX: Use lastSpinResult (string with 'x') ---
+             // Use lastSpinResult (string with 'x')
              let winningMultiplierString = lastSpinResult; // e.g., '2x'
-             // --- FIX: Use currentBet.multiplier (numeric string) ---
+             // Use currentBet.multiplier (numeric string)
              // The bet has already been placed and currentBet is reset.
              // We need to find the user's bet from the playerBets array to get their picked multiplier.
              const userBet = playerBets.find(bet => bet.isUser);
              let userPickedMultiplierNumericString = userBet ? userBet.multiplier : null; // e.g., '2'
+             let userPickedMultiplierDisplayString = userBet ? userBet.multiplier + 'x' : 'nullx'; // e.g., '2x' or 'nullx'
 
 
              // Add outcome to recent spins
@@ -2500,7 +2751,7 @@
                  const betMultiplierNumeric = parseFloat(bet.multiplier); // Bet multiplier is numeric string
                  const winningMultiplierNumeric = parseFloat(winningMultiplierString.replace('x', '')); // Winning multiplier is string with 'x'
 
-                 // --- FIX: Show Correct Result - Compare numeric values ---
+                 // Show Correct Result - Compare numeric values
                  if (betMultiplierNumeric === winningMultiplierNumeric) {
                      const winnings = bet.amount * betMultiplierNumeric;
                      // If the bet was by the current user
@@ -2510,7 +2761,7 @@
                          userWon = true;
                          addChatMessage('System', `${user.name} won ◎${winnings.toFixed(2)} on ${winningMultiplierString}! 🎉`, '🎉', 'system'); // Win notification in chat
                          if (isGuestMode) {
-                             fakeWinningsTotal += winnings - bet.amount; // Track net fake winnings
+                             fakeWinningsTotal += winnings - bet.amount; // Track net demo winnings
                              localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal);
                          }
                      } else {
@@ -2518,14 +2769,14 @@
                      }
                  } else {
                      if (bet.isUser) {
-                         // --- FIX: Display user's picked multiplier correctly in loss message ---
+                         // Display user's picked multiplier correctly in loss message
                          addChatMessage('System', `${user.name} busted on ${bet.multiplier}x! 💀`, '💀', 'system'); // Loss notification in chat (display user's pick with 'x')
                          lastLossBet = { amount: bet.amount, multiplier: bet.multiplier }; // Store loss details (numeric string)
                          userLostAmount = bet.amount; // Track lost amount
-                         // --- FIX: Log lost amount ---
+                         // Log lost amount
                          console.log('User lost. Amount:', userLostAmount);
                          if (isGuestMode) {
-                             fakeWinningsTotal -= bet.amount; // Deduct lost amount from fake winnings
+                             fakeWinningsTotal -= bet.amount; // Deduct lost amount from demo winnings
                              localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal);
                          }
                      } else {
@@ -2569,10 +2820,10 @@
              if (!isGuestMode) {
                  updateTokens(userWon ? 0.05 : 0.01);
              } else {
-                 // Show guest mode toast after each spin in guest mode
+                 // Show demo mode toast after each spin in guest mode
                  showGuestModeToast();
-                 // --- FIX: Auto Trigger Fake SOL Refill Modal ---
-                 // Check if fake balance is low after the spin result and trigger refill modal
+                 // Auto Trigger Demo SOL Refill Modal
+                 // Check if demo balance is low after the spin result and trigger refill modal
                  if (walletBalance < 0.01 && !document.getElementById('refillFakeSolModal').classList.contains('visible')) {
                      openRefillFakeSolModal();
                  }
@@ -2588,11 +2839,11 @@
                  // Re-enable multiplier buttons for both guest and real users
                  btn.disabled = false;
                  // Update tooltip based on mode
-                 btn.title = isGuestMode ? 'Using Fake SOL – Real rewards require a wallet' : (user.wallet ? '' : 'Connect Wallet to Bet');
+                 btn.title = isGuestMode ? 'Using Demo SOL – Real rewards require a wallet' : (user.wallet ? '' : 'Connect Wallet to Bet');
              });
              document.getElementById('betSlider').disabled = false; // Re-enable slider for both
              // Update tooltip based on mode
-             document.getElementById('betSlider').title = isGuestMode ? 'Using Fake SOL – Real rewards require a wallet' : (user.wallet ? '' : 'Connect Wallet to Bet');
+             document.getElementById('betSlider').title = isGuestMode ? 'Using Demo SOL – Real rewards require a wallet' : (user.wallet ? '' : 'Connect Wallet to Bet');
 
 
              xp += 10; // Earn XP for completing a round
@@ -2610,7 +2861,7 @@
                  localStorage.setItem('solroulette_guest_achievements', JSON.stringify([...achievementsUnlocked]));
                  guestSpinCount++; // Increment guest spin count
                  localStorage.setItem('solroulette_guest_spin_count', guestSpinCount);
-                 localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save fake winnings
+                 localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save demo winnings
              } else {
                  localStorage.setItem('solroulette_wallet_balance', walletBalance); // Save balance
                  localStorage.setItem('solroulette_total_wagered', totalWagered);
@@ -2626,7 +2877,7 @@
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
              localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
-             // --- FIX: Clear current bet state in localStorage ---
+             // Clear current bet state in localStorage
              localStorage.removeItem('solroulette_current_multiplier');
              localStorage.removeItem('solroulette_current_amount');
              localStorage.setItem('solroulette_last_spin_result', winningMultiplierString); // Save the actual result string
@@ -2639,9 +2890,10 @@
                  document.getElementById('lowBalanceAlert').style.display = 'none'; // Hide alert in guest mode
              }
 
+
              // Show result modal
-             // --- FIX: Pass correct values to showResultModal ---
-             showResultModal(userPickedMultiplierNumericString + 'x', winningMultiplierString, userWon, userWinAmount, userLostAmount); // Pass lost amount
+             // Pass correct values to showResultModal
+             showResultModal(userPickedMultiplierDisplayString, winningMultiplierString, userWon, userWinAmount, userLostAmount); // Pass lost amount
 
 
              // Show "Enjoying the game?" modal after 3 guest spins
@@ -2657,7 +2909,7 @@
          }
 
          // Show Result Modal
-         // --- FIX: Update parameters to match handleSpinResult ---
+         // Update parameters to match handleSpinResult
          function showResultModal(pickedDisplay, landedDisplay, won, winAmount, lostAmount) { // Added lostAmount parameter
              const modal = document.getElementById('resultModal');
              const title = document.getElementById('resultModalTitle');
@@ -2693,7 +2945,7 @@
               resetIdleTimer(); // Reset idle timer on modal close
          }
 
-         // Refill Fake SOL Modal
+         // Refill Demo SOL Modal
          function openRefillFakeSolModal() {
              document.getElementById('refillFakeSolModal').classList.add('visible');
              resetIdleTimer(); // Reset idle timer on modal open
@@ -2710,12 +2962,12 @@
          function refillFakeSol() {
              playSound('win'); // Use win sound for positive reinforcement
              if (navigator.vibrate) navigator.vibrate([50, 50]);
-             walletBalance = 500; // Reset fake balance
+             walletBalance = 500; // Reset demo balance
              localStorage.setItem('solroulette_guest_balance', walletBalance);
              // Optionally reset other guest stats here if desired
              // localStorage.setItem('solroulette_guest_xp', '0');
              // ... etc.
-             showMessageBox('Refilled!', 'Your fake SOL balance has been refilled.');
+             showMessageBox('Refilled!', 'Your demo SOL balance has been refilled.');
              updateUIDebounced();
              closeRefillFakeSolModal();
          }
@@ -2753,7 +3005,7 @@
                                           result < 0.85 ? '5x' : '10x';
             }
 
-            // --- FIX: Store the actual winning multiplier string ---
+            // Store the actual winning multiplier string
             lastSpinResult = actualWinningMultiplierString;
 
             // Save the last spin result to localStorage immediately
@@ -2764,7 +3016,7 @@
             isNearMiss = Math.random() < 0.2 && parseFloat(actualWinningMultiplierString.replace('x', '')) !== 10; // Don't fakeout on actual 10x win
 
             // Calculate the target rotation based on the actual winning multiplier string
-            // --- FIX: Calculate target rotation based on actualWinningMultiplierString ---
+            // Calculate target rotation based on actualWinningMultiplierString
             targetRotation = calculateCanvasTargetRotation(actualWinningMultiplierString);
 
             spinStartTime = null; // Reset start time for requestAnimationFrame
@@ -2807,7 +3059,7 @@
              if (navigator.vibrate) navigator.vibrate(50);
 
             if (isGuestMode) {
-                 showMessageBox('Guest Mode Limitation', 'Connect your wallet to claim $SPIN tokens.');
+                 showMessageBox('Demo Mode Limitation', 'Connect your wallet to claim $SPIN tokens.');
                  return;
             }
             if (tokensEarned <= 0) {
@@ -2872,7 +3124,8 @@
          // Confetti Effect
          function showConfetti() {
             const confettiColors = ['var(--primary)', 'var(--accent)', 'var(--success)', 'var(--danger)'];
-            const confettiCount = 100; // More confetti
+            // Adjust confetti count based on screen width
+            const confettiCount = window.innerWidth < 768 ? 50 : 100; // Fewer confetti on mobile
             const confettiShapes = ['square', 'circle', 'triangle', 'star']; // Variable shapes
 
             for (let i = 0; i < confettiCount; i++) {
@@ -2881,7 +3134,9 @@
                  confetti.className = `confetti ${shape}`; // Add shape class for styling
                  confetti.style.left = `${Math.random() * 100}vw`; // Random horizontal position
                  confetti.style.top = `${Math.random() * -20}vh`; // Start above viewport
-                 confetti.style.width = `${Math.random() * 10 + 5}px`; // Variable size
+                 // Adjust size based on screen width
+                 const size = window.innerWidth < 768 ? Math.random() * 8 + 3 : Math.random() * 10 + 5;
+                 confetti.style.width = `${size}px`; // Variable size
                  confetti.style.height = confetti.style.width; // Keep it square/circle initially
                  confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
                  confetti.style.animationDelay = `${Math.random() * 1}s`; // Random delay
@@ -2975,12 +3230,12 @@
              document.getElementById('profileLevel').textContent = level;
              document.getElementById('profileXpFill').style.width = `${(xp % 100)}%`;
              document.getElementById('profileWallet').textContent = user.wallet ? user.wallet.slice(0, 6) + '...' + user.wallet.slice(-6) : 'Not Connected';
-             document.getElementById('profileBalance').textContent = walletBalance.toFixed(2) + ' SOL' + (isGuestMode ? ' (Fake)' : ''); // Label fake balance
-             document.getElementById('profileTotalWagered').textContent = totalWagered.toFixed(2) + ' SOL' + (isGuestMode ? ' (Fake)' : ''); // Label fake stats
-             document.getElementById('profileWinStreak').textContent = winStreak + (isGuestMode ? ' (Fake)' : '');
-             document.getElementById('profileTenXWins').textContent = tenXWins + (isGuestMode ? ' (Fake)' : '');
+             document.getElementById('profileBalance').textContent = walletBalance.toFixed(2) + ' SOL' + (isGuestMode ? ' (Demo)' : ''); // Label demo balance
+             document.getElementById('profileTotalWagered').textContent = totalWagered.toFixed(2) + ' SOL' + (isGuestMode ? ' (Demo)' : ''); // Label demo stats
+             document.getElementById('profileWinStreak').textContent = winStreak + (isGuestMode ? ' (Demo)' : '');
+             document.getElementById('profileTenXWins').textContent = tenXWins + (isGuestMode ? ' (Demo)' : '');
 
-             // Show fake winnings only in guest mode
+             // Show demo winnings only in guest mode
              const fakeWinningsElement = document.getElementById('profileFakeWinnings');
              const fakeWinningsTotalElement = document.getElementById('fakeWinningsTotal');
              if (isGuestMode) {
@@ -3068,7 +3323,7 @@
          function resetGuestProgress() {
              playSound('click');
              if (navigator.vibrate) navigator.vibrate(50);
-             if (confirm('Are you sure you want to reset your guest progress? This cannot be undone.')) {
+             if (confirm('Are you sure you want to reset your demo progress? This cannot be undone.')) {
                  // Clear only guest-specific localStorage items
                  localStorage.removeItem('solroulette_is_guest');
                  localStorage.removeItem('solroulette_guest_balance');
@@ -3117,7 +3372,7 @@
              playSound('click');
              if (navigator.vibrate) navigator.vibrate(50);
              if (isGuestMode) {
-                 showMessageBox('Guest Mode Limitation', 'Connect your wallet to buy shop items.');
+                 showMessageBox('Demo Mode Limitation', 'Connect your wallet to buy shop items.');
                  return;
              }
              if (tokensEarned >= cost) {
@@ -3152,7 +3407,7 @@
                  localStorage.setItem(isGuestMode ? 'solroulette_guest_last_login' : 'solroulette_last_login', today);
                  localStorage.setItem(isGuestMode ? 'solroulette_guest_daily_bonus_day' : 'solroulette_daily_bonus_day', dailyBonusDay);
 
-                 const bonusAmount = isGuestMode ? 25 : (dailyBonusDay === 7 ? 0.1 : 0.01); // 25 fake SOL for guests
+                 const bonusAmount = isGuestMode ? 25 : (dailyBonusDay === 7 ? 0.1 : 0.01); // 25 demo SOL for guests
                  const bonusCurrency = isGuestMode ? 'SOL' : (dailyBonusDay === 7 ? 'SOL' : '$SPIN');
 
                  document.getElementById('dailyBonusDay').textContent = dailyBonusDay;
@@ -3179,13 +3434,13 @@
          function claimDailyBonus() {
              playSound('win');
              if (navigator.vibrate) navigator.vibrate([50, 50]);
-             const bonusAmount = isGuestMode ? 25 : (dailyBonusDay === 7 ? 0.1 : 0.01); // 25 fake SOL for guests
+             const bonusAmount = isGuestMode ? 25 : (dailyBonusDay === 7 ? 0.1 : 0.01); // 25 demo SOL for guests
              const bonusCurrency = isGuestMode ? 'SOL' : (dailyBonusDay === 7 ? 'SOL' : '$SPIN');
 
              if (isGuestMode) {
-                 walletBalance += bonusAmount; // Add to fake balance
+                 walletBalance += bonusAmount; // Add to demo balance
                  localStorage.setItem('solroulette_guest_balance', walletBalance);
-                 showMessageBox('Bonus Claimed!', `Claimed ◎${bonusAmount.toFixed(2)} Fake SOL!`);
+                 showMessageBox('Bonus Claimed!', `Claimed ◎${bonusAmount.toFixed(2)} Demo SOL!`);
              } else if (bonusCurrency === 'SOL') {
                  walletBalance += bonusAmount;
                  localStorage.setItem('solroulette_wallet_balance', walletBalance); // Save real balance
@@ -3217,7 +3472,7 @@
              // Mock Leaderboard Data (can be made more dynamic)
              const mockLeaderboard = {
                  wager: [
-                     { name: user.name, value: (isGuestMode ? totalWagered : totalWagered).toFixed(2) + ' SOL', avatar: user.avatar }, // Show fake wager in guest mode
+                     { name: user.name, value: (isGuestMode ? totalWagered : totalWagered).toFixed(2) + ' SOL', avatar: user.avatar }, // Show demo wager in guest mode
                      { name: 'WhaleShark', value: '5000 SOL', avatar: '🐋' },
                      { name: 'GambaKing', value: '3000 SOL', avatar: '👑' },
                       { name: 'SolDegen', value: '1500 SOL', avatar: '😎' },
@@ -3358,7 +3613,7 @@
                      // Find and activate the corresponding multiplier button (UI only)
                      document.querySelectorAll('.multiplier-btn').forEach(btn => {
                          btn.classList.remove('active');
-                         // --- FIX: Compare numeric strings ---
+                         // Compare numeric strings
                          if (btn.dataset.multiplier === currentBet.multiplier) {
                              btn.classList.add('active');
                          }
@@ -3384,7 +3639,7 @@
              }
          }
 
-         // Show Guest Mode Toast
+         // Show Demo Mode Toast
          function showGuestModeToast() {
              const toast = document.getElementById('guestModeToast');
              toast.style.display = 'block';
@@ -3443,7 +3698,7 @@
 
                  closeOnboardingModal();
                  updateUIDebounced(); // Update UI to show the new balance and guest state
-                 showMessageBox('Fake SOL Added', '◎500 Fake SOL added. Start spinning!'); // Show toast
+                 showMessageBox('Demo SOL Added', '◎500 Demo SOL added. Start spinning!'); // Show toast
                  showOnboardingTooltip(); // Show the onboarding tooltip after modal
                  resetIdleTimer(); // Start idle timer after onboarding
              };
@@ -3507,7 +3762,7 @@
                  const multiplierValue = parseFloat(spin.multiplier.replace('x', ''));
                  let colorClass = 'lose'; // Default to lose (danger color)
                  if (multiplierValue === 1.5 || multiplierValue === 5) {
-                     colorClass = 'win'; // Use 'win' class for 1.5x and 5x (success color)
+                     colorClass = 'success'; // Use 'success' class for 1.5x and 5x
                  } else if (multiplierValue === 2) {
                      colorClass = 'primary'; // Use 'primary' color for 2x
                  } else if (multiplierValue === 3) {
@@ -3524,7 +3779,7 @@
          // Update Bet Summary Display
          function updateBetSummary() {
              const betSummaryDiv = document.getElementById('betSummary');
-             // --- FIX: Check if multiplier is set (numeric string) ---
+             // Check if multiplier is set (numeric string)
              if (currentBet.multiplier !== null && currentBet.amount > 0) {
                  const potentialWin = currentBet.amount * parseFloat(currentBet.multiplier); // Use numeric value
                  betSummaryDiv.innerHTML = `
@@ -3686,19 +3941,11 @@
 
         // Update UI elements
         function updateUI() {
-            // --- FIX: Add console log to check state in updateUI ---
+            // Add console log to check state in updateUI
             console.log('updateUI running. currentBet.multiplier:', currentBet.multiplier, 'currentBet.amount:', currentBet.amount, 'spinTimer:', spinTimer, 'isGuestMode:', isGuestMode, 'user.wallet:', user.wallet ? 'Connected' : 'Not Connected');
-
-            document.getElementById('solBalance').textContent = walletBalance.toFixed(2);
-            //document.getElementById('userName').textContent = user.name; // Removed this line
-            //document.getElementById('userAvatar').textContent = user.avatar; // Removed this line
-            // --- FIX: Bet Slider Fix - Update betValue text based on currentBet.amount ---
-            document.getElementById('betValue').textContent = `◎${currentBet.amount.toFixed(2)} SOL`; // Use currentBet.amount
-
 
             // Update XP bar and level
             const xpPercentage = (xp % 100);
-            //document.getElementById('xpFill').style.width = `${xpPercentage}%`; // Removed this line
             // Check for level up
             if (xp >= 100) {
                 level++;
@@ -3715,13 +3962,13 @@
             // Update the entire user profile block in the header
             document.getElementById('userProfile').innerHTML = `
                 <div class="avatar" id="userAvatar">${user.avatar}</div>
-                <div>
+                <div class="user-info">
                     <div id="userName">${user.name} ${isGuestMode ? '(Guest)' : ''} (Lv. ${level})</div>
                     <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width: ${(xp % 100)}%"></div></div>
                 </div>
-                <div><i class="fas fa-wallet"></i> <span id="solBalance">${walletBalance.toFixed(2)}</span> SOL ${isGuestMode ? '(Fake)' : ''}</div>
-                 <div id="fakeWinningsDisplay" style="${isGuestMode ? 'display: block;' : 'display: none;'} margin-left: 10px;" title="Your total fake winnings so far.">
-                     ◎<span id="fakeWinningsTotalDisplay">${fakeWinningsTotal.toFixed(2)}</span> (Fake)
+                <div class="sol-balance-display"><i class="fas fa-wallet"></i> <span id="solBalance">${walletBalance.toFixed(2)}</span> SOL ${isGuestMode ? '(Demo)' : ''}</div>
+                 <div id="fakeWinningsDisplay" class="fake-winnings-display" style="${isGuestMode ? 'display: block;' : 'display: none;'}" title="Your total demo winnings so far.">
+                     ◎<span id="fakeWinningsTotalDisplay">${fakeWinningsTotal.toFixed(2)}</span> (Demo)
                  </div>
             `;
              // Re-attach event listener to the new user profile element
@@ -3738,11 +3985,11 @@
 
 
             const bettingAllowedByTimer = !isSpinning && spinTimer > 3;
-            // --- FIX: Check for multiplier (numeric string) and amount > 0 ---
+            // Check for multiplier (numeric string) and amount > 0
             const betIsValid = currentBet.multiplier !== null && currentBet.amount > 0;
 
 
-            // --- FIX: Enable Place Bet in Guest Mode ---
+            // Enable Place Bet in Guest Mode
             if (user.wallet && !isGuestMode) { // Connected with real wallet
                  connectWalletBtn.style.display = 'none';
                  placeBetBtn.style.display = 'block';
@@ -3760,36 +4007,36 @@
                  betSlider.title = bettingAllowedByTimer ? '' : 'Betting is closed';
 
             } else { // Guest Mode or not connected
-                 // --- FIX: Show Connect Wallet button only when not connected ---
+                 // Show Connect Wallet button only when not connected
                  if (!user.wallet) {
                      connectWalletBtn.style.display = 'block';
                  } else {
                      connectWalletBtn.style.display = 'none'; // Hide if wallet is connected (even in guest mode)
                  }
 
-                 // --- FIX: Show Place Bet button in Guest Mode ---
+                 // Show Place Bet button in Guest Mode
                  placeBetBtn.style.display = 'block'; // Always show place bet button in guest mode
                  guestModeBanner.style.display = 'block'; // Show guest banner for guest users
 
                  // In guest mode, placeBetBtn is ENABLED if bettingAllowedByTimer is true and a multiplier is selected and amount > 0
                  // It does NOT require user.wallet to be connected.
                  placeBetBtn.disabled = !bettingAllowedByTimer || !betIsValid;
-                 placeBetBtn.title = 'Fake SOL bets. Connect wallet to win real rewards.'; // Tooltip for guest mode Place Bet
+                 placeBetBtn.title = 'Demo SOL bets. Connect wallet to win real rewards.'; // Tooltip for guest mode Place Bet
 
 
                  // Multiplier buttons and slider are ENABLED in guest mode for fake bets, but disabled by timer
                  multiplierBtns.forEach(btn => {
                      btn.disabled = !bettingAllowedByTimer; // Disable based on timer
-                     btn.title = bettingAllowedByTimer ? 'Using Fake SOL – Real rewards require a wallet' : 'Betting is closed';
+                     btn.title = bettingAllowedByTimer ? 'Using Demo SOL – Real rewards require a wallet' : 'Betting is closed';
                  });
                  betSlider.disabled = !bettingAllowedByTimer; // Disable based on timer
-                 betSlider.title = bettingAllowedByTimer ? 'Using Fake SOL – Real rewards require a wallet' : 'Betting is closed';
+                 betSlider.title = bettingAllowedByTimer ? 'Using Demo SOL – Real rewards require a wallet' : 'Betting is closed';
             }
 
              // Disable Spin Again button if betting is not allowed by timer
              spinAgainBtn.disabled = !bettingAllowedByTimer;
 
-            // --- FIX: Apply active class to multiplier button based on currentBet.multiplier (numeric string) ---
+            // Apply active class to multiplier button based on currentBet.multiplier (numeric string)
             multiplierBtns.forEach(btn => {
                 btn.classList.remove('active');
                 if (currentBet.multiplier !== null && btn.dataset.multiplier === currentBet.multiplier) {
@@ -3797,7 +4044,7 @@
                 }
             });
 
-            // --- FIX: Log the disabled state of the place bet button ---
+            // Log the disabled state of the place bet button
             console.log('Place Bet button disabled state:', placeBetBtn.disabled);
 
 
@@ -3822,7 +4069,7 @@
              // Update bet summary
              updateBetSummary();
 
-             // Update fake winnings display in header
+             // Update demo winnings display in header
              document.getElementById('fakeWinningsTotalDisplay').textContent = fakeWinningsTotal.toFixed(2);
 
         }
@@ -3880,7 +4127,7 @@
 
 
         // Event Listeners
-        // --- FIX: Bet Slider Fix - Update currentBet.amount and display ---
+        // Bet Slider Fix - Update currentBet.amount and display
         document.getElementById('betSlider').addEventListener('input', (e) => {
              currentBet.amount = parseFloat(e.target.value);
              localStorage.setItem('solroulette_current_amount', currentBet.amount); // Save to localStorage
@@ -3900,7 +4147,7 @@
 
         document.querySelectorAll('.multiplier-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                 // --- FIX: Multiplier Button Click Not Working (Guest Mode) - Add console log ---
+                 // Multiplier Button Click Not Working (Guest Mode) - Add console log
                  console.log('Multiplier button clicked:', btn.dataset.multiplier);
 
                  // Multiplier buttons are enabled even in guest mode, but placeBetBtn handles real betting
@@ -3916,7 +4163,7 @@
                 document.querySelectorAll('.multiplier-btn').forEach(b => b.classList.remove('active'));
                 // Add active class to the clicked button
                 btn.classList.add('active');
-                // --- FIX: Multiplier Selection Fix - Set currentBet.multiplier correctly (numeric string) ---
+                // Multiplier Selection Fix - Set currentBet.multiplier correctly (numeric string)
                 currentBet.multiplier = btn.dataset.multiplier; // Set the multiplier as numeric string (e.g., "1.5")
                 localStorage.setItem('solroulette_current_multiplier', currentBet.multiplier); // Save to localStorage
                 console.log('currentBet.multiplier set to:', currentBet.multiplier);
@@ -3924,7 +4171,7 @@
 
                  // Enable place bet button if amount > 0 and wallet is connected and betting is allowed
                  // This logic is now handled in updateUI based on user.wallet and isSpinning/spinTimer
-                 // --- FIX: Multiplier Button Click Not Working (Guest Mode) - Trigger updateUI ---
+                 // Multiplier Button Click Not Working (Guest Mode) - Trigger updateUI
                  updateUIDebounced(); // Update UI to reflect button state and potentially enable Place Bet
 
                  // Dismiss onboarding tooltip/glow if active
@@ -4022,14 +4269,20 @@
         document.getElementById('claimDailyBonusBtn').addEventListener('click', claimDailyBonus);
         document.getElementById('tryAgainBetBtn').addEventListener('click', tryAgainBet);
         document.getElementById('cancelDoubleOrNothingBtn').addEventListener('click', closeDoubleOrNothingModal);
+         // Added close button for result modal
+        document.getElementById('closeResultModalBtn').addEventListener('click', closeResultModal);
         document.getElementById('closeShareModalBtn').addEventListener('click', closeShareModal);
         document.getElementById('copyShareTextBtn').addEventListener('click', copyShareText);
         document.getElementById('tweetWinBtn').addEventListener('click', tweetWin);
         document.getElementById('closeMessageBoxBtn').addEventListener('click', closeMessageBox);
         document.getElementById('topUpWalletBtn').addEventListener('click', topUpWallet);
          document.getElementById('resultModalSpinAgainBtn').addEventListener('click', closeResultModal); // Spin Again button in result modal
-         document.getElementById('refillFakeSolBtn').addEventListener('click', refillFakeSol); // Refill fake SOL button
+         // Added close button for refill modal
+         document.getElementById('closeRefillFakeSolModalBtn').addEventListener('click', closeRefillFakeSolModal);
+         document.getElementById('refillFakeSolBtn').addEventListener('click', refillFakeSol); // Refill demo SOL button
          document.getElementById('closeIdleModalBtn').addEventListener('click', closeIdleModal); // Close Idle Modal button
+         // Added close button for daily reward modal
+         document.getElementById('closeDailyRewardModalBtn').addEventListener('click', closeDailyRewardModal);
          document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward); // Claim Daily Reward button
 
 
@@ -4044,32 +4297,37 @@
         shopButton.addEventListener('click', openShopModal);
         document.querySelector('.header').appendChild(shopButton);
 
-        // Chat Toggle Functionality
-        const chatBox = document.getElementById('chatBox');
-        const toggleChatBtn = document.getElementById('toggleChatBtn');
-        let chatCollapsed = false;
+        // Live Panel Tab Switching Functionality
+        const livePanelTabs = document.querySelectorAll('.live-panel-tab');
+        const livePanelContents = document.querySelectorAll('.live-panel-content-tab');
 
-        function toggleChat() {
-            chatCollapsed = !chatCollapsed;
-            if (chatCollapsed) {
-                chatBox.classList.add('collapsed');
-                // Change icon to comment bubble with potential unread dot
-                toggleChatBtn.innerHTML = '<i class="fas fa-comment"></i><span class="unread-dot"></span>';
-                 // Hide unread dot when chat is manually collapsed and opened
-                 const unreadDot = chatBox.querySelector('.unread-dot');
-                 if (unreadDot) unreadDot.style.display = 'none';
+        livePanelTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                livePanelTabs.forEach(t => t.classList.remove('active'));
+                livePanelContents.forEach(c => c.classList.remove('active'));
 
-            } else {
-                chatBox.classList.remove('collapsed');
-                // Change icon back to times
-                toggleChatBtn.innerHTML = '<i class="fas fa-times"></i>';
-                 // Scroll to bottom when chat is expanded
-                 document.getElementById('chatFeed').scrollTop = document.getElementById('chatFeed').scrollHeight;
-            }
-             resetIdleTimer(); // Reset idle timer on chat toggle
-             stopAutoDemo(); // Stop auto demo on chat toggle
-        }
-        toggleChatBtn.addEventListener('click', toggleChat);
+                // Add active class to the clicked tab and corresponding content
+                tab.classList.add('active');
+                const targetTabId = tab.dataset.tab;
+                const targetContent = document.getElementById(`live${targetTabId.charAt(0).toUpperCase() + targetTabId.slice(1)}Content`); // e.g., liveBetsContent, liveChatContent
+
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                    // Scroll to bottom of chat when chat tab is activated
+                    if (targetTabId === 'chat') {
+                         const chatFeed = document.getElementById('chatFeed');
+                         chatFeed.scrollTop = chatFeed.scrollHeight;
+                    }
+                }
+                 resetIdleTimer(); // Reset idle timer on tab switch
+                 stopAutoDemo(); // Stop auto demo on tab switch
+            });
+        });
+
+        // Initially activate the 'Live Bets' tab
+        document.querySelector('.live-panel-tab[data-tab="bets"]').classList.add('active');
+        document.getElementById('liveBetsContent').classList.add('active');
 
 
         // Add particle effects to the background overlay
@@ -4122,14 +4380,14 @@
         window.onload = function() {
             setupCanvas(); // Setup canvas size and initial draw
 
-             // --- Guest Mode Initialization and Onboarding ---
+             // Guest Mode Initialization and Onboarding
              const fakeIntroShown = localStorage.getItem('solroulette_fake_intro_shown');
 
              if (!user.wallet && !fakeIntroShown) {
                  // First time guest user: Immediately set guest mode and balance, then show onboarding
                  isGuestMode = true;
                  localStorage.setItem('solroulette_is_guest', 'true');
-                 walletBalance = 500; // Set initial fake balance immediately
+                 walletBalance = 500; // Set initial demo balance immediately
                  localStorage.setItem('solroulette_guest_balance', walletBalance);
 
                  // Initialize other guest stats if they don't exist
@@ -4218,7 +4476,7 @@
                  resetIdleTimer(); // Start idle timer for connected users
              }
 
-             // --- FIX: Initialization on Page Load (Guest Mode) ---
+             // Initialization on Page Load (Guest Mode)
              // Default multiplier selection and bet amount for new/returning users if not already set
              // These are now loaded from localStorage at the top.
              // Ensure the UI reflects the loaded state.
