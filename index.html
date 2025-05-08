@@ -491,6 +491,7 @@
 
         /* Bet Controls */
         .bet-controls {
+            /* position: absolute; */ /* Removed absolute positioning */
             background: var(--panel-background);
             padding: 15px;
             border-radius: var(--panel-border-radius);
@@ -1755,9 +1756,9 @@
                  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
              }
              .auto-demo-banner {
-                 top: 10px; /* Position next to guest banner */
-                 font-size: 0.9em;
-                 padding: 8px 15px;
+                  top: 10px; /* Position next to guest banner */
+                  font-size: 0.9em;
+                  padding: 8px 15px;
              }
 
              /* Modal Scaling on Desktop */
@@ -2950,7 +2951,8 @@
              // Use currentBet.multiplier (numeric string)
              // The bet has already been placed and currentBet is reset.
              // We need to find the user's bet from the playerBets array to get their picked multiplier.
-             const userBet = playerBets.find(bet => bet.isUser);
+             // FIX: Removed duplicate 'const' declaration for userBet
+             userBet = playerBets.find(bet => bet.isUser);
              let userPickedMultiplierNumericString = userBet ? userBet.multiplier : null; // e.g., '2'
              let userPickedMultiplierDisplayString = userBet ? userBet.multiplier + 'x' : 'nullx'; // e.g., '2x' or 'nullx'
 
@@ -3109,7 +3111,6 @@
              }
 
              // Loss Popup Appears Without Any Bet - Fix: Only show result modal if user had a bet
-             const userBet = playerBets.find(bet => bet.isUser);
              if (userBet) {
                 // Show result modal
                 // Pass correct values to showResultModal
@@ -3909,7 +3910,7 @@
                  totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered'));
                  winStreak = parseInt(localStorage.getItem('solroulette_win_streak'));
                  tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins'));
-                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements')));
+                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements')));
                  guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count'));
                  dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day'));
                  fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total'));
@@ -4640,7 +4641,7 @@
                  totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered'));
                  winStreak = parseInt(localStorage.getItem('solroulette_win_streak'));
                  tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins'));
-                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements')));
+                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements')));
                  guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count'));
                  dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day'));
                  fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total'));
