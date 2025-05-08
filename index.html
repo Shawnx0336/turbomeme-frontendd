@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DegenDice - Slotana Style</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -541,21 +541,37 @@
 
 
         /* Chat System */
+        /* PRIORITY FIX: Chat Bubble Fix CSS */
         .chat-container {
             position: fixed;
-            bottom: calc(1rem + constant(safe-area-inset-bottom)); /* Position above safe area */
-            bottom: calc(1rem + env(safe-area-inset-bottom));
+            bottom: calc(4.5rem + env(safe-area-inset-bottom)); /* Adjusted position based on user request */
             right: 1rem;
-            width: var(--chat-width);
-            height: var(--chat-height);
-            background: rgba(20, 20, 20, 0.9);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
+            width: var(--chat-width); /* Default desktop width */
+            height: var(--chat-height); /* Default desktop height */
+            background: rgba(20, 20, 20, 0.9); /* Default desktop background */
+            border-radius: var(--radius-md); /* Default desktop radius */
+            box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1); /* Default desktop shadow */
             z-index: 100; /* Above most elements */
-            display: flex;
+            display: flex; /* Default desktop display */
             flex-direction: column;
             overflow: hidden;
             transition: all 0.3s ease-in-out; /* Added transition for smooth opening/closing */
+            /* Mobile specific styles - these will be overridden by media query on desktop */
+            transform: translateY(100%); /* Start off-screen for mobile */
+            width: 100%; /* Full width on mobile */
+            height: 50vh; /* Half height on mobile */
+            bottom: 0; /* Position at the bottom on mobile */
+            left: 0; /* Position at the left on mobile */
+            border-radius: 0; /* No radius on mobile */
+            background: rgba(26, 26, 26, 0.95); /* Specified mobile background */
+            backdrop-filter: blur(10px); /* Specified mobile backdrop */
+            -webkit-backdrop-filter: blur(10px); /* Specified mobile backdrop */
+            box-shadow: none; /* No shadow on mobile */
+        }
+
+        /* PRIORITY FIX: Chat Bubble Fix CSS - Active state for mobile */
+        .chat-container.active {
+            transform: translateY(0); /* Slide up into view */
         }
 
         .chat-header {
@@ -660,12 +676,11 @@
             background-color: #ff6699;
         }
 
-        /* Mobile Chat Toggle Button (Bubble) */
-        .chat-toggle-btn {
-            display: none; /* Hidden by default on desktop */
+        /* PRIORITY FIX: Chat Bubble Fix CSS - Toggle Button (Bubble) */
+        #toggle-chat {
+            display: block; /* Show on mobile */
             position: fixed;
-            bottom: calc(1rem + constant(safe-area-inset-bottom));
-            bottom: calc(1rem + env(safe-area-inset-bottom));
+            bottom: calc(4.5rem + env(safe-area-inset-bottom)); /* Position above safe area */
             right: 1rem;
             background-color: var(--accent-pink);
             color: white;
@@ -680,29 +695,44 @@
             z-index: 110; /* Above chat container */
             cursor: pointer;
             transition: all 0.3s ease-in-out;
+            border: none; /* Ensure it's a clean button */
         }
+
 
         /* Full-screen chat for mobile when open */
-        body.chat-open .chat-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 0;
-            background: var(--bg-dark); /* Solid background for full screen */
-            z-index: 1000; /* Above everything */
-            display: flex; /* Show flex layout when open */
-            flex-direction: column;
-            box-shadow: none; /* Remove bubble shadow */
+        /* This section is modified to work with the new toggle logic */
+        .chat-container:not(.active) .chat-header,
+        .chat-container:not(.active) .chat-body,
+        .chat-container:not(.active) .chat-input-area {
+             display: none; /* Hide chat content when not active (mobile bubble state) */
         }
 
-        body.chat-open .chat-toggle-btn {
-            display: none; /* Hide toggle button when chat is full screen */
+        .chat-container.active .chat-header,
+        .chat-container.active .chat-body,
+        .chat-container.active .chat-input-area {
+             display: flex; /* Show chat content when active (mobile full screen) */
         }
 
-        body.chat-open .chat-header i {
-            transform: rotate(180deg); /* Indicate chat is open */
+         /* Ensure the chat bubble icon is visible in the bubble state */
+        #chat-bubble-icon {
+             display: flex; /* Always display the icon */
+             color: white; /* Icon color */
+        }
+
+        /* Hide the chat bubble icon when chat is full screen (active) */
+        .chat-container.active #chat-bubble-icon {
+             display: none;
+        }
+
+        /* Adjust padding for safe areas when chat is active (full screen) */
+        .chat-container.active .chat-header {
+            padding-top: constant(safe-area-inset-top);
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .chat-container.active .chat-input-area {
+             padding-bottom: constant(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
 
@@ -1039,9 +1069,9 @@
 
         /* Toast Notification (Generic Style) */
         .toast-notification {
-            position: fixed;
             bottom: calc(1rem + var(--chat-bubble-size) + 1rem + constant(safe-area-inset-bottom)); /* Position above chat bubble */
             bottom: calc(1rem + var(--chat-bubble-size) + 1rem + env(safe-area-inset-bottom));
+            position: fixed;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
@@ -1346,76 +1376,28 @@
                 transform: translateX(-100%); /* Slide in from right */
             }
 
-            /* Mobile Chat Bubble Position and Size */
+            /* PRIORITY FIX: Chat Bubble Fix CSS - Mobile Styles */
+            /* These styles are now applied directly to .chat-container and .chat-container.active */
+            /* The separate .chat-toggle-btn is used for the clickable bubble */
             .chat-container {
-                width: var(--chat-bubble-size);
-                height: var(--chat-bubble-size);
-                bottom: calc(1rem + constant(safe-area-inset-bottom));
-                bottom: calc(1rem + env(safe-area-inset-bottom));
-                right: 1rem;
-                border-radius: 50%; /* Make it a circle */
-                box-shadow: var(--shadow-glow) var(--accent-pink);
-                display: flex; /* Keep flex for centering icon */
-                justify-content: center;
-                align-items: center;
-                overflow: hidden; /* Hide chat content initially */
-                cursor: pointer; /* Indicate it's clickable */
-                background: var(--accent-pink); /* Bubble color */
+                /* Mobile styles defined above in the main .chat-container block */
             }
 
-            .chat-container .chat-header,
-            .chat-container .chat-body,
-            .chat-container .chat-input-area {
-                display: none; /* Hide chat content in bubble state */
+            .chat-container.active {
+                /* Active mobile styles defined above */
             }
 
-             /* Ensure the chat bubble icon is visible in the bubble state */
-            .chat-container #chat-bubble-icon {
-                 display: flex;
-                 color: white; /* Icon color */
+            /* Hide desktop chat content when not active on mobile */
+             .chat-container:not(.active) .chat-header,
+             .chat-container:not(.active) .chat-body,
+             .chat-container:not(.active) .chat-input-area {
+                  display: none;
+             }
+
+             /* Show mobile chat bubble toggle */
+            #toggle-chat {
+                 display: flex; /* Ensure it's visible on mobile */
             }
-
-            /* Full-screen chat for mobile when open */
-            body.chat-open .chat-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-                background: var(--bg-dark); /* Solid background for full screen */
-                z-index: 1000; /* Above everything */
-                display: flex; /* Show flex layout when open */
-                flex-direction: column;
-                box-shadow: none; /* Remove bubble shadow */
-            }
-
-            body.chat-open .chat-container .chat-header,
-            body.chat-open .chat-container .chat-body,
-            body.chat-open .chat-container .chat-input-area {
-                display: flex; /* Show chat content when open */
-            }
-
-            /* Hide the chat bubble icon when chat is full screen */
-            body.chat-open .chat-container #chat-bubble-icon {
-                 display: none;
-            }
-
-
-            body.chat-open .chat-header {
-                padding-top: constant(safe-area-inset-top);
-                padding-top: env(safe-area-inset-top);
-            }
-
-            body.chat-open .chat-input-area {
-                 padding-bottom: constant(safe-area-inset-bottom);
-                padding-bottom: env(safe-area-inset-bottom);
-            }
-
-            /* The separate mobile chat toggle button is no longer needed */
-            /* .chat-toggle-btn {
-                display: none;
-            } */
 
 
             .modal-content {
@@ -1435,6 +1417,38 @@
             .recent-wins {
                 font-size: 0.9rem;
             }
+        }
+
+        /* PRIORITY FIX: Additional Mobile Optimizations CSS */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        button,
+        input[type="button"],
+        .clickable {
+            cursor: pointer;
+            min-height: 44px; /* iOS minimum touch target size */
+            min-width: 44px;
+        }
+
+        /* Prevent text selection on interactive elements */
+        .no-select {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* PRIORITY FIX: iOS specific fixes CSS */
+        /* Fix for iOS height issues */
+        .full-height {
+            height: -webkit-fill-available;
+            height: 100vh;
+        }
+
+        /* Fix for iOS momentum scrolling */
+        .scroll-container {
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Styles for the new consolidated user modal */
@@ -1651,8 +1665,8 @@
             <span class="close-button">&times;</span>
             <h2>Connect Wallet</h2>
             <div class="wallet-options">
-                <button id="connect-phantom"><img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> Phantom</button>
-                <button id="connect-solflare"><img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> Solflare</button>
+                <button id="connect-phantom" class="wallet-connect-button" data-wallet="phantom"><img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> Phantom</button>
+                <button id="connect-solflare" class="wallet-connect-button" data-wallet="solflare"><img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> Solflare</button>
                 <button id="disconnect-wallet" style="display: none;">Disconnect</button>
             </div>
         </div>
@@ -1722,9 +1736,12 @@
             </ul>
     </div>
 
+    <button id="toggle-chat">
+        <i class="fas fa-comment-dots" id="chat-bubble-icon"></i>
+    </button>
+
     <div class="chat-container" id="chat-container">
-         <i class="fas fa-comment-dots" id="chat-bubble-icon" style="font-size: 1.8rem;"></i>
-        <div class="chat-header" id="chat-header">
+         <div class="chat-header" id="chat-header">
             Chat
             <span class="close-chat-btn">&times;</span>
         </div>
@@ -2335,59 +2352,67 @@
              localStorage.setItem('demoBalance', mockWallet.balance.toFixed(2));
         }
 
-        connectPhantomBtn.addEventListener('click', async () => {
-            try {
-                // In a real app, this would use Solana Wallet Adapter
-                // For this mock, we'll simulate the connection flow
-                const confirmed = confirm("You'll be redirected to Phantom to connect your wallet. Continue?");
-                if (confirmed) {
-                    // Simulate redirect to Phantom (in real app this would be wallet adapter)
-                    mockWallet.isConnected = true;
-                    mockWallet.address = 'G4t1mE5b8...'; // Mock address
-                    updateWalletUI();
-                    walletModal.style.display = 'none';
+        // PRIORITY FIX: Wallet Connection Modal Fix - Deep Linking
+        function handleWalletConnection() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-                    // Show user menu
-                    document.getElementById('user-menu').style.display = 'flex';
+            // Deep linking handlers
+            const phantomDeepLink = 'https://phantom.app/ul/browse/';
+            const solflareDeepLink = 'https://solflare.com/ul/v1/browse/';
 
-                    // Hide connect button
-                    connectWalletBtn.style.display = 'none';
-
-                    // Mock: Trigger deposit bonus on first connection
-                    if (!localStorage.getItem('firstDepositBonusShown')) {
-                        depositBonusModal.style.display = 'flex';
-                        localStorage.setItem('firstDepositBonusShown', 'true');
+            const openWalletModal = (walletType) => {
+                if (isMobile) {
+                    const deepLink = walletType === 'phantom' ? phantomDeepLink : solflareDeepLink;
+                    const currentURL = encodeURIComponent(window.location.href);
+                    // In a real app, you'd pass connection parameters here
+                    window.location.href = `${deepLink}${currentURL}`;
+                } else {
+                    // Your existing wallet connection logic for desktop
+                    // For this mock, we'll just simulate connection
+                    if (walletType === 'phantom') {
+                         // Simulate Phantom connection on desktop
+                         mockWallet.isConnected = true;
+                         mockWallet.address = 'G4t1mE5b8...'; // Mock address
+                         updateWalletUI();
+                         walletModal.style.display = 'none';
+                         document.getElementById('user-menu').style.display = 'flex';
+                         connectWalletBtn.style.display = 'none';
+                         if (!localStorage.getItem('firstDepositBonusShown')) {
+                             depositBonusModal.style.display = 'flex';
+                             localStorage.setItem('firstDepositBonusShown', 'true');
+                         }
+                    } else if (walletType === 'solflare') {
+                         // Simulate Solflare connection on desktop
+                         mockWallet.isConnected = true;
+                         mockWallet.address = 'S0lF1aR3...';
+                         updateWalletUI();
+                         walletModal.style.display = 'none';
+                         document.getElementById('user-menu').style.display = 'flex';
+                         connectWalletBtn.style.display = 'none';
+                         if (!localStorage.getItem('firstDepositBonusShown')) {
+                             depositBonusModal.style.display = 'flex';
+                             localStorage.setItem('firstDepositBonusShown', 'true');
+                         }
                     }
                 }
-            } catch (error) {
-                console.error("Connection error:", error);
-                showToast("Failed to connect wallet", false);
-            }
-        });
+            };
 
-        connectSolflareBtn.addEventListener('click', async () => {
-            try {
-                const confirmed = confirm("You'll be redirected to Solflare to connect your wallet. Continue?");
-                if (confirmed) {
-                    mockWallet.isConnected = true;
-                    mockWallet.address = 'S0lF1aR3...';
-                    updateWalletUI();
-                    walletModal.style.display = 'none';
+            // Add click handlers to wallet buttons with the 'wallet-connect-button' class
+            document.querySelectorAll('.wallet-connect-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const walletType = e.currentTarget.dataset.wallet; // Use currentTarget to get the button itself
+                    openWalletModal(walletType);
+                });
+            });
+        }
 
-                    document.getElementById('user-menu').style.display = 'flex';
-                    connectWalletBtn.style.display = 'none';
+        // Initialize wallet connection handlers on page load
+        document.addEventListener('DOMContentLoaded', handleWalletConnection);
 
-                    // Mock: Trigger deposit bonus on first connection
-                    if (!localStorage.getItem('firstDepositBonusShown')) {
-                        depositBonusModal.style.display = 'flex';
-                        localStorage.setItem('firstDepositBonusShown', 'true');
-                    }
-                }
-            } catch (error) {
-                console.error("Connection error:", error);
-                showToast("Failed to connect wallet", false);
-            }
-        });
+
+        // connectPhantomBtn.addEventListener('click', async () => { /* ... existing logic ... */ }); // This is now handled by handleWalletConnection
+        // connectSolflareBtn.addEventListener('click', async () => { /* ... existing logic ... */ }); // This is now handled by handleWalletConnection
+
 
         disconnectWalletBtn.addEventListener('click', () => {
             // Simulate disconnecting
@@ -2536,6 +2561,7 @@
         const sendChatBtn = document.getElementById('send-chat-btn');
         const chatBubbleIcon = document.getElementById('chat-bubble-icon'); // Get the bubble icon
         const closeChatBtn = document.querySelector('.chat-header .close-chat-btn'); // Get the new close button
+        const toggleChatBtn = document.getElementById('toggle-chat'); // Get the new toggle button
 
         let mockChatMessages = [
             { username: 'System', text: 'Welcome to DegenDice Chat!', type: 'system' },
@@ -2640,20 +2666,28 @@
         // Initial render of chat messages
         renderChatMessages();
 
-        // Chat toggle for mobile
-        // Use the chat container itself as the toggle to OPEN on mobile
-        chatContainer.addEventListener('click', (event) => {
-             // Check if the click occurred within the bubble state and not on the header/close button when chat is open
-             if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open') && !chatHeader.contains(event.target)) {
-                 document.body.classList.add('chat-open');
-             }
+        // PRIORITY FIX: Chat Bubble Fix JavaScript
+        // Add event listener to the new toggle button
+        document.getElementById('toggle-chat').addEventListener('click', function() {
+            const chatContainer = document.querySelector('.chat-container');
+            // Toggle the 'active' class
+            chatContainer.classList.toggle('active');
+
+            // Add slide-up animation based on the 'active' class
+            if(chatContainer.classList.contains('active')) {
+                chatContainer.style.transform = 'translateY(0)';
+            } else {
+                chatContainer.style.transform = 'translateY(100%)';
+            }
         });
 
-        // Use the dedicated close button in the header to CLOSE on mobile
-        closeChatBtn.addEventListener('click', () => {
-             if (window.innerWidth <= 768 && document.body.classList.contains('chat-open')) {
-                 document.body.classList.remove('chat-open');
-             }
+        // Add event listener to the close button inside the chat header
+        document.querySelector('.chat-header .close-chat-btn').addEventListener('click', function() {
+             const chatContainer = document.querySelector('.chat-container');
+             // Remove the 'active' class to close the chat
+             chatContainer.classList.remove('active');
+             // Trigger the slide-down animation
+             chatContainer.style.transform = 'translateY(100%)';
         });
 
 
@@ -2969,10 +3003,13 @@
             if (window.innerWidth > 768) {
                 // Ensure leaderboard and chat are visible on desktop if window is resized
                 document.body.classList.remove('leaderboard-open'); // Assume leaderboard is always visible on desktop
-                document.body.classList.remove('chat-open'); // Chat is a fixed box on desktop
+                // document.body.classList.remove('chat-open'); // Removed - chat state is now managed by .active class on container
                 leaderboardSidebar.style.transform = 'translateX(0)';
 
                 // Reset chat to desktop state
+                chatContainer.classList.remove('active'); // Ensure chat is not in active state on desktop
+                chatContainer.style.transform = 'translateY(0)'; // Reset transform for desktop positioning
+
                 chatContainer.style.position = 'fixed';
                 chatContainer.style.width = 'var(--chat-width)';
                 chatContainer.style.height = 'var(--chat-height)';
@@ -2986,35 +3023,52 @@
                  chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
                  chatContainer.style.cursor = 'default';
 
+                 // Show desktop chat elements
                  chatBubbleIcon.style.display = 'none'; // Hide bubble icon on desktop
                  chatHeader.style.display = 'flex'; // Show chat header on desktop
                  chatBody.style.display = 'flex'; // Show chat body on desktop
                  chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
+                 toggleChatBtn.style.display = 'none'; // Hide the dedicated toggle button on desktop
 
 
             } else {
                 // On mobile, ensure leaderboard is hidden and chat is positioned correctly as a bubble
                  leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard
 
-                 // Set chat to mobile bubble state
-                 if (!document.body.classList.contains('chat-open')) {
+                 // Set chat to mobile bubble state if not active
+                 if (!chatContainer.classList.contains('active')) {
                      chatContainer.style.position = 'fixed';
-                     chatContainer.style.width = 'var(--chat-bubble-size)';
-                     chatContainer.style.height = 'var(--chat-bubble-size)';
-                     chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
-                     chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
-                     chatContainer.style.right = '1rem';
+                     // Width, height, bottom, left, border-radius, background, box-shadow are handled by CSS media query
+                     chatContainer.style.right = '1rem'; // Keep right position for the bubble
                      chatContainer.style.top = 'auto';
-                     chatContainer.style.left = 'auto';
-                     chatContainer.style.borderRadius = '50%';
-                     chatContainer.style.background = 'var(--accent-pink)';
-                     chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
-                     chatContainer.style.cursor = 'pointer';
+                     chatContainer.style.cursor = 'pointer'; // Make it clickable
 
+                     // Hide desktop chat elements in bubble state
                      chatBubbleIcon.style.display = 'flex'; // Show bubble icon on mobile
                      chatHeader.style.display = 'none'; // Hide chat header in bubble state
                      chatBody.style.display = 'none'; // Hide chat body in bubble state
                      chatInput.parentElement.style.display = 'none'; // Hide chat input area in bubble state
+                     toggleChatBtn.style.display = 'flex'; // Show the dedicated toggle button on mobile
+                 } else {
+                     // If chat is active (full screen) on mobile, ensure correct styles
+                     chatContainer.style.position = 'fixed';
+                     chatContainer.style.top = '0';
+                     chatContainer.style.left = '0';
+                     chatContainer.style.width = '100%';
+                     chatContainer.style.height = '100%';
+                     chatContainer.style.bottom = '0';
+                     chatContainer.style.right = '0';
+                     chatContainer.style.borderRadius = '0';
+                     chatContainer.style.background = 'var(--bg-dark)'; // Solid background for full screen
+                     chatContainer.style.boxShadow = 'none'; // Remove bubble shadow
+                     chatContainer.style.cursor = 'default';
+
+                     // Show chat content in active state
+                     chatBubbleIcon.style.display = 'none'; // Hide bubble icon when active
+                     chatHeader.style.display = 'flex';
+                     chatBody.style.display = 'flex';
+                     chatInput.parentElement.style.display = 'flex';
+                     toggleChatBtn.style.display = 'none'; // Hide the dedicated toggle button when chat is open
                  }
             }
         });
@@ -3024,29 +3078,30 @@
             leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard on mobile
 
             // Set chat to mobile bubble state on load
-            chatContainer.style.position = 'fixed';
-            chatContainer.style.width = 'var(--chat-bubble-size)';
-            chatContainer.style.height = 'var(--chat-bubble-size)';
-            chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
-            chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
-            chatContainer.style.right = '1rem';
-            chatContainer.style.top = 'auto';
-            chatContainer.style.left = 'auto';
-            chatContainer.style.borderRadius = '50%';
-            chatContainer.style.background = 'var(--accent-pink)';
-            chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
-            chatContainer.style.cursor = 'pointer';
+            chatContainer.classList.remove('active'); // Start in bubble state
+            chatContainer.style.transform = 'translateY(100%)'; // Start off-screen
 
+            chatContainer.style.position = 'fixed';
+            // Width, height, bottom, left, border-radius, background, box-shadow are handled by CSS media query
+            chatContainer.style.right = '1rem'; // Keep right position for the bubble
+            chatContainer.style.top = 'auto';
+            chatContainer.style.cursor = 'pointer'; // Make it clickable
+
+            // Hide desktop chat elements in bubble state
             chatBubbleIcon.style.display = 'flex'; // Show bubble icon on mobile
             chatHeader.style.display = 'none'; // Hide chat header in bubble state
             chatBody.style.display = 'none'; // Hide chat body in bubble state
             chatInput.parentElement.style.display = 'none'; // Hide chat input area in bubble state
+            toggleChatBtn.style.display = 'flex'; // Show the dedicated toggle button on mobile
 
 
         } else {
              leaderboardSidebar.style.transform = 'translateX(0)'; // Ensure leaderboard is visible on desktop
 
              // Set chat to desktop state on load
+            chatContainer.classList.remove('active'); // Ensure chat is not in active state on desktop
+            chatContainer.style.transform = 'translateY(0)'; // Reset transform for desktop positioning
+
             chatContainer.style.position = 'fixed';
             chatContainer.style.width = 'var(--chat-width)';
             chatContainer.style.height = 'var(--chat-height)';
@@ -3060,11 +3115,14 @@
             chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
             chatContainer.style.cursor = 'default';
 
+            // Show desktop chat elements
             chatBubbleIcon.style.display = 'none'; // Hide bubble icon on desktop
             chatHeader.style.display = 'flex'; // Show chat header on desktop
             chatBody.style.display = 'flex'; // Show chat body on desktop
             chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
+            toggleChatBtn.style.display = 'none'; // Hide the dedicated toggle button on desktop
         }
+
 
         // VISUAL ENHANCEMENT: Dynamic Background Intensity
         // Tie to bet amount
