@@ -280,11 +280,28 @@
               flex-shrink: 0; /* Prevent shrinking */
          }
 
+         /* Demo Mode Banner */
+         .guest-banner {
+             position: absolute; /* Changed to absolute for better control */
+             top: 60px; /* Position below header */
+             left: 50%;
+             transform: translateX(-50%);
+             background: var(--primary);
+             color: var(--text);
+             padding: 5px 10px;
+             border-radius: var(--button-border-radius);
+             font-size: 0.8em; /* Slightly smaller font */
+             font-weight: bold;
+             z-index: 15; /* Above most elements */
+             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+             white-space: nowrap; /* Prevent wrapping */
+         }
+
 
         /* Global Timer */
         .global-timer {
             position: absolute;
-            top: 80px; /* Adjusted position */
+            top: 100px; /* Position below header/guest banner */
             left: 50%;
             transform: translateX(-50%);
             background: linear-gradient(45deg, var(--danger), var(--primary));
@@ -304,7 +321,7 @@
          /* Pre-Spin CTA */
          .pre-spin-cta {
              position: absolute;
-             top: 120px; /* Position below timer */
+             top: 140px; /* Position below timer */
              left: 50%;
              transform: translateX(-50%);
              background: var(--panel-background);
@@ -328,6 +345,7 @@
             perspective: 1000px;
             animation: enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 5; /* Below timer, above background */
+             margin-top: 180px; /* Space for header/timer/cta on desktop */
         }
          #rouletteCanvas {
             width: 100%;
@@ -409,74 +427,53 @@
              100% { transform: translateX(0); opacity: 1; }
          }
 
-        /* Chat System Fixes */
-        .chat-container {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 300px;
-            height: 50vh;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            background: rgba(26, 26, 26, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px 12px 0 0;
-        }
+        /* Chat System Fixes - REMOVED SEPARATE CHAT BUBBLE/CONTAINER */
 
-        .chat-container.active {
-            transform: translateY(0);
-        }
 
-        #toggle-chat {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 999;
-        }
-
-        /* Live Panel Toggle */
+        /* Unified Live Panel (Bets + Chat) */
         .live-panel-container {
-            position: fixed;
-            top: 120px; /* Position below timer/CTA */
-            left: 10px; /* Default position */
-            width: 250px; /* Increased width */
-            z-index: 10;
+            position: fixed; /* Changed to fixed for mobile drawer */
+            top: 0; /* Position from top */
+            right: 0; /* Position from right */
+            width: 300px; /* Fixed width */
+            height: 100%; /* Full height */
+            z-index: 1000; /* High z-index */
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Initial state (closed) - slide out from right */
+            transform: translateX(100%);
         }
 
-        .live-panel-container.closed {
-             transform: translateX(calc(-100% + 60px)); /* Show only a small part */
+        .live-panel-container.active {
+            /* Active state (open) */
+            transform: translateX(0);
         }
+         /* Removed .live-panel-container.closed as active/non-active handles state */
+
 
         .live-panel-toggle-btn {
-            position: absolute;
-            top: 0;
-            right: -40px; /* Position outside the panel */
-            width: 40px;
-            height: 40px;
+            position: fixed; /* Changed to fixed */
+            top: 120px; /* Position mid-right */
+            right: 10px; /* Position from right edge */
+            width: 44px; /* Increased touch target size */
+            height: 44px; /* Increased touch target size */
             background: var(--panel-background);
             color: var(--accent);
             border: none;
-            border-radius: 0 8px 8px 0;
+            border-radius: 8px 0 0 8px; /* Rounded left side */
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 11; /* Above the panel */
-            box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+            z-index: 1001; /* Above the panel */
+            box-shadow: -2px 0 5px rgba(0,0,0,0.3); /* Shadow on the left */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition */
         }
+         /* Position toggle button when panel is open */
+         .live-panel-container.active + .live-panel-toggle-btn {
+             transform: translateX(-300px); /* Move button with the panel */
+         }
+
+
          .live-panel-toggle-btn .unread-dot {
              position: absolute;
              top: 5px;
@@ -504,6 +501,8 @@
             backdrop-filter: blur(6px);
             z-index: 10;
              position: relative; /* Needed for onboarding tooltip */
+             /* Added margin-top for desktop layout */
+             margin-top: 20px;
         }
          .bet-label {
             font-size: 1.1em;
@@ -744,21 +743,17 @@
          }
 
 
-        /* Unified Live Panel (Bets + Chat) */
+        /* Unified Live Panel Styling */
         .live-panel {
-            /* position: absolute; */ /* Removed absolute positioning */
-            /* top: 120px; */ /* Removed top positioning */
-            /* left: 10px; */ /* Removed left positioning */
             background: var(--panel-background);
             padding: 12px;
             border-radius: var(--panel-border-radius);
-            max-height: 250px; /* Increased height */
+            max-height: 100%; /* Allow panel to take full height of container */
             overflow: hidden; /* Hide content overflow */
             backdrop-filter: blur(6px);
             width: 100%; /* Take full width of container */
             height: 100%; /* Take full height of container */
             font-size: 0.85em;
-            /* z-index: 10; */ /* Z-index now handled by container */
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
@@ -936,7 +931,7 @@
         /* Token Rewards */
         .token-notification {
             position: absolute;
-            bottom: 270px; /* Adjusted position above chat */
+            bottom: 20px; /* Adjusted position */
             right: 10px;
             background: var(--panel-background);
             padding: 12px 20px;
@@ -1127,6 +1122,8 @@
              box-shadow: 0 4px 15px rgba(0,0,0,0.5);
              display: flex; /* Use flexbox for tabs */
              flex-direction: column;
+             /* Added margin-top for desktop layout */
+             margin-top: 180px;
          }
          /* Leaderboard Auto-Scroll Animation (if needed) */
          /* @keyframes autoscroll {
@@ -1381,21 +1378,32 @@
                  margin-left: 5px; /* Reduced margin */
              }
 
+             /* Demo Mode Banner Mobile Position */
+             .guest-banner {
+                 top: 50px; /* Position slightly lower on mobile */
+                 font-size: 0.7em; /* Smaller font on mobile */
+                 padding: 4px 8px; /* Reduced padding */
+             }
+
 
              .global-timer {
-                 top: 65px; /* Adjusted position */
+                 top: 80px; /* Adjusted position below header/guest banner */
                  padding: 8px 15px; /* Reduced padding */
                  font-size: 0.9em; /* Reduced font size */
              }
               .pre-spin-cta {
-                 top: 100px; /* Adjusted position */
+                 top: 115px; /* Adjusted position below timer */
                  padding: 6px 10px; /* Reduced padding */
                  font-size: 0.9em; /* Reduced font size */
              }
 
+             /* Adjust padding for content above sticky bet controls on mobile */
+             .container {
+                 padding-bottom: 150px; /* Add padding to avoid content being hidden by sticky controls */
+             }
 
              .bet-controls {
-                 position: fixed;
+                 position: fixed; /* Keep fixed at bottom on mobile */
                  bottom: 0;
                  left: 0;
                  width: 100%;
@@ -1405,6 +1413,8 @@
                  padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* Add safe area inset */
                  box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
                  gap: 10px; /* Reduced gap */
+                 /* Remove desktop margin-top */
+                 margin-top: 0;
              }
              .bet-slider::-webkit-slider-thumb {
                  width: 25px; /* Larger thumb */
@@ -1414,33 +1424,35 @@
                  width: 25px; /* Larger thumb */
                  height: 25px;
              }
-             .container {
-                 padding-bottom: 150px; /* Add padding to avoid content being hidden by sticky controls */
-             }
-             /* Adjust chat and bet feed position for smaller screens */
+
+             /* Live Panel Mobile Positioning */
              .live-panel-container {
-                 top: 80px; /* Move below header */
-                 left: 0; /* Start from the left edge */
-                 width: calc(100% - 50px); /* Take up almost full screen width, leave space for toggle */
-                 max-height: 180px; /* Reduce max height */
-                 padding: 0; /* Remove padding from container */
-                 right: auto; /* Reset right positioning */
-                 transform: translateX(calc(-100% + 50px)); /* Hide most of the panel, show 50px */
-             }
-             .live-panel-container.closed {
-                  transform: translateX(calc(-100% + 50px)); /* Keep hidden */
+                 top: 0; /* Full height from top */
+                 right: 0; /* Position from right */
+                 width: 250px; /* Mobile width */
+                 height: 100%; /* Full height */
+                 transform: translateX(100%); /* Start hidden offscreen right */
              }
              .live-panel-container.active {
-                 transform: translateX(0); /* Show fully */
+                 transform: translateX(0); /* Slide in fully */
              }
+              /* Removed .live-panel-container.closed as active/non-active handles state */
+
              .live-panel {
                  padding: 8px; /* Reduced padding inside the panel */
              }
              .live-panel-toggle-btn {
-                 right: -50px; /* Position outside the panel */
-                 width: 50px;
-                 height: 40px;
+                 top: 120px; /* Position mid-right */
+                 right: 10px; /* Keep on the right edge */
+                 width: 44px; /* Touch target size */
+                 height: 44px; /* Touch target size */
+                 border-radius: 8px 0 0 8px; /* Rounded left side */
              }
+              /* Position toggle button when panel is open on mobile */
+             .live-panel-container.active + .live-panel-toggle-btn {
+                 transform: translateX(-250px); /* Move button with the panel by panel width */
+             }
+
              .live-panel-tab {
                  padding: 6px 0; /* Reduced padding */
                  font-size: 0.8em; /* Reduced font size */
@@ -1494,34 +1506,16 @@
                  padding: 6px 12px; /* Reduced padding */
              }
              .fake-activity-banner {
-                 top: 10px; /* Adjust position */
+                 top: 50px; /* Adjust position */
                  font-size: 0.7em; /* Reduced font size */
                  padding: 4px 8px; /* Reduced padding */
              }
              .ten-x-hit-banner {
-                 top: 120px; /* Adjust position */
+                 top: 150px; /* Adjust position */
                  font-size: 0.9em; /* Reduced font size */
                  padding: 6px 12px; /* Reduced padding */
              }
-              /* Demo Mode Banner */
-             .guest-banner {
-                 position: fixed;
-                 top: 10px;
-                 left: 10px;
-                 background: var(--primary);
-                 color: var(--text);
-                 padding: 5px 10px;
-                 border-radius: var(--button-border-radius);
-                 font-size: 0.7em;
-                 font-weight: bold;
-                 z-index: 15; /* Above most elements */
-                 box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-             }
-             .auto-demo-banner {
-                  top: 60px; /* Position below guest banner */
-                  font-size: 0.7em;
-                  padding: 5px 10px;
-             }
+
              /* Sticky Bet Controls when Keyboard is NOT open */
              body:not(.keyboard-open) .bet-controls {
                  position: fixed;
@@ -1619,6 +1613,13 @@
                  margin-left: 10px;
              }
 
+             /* Demo Mode Banner Desktop Position */
+             .guest-banner {
+                 top: 10px; /* Position near header */
+                 font-size: 0.8em; /* Standard font size */
+                 padding: 5px 10px; /* Standard padding */
+             }
+
 
              .global-timer {
                  top: 100px; /* Adjusted position */
@@ -1653,12 +1654,8 @@
                  margin-top: 180px; /* Space for header/timer/cta */
                  transform: translateX(0); /* Ensure visible on desktop */
              }
-              .live-panel-container.closed {
-                  transform: translateX(0); /* No transform on desktop */
-             }
-             .live-panel-container.active {
-                 transform: translateX(0); /* No transform on desktop */
-             }
+              /* Removed .live-panel-container.closed and .live-panel-container.active desktop styles */
+
              .live-panel {
                  padding: 12px; /* Reset padding */
              }
@@ -1691,6 +1688,7 @@
                  margin: 20px 0 0 0; /* Space below wheel */
                  padding: 15px; /* Reset padding */
                  gap: 15px; /* Reset gap */
+                 margin-top: 20px; /* Reset desktop margin-top */
              }
              body:not(.keyboard-open) .bet-controls {
                  position: static; /* Ensure static positioning on desktop */
@@ -1741,20 +1739,7 @@
                  font-size: 0.9em;
                  padding: 8px 15px;
              }
-             /* Demo Mode Banner */
-             .guest-banner {
-                 position: fixed;
-                 top: 10px;
-                 left: 10px;
-                 background: var(--primary);
-                 color: var(--text);
-                 padding: 5px 10px;
-                 border-radius: var(--button-border-radius);
-                 font-size: 0.8em;
-                 font-weight: bold;
-                 z-index: 15; /* Above most elements */
-                 box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-             }
+             /* Auto Demo Banner Desktop Position */
              .auto-demo-banner {
                   top: 10px; /* Position next to guest banner */
                   font-size: 0.9em;
@@ -1811,7 +1796,7 @@
 
         <div class="bonus-banner" id="bonusBanner">Double $SPIN next 10 spins! 🔥</div>
 
-        <div class="live-panel-container closed" id="livePanelContainer">
+        <div class="live-panel-container" id="livePanelContainer">
              <div class="live-panel" id="livePanel">
                  <div class="live-panel-tabs">
                      <div class="live-panel-tab active" data-tab="bets">Live Bets <span class="unread-dot" id="betsUnreadDot"></span></div>
@@ -1832,11 +1817,11 @@
                      </div>
                  </div>
              </div>
-             <button id="toggleLivePanel" class="live-panel-toggle-btn" aria-label="Toggle Live Panel">
-                 <i class="fas fa-chevron-right"></i>
-                 <span class="unread-dot" id="livePanelUnreadDot"></span>
-             </button>
-        </div>
+             </div>
+        <button id="toggleLivePanel" class="live-panel-toggle-btn" aria-label="Toggle Live Panel">
+            <i class="fas fa-chevron-left"></i> <span class="unread-dot" id="livePanelUnreadDot"></span>
+        </button>
+
 
         <div class="leaderboard-panel" id="leaderboardPanel">
              <div class="leaderboard-tabs">
@@ -2015,10 +2000,6 @@
              </div>
          </div>
 
-         <div class="bonus-banner" id="autoDemoBanner" style="display: none;">
-             Auto demo in progress – Tap anything to join
-         </div>
-
          <div class="modal-overlay" id="dailyRewardModal">
              <div class="modal-content">
                  <button class="close-btn" id="closeDailyRewardModalBtn" aria-label="Close daily reward modal">&times;</button>
@@ -2069,25 +2050,6 @@
 
 
     </div>
-
-    <button id="toggle-chat" aria-label="Toggle Chat">
-        <i class="fas fa-comment-dots"></i>
-    </button>
-
-    <div class="chat-container">
-        <div class="live-panel-content" style="height: 100%;">
-             <div id="liveChatContent" class="live-panel-content-tab active" style="display: flex;">
-                 <div class="chat-feed" id="chatFeed" style="flex-grow: 1; overflow-y: auto; margin-bottom: 10px;">
-                     <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
-                 </div>
-                 <div class="chat-input" style="display: flex; gap: 6px; margin-top: auto; flex-shrink: 0;">
-                     <input type="text" id="chatInput" placeholder="Say something..." aria-label="Chat input" style="flex: 1; padding: 8px; border: none; border-radius: 8px; background: #333; color: #fff; font-size: 0.85em; outline: none;">
-                     <button id="sendChatBtn" aria-label="Send chat message" style="background: #9945FF; color: #fff; padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85em; transition: background 0.2s;">Send</button>
-                 </div>
-             </div>
-        </div>
-    </div>
-
 
     <script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
     <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.19/dist/index.js"></script>
@@ -2741,7 +2703,8 @@
 
              // Show unread dot if live panel is closed
              const livePanelContainer = document.getElementById('livePanelContainer');
-             if (livePanelContainer.classList.contains('closed')) {
+             // Check if the panel is NOT active (i.e., closed)
+             if (!livePanelContainer.classList.contains('active')) {
                  document.getElementById('livePanelUnreadDot').style.display = 'block';
                  document.getElementById('betsUnreadDot').style.display = 'block';
              }
@@ -2760,7 +2723,8 @@
             // Show unread dot if live panel is closed or on bets tab
             const livePanelContainer = document.getElementById('livePanelContainer');
             const chatTab = document.querySelector('.live-panel-tab[data-tab="chat"]');
-            if (livePanelContainer.classList.contains('closed') || !chatTab.classList.contains('active')) {
+            // Check if the panel is NOT active OR if the chat tab is NOT active
+            if (!livePanelContainer.classList.contains('active') || !chatTab.classList.contains('active')) {
                 document.getElementById('livePanelUnreadDot').style.display = 'block';
                 document.getElementById('chatUnreadDot').style.display = 'block';
             }
@@ -4048,7 +4012,6 @@
              const randomAmount = parseFloat((Math.random() * 1.9 + 0.1).toFixed(2));
              document.getElementById('betSlider').value = randomAmount; // Update slider
              currentBet.amount = randomAmount; // Set the state
-
              updateUIDebounced(); // Update UI to show selected bet
 
              // Place the bet after a short delay
@@ -4773,16 +4736,7 @@
              }
          });
 
-         // Chat System Fixes - Toggle Chat Event Listener
-         document.getElementById('toggle-chat').addEventListener('click', function() {
-             const chatContainer = document.querySelector('.chat-container');
-             chatContainer.classList.toggle('active');
-
-             // Add haptic feedback if supported
-             if (navigator.vibrate) {
-                 navigator.vibrate(50);
-             }
-         });
+         // Removed Chat Toggle Event Listener (as the separate chat bubble is removed)
 
          // Wallet Connection Mobile Fixes - Initialize on page load
          document.addEventListener('DOMContentLoaded', handleWalletConnection);
@@ -4793,20 +4747,20 @@
              const toggleBtn = document.getElementById('toggleLivePanel');
              const icon = toggleBtn.querySelector('i');
 
-             livePanelContainer.classList.toggle('closed');
-             livePanelContainer.classList.toggle('active'); // Use active class for open state
+             // Toggle the 'active' class
+             livePanelContainer.classList.toggle('active');
 
-             // Change arrow direction
+             // Change arrow direction based on 'active' class
              if (livePanelContainer.classList.contains('active')) {
-                 icon.classList.remove('fa-chevron-right');
-                 icon.classList.add('fa-chevron-left');
+                 icon.classList.remove('fa-chevron-left');
+                 icon.classList.add('fa-chevron-right'); // Arrow points right when panel is open (pushed left)
                  // Hide unread dots when panel is opened
                  document.getElementById('livePanelUnreadDot').style.display = 'none';
                  document.getElementById('betsUnreadDot').style.display = 'none';
                  document.getElementById('chatUnreadDot').style.display = 'none';
              } else {
-                 icon.classList.remove('fa-chevron-left');
-                 icon.classList.add('fa-chevron-right');
+                 icon.classList.remove('fa-chevron-right');
+                 icon.classList.add('fa-chevron-left'); // Arrow points left when panel is closed (on the right)
              }
              resetIdleTimer(); // Reset idle timer on panel toggle
              stopAutoDemo(); // Stop auto demo on panel toggle
