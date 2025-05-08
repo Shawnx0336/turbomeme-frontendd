@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DegenDice - Slotana Style</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext x='0' y='14'%3E🎲%3C/text%3E%3C/svg%3E" type="image/svg+xml">
     <style>
         :root {
             --bg-dark: #0A0A0A;
@@ -233,6 +234,16 @@
             overflow: hidden; /* Hide overflow for glowing effect */
         }
 
+        /* FIX: Ensure consistent hover/active styles for all buttons */
+        button:hover:not(:disabled) {
+             transform: scale(1.05);
+             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.2); /* Default glow */
+        }
+
+        button:active:not(:disabled) {
+            transform: scale(0.95); /* Press down effect */
+        }
+
         button:disabled {
             opacity: 0.5 !important; /* Use !important to override potential conflicts */
             cursor: not-allowed !important;
@@ -243,10 +254,10 @@
             color: white;
         }
 
-        /* Glowing hover effect for roll button */
+        /* Glowing hover effect for roll button - Specific glow */
         .roll-btn:hover:not(:disabled) {
             transform: scale(1.05);
-            box-shadow: var(--shadow-glow) var(--accent-pink);
+            box-shadow: var(--shadow-glow) var(--accent-pink); /* Pink glow */
             animation: glowing 1.5s infinite;
         }
 
@@ -453,16 +464,47 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-        }
-
-        .wallet-options button img {
-            width: 24px;
-            height: 24px;
+             /* FIX: Add hover/active styles to wallet connect buttons */
+             transition: all 0.2s ease;
         }
 
         .wallet-options button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+             background-color: rgba(255, 255, 255, 0.2);
+             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
         }
+
+         .wallet-options button:active {
+             transform: scale(0.98);
+         }
+
+
+        /* FIX: Add loading state style for wallet buttons */
+        .wallet-options button.loading {
+             opacity: 0.7;
+             cursor: wait;
+             position: relative;
+             pointer-events: none; /* Prevent clicks while loading */
+        }
+
+        .wallet-options button.loading::after {
+             content: '';
+             position: absolute;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             width: 20px;
+             height: 20px;
+             border: 2px solid #fff;
+             border-top-color: transparent;
+             border-radius: 50%;
+             animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
 
         /* Leaderboard */
         .leaderboard-sidebar {
@@ -670,11 +712,19 @@
             color: white;
             border-radius: var(--radius-sm);
             font-weight: 700;
+             /* FIX: Add hover/active styles to chat send button */
+             transition: all 0.2s ease;
         }
 
         .chat-input-area button:hover {
             background-color: #ff6699;
+             box-shadow: var(--shadow-glow) var(--accent-pink);
         }
+
+         .chat-input-area button:active {
+             transform: scale(0.95);
+         }
+
 
         /* PRIORITY FIX: Chat Bubble Fix CSS - Toggle Button (Bubble) */
         #toggle-chat {
@@ -696,7 +746,17 @@
             cursor: pointer;
             transition: all 0.3s ease-in-out;
             border: none; /* Ensure it's a clean button */
+             /* FIX: Add hover/active styles to chat toggle button */
+             transition: all 0.3s ease-in-out, box-shadow 0.2s ease;
         }
+
+        #toggle-chat:hover {
+             box-shadow: 0 0 15px var(--accent-pink);
+        }
+
+         #toggle-chat:active {
+             transform: scale(0.9);
+         }
 
 
         /* Full-screen chat for mobile when open */
@@ -762,11 +822,19 @@
             background-color: var(--accent-green);
             color: var(--bg-dark);
             font-weight: 700;
+             /* FIX: Add hover/active styles to profile buttons */
+             transition: all 0.2s ease;
         }
 
         .profile-options button:hover {
             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
         }
+
+         .profile-options button:active {
+             transform: scale(0.95);
+         }
+
 
         /* Deposit/Withdraw Modals */
         .transaction-options {
@@ -789,11 +857,19 @@
             background-color: var(--accent-green);
             color: var(--bg-dark);
             font-weight: 700;
+             /* FIX: Add hover/active styles to transaction buttons */
+             transition: all 0.2s ease;
         }
 
         .transaction-options button:hover {
-            background-color: #33ffb3;
+             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
         }
+
+         .transaction-options button:active {
+             transform: scale(0.95);
+         }
+
 
         /* Daily Challenge */
         .daily-challenge-panel {
@@ -824,7 +900,19 @@
             background-color: var(--accent-pink);
             color: white;
             margin-top: 1rem;
+             /* FIX: Add hover/active styles to daily challenge button */
+             transition: all 0.2s ease;
         }
+
+        .daily-challenge-panel button:hover {
+             background-color: #ff6699;
+             box-shadow: var(--shadow-glow) var(--accent-pink);
+        }
+
+         .daily-challenge-panel button:active {
+             transform: scale(0.95);
+         }
+
 
         /* Referral Feature */
         .referral-feature {
@@ -852,7 +940,19 @@
             background-color: var(--accent-green);
             color: var(--bg-dark);
             margin-top: 1rem;
+             /* FIX: Add hover/active styles to referral button */
+             transition: all 0.2s ease;
         }
+
+        .referral-feature button:hover {
+             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
+        }
+
+         .referral-feature button:active {
+             transform: scale(0.95);
+         }
+
 
         /* Coin Shower Animation (using existing confetti) */
         /* Confetti styles are already present */
@@ -899,9 +999,10 @@
 
 
         /* Micro-interactions (added to existing buttons) */
-        button:active:not(:disabled) {
+        /* button:active:not(:disabled) {
             transform: scale(0.95); /* Press down effect */
-        }
+        /* } */ /* Moved to generic button style */
+
 
         /* Flash on Wins/Milestones (using existing .win-overlay) */
         /* The .win-overlay already provides a flash effect */
@@ -950,6 +1051,17 @@
              font-size: 0.8rem;
              cursor: pointer;
              margin-left: 0.5rem;
+              /* FIX: Add hover/active styles to join button */
+             transition: all 0.2s ease;
+         }
+
+         .recent-wins .win-notification .join-button:hover {
+             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
+         }
+
+          .recent-wins .win-notification .join-button:active {
+             transform: scale(0.95);
          }
 
 
@@ -989,6 +1101,17 @@
              font-size: 0.7rem;
              margin-left: 0.5rem;
              cursor: pointer;
+              /* FIX: Add hover/active styles to cheer button */
+             transition: all 0.2s ease;
+         }
+
+         .chat-message .cheer-button:hover {
+             background-color: rgba(255, 255, 255, 0.2);
+             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
+         }
+
+         .chat-message .cheer-button:active {
+             transform: scale(0.95);
          }
 
 
@@ -1056,6 +1179,17 @@
          #spin-wheel-modal button {
              background-color: var(--accent-green);
              color: var(--bg-dark);
+              /* FIX: Add hover/active styles to spin button */
+             transition: all 0.2s ease;
+         }
+
+         #spin-wheel-modal button:hover {
+             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
+         }
+
+         #spin-wheel-modal button:active {
+             transform: scale(0.95);
          }
 
 
@@ -1065,6 +1199,20 @@
              color: var(--bg-dark);
              font-weight: 700;
         }
+
+        #deposit-bonus-modal button {
+             /* FIX: Add hover/active styles to deposit bonus button */
+             transition: all 0.2s ease;
+        }
+
+         #deposit-bonus-modal button:hover {
+             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
+         }
+
+         #deposit-bonus-modal button:active {
+             transform: scale(0.95);
+         }
 
 
         /* Toast Notification (Generic Style) */
@@ -1098,6 +1246,17 @@
              font-size: 0.8rem;
              margin-left: 1rem;
              cursor: pointer;
+              /* FIX: Add hover/active styles to toast button */
+             transition: all 0.2s ease;
+         }
+
+         .toast-notification button:hover {
+             background-color: #ff6699;
+             box-shadow: var(--shadow-glow) var(--accent-pink);
+         }
+
+         .toast-notification button:active {
+             transform: scale(0.95);
          }
 
 
@@ -1129,6 +1288,20 @@
              font-weight: 700;
              color: var(--accent-green);
              word-break: break-all; /* Break long hashes */
+         }
+
+        #provably-fair-modal button {
+             /* FIX: Add hover/active styles to provably fair button */
+             transition: all 0.2s ease;
+        }
+
+         #provably-fair-modal button:hover {
+             background-color: rgba(255, 255, 255, 0.2);
+             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
+         }
+
+         #provably-fair-modal button:active {
+             transform: scale(0.95);
          }
 
 
@@ -1190,7 +1363,20 @@
              background-color: rgba(255, 255, 255, 0.1);
              color: white;
              margin-bottom: 1rem;
+              /* FIX: Add hover/active styles to fairness verification button */
+             transition: all 0.2s ease;
          }
+
+         .fairness-verification button:hover {
+             background-color: rgba(255, 255, 255, 0.2);
+             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
+         }
+
+         .fairness-verification button:active {
+             transform: scale(0.95);
+         }
+
+
          #verification-result {
              background: rgba(20, 20, 20, 0.9);
              padding: 1rem;
@@ -1231,7 +1417,19 @@
              border-radius: var(--radius-sm);
              font-size: 0.8rem;
              font-weight: 700;
+              /* FIX: Add hover/active styles to time limited offer button */
+             transition: all 0.2s ease;
          }
+
+         .time-limited-offer button:hover {
+             background-color: #eee;
+             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.2);
+         }
+
+         .time-limited-offer button:active {
+             transform: scale(0.95);
+         }
+
 
         .sunk-cost-tracker {
             background: rgba(20, 20, 20, 0.9);
@@ -1280,7 +1478,20 @@
              background-color: var(--accent-green);
              color: var(--bg-dark);
              font-weight: 700;
+              /* FIX: Add hover/active styles to retention popup button */
+             transition: all 0.2s ease;
          }
+
+         .retention-popup button:hover {
+             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
+         }
+
+         .retention-popup button:active {
+             transform: scale(0.95);
+         }
+
+
          .retention-popup #countdown {
              color: var(--accent-pink);
          }
@@ -1466,7 +1677,18 @@
             font-weight: 700;
             cursor: pointer;
             position: relative;
+             /* FIX: Add hover/active styles to tab buttons */
+             transition: all 0.2s ease;
         }
+
+        .tab-btn:hover {
+             color: rgba(255, 255, 255, 0.8);
+        }
+
+         .tab-btn:active {
+             transform: scale(0.98);
+         }
+
 
         .tab-btn.active {
             color: var(--accent-green);
@@ -1520,6 +1742,8 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+             /* FIX: Add hover/active styles to wallet action buttons */
+             transition: all 0.2s ease;
         }
 
         .wallet-action-btn.deposit {
@@ -1527,10 +1751,26 @@
             color: var(--bg-dark);
         }
 
+        .wallet-action-btn.deposit:hover {
+             background-color: #33ffb3;
+             box-shadow: var(--shadow-glow) var(--accent-green);
+        }
+
+         .wallet-action-btn:active {
+             transform: scale(0.95);
+         }
+
+
         .wallet-action-btn.withdraw {
             background: var(--accent-pink);
             color: white;
         }
+
+        .wallet-action-btn.withdraw:hover {
+             background-color: #ff6699;
+             box-shadow: var(--shadow-glow) var(--accent-pink);
+        }
+
 
         #user-menu {
             display: flex;
@@ -1863,6 +2103,13 @@
             lossStreak: 0 // Track loss streak for recovery mechanics
         };
 
+        // Sound Effects - Moved declarations to the top of the script block
+        const rollSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const winSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const lossSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const jackpotSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        const tickSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+
 
         // Initialize
         updateMultiplier();
@@ -1955,37 +2202,49 @@
 
             // After animation, show result
             setTimeout(() => {
+                let sum;
+                let outcome;
                 try { // Wrap core roll logic in try...catch
                     // --- Rigged Outcome Calculation ---
-                    const riggedOutcome = advancedRigAlgorithm(); // Use the advanced rigging logic
+                    outcome = advancedRigAlgorithm(); // Use the advanced rigging logic
 
-                    let sum;
-                    if (riggedOutcome === 'WIN') {
-                         // Force a win
-                         sum = Math.floor(Math.random() * (state.rollUnder - 2)) + 2; // Ensure sum is less than rollUnder
-                         // Ensure dice values are between 1 and 6 and sum correctly
-                         let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
-                         let die2Value = Math.max(1, Math.min(6, sum - die1Value));
-                         // Adjust if sum is too low or too high to be represented by two dice
-                         if (die1Value + die2Value !== sum) {
-                             // This case should be rare with the sum calculation, but as a fallback
-                             if (sum < 2) { die1Value = 1; die2Value = 1; sum = 2; }
-                             else if (sum > 12) { die1Value = 6; die2Value = 6; sum = 12; }
-                             else { // Try to adjust one die
-                                 if (die1Value + die2Value < sum) die1Value += (sum - (die1Value + die2Value));
-                                 else if (die1Value + die2Value > sum) die1Value -= ((die1Value + die2Value) - sum);
-                                 // Ensure values are still within 1-6
-                                 die1Value = Math.max(1, Math.min(6, die1Value));
-                                 die2Value = sum - die1Value;
-                                 // Corrected line: Removed extra closing parenthesis
-                                 die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
-                             }
-                         }
-                         state.diceValues = [die1Value, die2Value];
+                    // --- Start: User provided WIN case logic ---
+                    if (outcome === 'WIN') {
+                        // Force a win with valid dice values
+                        sum = Math.floor(Math.random() * (state.rollUnder - 2)) + 2;
 
-                    } else {
+                        // Ensure sum is within valid dice range (2-12)
+                        sum = Math.max(2, Math.min(12, sum));
+
+                        // Generate valid die1 and die2 that sum to 'sum'
+                        let die1Value = Math.floor(Math.random() * (Math.min(6, sum - 1))) + 1;
+                        let die2Value = sum - die1Value;
+
+                        // Ensure die2 is within 1-6, adjust die1 if needed
+                        if (die2Value < 1) {
+                            die2Value = 1;
+                            die1Value = sum - die2Value;
+                        } else if (die2Value > 6) {
+                            die2Value = 6;
+                            die1Value = sum - die2Value;
+                        }
+
+                        // Final clamp to ensure valid values
+                        die1Value = Math.max(1, Math.min(6, die1Value));
+                        die2Value = Math.max(1, Math.min(6, die2Value));
+
+                        // Update sum in case adjustments were made
+                        sum = die1Value + die2Value;
+                        state.diceValues = [die1Value, die2Value];
+                    }
+                    // --- End: User provided WIN case logic ---
+                    else {
                          // Force a loss
                          sum = Math.floor(Math.random() * (12 - state.rollUnder + 1)) + state.rollUnder; // Ensure sum is >= rollUnder
+
+                         // Ensure sum is within valid dice range (2-12)
+                         sum = Math.max(2, Math.min(12, sum));
+
                           // Ensure dice values are between 1 and 6 and sum correctly
                          let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
                          let die2Value = Math.max(1, Math.min(6, sum - die1Value));
@@ -1999,16 +2258,15 @@
                                   // Ensure values are still within 1-6
                                   die1Value = Math.max(1, Math.min(6, die1Value));
                                   die2Value = sum - die1Value;
-                                  // Corrected line: Removed extra closing parenthesis
                                   die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
                               }
                           }
                          state.diceValues = [die1Value, die2Value];
                     }
-                     state.rollResult = riggedOutcome; // Use the rigged outcome
+                     state.rollResult = outcome; // Use the rigged outcome
 
 
-                    // Update UI
+                    // Update UI with roll outcome
                     die1.textContent = state.diceValues[0];
                     die2.textContent = state.diceValues[1];
                      // Apply visual variety to dice
@@ -2017,12 +2275,14 @@
                      die1.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
                      die2.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
 
-
-                    resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
+                    // FIX: Ensure UI result matches console logs and fallback gracefully
+                    // resultDisplay.textContent = `Roll: ${state.diceValues[0]} + ${state.diceValues[1]} = ${sum} - ${state.rollResult}`; // Original problematic line
+                    // Restored winning logic as requested by the user, adapted to use 'sum' and 'state.rollResult'
+                    resultDisplay.textContent = `🎲 Roll: ${sum} — ${state.rollResult}`;
                     resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
 
                     // Add analytics log (mock)
-                    logUserAction('roll', { rollUnder: state.rollUnder, bet: state.chipValue, result: state.rollResult, dice: state.diceValues });
+                    logUserAction('roll', { rollUnder: state.rollUnder, bet: state.chipValue, result: state.rollResult, dice: state.diceValues, sum: sum });
 
 
                     // Show effects
@@ -2052,7 +2312,6 @@
                          addChatWinNotification(); // Add chat notification for win (mock)
                          updateSunkCostTracker(); // Update sunk cost tracker
                          checkLuckyRoll(); // Check for lucky roll bonus
-                         // checkLossAversionNudge(); // Check for loss aversion nudge (after any roll) - Moved to after win/loss update
                          checkStreakReward(); // Check for streak reward after win
                          rewardSchedule.check(); // Check variable reward schedule
 
@@ -2074,13 +2333,12 @@
                      generateNextSeeds(); // Generate seeds for the *next* roll
 
                 } catch (error) {
-                    console.error("Error during rollDice execution:", error);
-                    // Only show error if result wasn't already determined
-                    if (!state.rollResult) {
-                      resultDisplay.textContent = "Error during roll.";
-                      resultDisplay.className = 'result-display loss';
-                      showToast("An error occurred during the roll.", false);
-                    }
+                    // Log more detailed error information
+                    console.error("Error during rollDice execution:", error.message, error.stack, error);
+                    // FIX: Ensure UI displays error gracefully
+                    resultDisplay.textContent = "Error during roll.";
+                    resultDisplay.className = 'result-display loss';
+                    showToast("An error occurred during the roll.", false);
                 } finally {
                     // Re-enable button regardless of success or failure
                     rollButton.disabled = false;
@@ -2352,50 +2610,70 @@
              localStorage.setItem('demoBalance', mockWallet.balance.toFixed(2));
         }
 
-        // PRIORITY FIX: Wallet Connection Modal Fix - Deep Linking
+        // FIX: Wallet Connection Modal Fix - Deep Linking and Loading State
         function handleWalletConnection() {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-            // Deep linking handlers
+            // Deep linking base URLs
             const phantomDeepLink = 'https://phantom.app/ul/browse/';
             const solflareDeepLink = 'https://solflare.com/ul/v1/browse/';
 
-            const openWalletModal = (walletType) => {
-                if (isMobile) {
-                    const deepLink = walletType === 'phantom' ? phantomDeepLink : solflareDeepLink;
-                    const currentURL = encodeURIComponent(window.location.href);
-                    // In a real app, you'd pass connection parameters here
-                    window.location.href = `${deepLink}${currentURL}`;
-                } else {
-                    // Your existing wallet connection logic for desktop
-                    // For this mock, we'll just simulate connection
-                    if (walletType === 'phantom') {
-                         // Simulate Phantom connection on desktop
-                         mockWallet.isConnected = true;
-                         mockWallet.address = 'G4t1mE5b8...'; // Mock address
-                         updateWalletUI();
-                         walletModal.style.display = 'none';
-                         document.getElementById('user-menu').style.display = 'flex';
-                         connectWalletBtn.style.display = 'none';
-                         if (!localStorage.getItem('firstDepositBonusShown')) {
-                             depositBonusModal.style.display = 'flex';
-                             localStorage.setItem('firstDepositBonusShown', 'true');
-                         }
-                    } else if (walletType === 'solflare') {
-                         // Simulate Solflare connection on desktop
-                         mockWallet.isConnected = true;
-                         mockWallet.address = 'S0lF1aR3...';
-                         updateWalletUI();
-                         walletModal.style.display = 'none';
-                         document.getElementById('user-menu').style.display = 'flex';
-                         connectWalletBtn.style.display = 'none';
-                         if (!localStorage.getItem('firstDepositBonusShown')) {
-                             depositBonusModal.style.display = 'flex';
-                             localStorage.setItem('firstDepositBonusShown', 'true');
-                         }
-                    }
-                }
+            const openWalletModal = async (walletType) => {
+                 const button = document.getElementById(`connect-${walletType}`);
+                 if (!button) return;
+
+                 // Add loading state
+                 button.classList.add('loading');
+                 button.disabled = true; // Disable button while loading
+
+                 try {
+                     if (isMobile) {
+                         const deepLink = walletType === 'phantom' ? phantomDeepLink : solflareDeepLink;
+                         // Encode the current page URL to return after connection
+                         const currentURL = encodeURIComponent(window.location.href);
+                         // In a real app, you would construct the deep link with connection parameters
+                         // For this mock, we'll just redirect to the wallet's browser with the current URL
+                         window.location.href = `${deepLink}${currentURL}`;
+
+                         // Note: Actual session persistence in the in-app browser depends on the wallet app.
+                         // The code here ensures the user is directed back to the app.
+                         // The app would then need to detect the wallet connection upon returning.
+                         // For this mock, we simulate connection after a short delay.
+                         await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate connection delay
+                         simulateWalletConnection(walletType); // Simulate successful connection
+                         walletModal.style.display = 'none'; // Close modal on successful mock connection
+
+                     } else {
+                         // Simulate wallet connection on desktop
+                         await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate connection delay
+                         simulateWalletConnection(walletType); // Simulate successful connection
+                         walletModal.style.display = 'none'; // Close modal on successful mock connection
+                     }
+                 } catch (error) {
+                     console.error(`Error connecting to ${walletType}:`, error);
+                     showToast(`Failed to connect to ${walletType}. Please try again.`, false);
+                 } finally {
+                     // Remove loading state
+                     button.classList.remove('loading');
+                     button.disabled = false;
+                 }
             };
+
+            // Simulate a successful wallet connection (for mock purposes)
+            function simulateWalletConnection(walletType) {
+                mockWallet.isConnected = true;
+                mockWallet.address = walletType === 'phantom' ? 'G4t1mE5b8...' : 'S0lF1aR3...'; // Mock address
+                updateWalletUI();
+                document.getElementById('user-menu').style.display = 'flex';
+                connectWalletBtn.style.display = 'none';
+                // Show deposit bonus on first connection (mock)
+                if (!localStorage.getItem('firstDepositBonusShown')) {
+                    depositBonusModal.style.display = 'flex';
+                    localStorage.setItem('firstDepositBonusShown', 'true');
+                }
+                 showToast(`Connected to ${walletType} (Mock)!`, false);
+            }
+
 
             // Add click handlers to wallet buttons with the 'wallet-connect-button' class
             document.querySelectorAll('.wallet-connect-button').forEach(button => {
@@ -2423,6 +2701,7 @@
              // Show connect button and hide user menu after disconnecting
              connectWalletBtn.style.display = 'block';
              document.getElementById('user-menu').style.display = 'none';
+             showToast("Wallet disconnected (Mock).", false);
         });
 
          activateDepositBonusBtn.addEventListener('click', () => {
@@ -2433,10 +2712,10 @@
                  btn.classList.remove('active');
                  if (btn.dataset.tab === 'wallet') btn.classList.add('active');
              });
-             document.querySelectorAll('.modal .tab-content').forEach(c => {
-                 c.classList.remove('active');
-                 if (c.id === 'wallet-tab') c.classList.add('active');
-             });
+              document.querySelectorAll('.modal .tab-content').forEach(c => {
+                  c.classList.remove('active');
+                  if (c.id === 'wallet-tab') c.classList.add('active');
+              });
              document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
          });
 
@@ -2569,6 +2848,20 @@
             { username: 'LuckyCharm', text: 'Nice one!', type: 'user' },
         ];
 
+        // Simulate new messages arriving - Moved definition before setInterval
+        function simulateNewChatMessage() {
+             const simulatedMessages = [
+                 { username: 'SOL_Roller', text: 'Anyone on a hot streak?', type: 'user' },
+                 { username: 'DegenMaster', text: 'Just started, feeling lucky!', type: 'user' },
+                 { username: 'System', text: 'A new player joined!', type: 'system' },
+                  { username: 'Bot', text: 'Wow, CryptoKing just won 10 SOL! 🔥', type: 'system' } // Mock win notification
+             ];
+             const randomMsg = simulatedMessages[Math.floor(Math.random() * simulatedMessages.length)];
+             mockChatMessages.push(randomMsg);
+             renderChatMessages();
+        }
+
+
         function renderChatMessages() {
             chatBody.innerHTML = ''; // Clear current messages
             mockChatMessages.forEach(msg => {
@@ -2624,19 +2917,6 @@
                 sendChatMessage();
             }
         });
-
-        // Simulate new messages arriving
-        function simulateNewChatMessage() {
-             const simulatedMessages = [
-                 { username: 'SOL_Roller', text: 'Anyone on a hot streak?', type: 'user' },
-                 { username: 'DegenMaster', text: 'Just started, feeling lucky!', type: 'user' },
-                 { username: 'System', text: 'A new player joined!', type: 'system' },
-                  { username: 'Bot', text: 'Wow, CryptoKing just won 10 SOL! 🔥', type: 'system' } // Mock win notification
-             ];
-             const randomMsg = simulatedMessages[Math.floor(Math.random() * simulatedMessages.length)];
-             mockChatMessages.push(randomMsg);
-             renderChatMessages();
-        }
 
         // Simulate new messages every few seconds
         setInterval(simulateNewChatMessage, 5000); // Simulate a new message every 5 seconds
@@ -2792,47 +3072,53 @@
 
         // Sound Effects
         // Using Base64 encoded dummy sounds as placeholders
-        const rollSound = new Audio('data:audio/wav;base64,UklGRl9v...');
-        const winSound = new Audio('data:audio/wav;base64,UklGRl9v...');
-        const lossSound = new Audio('data:audio/wav;base64,UklGRl9v...');
-        const jackpotSound = new Audio('data:audio/wav;base64,UklGRl9v...');
-        const tickSound = new Audio('data:audio/wav;base64,UklGRl9v...');
+        // Declarations moved to the top of the script block
 
 
         function playRollSound() {
              if (rollSound.readyState >= 2) { // Check if sound is loaded
                 rollSound.currentTime = 0; // Rewind to start
-                rollSound.play().catch(e => console.error("Error playing roll sound:", e));
+                rollSound.play().catch(e => console.error("Error playing roll sound:", e)); // Added catch
+             } else {
+                 console.warn("Roll sound not ready to play.");
              }
         }
 
         function playWinSound() {
              if (winSound.readyState >= 2) {
                 winSound.currentTime = 0;
-                winSound.play().catch(e => console.error("Error playing win sound:", e));
+                winSound.play().catch(e => console.error("Error playing win sound:", e)); // Added catch
+             } else {
+                 console.warn("Win sound not ready to play.");
              }
         }
 
         function playLossSound() {
              if (lossSound.readyState >= 2) {
                 lossSound.currentTime = 0;
-                lossSound.play().catch(e => console.error("Error playing loss sound:", e));
+                lossSound.play().catch(e => console.error("Error playing loss sound:", e)); // Added catch
+             } else {
+                 console.warn("Loss sound not ready to play.");
              }
         }
 
          function playJackpotSound() {
              if (jackpotSound.readyState >= 2) {
                 jackpotSound.currentTime = 0;
-                jackpotSound.play().catch(e => console.error("Error playing jackpot sound:", e));
+                jackpotSound.play().catch(e => console.error("Error playing jackpot sound:", e)); // Added catch
+             } else {
+                 console.warn("Jackpot sound not ready to play.");
              }
          }
 
          function playTickSound() {
              if (tickSound.readyState >= 2) {
                 tickSound.currentTime = 0;
-                tickSound.play().catch(e => console.error("Error playing tick sound:", e));
+                tickSound.play().catch(e => console.error("Error playing tick sound:", e)); // Added catch
+             } else {
+                 console.warn("Tick sound not ready to play.");
              }
-         }
+        }
 
 
         // Coin Shower Animation (using existing triggerConfetti function)
@@ -2916,8 +3202,8 @@
             if (dailyChallenge.isCompleted && !localStorage.getItem('dailyChallengeClaimed')) {
                 // Simulate claiming reward
                  alert(`Claiming mock reward of ${dailyChallenge.rewardAmount} SOL!`);
-                 mockWallet.balance += dailyChallenge.rewardAmount; // Add mock reward to balance
-                 updateWalletUI(); // Update wallet display
+                 mockWallet.balance += dailyChallenge.rewardAmount; // Add mock bonus
+                 updateWalletUI();
                  localStorage.setItem('dailyChallengeClaimed', 'true'); // Mark as claimed
                  claimRewardBtn.style.display = 'none'; // Hide button
             } else {
@@ -3029,12 +3315,9 @@
                  chatBody.style.display = 'flex'; // Show chat body on desktop
                  chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
                  toggleChatBtn.style.display = 'none'; // Hide the dedicated toggle button on desktop
-
-
-            } else {
+             } else {
                 // On mobile, ensure leaderboard is hidden and chat is positioned correctly as a bubble
                  leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard
-
                  // Set chat to mobile bubble state if not active
                  if (!chatContainer.classList.contains('active')) {
                      chatContainer.style.position = 'fixed';
@@ -3093,8 +3376,6 @@
             chatBody.style.display = 'none'; // Hide chat body in bubble state
             chatInput.parentElement.style.display = 'none'; // Hide chat input area in bubble state
             toggleChatBtn.style.display = 'flex'; // Show the dedicated toggle button on mobile
-
-
         } else {
              leaderboardSidebar.style.transform = 'translateX(0)'; // Ensure leaderboard is visible on desktop
 
@@ -3361,9 +3642,9 @@
                       // Open user modal to wallet tab
                       userModal.style.display = 'flex';
                       document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
-                          btn.classList.remove('active');
-                          if (btn.dataset.tab === 'wallet') btn.classList.add('active');
-                      });
+                         btn.classList.remove('active');
+                         if (btn.dataset.tab === 'wallet') btn.classList.add('active');
+                     });
                        document.querySelectorAll('.modal .tab-content').forEach(c => {
                            c.classList.remove('active');
                            if (c.id === 'wallet-tab') c.classList.add('active');
@@ -3371,7 +3652,7 @@
                       document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
 
                   }, "Deposit");
-                  localStorage.setItem('scarcityNudgeShown', 'true');
+                 localStorage.setItem('scarcityNudgeShown', 'true');
              }
         }
          // Initial update of sunk cost tracker on load
@@ -3462,17 +3743,46 @@
                          btn.classList.remove('active');
                          if (btn.dataset.tab === 'wallet') btn.classList.add('active');
                      });
-                      document.querySelectorAll('.modal .tab-content').forEach(c => {
-                          c.classList.remove('active');
-                          if (c.id === 'wallet-tab') c.classList.add('active');
-                      });
-                     document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
+                       document.querySelectorAll('.modal .tab-content').forEach(c => {
+                           c.classList.remove('active');
+                           if (c.id === 'wallet-tab') c.classList.add('active');
+                       });
+                      document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
 
                  }, "Deposit Now");
                  localStorage.setItem('lowBalanceNudgeShown', 'true');
             }
         }
         // checkLowBalanceNudge is called in rollDice after every roll
+
+        // FIX: Handle SecurityError on cssRules access
+        function checkCSSRulesAccess() {
+            try {
+                // Accessing cssRules can throw a SecurityError if the stylesheet is from a different origin
+                // This loop is just to trigger the potential error, the actual fix is the try/catch
+                for (let i = 0; i < document.styleSheets.length; i++) {
+                    const sheet = document.styleSheets[i];
+                    try {
+                        // Attempt to access cssRules - this is where the error can occur
+                        const rules = sheet.cssRules;
+                        // If successful, you might do something with the rules, e.g., logging
+                        // console.log(`Successfully accessed cssRules for stylesheet ${sheet.href || i}`);
+                    } catch (e) {
+                        // Catch the SecurityError or any other error for this specific stylesheet
+                        if (e.name === 'SecurityError') {
+                            console.warn(`SecurityError accessing cssRules for stylesheet ${sheet.href || i}. This is expected for cross-origin stylesheets and does not affect functionality.`); // Added more informative message
+                        } else {
+                            console.error(`Error accessing cssRules for stylesheet ${sheet.href || i}:`, e);
+                        }
+                    }
+                }
+            } catch (e) {
+                // Catch any errors that occur before iterating through stylesheets, if necessary
+                console.error("Error iterating through stylesheets:", e);
+            }
+        }
+        // Call this function on load to check for the error
+        window.addEventListener('load', checkCSSRulesAccess);
 
 
         // Time Gated Bonuses (Mock Daily Login)
@@ -3500,7 +3810,8 @@
         const highScoresList = document.getElementById('high-scores-list'); // Get high scores list element
         const spinButton = document.getElementById('spin-button');
         const spinWheelCanvas = document.getElementById('spin-wheel');
-        const spinWheelCtx = spinWheelCanvas.getContext('2d');
+        // Check if canvas and context exist before getting context
+        const spinWheelCtx = spinWheelCanvas ? spinWheelCanvas.getContext('2d') : null;
 
 
         // PSYCHOLOGICAL HOOK: Variable Reward Schedules (Mock)
@@ -3553,15 +3864,20 @@
         function loadAchievements() {
              const savedAchievements = localStorage.getItem('achievements');
              if (savedAchievements) {
-                 const parsedAchievements = JSON.parse(savedAchievements);
-                 // Merge saved progress with current achievements to handle new achievements
-                 mockAchievements.forEach(achievement => {
-                     const saved = parsedAchievements.find(sa => sa.id === achievement.id);
-                     if (saved) {
-                         achievement.progress = saved.progress;
-                         achievement.completed = saved.completed;
-                     }
-                 });
+                 try { // Add try...catch for JSON parsing
+                    const parsedAchievements = JSON.parse(savedAchievements);
+                    // Merge saved progress with current achievements to handle new achievements
+                    mockAchievements.forEach(achievement => {
+                        const saved = parsedAchievements.find(sa => sa.id === achievement.id);
+                        if (saved) {
+                            achievement.progress = saved.progress;
+                            achievement.completed = saved.completed;
+                        }
+                    });
+                 } catch (e) {
+                     console.error("Error parsing achievements from localStorage:", e);
+                     // Optionally reset achievements or handle the error differently
+                 }
              }
              renderAchievements();
         }
@@ -3636,302 +3952,6 @@
              }
         }
 
-
-        // High Score / Biggest Wins System (Mock)
-        function loadBiggestWins() {
-             const savedWins = JSON.parse(localStorage.getItem('biggestWins') || '[]');
-             return savedWins.sort((a, b) => b.amount - a.amount).slice(0, 10); // Keep top 10
-        }
-
-        function saveBiggestWin(amount) {
-             const biggestWins = loadBiggestWins();
-             const now = new Date().toLocaleString();
-             const username = localStorage.getItem('username') || 'Anonymous';
-             const avatar = localStorage.getItem('avatar') || '👤';
-
-             biggestWins.push({ username: username, avatar: avatar, amount: amount, date: now });
-             const sortedWins = biggestWins.sort((a, b) => b.amount - a.amount).slice(0, 10); // Keep top 10
-
-             localStorage.setItem('biggestWins', JSON.stringify(sortedWins));
-             renderHighScores(); // Update display if modal is open
-        }
-
-        function renderHighScores() {
-             const biggestWins = loadBiggestWins();
-             highScoresList.innerHTML = '';
-             if (biggestWins.length === 0) {
-                 highScoresList.innerHTML = '<li>No big wins recorded yet. Keep rolling!</li>';
-                 return;
-             }
-             biggestWins.forEach((win, index) => {
-                 const listItem = document.createElement('li');
-                 listItem.innerHTML = `
-                     <div class="player-info">
-                         <span class="avatar">${win.avatar}</span>
-                         <span class="username">${index + 1}. ${win.username}</span>
-                     </div>
-                     <span class="wins">${win.amount.toFixed(2)} SOL</span>
-                 `;
-                 highScoresList.appendChild(listItem);
-             });
-        }
-
-
-        // Spin Wheel (Mock)
-        const spinWheelRewards = ["0.01 SOL", "Free Roll", "0.05 SOL", "Try Again", "0.1 SOL", "No Win"];
-        let spinning = false;
-
-        function drawSpinWheel() {
-            const centerX = spinWheelCanvas.width / 2;
-            const centerY = spinWheelCanvas.height / 2;
-            const radius = Math.min(centerX, centerY) - 10;
-            const arcSize = 2 * Math.PI / spinWheelRewards.length;
-
-            spinWheelCtx.clearRect(0, 0, spinWheelCanvas.width, spinWheelCanvas.height);
-
-            spinWheelRewards.forEach((reward, index) => {
-                const startAngle = index * arcSize;
-                const endAngle = (index + 1) * arcSize;
-
-                spinWheelCtx.beginPath();
-                spinWheelCtx.moveTo(centerX, centerY);
-                spinWheelCtx.arc(centerX, centerY, radius, startAngle, endAngle);
-                spinWheelCtx.closePath();
-
-                spinWheelCtx.fillStyle = index % 2 === 0 ? 'var(--accent-pink)' : 'var(--accent-green)'; // Use CSS variable
-                spinWheelCtx.fill();
-                spinWheelCtx.stroke();
-
-                // Draw text
-                spinWheelCtx.save();
-                spinWheelCtx.translate(centerX + Math.cos(startAngle + arcSize / 2) * (radius / 2),
-                                        centerY + Math.sin(startAngle + arcSize / 2) * (radius / 2));
-                spinWheelCtx.rotate(startAngle + arcSize / 2 + Math.PI / 2);
-                spinWheelCtx.textAlign = 'center';
-                spinWheelCtx.fillStyle = 'var(--bg-dark)'; // Use CSS variable
-                spinWheelCtx.font = '12px Inter';
-                spinWheelCtx.fillText(reward, 0, 0);
-                spinWheelCtx.restore();
-            });
-
-            // Draw pointer
-            spinWheelCtx.beginPath();
-            spinWheelCtx.moveTo(centerX, centerY - radius - 10);
-            spinWheelCtx.lineTo(centerX - 10, centerY - radius - 25);
-            spinWheelCtx.lineTo(centerX + 10, centerY - radius - 25);
-            spinWheelCtx.closePath();
-            spinWheelCtx.fillStyle = 'white';
-            spinWheelCtx.fill();
-        }
-
-        spinButton.addEventListener('click', () => {
-            if (spinning) return;
-
-            spinning = true;
-            const randomIndex = Math.floor(Math.random() * spinWheelRewards.length);
-            const spinDuration = 3000; // milliseconds
-            const finalAngle = (spinWheelRewards.length - randomIndex - 0.5) * (360 / spinWheelRewards.length) + 360 * 5; // Spin multiple times
-
-            spinWheelCanvas.style.transition = `transform ${spinDuration / 1000}s ease-out`;
-            spinWheelCanvas.style.transform = `rotate(${finalAngle}deg)`;
-
-            setTimeout(() => {
-                spinning = false;
-                spinWheelCanvas.style.transition = 'none';
-                spinWheelCanvas.style.transform = `rotate(${finalAngle % 360}deg)`; // Reset transform for next spin
-
-                const awardedReward = spinWheelRewards[randomIndex];
-                alert(`You won: ${awardedReward}! (Mock)`); // Simulate reward
-                 spinWheelModal.style.display = 'none';
-                 // Implement reward logic here (e.g., update mock balance)
-                 if (awardedReward.includes("SOL")) {
-                     mockWallet.balance += parseFloat(awardedReward);
-                     updateWalletUI();
-                 } else if (awardedReward === "Free Roll") {
-                     // Mock free roll
-                     alert("You got a free roll! (Mock)");
-                 }
-
-            }, spinDuration);
-        });
-
-        // Initial draw of spin wheel on load (if modal is shown)
-        // drawSpinWheel(); // Only draw when modal is opened
-         // Add event listener to draw when modal opens
-         spinWheelModal.addEventListener('transitionend', () => {
-             if (spinWheelModal.style.display === 'flex') {
-                 drawSpinWheel();
-             }
-         });
-
-
-        // --- Frictionless Spending & Nudges ---
-
-        // Deposit Incentives (Mock) - Handled in updateWalletUI and activateDepositBonusBtn
-
-        // Low Balance Nudges (Mock) - Handled in rollDice and checkLowBalanceNudge
-
-        // Progressive Jackpot (Mock)
-        // const jackpotCounterSpan = document.getElementById('jackpot-counter'); // Already declared at the top
-        let mockJackpot = 50.00; // Initial mock jackpot
-
-        function updateJackpotCounter() {
-            const counter = document.getElementById('jackpot-counter');
-            if (counter) {
-                mockJackpot += 0.01; // Increment mock jackpot per roll
-                counter.textContent = `Jackpot: ${mockJackpot.toFixed(2)} SOL!`;
-            } else {
-                console.warn("Jackpot counter not found.");
-            }
-             // Jackpot Nudge
-             const totalRolls = parseInt(localStorage.getItem('rollCount') || '0');
-             if (totalRolls > 0 && totalRolls % 5 === 0 && !localStorage.getItem(`jackpotNudgeShown${totalRolls}`)) {
-                  showToast("You're getting closer to the Jackpot!", false);
-                  localStorage.setItem(`jackpotNudgeShown${totalRolls}`, 'true');
-             }
-        }
-        updateJackpotCounter(); // Initial update
-
-        // --- Endless Novelty ---
-
-        // Dynamic Backgrounds (Mock)
-        // Removed background video JS
-
-
-        // Randomized Chat Events (Mock) - Handled in simulateRandomChatEvent
-
-        // Surprise Rewards (Mock Lucky Roll)
-        function checkLuckyRoll() {
-             if (Math.random() < 0.01) { // 1% chance
-                 const bonusAmount = 0.05; // Mock bonus
-                 showToast(`🍀 Lucky Roll! You won ${bonusAmount.toFixed(2)} SOL!`, false);
-                 mockWallet.balance += bonusAmount; // Add mock bonus
-                 updateWalletUI();
-             }
-        }
-        // Check for lucky roll after every roll (called in rollDice)
-
-
-        // --- Mobile-First Enhancements ---
-
-        // Push Notification Prompt (Mock)
-        const enableNotificationsBtn = document.getElementById('enable-notifications-btn');
-
-        function showNotificationPrompt() {
-             if (!localStorage.getItem('notificationPromptShown')) {
-                 notificationPromptModal.style.display = 'flex';
-             }
-        }
-
-        enableNotificationsBtn.addEventListener('click', () => {
-             alert("Mock: Notifications enabled!"); // Simulate enabling
-             notificationPromptModal.style.display = 'none';
-             localStorage.setItem('notificationPromptShown', 'true');
-        });
-
-        // Show prompt after a delay on first visit (mock)
-        if (!localStorage.getItem('notificationPromptShown')) {
-             setTimeout(showNotificationPrompt, 5000); // Show after 5 seconds
-        }
-
-
-        // Haptic Feedback Expansion (Mock)
-        function triggerHapticFeedback(duration = 50) {
-             if (navigator.vibrate) {
-                 navigator.vibrate(duration);
-             }
-        }
-
-        // Trigger haptic feedback on relevant events (mock)
-        sendChatBtn.addEventListener('click', () => triggerHapticFeedback(30));
-        rollButton.addEventListener('click', () => triggerHapticFeedback(50)); // Add haptic feedback on roll
-        // Add listeners for leaderboard updates if they were real-time
-        // checkLossAversionNudge is defined above and called in rollDice
-
-        // Sunk Cost Fallacy (Mock) - Handled in updateSunkCostTracker
-
-        // Scarcity (Mock) - Handled in updateSunkCostTracker
-
-
-        // PSYCHOLOGICAL HOOK: Personalized Nudges
-        function personalizedNudges() {
-            const username = localStorage.getItem('username') || 'Player';
-            // Nudge for low balance
-            if (mockWallet.balance < 0.5 && !localStorage.getItem('lowBalanceNudgeShownPersonalized')) {
-                showToast(`${username}, you're just 1 roll away from winning big!`,
-                         true,
-                         () => {
-                             // Open user modal to wallet tab
-                             userModal.style.display = 'flex';
-                             document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
-                                 btn.classList.remove('active');
-                                 if (btn.dataset.tab === 'wallet') btn.classList.add('active');
-                             });
-                              document.querySelectorAll('.modal .tab-content').forEach(c => {
-                                  c.classList.remove('active');
-                                  if (c.id === 'wallet-tab') c.classList.add('active');
-                              });
-                             document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
-
-                         },
-                         "Deposit Now");
-                localStorage.setItem('lowBalanceNudgeShownPersonalized', 'true'); // Show once per session/condition
-            }
-
-            // Nudge for streak
-            if (state.streak > 2 && !localStorage.getItem('streakNudgeShownPersonalized')) {
-                showToast(`Hot streak! Next win could be 2X if you increase your bet!`,
-                         true,
-                         () => {
-                             // Simulate increasing bet (e.g., to next chip value or double)
-                             let currentBetIndex = Array.from(chipButtons).findIndex(btn => btn.classList.contains('active'));
-                             if (currentBetIndex < chipButtons.length - 2) { // Not MAX or the second to last chip
-                                 chipButtons[currentBetIndex].classList.remove('active');
-                                 chipButtons[currentBetIndex + 1].classList.add('active');
-                                 state.chipValue = parseFloat(chipButtons[currentBetIndex + 1].dataset.value);
-                                 updateBackgroundIntensity(); // Update background intensity
-                                 showToast("Your bet has been increased!", false);
-                             } else if (currentBetIndex === chipButtons.length - 2) { // If on the second to last chip, go to MAX
-                                 chipButtons[currentBetIndex].classList.remove('active');
-                                 chipButtons[chipButtons.length - 1].classList.add('active');
-                                 state.chipValue = mockWallet.balance > 0 ? mockWallet.balance : parseFloat(chipButtons[chipButtons.length - 2].dataset.value); // Use MAX logic
-                                  updateBackgroundIntensity(); // Update background intensity
-                                 showToast("You're already betting MAX or near MAX!", false);
-                             } else {
-                                  showToast("You're already betting MAX or near MAX!", false);
-                             }
-
-                         },
-                         "Increase Bet");
-                 localStorage.setItem('streakNudgeShownPersonalized', 'true'); // Show once per session/condition
-            }
-             // Reset these flags based on session or time if needed
-        }
-        // personalizedNudges() is called in rollDice after every roll
-
-
-        // --- Analytics for Optimization (Mock) ---
-        function logUserAction(action, data = {}) {
-             const logs = JSON.parse(localStorage.getItem('userLogs') || '[]');
-             logs.push({ timestamp: new Date().toISOString(), action: action, data: data });
-             localStorage.setItem('userLogs', JSON.stringify(logs));
-
-             // Update total roll count and bet amount for sunk cost
-             if (action === 'roll') {
-                 const rollCount = parseInt(localStorage.getItem('rollCount') || '0') + 1;
-                 localStorage.setItem('rollCount', rollCount);
-                 const totalBetAmount = parseFloat(localStorage.getItem('totalBetAmount') || '0') + state.chipValue;
-                 localStorage.setItem('totalBetAmount', totalBetAmount);
-                 // Dispatch custom 'roll' event
-                 document.dispatchEvent(new CustomEvent('roll', { detail: { result: data.result, bet: state.chipValue } }));
-             } else if (action === 'deposit') {
-                  const totalDepositAmount = parseFloat(localStorage.getItem('totalDepositAmount') || '0') + data.amount;
-                  localStorage.setItem('totalDepositAmount', totalDepositAmount);
-                  // Dispatch custom 'deposit' event
-                  document.dispatchEvent(new CustomEvent('deposit', { detail: { amount: data.amount } }));
-             }
-        }
-
         // A/B Testing Placeholder (Mock)
         function applyABTestVariants() {
              const testVariant = localStorage.getItem('abTestVariant');
@@ -3944,18 +3964,18 @@
              const currentVariant = localStorage.getItem('abTestVariant');
              if (currentVariant === 'B') {
                  // Apply variant B styles/logic (e.e.g., change roll button color)
-                 rollButton.classList.add('variant-green');
+                 // Create a new style element for the A/B test rule
+                 const styleElement = document.createElement('style');
+                 styleElement.type = 'text/css';
+                 styleElement.innerHTML = `
+                     .roll-btn.variant-green {
+                         background-color: var(--accent-green);
+                     }
+                 `;
+                 document.head.appendChild(styleElement);
              }
         }
         applyABTestVariants(); // Apply A/B test variant on load
-
-        // Add CSS for A/B test variant
-         const styleSheet = document.styleSheets[0];
-         styleSheet.insertRule(`
-             .roll-btn.variant-green {
-                 background-color: var(--accent-green);
-             }
-         `, styleSheet.cssRules.length);
 
 
         // Generic Toast Notification Function
@@ -4064,6 +4084,99 @@
         // Initial calls for features that need to run on load
         loadAchievements();
         // fakeProgress(); // Called within loadDailyChallengeProgress
+
+        // --- High Scores / Biggest Wins (Mock) ---
+        function saveBiggestWin(winAmount) {
+            const biggestWins = JSON.parse(localStorage.getItem('biggestWins') || '[]');
+            const username = localStorage.getItem('username') || 'Anonymous';
+            const newWin = { username: username, amount: winAmount, timestamp: new Date().toISOString() };
+
+            biggestWins.push(newWin);
+            // Sort by amount descending and keep top 5
+            biggestWins.sort((a, b) => b.amount - a.amount);
+            const topWins = biggestWins.slice(0, 5);
+
+            localStorage.setItem('biggestWins', JSON.stringify(topWins));
+            renderHighScores(); // Update the display immediately
+        }
+
+        function renderHighScores() {
+            const highScoresList = document.getElementById('high-scores-list');
+            if (!highScoresList) return; // Ensure the element exists
+
+            highScoresList.innerHTML = ''; // Clear current list
+            const biggestWins = JSON.parse(localStorage.getItem('biggestWins') || '[]');
+
+            if (biggestWins.length === 0) {
+                const listItem = document.createElement('li');
+                listItem.textContent = "No big wins yet!";
+                highScoresList.appendChild(listItem);
+            } else {
+                biggestWins.forEach(win => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        ${win.username}: <span>${win.amount.toFixed(2)} SOL</span>
+                    `;
+                    highScoresList.appendChild(listItem);
+                });
+            }
+        }
+
+        // Call renderHighScores on page load to display existing scores
+        renderHighScores();
+
+
+        // --- Lucky Roll Bonus (Mock) ---
+        function checkLuckyRoll() {
+            // Mock logic: 5% chance of a lucky roll bonus after any roll
+            if (Math.random() < 0.05) {
+                const bonusAmount = (Math.random() * 0.1 + 0.01).toFixed(2); // Bonus between 0.01 and 0.11 SOL
+                showToast(`🍀 Lucky Roll Bonus! +${bonusAmount} SOL!`, false);
+                mockWallet.balance += parseFloat(bonusAmount);
+                updateWalletUI();
+            }
+        }
+
+        // --- Personalized Nudges (Mock) ---
+        function personalizedNudges() {
+            // Placeholder for personalized nudge logic
+            console.log("Mock: Checking for personalized nudges...");
+            // Example: Nudge based on recent losses
+            if (state.lossStreak > 0 && state.lossStreak % 2 === 0 && !localStorage.getItem(`lossNudge${state.lossStreak}Shown`)) {
+                 showToast("Keep going! A win might be just around the corner! ✨", false);
+                 localStorage.setItem(`lossNudge${state.lossStreak}Shown`, 'true');
+            }
+            // Example: Nudge based on high balance (encourage higher bets)
+            if (mockWallet.balance > 20 && state.chipValue < 5 && !localStorage.getItem('highBalanceNudgeShown')) {
+                 showToast("Feeling lucky? Try a higher bet for bigger payouts! 🚀", true, () => {
+                     state.chipValue = Math.min(5, mockWallet.balance > 0 ? mockWallet.balance : state.chipValue);
+                     // Update active chip button visually
+                     let closestButton = chipButtons[0];
+                     let minDiff = Math.abs(state.chipValue - parseFloat(closestButton.dataset.value));
+
+                     chipButtons.forEach(button => {
+                          const value = parseFloat(button.dataset.value);
+                          const diff = Math.abs(state.chipValue - value);
+                          if (diff < minDiff) {
+                              minDiff = diff;
+                              closestButton = button;
+                          }
+                     });
+                      chipButtons.forEach(btn => btn.classList.remove('active'));
+                      if (closestButton) closestButton.classList.add('active');
+
+                 }, "Increase Bet");
+                 localStorage.setItem('highBalanceNudgeShown', 'true');
+            }
+        }
+
+        // --- Streak Reward (Mock) ---
+        function checkStreakReward() {
+            // Mock function for checking and applying streak rewards
+            console.log("Mock: Checking for streak rewards...");
+            // Actual streak reward logic is handled by the rewardSchedule object's check() method
+            // This function is just a placeholder to resolve the ReferenceError
+        }
 
 
     </script>
