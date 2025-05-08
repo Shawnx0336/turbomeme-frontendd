@@ -1464,11 +1464,11 @@
             <div class="onboarding-tooltip" id="onboardingTooltip">Start here – Pick your multiplier.</div>
             <div class="bet-label">Select Multiplier</div>
             <div class="multiplier-options" id="multiplierOptions">
-                <button class="multiplier-btn" data-multiplier="1.5x" data-probability="30" title="">1.5x<small>Chance: 30%</small></button>
-                <button class="multiplier-btn" data-multiplier="2x" data-probability="20" title="">2x<small>Chance: 20%</small></button>
-                <button class="multiplier-btn" data-multiplier="3x" data-probability="20" title="">3x<small>Chance: 20%</small></button>
-                <button class="multiplier-btn" data-multiplier="5x" data-probability="15" title="">5x<small>Chance: 15%</small></button>
-                <button class="multiplier-btn" data-multiplier="10x" data-probability="15" title="">10x<small>Chance: 15%</small></button>
+                <button class="multiplier-btn" data-multiplier="1.5" data-probability="30" title="">1.5x<small>Chance: 30%</small></button>
+                <button class="multiplier-btn" data-multiplier="2" data-probability="20" title="">2x<small>Chance: 20%</small></button>
+                <button class="multiplier-btn" data-multiplier="3" data-probability="20" title="">3x<small>Chance: 20%</small></button>
+                <button class="multiplier-btn" data-multiplier="5" data-probability="15" title="">5x<small>Chance: 15%</small></button>
+                <button class="multiplier-btn" data-multiplier="10" data-probability="15" title="">10x<small>Chance: 15%</small></button>
             </div>
             <div class="bet-amount">
                  <div class="bet-amount-top">
@@ -1702,6 +1702,8 @@
         let fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total') || '0'); // Track fake winnings
         let onboardingShown = localStorage.getItem('solroulette_onboarding_shown') === 'true'; // Track if onboarding tooltip has been shown
         let firstRealBetPlaced = localStorage.getItem('solroulette_first_real_bet_placed') === 'true'; // Track if a real bet has been placed
+        let lastSpinResult = null; // Store the actual result of the last spin
+
 
         // User Profile
         let user = {
@@ -1926,6 +1928,7 @@
         }
 
          // Function to calculate target rotation for canvas
+         // This function maps the winning multiplier to a rotation angle
          function calculateCanvasTargetRotation(winningMultiplier) {
              const segment = segments.find(seg => seg.multiplier === winningMultiplier);
              if (!segment) return 0;
@@ -2302,36 +2305,38 @@
             playSound('click');
             if (navigator.vibrate) navigator.vibrate(80); // Haptic feedback on spin start
 
-
-            if (!currentBet.multiplier) {
-                showMessageBox('No Multiplier Selected', 'Select a multiplier!');
+            // --- FIX 5 & 6: Null Bet Bug & Error Toast ---
+            if (!currentBet.multiplier || currentBet.amount <= 0) {
+                showMessageBox('Invalid Bet', 'Please select a multiplier and enter a bet amount greater than 0.');
                  if (navigator.vibrate) navigator.vibrate(200);
-                return;
+                return; // Prevent placing bet if conditions not met
             }
+
+
             const amount = parseFloat(document.getElementById('betSlider').value);
 
+            // --- FIX 4 & 6: Fake SOL Deduction & Refill Modal ---
             // Auto Refill Fake SOL if balance is too low in guest mode
-            if (isGuestMode && walletBalance < amount && window.autoRefill) { // Check autoRefill flag and if balance is less than bet amount
-                 refillFakeSol(); // Auto refill
-                 // Now check if the bet is possible after refill
-                 if (walletBalance < amount) {
-                     showMessageBox('Insufficient Balance', 'Insufficient SOL balance even after refill!');
-                     if (navigator.vibrate) navigator.vibrate(200);
-                     return;
+            if (isGuestMode && walletBalance < amount) {
+                 if (window.autoRefill) { // Check autoRefill flag
+                     refillFakeSol(); // Auto refill
+                     // Now check if the bet is possible after refill
+                     if (walletBalance < amount) {
+                         showMessageBox('Insufficient Balance', 'Insufficient SOL balance even after refill!');
+                         if (navigator.vibrate) navigator.vibrate(200);
+                         return;
+                     }
+                 } else { // Manual refill needed
+                     openRefillFakeSolModal();
+                     return; // Prevent placing bet if balance is too low
                  }
-            } else if (isGuestMode && walletBalance < amount) { // Manual refill needed
-                 openRefillFakeSolModal();
-                 return; // Prevent placing bet if balance is too low
             }
 
 
             if (walletBalance < amount) {
-                // Show refill modal if in guest mode and balance is low
-                if (isGuestMode) {
-                    openRefillFakeSolModal();
-                } else {
-                     showMessageBox('Insufficient Balance', 'Insufficient SOL balance!');
-                }
+                // This case should be caught by the previous guest mode check,
+                // but keep as a fallback for real wallet mode.
+                showMessageBox('Insufficient Balance', 'Insufficient SOL balance!');
                  if (navigator.vibrate) navigator.vibrate(200);
                 return;
             }
@@ -2356,7 +2361,7 @@
 
             xp += 10; // Earn XP for placing a bet
             checkAchievements();
-updateUIDebounced(); // Update UI to show deducted balance and XP
+            updateUIDebounced(); // Update UI to show deducted balance and XP
 
 
             // Disable bet controls until next round starts
@@ -2375,13 +2380,13 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
 
             // Show mock transaction feedback (only for real wallet, or maybe simulate for guest?)
             if (!isGuestMode) {
-                 addChatMessage('System', `Transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}`, '✅', 'system');
-                 // Mark that a real bet has been placed
+                 addChatMessage('System', `Transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}!`, '✅', 'system');
+                 // Mark that a real bet is now possible/wallet is connected
                  firstRealBetPlaced = true;
                  localStorage.setItem('solroulette_first_real_bet_placed', 'true');
                  stopAutoDemo(); // Stop auto demo on first real bet
              } else {
-                 addChatMessage('System', `Fake transaction sent: ◎${amount.amount.toFixed(2)} on ${currentBet.multiplier}`, '✅', 'system'); // Ensure amount is number
+                 addChatMessage('System', `Fake transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}!`, '✅', 'system'); // Ensure amount is number
              }
 
 
@@ -2425,44 +2430,9 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
              let userWinAmount = 0;
              let userLostAmount = 0; // Track lost amount for result modal
              let userWon = false;
-             let winningMultiplier = null; // Determine the actual winning multiplier
+             // The winningMultiplier is already determined in spinWheel() and stored in lastSpinResult
+             let winningMultiplier = lastSpinResult;
              let userPickedMultiplier = currentBet.multiplier; // Store what the user picked
-
-             // --- Fix Mismatched Spin Result Bug ---
-             // Determine the segment the wheel *actually* landed on based on the final rotation angle.
-             // The finalRotationNormalized is in radians (0 to 2*PI).
-             // We need to convert it to degrees (0 to 360) relative to the pointer position (-90 degrees or -PI/2 radians).
-             const finalRotationDegrees = (currentWheelRotation * 180 / Math.PI) % 360;
-             // Adjust for the pointer being at the top (which corresponds to 0 degrees in the canvas drawing context, but -90 degrees visually)
-             // We need to find which segment's angle range contains the final rotation angle relative to the pointer.
-             // The pointer is at -90 degrees. The segments are drawn starting from 0 degrees (right).
-             // So, a rotation of 0 degrees means the right edge of the 1.5x segment is at the pointer.
-             // A rotation of -90 degrees means the top of the wheel (where the pointer is) aligns with the 0 degree mark of the segments.
-             // We need to find which segment's angle range contains the angle (finalRotationDegrees + 90 + 360) % 360.
-
-             const effectiveLandedAngleDegrees = (finalRotationDegrees + 90 + 360) % 360; // Normalize to 0-360 degrees
-             const effectiveLandedAngleRadians = effectiveLandedAngleDegrees * Math.PI / 180; // Convert back to radians
-
-             const landedSegment = segments.find(segment => {
-                 let start = segment.startAngle;
-                 let end = segment.endAngle;
-
-                 // Adjust angles to handle the wrap-around segment (10x)
-                 if (start > end) { // Segment crosses the 0/2PI boundary (e.g., 10x from ~270deg to ~360deg/0deg)
-                     return effectiveLandedAngleRadians >= start || effectiveLandedAngleRadians < end;
-                 } else {
-                     return effectiveLandedAngleRadians >= start && effectiveLandedAngleRadians < end;
-                 }
-             });
-
-             if (landedSegment) {
-                 winningMultiplier = landedSegment.multiplier;
-             } else {
-                 console.error("Could not determine winning segment based on final rotation!");
-                 // Fallback: If segment couldn't be determined from rotation, use the intended target multiplier (less accurate but prevents crash)
-                 winningMultiplier = currentBet.multiplier;
-             }
-             // --- End Fix Mismatched Spin Result Bug ---
 
 
              // Add outcome to recent spins
@@ -2475,7 +2445,8 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
 
 
              playerBets.forEach(bet => {
-                 const multiplierValue = parseFloat(bet.multiplier);
+                 // Use the numeric value of the multiplier for calculation
+                 const multiplierValue = parseFloat(bet.multiplier.replace('x', '')); // Parse numeric value
                  if (bet.multiplier === winningMultiplier) {
                      const winnings = bet.amount * multiplierValue;
                      // If the bet was by the current user
@@ -2633,10 +2604,12 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
              if (won) {
                  title.textContent = 'You Won!';
                  title.classList.add('win');
+                 // Use the actual landed result and the picked multiplier
                  message.textContent = `You picked ${picked}. Landed on ${landed}. You won ◎${winAmount.toFixed(2)}.`;
              } else {
                  title.textContent = 'You Lost!';
                  title.classList.add('lose');
+                 // Use the actual landed result and the picked multiplier
                  message.textContent = `You picked ${picked}. Landed on ${landed}. You lost ◎${lostAmount.toFixed(2)}.`; // Use lostAmount
              }
 
@@ -2714,6 +2687,9 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
                                           result < 0.7 ? '3x' :
                                           result < 0.85 ? '5x' : '10x';
             }
+
+            // --- Store the actual winning multiplier as the source of truth ---
+            lastSpinResult = actualWinningMultiplier;
 
 
             // Determine if it's a near-miss fakeout (20% chance)
@@ -2958,7 +2934,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
              const achievementsGrid = document.getElementById('profileAchievementsGrid');
              achievementsGrid.innerHTML = ''; // Clear existing
              const allAchievements = [
-                 { name: 'First Bust', icon: '💀' },
+                 { name: 'First Bust', condition: winStreak === 0 && totalWagered > 0, icon: '💀' },
                  { name: 'Hit 10x', condition: tenXWins >= 1, icon: '🌟' },
                  { name: '10 Spins', condition: guestSpinCount >= 10, icon: '🎡' }, // Use guestSpinCount for this
                  { name: 'High Roller', condition: totalWagered >= 50, icon: '💰' },
@@ -3449,7 +3425,19 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
 
              recentSpins.forEach(spin => {
                  const outcomeSpan = document.createElement('span');
-                 outcomeSpan.className = `outcome ${spin.won ? 'win' : 'lose'}`; // Add class based on win/loss
+                 // Determine color class based on the multiplier value
+                 const multiplierValue = parseFloat(spin.multiplier.replace('x', ''));
+                 let colorClass = 'lose'; // Default to lose
+                 if (multiplierValue === 1.5 || multiplierValue === 5) {
+                     colorClass = 'win'; // Use 'win' class for 1.5x and 5x (success color)
+                 } else if (multiplierValue === 2) {
+                     colorClass = 'primary'; // Use 'primary' color for 2x
+                 } else if (multiplierValue === 3) {
+                     colorClass = 'accent'; // Use 'accent' color for 3x
+                 } else if (multiplierValue === 10) {
+                      colorClass = 'danger'; // Use 'danger' color for 10x
+                 }
+                 outcomeSpan.className = `outcome ${colorClass}`;
                  outcomeSpan.textContent = spin.multiplier;
                  recentSpinsDiv.appendChild(outcomeSpan);
              });
@@ -3459,7 +3447,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
          function updateBetSummary() {
              const betSummaryDiv = document.getElementById('betSummary');
              if (currentBet.multiplier && currentBet.amount > 0) {
-                 const potentialWin = currentBet.amount * parseFloat(currentBet.multiplier);
+                 const potentialWin = currentBet.amount * parseFloat(currentBet.multiplier.replace('x', '')); // Use numeric value
                  betSummaryDiv.innerHTML = `
                      🧾 You bet ◎${currentBet.amount.toFixed(2)} on ${currentBet.multiplier}
                      <br>
@@ -3490,7 +3478,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
              // Select the multiplier button in the UI (visual only)
              document.querySelectorAll('.multiplier-btn').forEach(btn => {
                  btn.classList.remove('active');
-                 if (btn.dataset.multiplier === randomMultiplier) {
+                 if (btn.dataset.multiplier + 'x' === randomMultiplier) { // Compare with 'x' suffix
                      btn.classList.add('active');
                  }
              });
@@ -3621,6 +3609,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
             document.getElementById('solBalance').textContent = walletBalance.toFixed(2);
             //document.getElementById('userName').textContent = user.name; // Removed this line
             //document.getElementById('userAvatar').textContent = user.avatar; // Removed this line
+            // --- FIX 2: Bet Slider Fix - Format value ---
             document.getElementById('betValue').textContent = `◎${parseFloat(document.getElementById('betSlider').value).toFixed(2)} SOL`; // Ensure 2 decimal places
 
             // Update XP bar and level
@@ -3637,6 +3626,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
                 if (xp >= 100) updateUIDebounced(); // Re-run updateUI if still enough XP for next level
             }
              localStorage.setItem('solroulette_xp', xp); // Save current XP
+
 
             // Update the entire user profile block in the header
             document.getElementById('userProfile').innerHTML = `
@@ -3664,6 +3654,9 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
 
 
             const bettingAllowedByTimer = !isSpinning && spinTimer > 3;
+            // --- FIX 5: Null Bet Bug - Check for multiplier and amount > 0 ---
+            const betIsValid = currentBet.multiplier !== null && parseFloat(betSlider.value) > 0;
+
 
             if (user.wallet && !isGuestMode) { // Connected with real wallet
                  connectWalletBtn.style.display = 'none';
@@ -3671,7 +3664,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
                  guestModeBanner.style.display = 'none'; // Hide guest banner for real users
 
                  // Place Bet button requires multiplier selected, amount > 0, and betting allowed by timer
-                 placeBetBtn.disabled = !bettingAllowedByTimer || currentBet.multiplier === null || parseFloat(betSlider.value) <= 0;
+                 placeBetBtn.disabled = !bettingAllowedByTimer || !betIsValid;
                  placeBetBtn.title = bettingAllowedByTimer ? '' : 'Betting is closed';
 
                  multiplierBtns.forEach(btn => {
@@ -3687,7 +3680,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
                  guestModeBanner.style.display = 'block'; // Show guest banner for guest users
 
                  // In guest mode, placeBetBtn is ENABLED if bettingAllowedByTimer is true and a multiplier is selected and amount > 0
-                 placeBetBtn.disabled = !bettingAllowedByTimer || currentBet.multiplier === null || parseFloat(betSlider.value) <= 0;
+                 placeBetBtn.disabled = !bettingAllowedByTimer || !betIsValid;
                  placeBetBtn.title = 'Fake SOL bets. Connect wallet to win real rewards.'; // Tooltip for guest mode Place Bet
 
 
@@ -3783,7 +3776,15 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
 
 
         // Event Listeners
-        document.getElementById('betSlider').addEventListener('input', updateUIDebounced); // Update bet value display on slider change
+        // --- FIX 2: Bet Slider Fix - Update currentBet.amount and display ---
+        document.getElementById('betSlider').addEventListener('input', (e) => {
+             currentBet.amount = parseFloat(e.target.value);
+             updateUIDebounced(); // Update the displayed bet value and button state
+             // Dismiss onboarding tooltip/glow if active and user interacts with slider
+             dismissOnboarding();
+             resetIdleTimer(); // Reset idle timer on slider change
+             stopAutoDemo(); // Stop auto demo on manual selection
+        });
 
         document.getElementById('chatInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -3804,8 +3805,9 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
                 document.querySelectorAll('.multiplier-btn').forEach(b => b.classList.remove('active'));
                 // Add active class to the clicked button
                 btn.classList.add('active');
-                // Set the current bet multiplier
-                currentBet.multiplier = btn.dataset.multiplier;
+                // --- FIX 1: Multiplier Selection Fix - Set currentBet.multiplier correctly ---
+                currentBet.multiplier = btn.dataset.multiplier + 'x'; // Set the multiplier string (e.g., "1.5x")
+
                  // Enable place bet button if amount > 0 and wallet is connected and betting is allowed
                  // This logic is now handled in updateUI based on user.wallet and isSpinning/spinTimer
                  updateUIDebounced(); // Update UI to reflect button state and potentially enable Place Bet
@@ -3819,16 +3821,6 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
 
         // Event listener for the user profile div to open profile modal
         // This is handled within the updateUI function now.
-
-        // Update bet amount when slider changes
-        document.getElementById('betSlider').addEventListener('input', (e) => {
-             currentBet.amount = parseFloat(e.target.value);
-             updateUIDebounced(); // Update the displayed bet value and button state
-             // Dismiss onboarding tooltip/glow if active and user interacts with slider
-             dismissOnboarding();
-             resetIdleTimer(); // Reset idle timer on slider change
-             stopAutoDemo(); // Stop auto demo on manual selection
-        });
 
          // Event listeners for new modals
          document.getElementById('walletModal').addEventListener('click', (e) => {
@@ -4074,7 +4066,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
                  totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
                  winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0');
                  tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
-                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements') || '[]'));
+                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements') || '[]'));
                  guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0');
                  dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day') || '0');
                  fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total') || '0');
@@ -4115,7 +4107,7 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
              if (isGuestMode && currentBet.multiplier === null) {
                  currentBet.multiplier = '2x'; // Default to 2x
                  // Find the 2x button and add the active class
-                 const defaultMultiplierBtn = document.querySelector('.multiplier-btn[data-multiplier="2x"]');
+                 const defaultMultiplierBtn = document.querySelector('.multiplier-btn[data-multiplier="2"]'); // Use numeric data-multiplier
                  if (defaultMultiplierBtn) {
                      defaultMultiplierBtn.classList.add('active');
                  }
@@ -4159,11 +4151,6 @@ updateUIDebounced(); // Update UI to show deducted balance and XP
         document.addEventListener('click', resetIdleTimer); // Also reset on click anywhere
         document.addEventListener('scroll', resetIdleTimer); // Also reset on scroll
 
-         // Event listeners for input focus/blur to detect keyboard
-         document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
-             input.addEventListener('focus', checkKeyboard);
-             input.addEventListener('blur', checkKeyboard);
-         });
 
          // Event listener for daily reward modal close and claim buttons
          document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward);
