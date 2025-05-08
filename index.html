@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DegenDice - Slotana Style</title>
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css)">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --bg-dark: #0A0A0A;
@@ -144,11 +144,25 @@
          .dice.win {
              box-shadow: var(--shadow-glow) var(--accent-green);
              border: 2px solid var(--accent-green);
+             animation: pulse 0.5s;
          }
 
          .dice.loss {
              box-shadow: var(--shadow-glow) var(--accent-pink);
              border: 2px solid var(--accent-pink);
+             animation: shake 0.5s;
+         }
+
+         @keyframes pulse {
+             0% { transform: scale(1); }
+             50% { transform: scale(1.1); }
+             100% { transform: scale(1); }
+         }
+
+         @keyframes shake {
+             0%, 100% { transform: translateX(0); }
+             20%, 60% { transform: translateX(-5px); }
+             40%, 80% { transform: translateX(5px); }
          }
 
 
@@ -992,6 +1006,7 @@
          #high-scores-modal li span {
              font-weight: 700;
              color: var(--accent-green);
+             word-break: break-all; /* Break long hashes */
          }
 
 
@@ -1335,7 +1350,7 @@
             .chat-container {
                 width: var(--chat-bubble-size);
                 height: var(--chat-bubble-size);
-                bottom: calc(1rem + constant(safe-area-inset-bottom)); /* Position above safe area */
+                bottom: calc(1rem + constant(safe-area-inset-bottom));
                 bottom: calc(1rem + env(safe-area-inset-bottom));
                 right: 1rem;
                 border-radius: 50%; /* Make it a circle */
@@ -1422,28 +1437,131 @@
             }
         }
 
+        /* Styles for the new consolidated user modal */
+        .user-modal-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-green);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-green);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .wallet-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .wallet-balance-display {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+        }
+
+        .wallet-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .wallet-action-btn {
+            flex: 1;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .wallet-action-btn.deposit {
+            background: var(--accent-green);
+            color: var(--bg-dark);
+        }
+
+        .wallet-action-btn.withdraw {
+            background: var(--accent-pink);
+            color: white;
+        }
+
+        #user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+        }
+
+        #user-menu .wallet-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+        }
+
+        #user-menu .profile-avatar {
+            font-size: 24px;
+            color: var(--accent-green);
+        }
+
+
     </style>
 </head>
 <body>
     <header>
         <div class="header-left">
-             <button id="connect-wallet-btn" class="chip-btn"><i class="fas fa-wallet"></i> Connect Wallet</button>
-            <div class="wallet-info" id="wallet-info">
-                Wallet: Not connected <span class="demo-mode-indicator">(Demo Mode)</span>
+            <button id="connect-wallet-btn" class="chip-btn"><i class="fas fa-wallet"></i> Connect Wallet</button>
+
+            <div id="user-menu" style="display: none;">
+                <div class="wallet-info" id="wallet-info">
+                    <i class="fas fa-wallet"></i>
+                    <span id="wallet-balance">0.00 SOL</span>
+                </div>
+                <div class="profile-avatar" id="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
             </div>
-             <div class="profile-avatar" id="profile-avatar" style="cursor: pointer;">
-                <i class="fas fa-user-circle" style="font-size: 24px;"></i> </div>
-             <button id="provably-fair-btn" class="chip-btn"><i class="fas fa-balance-scale"></i> Fair</button>
-             <button id="high-scores-btn" class="chip-btn"><i class="fas fa-trophy"></i> High Scores</button>
-        </div>
+
+            </div>
+
         <div class="header-right">
-             <div class="jackpot-counter" id="jackpot-counter">
-                 Jackpot: 50.00 SOL!
-             </div>
-            <button id="deposit-btn" class="chip-btn"><i class="fas fa-plus-circle"></i> Deposit</button>
-            <button id="withdraw-btn" class="chip-btn"><i class="fas fa-minus-circle"></i> Withdraw</button>
-             <button id="referral-btn" class="chip-btn"><i class="fas fa-share-alt"></i> Invite</button>
+            <div class="jackpot-counter" id="jackpot-counter">Jackpot: 50.00 SOL!</div>
+            <button id="provably-fair-btn" class="chip-btn"><i class="fas fa-balance-scale"></i> Fair</button>
+            <button id="high-scores-btn" class="chip-btn"><i class="fas fa-trophy"></i> Scores</button>
         </div>
+
         <div class="hot-streak" id="hot-streak">
             🔥 Hot Streak! 5 Wins
         </div>
@@ -1533,57 +1651,67 @@
             <span class="close-button">&times;</span>
             <h2>Connect Wallet</h2>
             <div class="wallet-options">
-                <button id="connect-phantom"><img src="[https://phantom.app/img/phantom-icon-purple.png](https://phantom.app/img/phantom-icon-purple.png)" alt="Phantom Icon"> Phantom</button>
-                <button id="connect-solflare"><img src="[https://solflare.com/favicon.ico](https://solflare.com/favicon.ico)" alt="Solflare Icon"> Solflare</button>
+                <button id="connect-phantom"><img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> Phantom</button>
+                <button id="connect-solflare"><img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> Solflare</button>
                 <button id="disconnect-wallet" style="display: none;">Disconnect</button>
             </div>
         </div>
     </div>
 
-    <div id="profile-modal" class="modal">
+    <div id="user-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>Profile</h2>
-            <div class="profile-options">
-                <label for="username-input">Username:</label>
-                <input type="text" id="username-input" placeholder="Enter your username">
-                 <label for="avatar-select">Choose Avatar:</label>
-                 <select id="avatar-select">
-                     <option value="😎">😎</option>
-                     <option value="🥳">🥳</option>
-                     <option value="🤩">🤩</option>
-                     <option value="🚀">🚀</option>
-                     <option value="💎">💎</option>
-                 </select>
-                <button id="save-profile-btn">Save Profile</button>
-                 <button id="reset-demo-balance-btn" class="chip-btn" style="background-color: rgba(255, 255, 0, 0.1); color: yellow;">Reset Demo Balance</button>
+            <h2>My Account</h2>
+
+            <div class="user-modal-tabs">
+                <button class="tab-btn active" data-tab="profile">Profile</button>
+                <button class="tab-btn" data-tab="wallet">Wallet</button>
+            </div>
+
+            <div class="tab-content active" id="profile-tab">
+                <div class="profile-options">
+                    <label for="username-input">Username:</label>
+                    <input type="text" id="username-input" placeholder="Enter your username">
+
+                    <label for="avatar-select">Choose Avatar:</label>
+                    <select id="avatar-select">
+                        <option value="😎">😎</option>
+                        <option value="🥳">🥳</option>
+                        <option value="🤩">🤩</option>
+                        <option value="🚀">🚀</option>
+                        <option value="💎">💎</option>
+                    </select>
+
+                    <button id="save-profile-btn">Save Profile</button>
+                    <button id="reset-demo-balance-btn" class="chip-btn">Reset Demo Balance</button>
+                </div>
+            </div>
+
+            <div class="tab-content" id="wallet-tab">
+                <div class="wallet-actions">
+                    <div class="wallet-balance-display">
+                        <h3>Your Balance: <span id="modal-balance">0.00</span> SOL</h3>
+                    </div>
+
+                    <div class="wallet-buttons">
+                        <button id="modal-deposit-btn" class="wallet-action-btn deposit">
+                            <i class="fas fa-plus-circle"></i> Deposit
+                        </button>
+                        <button id="modal-withdraw-btn" class="wallet-action-btn withdraw">
+                            <i class="fas fa-minus-circle"></i> Withdraw
+                        </button>
+                    </div>
+                     <div class="transaction-input-group">
+                        <label for="modal-deposit-amount" style="display: none;">Deposit Amount (SOL):</label>
+                        <input type="number" id="modal-deposit-amount" value="1" min="0.01" step="0.01" placeholder="Deposit Amount (SOL)" style="margin-bottom: 0.5rem;">
+                        <label for="modal-withdraw-amount" style="display: none;">Withdraw Amount (SOL):</label>
+                        <input type="number" id="modal-withdraw-amount" value="0.1" min="0.01" step="0.01" placeholder="Withdraw Amount (SOL)">
+                     </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="deposit-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Deposit (Mock)</h2>
-             <p>Your Balance: <span id="current-balance-deposit">0.00</span> SOL</p> <div class="transaction-options">
-                <label for="deposit-amount">Amount (SOL):</label>
-                <input type="number" id="deposit-amount" value="1" min="0.01" step="0.01">
-                <button id="confirm-deposit-btn">Simulate Deposit</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="withdraw-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Withdraw (Mock)</h2>
-             <p>Your Balance: <span id="current-balance-withdraw">0.00</span> SOL</p> <div class="transaction-options">
-                <label for="withdraw-amount">Amount (SOL):</label>
-                <input type="number" id="withdraw-amount" value="0.1" min="0.01" step="0.01">
-                <button id="confirm-withdraw-btn">Simulate Withdraw</button>
-            </div>
-        </div>
-    </div>
 
     <div class="leaderboard-sidebar" id="leaderboard-sidebar">
         <h3>Leaderboard 🔥</h3>
@@ -1676,7 +1804,27 @@
      </div>
 
     <script>
-        // --- Existing Game Script (DO NOT MODIFY) ---
+        // --- Variable Declarations (Moved to Top) ---
+        let dailyPayouts = 0;
+        let currentServerSeed = "initialServerSeed" + Date.now();
+        let currentClientSeed = Math.random().toString(36).substr(2, 9);
+        let previousServerSeed = '';
+        let previousClientSeed = '';
+
+        // DOM elements (Declared after variables)
+        const die1 = document.getElementById('die1');
+        const die2 = document.getElementById('die2');
+        const resultDisplay = document.getElementById('result');
+        const rollUnderSlider = document.getElementById('roll-under-slider');
+        const rollUnderValue = document.getElementById('roll-under-value');
+        const multiplierDisplay = document.getElementById('multiplier');
+        const rollButton = document.getElementById('roll-button');
+        const chipButtons = document.querySelectorAll('.bet-controls .chip-btn'); // Select only chip buttons in bet controls
+        const hotStreakDisplay = document.getElementById('hot-streak'); // Get hot streak element
+        const sunkCostTracker = document.getElementById('sunk-cost-tracker'); // Get sunk cost tracker element
+        const demoModeIndicator = document.querySelector('.demo-mode-indicator'); // Get demo mode indicator
+        const leaderboardSidebar = document.getElementById('leaderboard-sidebar'); // Declared here
+
         // Game state
         const state = {
             rollUnder: 7,
@@ -1698,24 +1846,14 @@
             lossStreak: 0 // Track loss streak for recovery mechanics
         };
 
-        // DOM elements
-        const die1 = document.getElementById('die1');
-        const die2 = document.getElementById('die2');
-        const resultDisplay = document.getElementById('result');
-        const rollUnderSlider = document.getElementById('roll-under-slider');
-        const rollUnderValue = document.getElementById('roll-under-value');
-        const multiplierDisplay = document.getElementById('multiplier');
-        const rollButton = document.getElementById('roll-button');
-        const chipButtons = document.querySelectorAll('.bet-controls .chip-btn'); // Select only chip buttons in bet controls
-        const hotStreakDisplay = document.getElementById('hot-streak'); // Get hot streak element
-        const sunkCostTracker = document.getElementById('sunk-cost-tracker'); // Get sunk cost tracker element
-        const demoModeIndicator = document.querySelector('.demo-mode-indicator'); // Get demo mode indicator
 
         // Initialize
         updateMultiplier();
         updateHotStreakDisplay(); // Initialize hot streak display
         updateSunkCostTracker(); // Initial update of sunk cost tracker
         updateBackgroundIntensity(); // Initial background intensity based on default chip value
+        // Initial seed generation on load (Moved here)
+        generateNextSeeds();
 
 
         // Event listeners
@@ -1732,8 +1870,9 @@
 
         // FIX: Add event listeners to specific buttons
         document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
-        document.getElementById('confirm-deposit-btn').addEventListener('click', processDeposit);
-        document.getElementById('confirm-withdraw-btn').addEventListener('click', processWithdraw);
+        // Deposit and Withdraw button listeners are now on the modal buttons
+        // document.getElementById('confirm-deposit-btn').addEventListener('click', processDeposit);
+        // document.getElementById('confirm-withdraw-btn').addEventListener('click', processWithdraw);
         document.getElementById('reset-demo-balance-btn').addEventListener('click', resetDemoBalance); // Add event listener for reset button
 
 
@@ -1759,7 +1898,18 @@
              // Check for low balance before rolling
              if (mockWallet.balance < state.chipValue) {
                  showToast("Low balance! Deposit more to keep rolling! 💰", true, () => {
-                     depositModal.style.display = 'flex';
+                     // Open the user modal to the wallet tab
+                     userModal.style.display = 'flex';
+                     document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
+                         btn.classList.remove('active');
+                         if (btn.dataset.tab === 'wallet') btn.classList.add('active');
+                     });
+                      document.querySelectorAll('.modal .tab-content').forEach(c => {
+                          c.classList.remove('active');
+                          if (c.id === 'wallet-tab') c.classList.add('active');
+                      });
+                     document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
+
                  }, "Deposit Now");
                  return; // Stop the roll if balance is too low
              }
@@ -1788,125 +1938,136 @@
 
             // After animation, show result
             setTimeout(() => {
-                // --- Rigged Outcome Calculation ---
-                const riggedOutcome = advancedRigAlgorithm(); // Use the advanced rigging logic
+                try { // Wrap core roll logic in try...catch
+                    // --- Rigged Outcome Calculation ---
+                    const riggedOutcome = advancedRigAlgorithm(); // Use the advanced rigging logic
 
-                let sum;
-                if (riggedOutcome === 'WIN') {
-                     // Force a win
-                     sum = Math.floor(Math.random() * (state.rollUnder - 2)) + 2; // Ensure sum is less than rollUnder
-                     // Ensure dice values are between 1 and 6 and sum correctly
-                     let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
-                     let die2Value = Math.max(1, Math.min(6, sum - die1Value));
-                     // Adjust if sum is too low or too high to be represented by two dice
-                     if (die1Value + die2Value !== sum) {
-                         // This case should be rare with the sum calculation, but as a fallback
-                         if (sum < 2) { die1Value = 1; die2Value = 1; sum = 2; }
-                         else if (sum > 12) { die1Value = 6; die2Value = 6; sum = 12; }
-                         else { // Try to adjust one die
-                             if (die1Value + die2Value < sum) die1Value += (sum - (die1Value + die2Value));
-                             else if (die1Value + die2Value > sum) die1Value -= ((die1Value + die2Value) - sum);
-                             // Ensure values are still within 1-6
-                             die1Value = Math.max(1, Math.min(6, die1Value));
-                             die2Value = sum - die1Value;
-                             die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
+                    let sum;
+                    if (riggedOutcome === 'WIN') {
+                         // Force a win
+                         sum = Math.floor(Math.random() * (state.rollUnder - 2)) + 2; // Ensure sum is less than rollUnder
+                         // Ensure dice values are between 1 and 6 and sum correctly
+                         let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
+                         let die2Value = Math.max(1, Math.min(6, sum - die1Value));
+                         // Adjust if sum is too low or too high to be represented by two dice
+                         if (die1Value + die2Value !== sum) {
+                             // This case should be rare with the sum calculation, but as a fallback
+                             if (sum < 2) { die1Value = 1; die2Value = 1; sum = 2; }
+                             else if (sum > 12) { die1Value = 6; die2Value = 6; sum = 12; }
+                             else { // Try to adjust one die
+                                 if (die1Value + die2Value < sum) die1Value += (sum - (die1Value + die2Value));
+                                 else if (die1Value + die2Value > sum) die1Value -= ((die1Value + die2Value) - sum);
+                                 // Ensure values are still within 1-6
+                                 die1Value = Math.max(1, Math.min(6, die1Value));
+                                 die2Value = sum - die1Value;
+                                 // Corrected line: Removed extra closing parenthesis
+                                 die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
+                             }
                          }
-                     }
-                     state.diceValues = [die1Value, die2Value];
+                         state.diceValues = [die1Value, die2Value];
 
-                } else {
-                     // Force a loss
-                     sum = Math.floor(Math.random() * (12 - state.rollUnder + 1)) + state.rollUnder; // Ensure sum is >= rollUnder
-                      // Ensure dice values are between 1 and 6 and sum correctly
-                     let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
-                     let die2Value = Math.max(1, Math.min(6, sum - die1Value));
-                      // Adjust if sum is too low or too high to be represented by two dice
-                      if (die1Value + die2Value !== sum) {
-                          if (sum < 2) { die1Value = 1; die2Value = 1; sum = 2; }
-                          else if (sum > 12) { die1Value = 6; die2Value = 6; sum = 12; }
-                          else { // Try to adjust one die
-                              if (die1Value + die2Value < sum) die1Value += (sum - (die1Value + die2Value));
-                              else if (die1Value + die2Value > sum) die1Value -= ((die1Value + die2Value) - sum);
-                              // Ensure values are still within 1-6
-                              die1Value = Math.max(1, Math.min(6, die1Value));
-                              die2Value = sum - die1Value;
-                              die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
+                    } else {
+                         // Force a loss
+                         sum = Math.floor(Math.random() * (12 - state.rollUnder + 1)) + state.rollUnder; // Ensure sum is >= rollUnder
+                          // Ensure dice values are between 1 and 6 and sum correctly
+                         let die1Value = Math.max(1, Math.min(6, Math.floor(sum / 2)));
+                         let die2Value = Math.max(1, Math.min(6, sum - die1Value));
+                          // Adjust if sum is too low or too high to be represented by two dice
+                          if (die1Value + die2Value !== sum) {
+                              if (sum < 2) { die1Value = 1; die2Value = 1; sum = 2; }
+                              else if (sum > 12) { die1Value = 6; die2Value = 6; sum = 12; }
+                              else { // Try to adjust one die
+                                  if (die1Value + die2Value < sum) die1Value += (sum - (die1Value + die2Value));
+                                  else if (die1Value + die2Value > sum) die1Value -= ((die1Value + die2Value) - sum);
+                                  // Ensure values are still within 1-6
+                                  die1Value = Math.max(1, Math.min(6, die1Value));
+                                  die2Value = sum - die1Value;
+                                  // Corrected line: Removed extra closing parenthesis
+                                  die2Value = Math.max(1, Math.min(6, die2Value)); // Ensure die2 is also valid
+                              }
                           }
-                      }
-                     state.diceValues = [die1Value, die2Value];
+                         state.diceValues = [die1Value, die2Value];
+                    }
+                     state.rollResult = riggedOutcome; // Use the rigged outcome
+
+
+                    // Update UI
+                    die1.textContent = state.diceValues[0];
+                    die2.textContent = state.diceValues[1];
+                     // Apply visual variety to dice
+                     die1.classList.remove('win', 'loss');
+                     die2.classList.remove('win', 'loss');
+                     die1.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
+                     die2.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
+
+
+                    resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
+                    resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
+
+                    // Add analytics log (mock)
+                    logUserAction('roll', { rollUnder: state.rollUnder, bet: state.chipValue, result: state.rollResult, dice: state.diceValues });
+
+
+                    // Show effects
+                    if (state.rollResult === 'WIN') {
+                        const payout = state.chipValue * state.payouts[state.rollUnder];
+                        mockWallet.balance += payout; // Add winnings to mock balance
+                        updateWalletUI(); // Update wallet display
+                        dailyPayouts += payout; // Update mock budget
+
+                        showWinEffect();
+                        updateStreak(true);
+                        playWinSound(); // Play win sound
+
+                         // Check for Big Win
+                         if (state.payouts[state.rollUnder] > 5) { // Big Win threshold
+                             triggerCoinShower(); // Use confetti for coin shower
+                             playJackpotSound(); // Play jackpot sound
+                             showBigWinFireworks(); // Show fireworks animation
+                             showBigWinText(payout); // Show big win text animation
+                             saveBiggestWin(payout); // Save the big win
+                         } else {
+                             triggerConfetti(); // Regular confetti for smaller wins
+                         }
+
+                        updateLeaderboardWins(); // Update leaderboard wins (mock)
+                        checkDailyChallenge(); // Check daily challenge progress
+                         addChatWinNotification(); // Add chat notification for win (mock)
+                         updateSunkCostTracker(); // Update sunk cost tracker
+                         checkLuckyRoll(); // Check for lucky roll bonus
+                         // checkLossAversionNudge(); // Check for loss aversion nudge (after any roll) - Moved to after win/loss update
+                         checkStreakReward(); // Check for streak reward after win
+                         rewardSchedule.check(); // Check variable reward schedule
+
+                    } else {
+                        updateStreak(false);
+                        playLossSound(); // Play loss sound
+                         updateSunkCostTracker(); // Update sunk cost tracker
+                         checkLuckyRoll(); // Check for lucky roll bonus
+                         // checkLossAversionNudge(); // Check for loss aversion nudge (after any roll) - Moved to after win/loss update
+                    }
+
+                    // Check personalized nudges after every roll
+                     personalizedNudges();
+                     checkLossAversionNudge(); // Check for loss aversion nudge after win/loss update
+
+
+                     // Update provably fair display (mock)
+                     updateProvablyFairDisplay();
+                     generateNextSeeds(); // Generate seeds for the *next* roll
+
+                } catch (error) {
+                    console.error("Error during rollDice execution:", error);
+                    // Only show error if result wasn't already determined
+                    if (!state.rollResult) {
+                      resultDisplay.textContent = "Error during roll.";
+                      resultDisplay.className = 'result-display loss';
+                      showToast("An error occurred during the roll.", false);
+                    }
+                } finally {
+                    // Re-enable button regardless of success or failure
+                    rollButton.disabled = false;
                 }
-                 state.rollResult = riggedOutcome; // Use the rigged outcome
-
-
-                // Update UI
-                die1.textContent = state.diceValues[0];
-                die2.textContent = state.diceValues[1];
-                 // Apply visual variety to dice
-                 die1.classList.remove('win', 'loss');
-                 die2.classList.remove('win', 'loss');
-                 die1.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
-                 die2.classList.add(state.rollResult === 'WIN' ? 'win' : 'loss');
-
-
-                resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
-                resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
-
-                // Add analytics log (mock)
-                logUserAction('roll', { rollUnder: state.rollUnder, bet: state.chipValue, result: state.rollResult, dice: state.diceValues });
-
-
-                // Show effects
-                if (state.rollResult === 'WIN') {
-                    const payout = state.chipValue * state.payouts[state.rollUnder];
-                    mockWallet.balance += payout; // Add winnings to mock balance
-                    updateWalletUI(); // Update wallet display
-                    dailyPayouts += payout; // Update mock budget
-
-                    showWinEffect();
-                    updateStreak(true);
-                    playWinSound(); // Play win sound
-
-                     // Check for Big Win
-                     if (state.payouts[state.rollUnder] > 5) { // Big Win threshold
-                         triggerCoinShower(); // Use confetti for coin shower
-                         playJackpotSound(); // Play jackpot sound
-                         showBigWinFireworks(); // Show fireworks animation
-                         showBigWinText(payout); // Show big win text animation
-                         saveBiggestWin(payout); // Save the big win
-                     } else {
-                         triggerConfetti(); // Regular confetti for smaller wins
-                     }
-
-                    updateLeaderboardWins(); // Update leaderboard wins (mock)
-                    checkDailyChallenge(); // Check daily challenge progress
-                     addChatWinNotification(); // Add chat notification for win (mock)
-                     updateSunkCostTracker(); // Update sunk cost tracker
-                     checkLuckyRoll(); // Check for lucky roll bonus
-                     updateJackpotCounter(); // Update jackpot counter
-                     // checkLossAversionNudge(); // Check for loss aversion nudge (after any roll) - Moved to after win/loss update
-                     checkStreakReward(); // Check for streak reward after win
-                     rewardSchedule.check(); // Check variable reward schedule
-
-                } else {
-                    updateStreak(false);
-                    playLossSound(); // Play loss sound
-                     updateSunkCostTracker(); // Update sunk cost tracker
-                     checkLuckyRoll(); // Check for lucky roll bonus
-                     updateJackpotCounter(); // Update jackpot counter
-                     // checkLossAversionNudge(); // Check for loss aversion nudge (after any roll) - Moved to after win/loss update
-                }
-
-                // Check personalized nudges after every roll
-                 personalizedNudges();
-                 checkLossAversionNudge(); // Check for loss aversion nudge after win/loss update
-
-
-                // Re-enable button
-                rollButton.disabled = false;
-
-                 // Update provably fair display (mock)
-                 updateProvablyFairDisplay();
-                 generateNextSeeds(); // Generate seeds for the *next* roll
 
             }, 1000); // Reduced timeout for faster feedback
         }
@@ -1944,7 +2105,7 @@
              setTimeout(() => {
                  bigWinTextElement.remove();
              }, 2000); // Match animation duration
-        }
+         }
 
 
         function updateStreak(isWin) {
@@ -1952,16 +2113,16 @@
                 state.streak++;
                 state.lossStreak = 0; // Reset loss streak on win
 
-                if (state.streak >= 3 && state.streak % 3 === 0) { // Show popup every 3 wins after 3
-                     showStreakPopup();
+                // Show streak popup every 3 wins
+                if (state.streak >= 3 && state.streak % 3 === 0) {
+                    showStreakPopup();
                 }
             } else {
                 state.streak = 0; // Reset win streak on loss
                 state.lossStreak++; // Increment loss streak
             }
-            updateHotStreakDisplay(); // Update hot streak display
-             updateStreakBooster(); // Update streak booster meter
-             // checkStreakReward(); // Check for streak reward - Moved to rollDice win block
+            updateHotStreakDisplay();
+            updateStreakBooster();
         }
 
         function showStreakPopup() {
@@ -2050,9 +2211,10 @@
 
         // --- Modals ---
         const walletModal = document.getElementById('wallet-modal');
-        const profileModal = document.getElementById('profile-modal');
-        const depositModal = document.getElementById('deposit-modal');
-        const withdrawModal = document.getElementById('withdraw-modal');
+        // const profileModal = document.getElementById('profile-modal'); // Removed, consolidated
+        // const depositModal = document.getElementById('deposit-modal'); // Removed, consolidated
+        // const withdrawModal = document.getElementById('withdraw-modal'); // Removed, consolidated
+        const userModal = document.getElementById('user-modal'); // New consolidated modal
         const achievementsModal = document.getElementById('achievements-modal');
         const highScoresModal = document.getElementById('high-scores-modal'); // Get high scores modal
         const spinWheelModal = document.getElementById('spin-wheel-modal');
@@ -2063,31 +2225,38 @@
 
         const connectWalletBtn = document.getElementById('connect-wallet-btn');
         const profileAvatar = document.getElementById('profile-avatar');
-        const depositBtn = document.getElementById('deposit-btn');
-        const withdrawBtn = document.getElementById('withdraw-btn');
-        const referralBtn = document.getElementById('referral-btn'); // Get referral button
+        // Deposit and Withdraw buttons in header removed - now accessed via user menu/modal
+        // const depositBtn = document.getElementById('deposit-btn');
+        // const withdrawBtn = document.getElementById('withdraw-btn');
+        const referralBtn = document.getElementById('referral-btn'); // Get referral button - Removed from header, keep for now if needed elsewhere
         const provablyFairBtn = document.getElementById('provably-fair-btn'); // Get provably fair button
         const highScoresBtn = document.getElementById('high-scores-btn'); // Get high scores button
+
+        // Get the new modal buttons
+        const modalDepositBtn = document.getElementById('modal-deposit-btn');
+        const modalWithdrawBtn = document.getElementById('modal-withdraw-btn');
 
 
         const closeButtons = document.querySelectorAll('.modal .close-button');
 
         // Open Modals
         connectWalletBtn.addEventListener('click', () => { walletModal.style.display = 'flex'; });
-        profileAvatar.addEventListener('click', () => { profileModal.style.display = 'flex'; });
-        depositBtn.addEventListener('click', () => {
-            document.getElementById('current-balance-deposit').textContent = mockWallet.balance.toFixed(2); // Update balance in deposit modal
-            depositModal.style.display = 'flex';
+        // Profile avatar click handler updated to open the new user modal
+        profileAvatar.addEventListener('click', () => {
+            // Update balance display in modal regardless of connection status
+            document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2);
+            userModal.style.display = 'flex';
         });
-        withdrawBtn.addEventListener('click', () => {
-            document.getElementById('current-balance-withdraw').textContent = mockWallet.balance.toFixed(2); // Update balance in withdraw modal
-            withdrawModal.style.display = 'flex';
-        });
-        referralBtn.addEventListener('click', () => {
-             // Toggle referral panel visibility instead of a modal for simplicity
-             const referralPanel = document.getElementById('referral-feature');
-             referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
-        });
+        // Deposit and Withdraw buttons now open the user modal to the correct tab
+        modalDepositBtn.addEventListener('click', processDeposit);
+        modalWithdrawBtn.addEventListener('click', processWithdraw);
+
+        // Referral button is now gone from header, keep listener if needed elsewhere
+        // referralBtn.addEventListener('click', () => {
+        //      // Toggle referral panel visibility instead of a modal for simplicity
+        //      const referralPanel = document.getElementById('referral-feature');
+        //      referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
+        // });
          provablyFairBtn.addEventListener('click', () => {
              provablyFairModal.style.display = 'flex';
              updateProvablyFairDisplay(); // Update display when modal opens
@@ -2107,23 +2276,25 @@
 
         window.addEventListener('click', (event) => {
             if (event.target === walletModal) { walletModal.style.display = 'none'; }
-            if (event.target === profileModal) { profileModal.style.display = 'none'; }
-            if (event.target === depositModal) { depositModal.style.display = 'none'; }
-            if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; }
-             if (event.target === achievementsModal) { achievementsModal.style.display = 'none'; }
-             if (event.target === highScoresModal) { highScoresModal.style.display = 'none'; } // Add close for high scores modal
-             if (event.target === spinWheelModal) { spinWheelModal.style.display = 'none'; }
-             if (event.target === depositBonusModal) { depositBonusModal.style.display = 'none'; }
-             if (event.target === notificationPromptModal) { notificationPromptModal.style.display = 'none'; }
-             if (event.target === provablyFairModal) { provablyFairModal.style.display = 'none'; }
+            // if (event.target === profileModal) { profileModal.style.display = 'none'; } // Removed
+            // if (event.target === depositModal) { depositModal.style.display = 'none'; } // Removed
+            // if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; } // Removed
+            if (event.target === userModal) { userModal.style.display = 'none'; } // Close new user modal
+            if (event.target === achievementsModal) { achievementsModal.style.display = 'none'; }
+            if (event.target === highScoresModal) { highScoresModal.style.display = 'none'; } // Add close for high scores modal
+            if (event.target === spinWheelModal) { spinWheelModal.style.display = 'none'; }
+            if (event.target === depositBonusModal) { depositBonusModal.style.display = 'none'; }
+            if (event.target === notificationPromptModal) { notificationPromptModal.style.display = 'none'; }
+            if (event.target === provablyFairModal) { provablyFairModal.style.display = 'none'; }
         });
 
 
         // --- Wallet Connection (Mock) ---
-        const walletInfo = document.getElementById('wallet-info');
+        // walletInfo element is now inside the user-menu div
+        const walletInfoSpan = document.getElementById('wallet-balance'); // Get the span for balance
         const connectPhantomBtn = document.getElementById('connect-phantom');
         const connectSolflareBtn = document.getElementById('connect-solflare');
-        const disconnectWalletBtn = document.getElementById('disconnect-wallet');
+        const disconnectWalletBtn = document.getElementById('disconnect-wallet'); // Still exists in wallet modal
          const activateDepositBonusBtn = document.getElementById('activate-deposit-bonus'); // Get deposit bonus button
 
         const mockWallet = {
@@ -2134,9 +2305,16 @@
 
         function updateWalletUI() {
             if (mockWallet.isConnected) {
-                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${mockWallet.address.substring(0, 6)}...${mockWallet.address.slice(-4)} (${mockWallet.balance.toFixed(2)} SOL)`;
+                // Update balance in the header user menu
+                walletInfoSpan.textContent = `${mockWallet.balance.toFixed(2)} SOL`;
+                // Update wallet address display (if needed, currently not shown in new header)
+                // walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${mockWallet.address.substring(0, 6)}...${mockWallet.address.slice(-4)} (${mockWallet.balance.toFixed(2)} SOL)`;
+
+                // Show user menu and hide connect button
+                document.getElementById('user-menu').style.display = 'flex';
                 connectWalletBtn.style.display = 'none';
-                disconnectWalletBtn.style.display = 'block';
+
+                disconnectWalletBtn.style.display = 'block'; // Disconnect button is in the wallet modal
                  profileAvatar.style.display = 'flex'; // Show profile avatar when connected
                  // Show deposit bonus on first connection (mock)
                  if (!localStorage.getItem('firstDepositBonusShown')) {
@@ -2145,8 +2323,11 @@
                  }
             } else {
                 // Display demo mode balance when not connected
-                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Balance: ${mockWallet.balance.toFixed(2)} SOL <span class="demo-mode-indicator">(Demo Mode)</span>`;
-                connectWalletBtn.style.display = 'block';
+                 // walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Balance: ${mockWallet.balance.toFixed(2)} SOL <span class="demo-mode-indicator">(Demo Mode)</span>`; // Removed, now handled by user-menu/wallet-info
+                 walletInfoSpan.textContent = `${mockWallet.balance.toFixed(2)} SOL`; // Update balance in the user menu (even if not connected)
+                 document.getElementById('user-menu').style.display = 'flex'; // Always show user menu in demo mode
+                 connectWalletBtn.style.display = 'none'; // Hide connect button in demo mode
+
                 disconnectWalletBtn.style.display = 'none';
                  profileAvatar.style.display = 'flex'; // Show profile avatar even in demo mode
             }
@@ -2154,32 +2335,58 @@
              localStorage.setItem('demoBalance', mockWallet.balance.toFixed(2));
         }
 
-        connectPhantomBtn.addEventListener('click', () => {
-            // Simulate connecting to Phantom - In a real app, this would use Solana Wallet Adapter
-            alert("Mock: Connecting to Phantom..."); // Placeholder for wallet adapter
-            mockWallet.isConnected = true;
-            mockWallet.address = 'G4t1mE5b8...'; // Mock address
-            updateWalletUI();
-            walletModal.style.display = 'none';
-             // Mock: Trigger deposit bonus on first connection
-             if (!localStorage.getItem('firstDepositBonusShown')) {
-                 depositBonusModal.style.display = 'flex';
-                 localStorage.setItem('firstDepositBonusShown', 'true');
-             }
+        connectPhantomBtn.addEventListener('click', async () => {
+            try {
+                // In a real app, this would use Solana Wallet Adapter
+                // For this mock, we'll simulate the connection flow
+                const confirmed = confirm("You'll be redirected to Phantom to connect your wallet. Continue?");
+                if (confirmed) {
+                    // Simulate redirect to Phantom (in real app this would be wallet adapter)
+                    mockWallet.isConnected = true;
+                    mockWallet.address = 'G4t1mE5b8...'; // Mock address
+                    updateWalletUI();
+                    walletModal.style.display = 'none';
+
+                    // Show user menu
+                    document.getElementById('user-menu').style.display = 'flex';
+
+                    // Hide connect button
+                    connectWalletBtn.style.display = 'none';
+
+                    // Mock: Trigger deposit bonus on first connection
+                    if (!localStorage.getItem('firstDepositBonusShown')) {
+                        depositBonusModal.style.display = 'flex';
+                        localStorage.setItem('firstDepositBonusShown', 'true');
+                    }
+                }
+            } catch (error) {
+                console.error("Connection error:", error);
+                showToast("Failed to connect wallet", false);
+            }
         });
 
-        connectSolflareBtn.addEventListener('click', () => {
-            // Simulate connecting to Solflare - In a real app, this would use Solana Wallet Adapter
-             alert("Mock: Connecting to Solflare..."); // Placeholder for wallet adapter
-            mockWallet.isConnected = true;
-            mockWallet.address = 'S0lF1aR3...'; // Mock address
-            updateWalletUI();
-            walletModal.style.display = 'none';
-             // Mock: Trigger deposit bonus on first connection
-             if (!localStorage.getItem('firstDepositBonusShown')) {
-                 depositBonusModal.style.display = 'flex';
-                 localStorage.setItem('firstDepositBonusShown', 'true');
-             }
+        connectSolflareBtn.addEventListener('click', async () => {
+            try {
+                const confirmed = confirm("You'll be redirected to Solflare to connect your wallet. Continue?");
+                if (confirmed) {
+                    mockWallet.isConnected = true;
+                    mockWallet.address = 'S0lF1aR3...';
+                    updateWalletUI();
+                    walletModal.style.display = 'none';
+
+                    document.getElementById('user-menu').style.display = 'flex';
+                    connectWalletBtn.style.display = 'none';
+
+                    // Mock: Trigger deposit bonus on first connection
+                    if (!localStorage.getItem('firstDepositBonusShown')) {
+                        depositBonusModal.style.display = 'flex';
+                        localStorage.setItem('firstDepositBonusShown', 'true');
+                    }
+                }
+            } catch (error) {
+                console.error("Connection error:", error);
+                showToast("Failed to connect wallet", false);
+            }
         });
 
         disconnectWalletBtn.addEventListener('click', () => {
@@ -2188,11 +2395,24 @@
             mockWallet.address = null;
             updateWalletUI();
             walletModal.style.display = 'none';
+             // Show connect button and hide user menu after disconnecting
+             connectWalletBtn.style.display = 'block';
+             document.getElementById('user-menu').style.display = 'none';
         });
 
          activateDepositBonusBtn.addEventListener('click', () => {
              depositBonusModal.style.display = 'none';
-             depositModal.style.display = 'flex'; // Open deposit modal
+             // Open user modal to wallet tab
+             userModal.style.display = 'flex';
+             document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
+                 btn.classList.remove('active');
+                 if (btn.dataset.tab === 'wallet') btn.classList.add('active');
+             });
+             document.querySelectorAll('.modal .tab-content').forEach(c => {
+                 c.classList.remove('active');
+                 if (c.id === 'wallet-tab') c.classList.add('active');
+             });
+             document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
          });
 
         // Reset Demo Balance Function
@@ -2200,7 +2420,7 @@
              mockWallet.balance = 10.00; // Reset to initial demo balance
              localStorage.setItem('demoBalance', mockWallet.balance.toFixed(2)); // Save reset balance
              updateWalletUI(); // Update display
-             profileModal.style.display = 'none'; // Close modal
+             userModal.style.display = 'none'; // Close modal
              showToast("Demo balance reset to 10.00 SOL!", false);
         }
 
@@ -2474,7 +2694,7 @@
             localStorage.setItem('avatar', avatar);
 
             loadProfile(); // Update UI after saving
-            profileModal.style.display = 'none';
+            userModal.style.display = 'none'; // Close the new user modal
              // Update leaderboard with new username/avatar if connected
              // This logic is now handled within updateLeaderboardWins which is called by loadProfile
         }
@@ -2485,20 +2705,21 @@
 
 
         // --- Deposit & Withdraw (Mock) ---
-        const depositAmountInput = document.getElementById('deposit-amount');
-        const confirmDepositBtn = document.getElementById('confirm-deposit-btn');
-        const withdrawAmountInput = document.getElementById('withdraw-amount');
-        const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
+        // Inputs are now in the user modal
+        // Need to get the inputs from the new user modal structure
+        const modalDepositAmountInput = document.getElementById('modal-deposit-amount'); // Corrected ID
+        const modalWithdrawAmountInput = document.getElementById('modal-withdraw-amount'); // Corrected ID
+
 
         // FIX: Implement processDeposit function
         function processDeposit() {
-            const amount = parseFloat(depositAmountInput.value);
+            const amount = parseFloat(modalDepositAmountInput.value); // Use the input from the new modal
             if (amount > 0) {
                 // Simulate MoonPay flow (replace with actual integration)
                 alert(`Simulating deposit of ${amount.toFixed(2)} SOL via MoonPay... (This is a mock)`);
                  mockWallet.balance += amount; // Update mock balance
                  updateWalletUI(); // Update wallet display
-                 depositModal.style.display = 'none';
+                 userModal.style.display = 'none'; // Close the new user modal
                  logUserAction('deposit', { amount: amount }); // Log deposit
                  checkVIPStatus(); // Check for VIP status after deposit
                  // PSYCHOLOGICAL HOOK: Increase win probability temporarily after deposit (Mock)
@@ -2513,13 +2734,13 @@
 
         // FIX: Implement processWithdraw function
         function processWithdraw() {
-            const amount = parseFloat(withdrawAmountInput.value);
+            const amount = parseFloat(modalWithdrawAmountInput.value); // Use the input from the new modal
             if (amount > 0 && amount <= mockWallet.balance) {
                 // Simulate withdrawal transaction
                 alert(`Simulating withdrawal of ${amount.toFixed(2)} SOL... (This is a mock)`);
                  mockWallet.balance -= amount; // Update mock balance
                  updateWalletUI(); // Update wallet display
-                 withdrawModal.style.display = 'none';
+                 userModal.style.display = 'none'; // Close the new user modal
                  logUserAction('withdraw', { amount: amount }); // Log withdrawal
             } else if (amount > mockWallet.balance) {
                 alert('Insufficient balance for withdrawal.');
@@ -2527,6 +2748,10 @@
                  alert('Please enter a valid withdrawal amount.');
             }
         }
+
+        // Add event listeners for the new modal buttons
+        document.getElementById('modal-deposit-btn').addEventListener('click', processDeposit);
+        document.getElementById('modal-withdraw-btn').addEventListener('click', processWithdraw);
 
 
         // --- Engagement Boosters ---
@@ -2668,13 +2893,13 @@
 
         // PSYCHOLOGICAL HOOK: Endowed Progress Effect
         function fakeProgress() {
-            if (dailyChallenge.currentProgress === 0) {
-                // Give them 1 free progress to get them started
-                dailyChallenge.currentProgress = 1;
-                localStorage.setItem('dailyChallengeProgress', dailyChallenge.currentProgress); // Save the initial progress
-                showToast("We started your Daily Challenge for you! Just 2 more!", false);
-                updateDailyChallengeUI(); // Update UI to show the initial progress
-            }
+          if (dailyChallenge.currentProgress === 0 && !localStorage.getItem('fakeProgressApplied')) {
+            dailyChallenge.currentProgress = 1;
+            localStorage.setItem('dailyChallengeProgress', dailyChallenge.currentProgress);
+            localStorage.setItem('fakeProgressApplied', 'true'); // Add this line
+            showToast("We started your Daily Challenge for you! Just 2 more!", false);
+            updateDailyChallengeUI();
+          }
         }
 
 
@@ -2716,8 +2941,8 @@
         // Dynamic Backgrounds (Mock) - Removed video, using CSS gradient animation
         const backgroundVideo = document.getElementById('background-video');
         const videoSources = [
-             '[https://www.w3schools.com/tags/mov_bbb.mp4](https://www.w3schools.com/tags/mov_bbb.mp4)', // Example video 1
-             '[https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4](https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4)' // Example video 2
+             'https://www.w3schools.com/tags/mov_bbb.mp4', // Example video 1
+             'https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4' // Example video 2
         ];
         let currentVideoIndex = 0;
 
@@ -2858,7 +3083,6 @@
         // --- Psychological Principles & Engagement Hooks Script ---
 
         // Mock Budget and Rigging
-        let dailyPayouts = 0;
         const DAILY_BUDGET = 1800 * 1.1; // 10% daily growth target (Mock)
 
         // ENHANCED RIGGING ALGORITHM
@@ -2931,12 +3155,6 @@
         const previousClientSeedSpan = document.getElementById('previous-client-seed');
 
 
-        let currentServerSeed = "initialServerSeed" + Date.now();
-        let currentClientSeed = Math.random().toString(36).substr(2, 9);
-        let previousServerSeed = '';
-        let previousClientSeed = '';
-
-
         function updateProvablyFairDisplay() {
              // Mock hash generation
              const combinedString = currentServerSeed + currentClientSeed;
@@ -2964,7 +3182,7 @@
              currentClientSeed = Math.random().toString(36).substr(2, 9);
         }
          // Initial seed generation on load
-         generateNextSeeds();
+         // generateNextSeeds(); // Called in initialization block
 
 
         // Engagement Hooks
@@ -2997,7 +3215,7 @@
 
         // Monetization Tactics
         const flashOffer = document.getElementById('flash-offer');
-        const potentialWinsSpan = document.getElementById('potential-wins');
+        // const potentialWinsSpan = document.getElementById('potential-wins'); // Removed
         const sunkCostProgressBar = document.querySelector('.sunk-cost-tracker .progress-bar');
         const fomoBuyButton = document.querySelector('.time-limited-offer .fomo-buy');
 
@@ -3062,7 +3280,6 @@
 
              // Mock potential wins based on total bet
              // potentialWinsSpan.textContent = `${(totalBetAmount * 0.8).toFixed(2)} SOL`; // Mock 80% return potential - Removed, now in emotionalSunkCost
-
              // Update progress bar (mock based on rolls) - Removed, now in emotionalSunkCost
              // const maxRollsForProgress = 50; // Mock target rolls
              // const progress = Math.min(totalRolls / maxRollsForProgress, 1);
@@ -3083,7 +3300,18 @@
              const freeRollLimit = 20; // Mock limit
              if (isFreeUser && totalRolls >= freeRollLimit && !localStorage.getItem('scarcityNudgeShown')) {
                   showToast(`Only ${freeRollLimit - totalRolls} rolls left today! Deposit to unlock unlimited rolls!`, true, () => {
-                      depositModal.style.display = 'flex';
+                      // Open user modal to wallet tab
+                      userModal.style.display = 'flex';
+                      document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
+                          btn.classList.remove('active');
+                          if (btn.dataset.tab === 'wallet') btn.classList.add('active');
+                      });
+                       document.querySelectorAll('.modal .tab-content').forEach(c => {
+                           c.classList.remove('active');
+                           if (c.id === 'wallet-tab') c.classList.add('active');
+                       });
+                      document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
+
                   }, "Deposit");
                   localStorage.setItem('scarcityNudgeShown', 'true');
              }
@@ -3133,16 +3361,55 @@
         // For this mock, we'll tie it to a loss streak.
         // let lossStreakForRecovery = 0; // Moved lossStreak to state object
         // Event listener for 'loss' is added in the rollDice function after determining result
-
         // Check for Loss Aversion Nudge (Moved to rollDice function)
-        // function checkLossAversionNudge() { ... }
+        function checkLossAversionNudge() {
+             // This is checked after every roll in rollDice
+             // Trigger nudge if it was a loss AND loss streak is 1 (first loss)
+             if (state.rollResult === 'LOSE' && state.lossStreak === 1 && !localStorage.getItem('lossAversionNudgeShown')) {
+                 showToast("Don't stop now! Double your next bet to win it back! 💪", true, () => {
+                     // Simulate doubling the bet (capped by balance)
+                     state.chipValue = Math.min(state.chipValue * 2, mockWallet.balance > 0 ? mockWallet.balance : state.chipValue);
+                     // Update active chip button visually (find the closest value)
+                     let closestButton = chipButtons[0];
+                     let minDiff = Math.abs(state.chipValue - parseFloat(closestButton.dataset.value));
+
+                     chipButtons.forEach(button => {
+                          const value = parseFloat(button.dataset.value);
+                          const diff = Math.abs(state.chipValue - value);
+                          if (diff < minDiff) {
+                              minDiff = diff;
+                              closestButton = button;
+                          }
+                     });
+                      chipButtons.forEach(btn => btn.classList.remove('active'));
+                      if (closestButton) closestButton.classList.add('active');
+
+                     // The toast/popup will hide automatically if it has a button
+                     // retentionPopup.style.display = 'none'; // This was for the retention popup, not toast
+                 }, "Double Bet");
+                 localStorage.setItem('lossAversionNudgeShown', 'true'); // Mark as shown once per session/condition
+                 // Reset this flag based on session or time if needed
+             }
+        }
+        // checkLossAversionNudge is called in rollDice after every roll
 
 
         // Fake Balance Protection (Mock)
         function checkLowBalanceNudge() {
             if (mockWallet.balance < 0.5 && !localStorage.getItem('lowBalanceNudgeShown')) {
                  showToast("Low balance! Deposit more to keep rolling! 💰", true, () => {
-                     depositModal.style.display = 'flex';
+                     // Open user modal to wallet tab
+                     userModal.style.display = 'flex';
+                     document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
+                         btn.classList.remove('active');
+                         if (btn.dataset.tab === 'wallet') btn.classList.add('active');
+                     });
+                      document.querySelectorAll('.modal .tab-content').forEach(c => {
+                          c.classList.remove('active');
+                          if (c.id === 'wallet-tab') c.classList.add('active');
+                      });
+                     document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
+
                  }, "Deposit Now");
                  localStorage.setItem('lowBalanceNudgeShown', 'true');
             }
@@ -3207,7 +3474,7 @@
                     updateWalletUI();
                 } else if (reward.type === "Free Roll") {
                     // Mock free roll logic
-                    alert("Mock: You received a Free Roll!");
+                    alert("You got a free roll! (Mock)");
                 } else if (reward.type === "2X Multiplier") {
                     // Mock 2X multiplier logic for next roll
                     alert("Mock: Your next win will be 2X!");
@@ -3447,13 +3714,17 @@
         // Low Balance Nudges (Mock) - Handled in rollDice and checkLowBalanceNudge
 
         // Progressive Jackpot (Mock)
-        const jackpotCounterSpan = document.getElementById('jackpot-counter');
+        // const jackpotCounterSpan = document.getElementById('jackpot-counter'); // Already declared at the top
         let mockJackpot = 50.00; // Initial mock jackpot
 
         function updateJackpotCounter() {
-             mockJackpot += 0.01; // Increment mock jackpot per roll
-             jackpotCounterSpan.textContent = `Jackpot: ${mockJackpot.toFixed(2)} SOL!`;
-
+            const counter = document.getElementById('jackpot-counter');
+            if (counter) {
+                mockJackpot += 0.01; // Increment mock jackpot per roll
+                counter.textContent = `Jackpot: ${mockJackpot.toFixed(2)} SOL!`;
+            } else {
+                console.warn("Jackpot counter not found.");
+            }
              // Jackpot Nudge
              const totalRolls = parseInt(localStorage.getItem('rollCount') || '0');
              if (totalRolls > 0 && totalRolls % 5 === 0 && !localStorage.getItem(`jackpotNudgeShown${totalRolls}`)) {
@@ -3517,47 +3788,7 @@
         sendChatBtn.addEventListener('click', () => triggerHapticFeedback(30));
         rollButton.addEventListener('click', () => triggerHapticFeedback(50)); // Add haptic feedback on roll
         // Add listeners for leaderboard updates if they were real-time
-
-        // Optimized Performance (Lazy-loading) - Note: Complex for pure HTML/JS
-        // Implementing true lazy-loading with IntersectionObserver for the leaderboard/chat
-        // would require more significant restructuring. For this additive example,
-        // we'll note that this is a potential optimization but not fully implemented.
-
-
-        // --- Behavioral Nudges to Spend More ---
-
-        // Loss Aversion (Mock)
-        function checkLossAversionNudge() {
-             // This is checked after every roll in rollDice
-             // Trigger nudge if it was a loss AND loss streak is 1 (first loss)
-             if (state.rollResult === 'LOSE' && state.lossStreak === 1 && !localStorage.getItem('lossAversionNudgeShown')) {
-                 showToast("Don't stop now! Double your next bet to win it back! 💪", true, () => {
-                     // Simulate doubling the bet (capped by balance)
-                     state.chipValue = Math.min(state.chipValue * 2, mockWallet.balance > 0 ? mockWallet.balance : state.chipValue);
-                     // Update active chip button visually (find the closest value)
-                     let closestButton = chipButtons[0];
-                     let minDiff = Math.abs(state.chipValue - parseFloat(closestButton.dataset.value));
-
-                     chipButtons.forEach(button => {
-                          const value = parseFloat(button.dataset.value);
-                          const diff = Math.abs(state.chipValue - value);
-                          if (diff < minDiff) {
-                              minDiff = diff;
-                              closestButton = button;
-                          }
-                     });
-                      chipButtons.forEach(btn => btn.classList.remove('active'));
-                      if (closestButton) closestButton.classList.add('active');
-
-                     // The toast/popup will hide automatically if it has a button
-                     // retentionPopup.style.display = 'none'; // This was for the retention popup, not toast
-                 }, "Double Bet");
-                 localStorage.setItem('lossAversionNudgeShown', 'true'); // Mark as shown once per session/condition
-                 // Reset this flag based on session or time if needed
-             }
-        }
-        // checkLossAversionNudge is called in rollDice after every roll
-
+        // checkLossAversionNudge is defined above and called in rollDice
 
         // Sunk Cost Fallacy (Mock) - Handled in updateSunkCostTracker
 
@@ -3571,7 +3802,20 @@
             if (mockWallet.balance < 0.5 && !localStorage.getItem('lowBalanceNudgeShownPersonalized')) {
                 showToast(`${username}, you're just 1 roll away from winning big!`,
                          true,
-                         () => { depositModal.style.display = 'flex'; },
+                         () => {
+                             // Open user modal to wallet tab
+                             userModal.style.display = 'flex';
+                             document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
+                                 btn.classList.remove('active');
+                                 if (btn.dataset.tab === 'wallet') btn.classList.add('active');
+                             });
+                              document.querySelectorAll('.modal .tab-content').forEach(c => {
+                                  c.classList.remove('active');
+                                  if (c.id === 'wallet-tab') c.classList.add('active');
+                              });
+                             document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2); // Update balance in modal
+
+                         },
                          "Deposit Now");
                 localStorage.setItem('lowBalanceNudgeShownPersonalized', 'true'); // Show once per session/condition
             }
@@ -3594,7 +3838,7 @@
                                  chipButtons[chipButtons.length - 1].classList.add('active');
                                  state.chipValue = mockWallet.balance > 0 ? mockWallet.balance : parseFloat(chipButtons[chipButtons.length - 2].dataset.value); // Use MAX logic
                                   updateBackgroundIntensity(); // Update background intensity
-                                 showToast("Your bet has been set to MAX!", false);
+                                 showToast("You're already betting MAX or near MAX!", false);
                              } else {
                                   showToast("You're already betting MAX or near MAX!", false);
                              }
@@ -3641,7 +3885,7 @@
 
              const currentVariant = localStorage.getItem('abTestVariant');
              if (currentVariant === 'B') {
-                 // Apply variant B styles/logic (e.g., change roll button color)
+                 // Apply variant B styles/logic (e.e.g., change roll button color)
                  rollButton.classList.add('variant-green');
              }
         }
@@ -3739,6 +3983,25 @@
         }
         checkVIPStatus(); // Check VIP status on load
 
+        // Tab switching in the user modal
+        document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all tabs and buttons
+                document.querySelectorAll('.user-modal-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.modal .tab-content').forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab
+                btn.classList.add('active');
+                const tabId = btn.dataset.tab + '-tab';
+                document.getElementById(tabId).classList.add('active');
+
+                // Update balance in wallet tab when switching to it
+                if (btn.dataset.tab === 'wallet') {
+                    document.getElementById('modal-balance').textContent = mockWallet.balance.toFixed(2);
+                }
+            });
+        });
+
 
         // Initial calls for features that need to run on load
         loadAchievements();
@@ -3748,12 +4011,3 @@
     </script>
 </body>
 </html>
-```javascript
-// This script section is intentionally left blank as all JavaScript is
-// included within the single <script> tag in the HTML for this example.
-// In a real application, separating concerns into multiple files is recommended.
-```css
-/* This CSS section is intentionally left blank as all CSS is
-// included within the single <style> tag in the HTML for this example.
-// In a real application, separating concerns into multiple files is recommended.
-*/
