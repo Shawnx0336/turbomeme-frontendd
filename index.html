@@ -179,6 +179,12 @@
              50% { box-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); }
              100% { box-shadow: 0 0 5px var(--accent); }
          }
+         /* Wheel Pulse during countdown */
+         @keyframes wheel-pulse-glow {
+             0% { box-shadow: 0 0 64px rgba(153, 69, 255, 0.3), 0 0 32px rgba(255, 215, 0, 0.3); }
+             50% { box-shadow: 0 0 80px rgba(153, 69, 255, 0.5), 0 0 40px rgba(255, 215, 0, 0.5); }
+             100% { box-shadow: 0 0 64px rgba(153, 69, 255, 0.3), 0 0 32px rgba(255, 215, 0, 0.3); }
+         }
 
 
         /* Header */
@@ -295,7 +301,12 @@
             box-shadow: 0 0 64px rgba(153, 69, 255, 0.3), 0 0 32px rgba(255, 215, 0, 0.3); /* Multiple shadows */
             /* No conic gradient here, drawn on canvas */
             /* Metallic texture overlay handled by canvas drawing or filter */
+             transition: box-shadow 0.3s ease-in-out; /* Smooth transition for glow */
          }
+         #rouletteCanvas.countdown-glow {
+             animation: wheel-pulse-glow 1s infinite alternate;
+         }
+
 
         .pointer {
             position: absolute;
@@ -343,10 +354,13 @@
              padding: 3px 6px;
              border-radius: 4px;
              font-weight: bold;
+             /* Animation for slide-in */
+             animation: slideInFromRight 0.3s ease-out;
          }
-         .recent-spins .outcome.win { background: var(--success); color: #000;}
-         .recent-spins .outcome.lose { background: var(--danger); color: #000;}
-         .recent-spins .outcome.neutral { background: #555; color: #fff;}
+         @keyframes slideInFromRight {
+             0% { transform: translateX(10px); opacity: 0; }
+             100% { transform: translateX(0); opacity: 1; }
+         }
 
 
         /* Bet Controls */
@@ -666,6 +680,53 @@
              display: flex;
              flex-direction: column;
         }
+         .chat-box-header {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 8px;
+             font-weight: bold;
+             color: var(--accent);
+         }
+         .chat-box-header .close-chat-btn {
+             background: none;
+             border: none;
+             color: #aaa;
+             font-size: 1.2em;
+             cursor: pointer;
+             position: relative; /* Needed for unread dot */
+         }
+         .chat-box-header .close-chat-btn .unread-dot {
+             display: none;
+             position: absolute;
+             top: -5px;
+             right: -5px;
+             width: 10px;
+             height: 10px;
+             background: var(--danger);
+             border-radius: 50%;
+         }
+         .chat-box.collapsed {
+             width: 50px; /* Collapsed width */
+             height: 50px; /* Collapsed height */
+             padding: 8px;
+             overflow: hidden;
+             justify-content: center;
+             align-items: center;
+         }
+         .chat-box.collapsed .chat-feed,
+         .chat-box.collapsed .chat-input {
+             display: none;
+         }
+         .chat-box.collapsed .chat-box-header {
+             margin-bottom: 0;
+         }
+         .chat-box.collapsed .chat-box-header .close-chat-btn {
+             position: static; /* Reset position */
+             transform: none;
+         }
+
+
          .chat-feed {
             flex-grow: 1;
             overflow-y: auto;
@@ -933,7 +994,14 @@
              box-shadow: 0 4px 15px rgba(0,0,0,0.5);
              display: flex; /* Use flexbox for tabs */
              flex-direction: column;
-        }
+         }
+         /* Leaderboard Auto-Scroll Animation (if needed) */
+         /* @keyframes autoscroll {
+             0% { transform: translateY(0); }
+             100% { transform: translateY(calc(-100% + 250px)); } // Adjust 250px to max-height
+         } */
+
+
          .leaderboard-tabs {
              display: flex;
              margin-bottom: 10px;
@@ -1152,6 +1220,9 @@
                  max-height: 150px; /* Reduce max height */
                  padding: 8px;
              }
+             .chat-box.collapsed {
+                 bottom: 80px; /* Maintain position when collapsed */
+             }
              .leaderboard-panel {
                  display: none; /* Hide leaderboard on small screens */
              }
@@ -1200,6 +1271,25 @@
                   top: 60px; /* Position below guest banner */
                   font-size: 0.7em;
                   padding: 5px 10px;
+             }
+             /* Sticky Bet Controls when Keyboard is NOT open */
+             body:not(.keyboard-open) .bet-controls {
+                 position: fixed;
+                 bottom: 0;
+                 left: 0;
+                 width: 100%;
+                 border-radius: 0;
+                 margin: 0;
+                 padding-bottom: calc(15px + env(safe-area-inset-bottom));
+                 box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+             }
+              /* Adjust padding when keyboard is open */
+             body.keyboard-open .container {
+                 padding-bottom: 15px; /* Reduce bottom padding when keyboard is open */
+             }
+             body.keyboard-open .bet-controls {
+                 position: static; /* Make bet controls static when keyboard is open */
+                 margin-bottom: 0;
              }
         }
 
@@ -1395,6 +1485,13 @@
         </div>
 
         <div class="chat-box" id="chatBox">
+             <div class="chat-box-header">
+                 Live Chat
+                 <button class="close-chat-btn" id="toggleChatBtn" aria-label="Toggle chat">
+                     <i class="fas fa-times"></i>
+                     <span class="unread-dot"></span>
+                 </button>
+             </div>
              <div class="chat-feed" id="chatFeed">
                 <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
              </div>
@@ -1526,6 +1623,19 @@
              </div>
          </div>
 
+         <div class="bonus-banner" id="autoDemoBanner" style="display: none;">
+             Auto demo in progress – Tap anything to join
+         </div>
+
+         <div class="modal-overlay" id="dailyRewardModal">
+             <div class="modal-content">
+                 <h2>Daily Reward!</h2>
+                 <p>Thanks for playing! Claim your bonus $SPIN.</p>
+                 <p id="dailyRewardAmount">+0.05 $SPIN</p>
+                 <button id="claimDailyRewardBtn">Claim</button>
+             </div>
+         </div>
+
 
         <div class="modal-overlay" id="shareModal">
             <div class="modal-content">
@@ -1591,6 +1701,7 @@
         let recentSpins = JSON.parse(localStorage.getItem('solroulette_recent_spins') || '[]'); // Load recent spins
         let fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total') || '0'); // Track fake winnings
         let onboardingShown = localStorage.getItem('solroulette_onboarding_shown') === 'true'; // Track if onboarding tooltip has been shown
+        let firstRealBetPlaced = localStorage.getItem('solroulette_first_real_bet_placed') === 'true'; // Track if a real bet has been placed
 
         // User Profile
         let user = {
@@ -1601,8 +1712,9 @@
         };
 
         // Daily Bonus State
-        let lastLoginDate = localStorage.getItem('solroulette_last_login') || null;
-        let dailyBonusDay = parseInt(localStorage.getItem('solroulette_daily_bonus_day') || '0');
+        let lastLoginDate = localStorage.getItem(isGuestMode ? 'solroulette_guest_last_login' : 'solroulette_last_login') || null;
+        let dailyBonusDay = parseInt(localStorage.getItem(isGuestMode ? 'solroulette_guest_daily_bonus_day' : 'solroulette_daily_bonus_day') || '0');
+        let dailyRewardClaimedToday = localStorage.getItem('solroulette_daily_reward_claimed') === new Date().toDateString(); // Track daily reward claim
 
         // Idle Timer State
         let idleTimer = null;
@@ -1849,6 +1961,11 @@
              playSound('click');
              if (navigator.vibrate) navigator.vibrate(50);
 
+            const connectWalletBtn = document.getElementById('connectWalletBtn');
+            connectWalletBtn.textContent = 'Connecting...';
+            connectWalletBtn.disabled = true;
+
+
             try {
                 // Attempt to connect using a common adapter like Phantom
                 const { PhantomWalletAdapter } = window.SolanaWalletAdapters;
@@ -1857,6 +1974,8 @@
                 // Check if the adapter is available and connectable
                 if (!adapter) {
                     showMessageBox('Wallet Not Found', 'Phantom wallet not found. Please install it.');
+                    connectWalletBtn.textContent = 'Connect Wallet';
+                    connectWalletBtn.disabled = false;
                     return;
                 }
 
@@ -1906,6 +2025,10 @@
                 localStorage.setItem('solroulette_achievements', JSON.stringify([...achievementsUnlocked]));
                  localStorage.setItem('solroulette_is_guest', 'false'); // Update guest mode status
 
+                // Mark that a real bet is now possible/wallet is connected
+                firstRealBetPlaced = true;
+                localStorage.setItem('solroulette_first_real_bet_placed', 'true');
+
 
                 updateUIDebounced();
                 addChatMessage('System', `${user.name} joined the game!`, '🤝', 'system');
@@ -1924,11 +2047,16 @@
                  // Stop auto demo if it was running
                  stopAutoDemo();
 
+                 connectWalletBtn.textContent = '✅ Wallet Connected';
+                 connectWalletBtn.disabled = true;
+
 
             } catch (err) {
                 console.error('Wallet connection failed:', err);
                 showMessageBox('Connection Failed', 'Failed to connect wallet. Please try again.');
                 if (navigator.vibrate) navigator.vibrate(200); // Vibrate on error
+                connectWalletBtn.textContent = 'Connect Wallet';
+                connectWalletBtn.disabled = false;
             }
         }
 
@@ -1937,6 +2065,7 @@
              if (navigator.vibrate) navigator.vibrate(50);
              document.getElementById('walletModal').classList.add('visible');
              resetIdleTimer(); // Reset idle timer on modal open
+             stopAutoDemo(); // Stop auto demo on modal open
          }
 
          function closeWalletModal() {
@@ -1944,6 +2073,8 @@
              if (navigator.vibrate) navigator.vibrate(50);
              document.getElementById('walletModal').classList.remove('visible');
              resetIdleTimer(); // Reset idle timer on modal close
+             // Restart auto demo if it was active before opening the modal (optional, depends on desired flow)
+             // if (wasAutoDemoActive) startAutoDemo();
          }
 
         // Update Timer
@@ -1951,6 +2082,7 @@
             const timerElement = document.getElementById('globalTimer');
             const pointerElement = document.getElementById('pointer');
             const preSpinCtaElement = document.getElementById('preSpinCta');
+            const rouletteCanvas = document.getElementById('rouletteCanvas');
 
 
             if (isSpinning) {
@@ -1968,6 +2100,7 @@
 
                  // Disable Spin Again button during spin
                  document.getElementById('resultModalSpinAgainBtn').disabled = true;
+                 rouletteCanvas.classList.remove('countdown-glow'); // Remove glow while spinning
 
                  return;
             }
@@ -1985,6 +2118,8 @@
             timerElement.style.background = 'linear-gradient(45deg, var(--danger), var(--primary))';
              timerElement.classList.remove('urgent'); // Remove urgent class initially
              pointerElement.classList.remove('pulse'); // Stop pointer pulse
+             rouletteCanvas.classList.remove('countdown-glow'); // Remove glow unless countdown is low
+
 
             if (spinTimer <= 10 && spinTimer > 0) {
                  timerElement.classList.add('urgent'); // Add urgent class for faster pulse and red gradient
@@ -2002,6 +2137,8 @@
                 } else {
                      preSpinCtaElement.textContent = 'Place your bets...'; // Default CTA
                 }
+                 // Add glow to wheel during countdown
+                 rouletteCanvas.classList.add('countdown-glow');
 
 
             } else {
@@ -2010,6 +2147,7 @@
                      currentTickSound = null;
                  }
                  preSpinCtaElement.textContent = 'Place your bets...'; // Default CTA
+                 rouletteCanvas.classList.remove('countdown-glow'); // Remove glow if timer is high or zero
             }
 
              // Pulse pointer when timer is <= 3s
@@ -2037,8 +2175,8 @@
 
         // Simulate Multiplayer (placing bets for the next round)
         function simulateMultiplayer() {
-            // Only simulate if not spinning
-            if (isSpinning || spinTimer <= 3) return;
+            // Only simulate if not spinning or in auto demo (auto demo handles its own bets)
+            if (isSpinning || spinTimer <= 3 || isAutoDemo) return;
 
             playersOnline += Math.floor(Math.random() * 10 - 5);
             document.getElementById('playersOnline').textContent = playersOnline;
@@ -2111,6 +2249,13 @@
             msg.innerHTML = `<i class="fas ${type === 'system' ? 'fa-robot' : 'fa-user'}"></i> <span class="${userClass}">${user}:</span> ${text} <span class="reaction">${reaction}</span>`;
             chatFeed.appendChild(msg); // Append to chatFeed
             chatFeed.scrollTop = chatFeed.scrollHeight; // Auto-scroll to bottom
+
+            // Show unread dot if chat is collapsed
+            const chatBox = document.getElementById('chatBox');
+            if (chatBox.classList.contains('collapsed')) {
+                const unreadDot = chatBox.querySelector('.unread-dot');
+                if (unreadDot) unreadDot.style.display = 'block';
+            }
         }
 
         // Send Chat
@@ -2153,8 +2298,10 @@
 
         // Place Bet
         function placeBet() {
+            // Play bet confirmation sound
             playSound('click');
-            if (navigator.vibrate) navigator.vibrate(50);
+            if (navigator.vibrate) navigator.vibrate(80); // Haptic feedback on spin start
+
 
             if (!currentBet.multiplier) {
                 showMessageBox('No Multiplier Selected', 'Select a multiplier!');
@@ -2164,7 +2311,7 @@
             const amount = parseFloat(document.getElementById('betSlider').value);
 
             // Auto Refill Fake SOL if balance is too low in guest mode
-            if (isGuestMode && walletBalance < 0.01 && window.autoRefill) { // Check autoRefill flag
+            if (isGuestMode && walletBalance < amount && window.autoRefill) { // Check autoRefill flag and if balance is less than bet amount
                  refillFakeSol(); // Auto refill
                  // Now check if the bet is possible after refill
                  if (walletBalance < amount) {
@@ -2172,7 +2319,7 @@
                      if (navigator.vibrate) navigator.vibrate(200);
                      return;
                  }
-            } else if (isGuestMode && walletBalance < 0.01) { // Manual refill needed
+            } else if (isGuestMode && walletBalance < amount) { // Manual refill needed
                  openRefillFakeSolModal();
                  return; // Prevent placing bet if balance is too low
             }
@@ -2194,6 +2341,7 @@
                 return;
             }
 
+
             // Deduct bet amount immediately
             walletBalance -= amount;
             totalWagered += amount;
@@ -2208,7 +2356,8 @@
 
             xp += 10; // Earn XP for placing a bet
             checkAchievements();
-            updateUIDebounced();
+updateUIDebounced(); // Update UI to show deducted balance and XP
+
 
             // Disable bet controls until next round starts
             document.getElementById('placeBetBtn').disabled = true;
@@ -2227,8 +2376,12 @@
             // Show mock transaction feedback (only for real wallet, or maybe simulate for guest?)
             if (!isGuestMode) {
                  addChatMessage('System', `Transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}`, '✅', 'system');
+                 // Mark that a real bet has been placed
+                 firstRealBetPlaced = true;
+                 localStorage.setItem('solroulette_first_real_bet_placed', 'true');
+                 stopAutoDemo(); // Stop auto demo on first real bet
              } else {
-                 addChatMessage('System', `Fake transaction sent: ◎${amount.toFixed(2)} on ${currentBet.multiplier}`, '✅', 'system');
+                 addChatMessage('System', `Fake transaction sent: ◎${amount.amount.toFixed(2)} on ${currentBet.multiplier}`, '✅', 'system'); // Ensure amount is number
              }
 
 
@@ -2244,7 +2397,6 @@
                  guestSpinCount++; // Increment guest spin count
                  localStorage.setItem('solroulette_guest_spin_count', guestSpinCount);
                  localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save fake winnings
-
              } else {
                  localStorage.setItem('solroulette_wallet_balance', walletBalance); // Save balance
                  localStorage.setItem('solroulette_total_wagered', totalWagered);
@@ -2259,12 +2411,13 @@
                  localStorage.setItem('solroulette_user_avatar', user.avatar);
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
+             localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
 
 
             // Start the spin animation immediately after placing the bet
             spinWheel();
             resetIdleTimer(); // Reset idle timer on spin
-            stopAutoDemo(); // Stop auto demo on manual spin
+            // Auto demo is stopped when placeBet is called
         }
 
          // Function to handle the result of the spin
@@ -2275,28 +2428,42 @@
              let winningMultiplier = null; // Determine the actual winning multiplier
              let userPickedMultiplier = currentBet.multiplier; // Store what the user picked
 
-             // Find the segment the wheel landed on based on final rotation
-             const finalRotationNormalized = (currentWheelRotation % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); // Normalize to 0-2PI
+             // --- Fix Mismatched Spin Result Bug ---
+             // Determine the segment the wheel *actually* landed on based on the final rotation angle.
+             // The finalRotationNormalized is in radians (0 to 2*PI).
+             // We need to convert it to degrees (0 to 360) relative to the pointer position (-90 degrees or -PI/2 radians).
+             const finalRotationDegrees = (currentWheelRotation * 180 / Math.PI) % 360;
+             // Adjust for the pointer being at the top (which corresponds to 0 degrees in the canvas drawing context, but -90 degrees visually)
+             // We need to find which segment's angle range contains the final rotation angle relative to the pointer.
+             // The pointer is at -90 degrees. The segments are drawn starting from 0 degrees (right).
+             // So, a rotation of 0 degrees means the right edge of the 1.5x segment is at the pointer.
+             // A rotation of -90 degrees means the top of the wheel (where the pointer is) aligns with the 0 degree mark of the segments.
+             // We need to find which segment's angle range contains the angle (finalRotationDegrees + 90 + 360) % 360.
 
-              // Find the segment that corresponds to the final rotation angle
+             const effectiveLandedAngleDegrees = (finalRotationDegrees + 90 + 360) % 360; // Normalize to 0-360 degrees
+             const effectiveLandedAngleRadians = effectiveLandedAngleDegrees * Math.PI / 180; // Convert back to radians
+
              const landedSegment = segments.find(segment => {
-                 const effectiveAngle = (finalRotationNormalized + Math.PI / 2) % (2 * Math.PI);
                  let start = segment.startAngle;
                  let end = segment.endAngle;
 
-                 if (start > end) { // Handles segments that cross the 0/2PI boundary
-                     return effectiveAngle >= start || effectiveAngle < end;
+                 // Adjust angles to handle the wrap-around segment (10x)
+                 if (start > end) { // Segment crosses the 0/2PI boundary (e.g., 10x from ~270deg to ~360deg/0deg)
+                     return effectiveLandedAngleRadians >= start || effectiveLandedAngleRadians < end;
                  } else {
-                     return effectiveAngle >= start && effectiveAngle < end;
+                     return effectiveLandedAngleRadians >= start && effectiveLandedAngleRadians < end;
                  }
              });
 
              if (landedSegment) {
                  winningMultiplier = landedSegment.multiplier;
              } else {
-                 console.error("Could not determine winning segment!");
-                 winningMultiplier = '1.5x'; // Default to lowest multiplier
+                 console.error("Could not determine winning segment based on final rotation!");
+                 // Fallback: If segment couldn't be determined from rotation, use the intended target multiplier (less accurate but prevents crash)
+                 winningMultiplier = currentBet.multiplier;
              }
+             // --- End Fix Mismatched Spin Result Bug ---
+
 
              // Add outcome to recent spins
              recentSpins.unshift({ multiplier: winningMultiplier, won: userPickedMultiplier === winningMultiplier }); // Add to the beginning
@@ -2376,7 +2543,7 @@
              } else {
                  // Show guest mode toast after each spin in guest mode
                  showGuestModeToast();
-                 // Check if fake balance is low after the spin result
+                 // Check if fake balance is low after the spin result and trigger refill modal
                  if (walletBalance < 0.01 && !document.getElementById('refillFakeSolModal').classList.contains('visible')) {
                      openRefillFakeSolModal();
                  }
@@ -2412,7 +2579,8 @@
                  localStorage.setItem('solroulette_guest_win_streak', winStreak);
                  localStorage.setItem('solroulette_guest_ten_x_wins', tenXWins);
                  localStorage.setItem('solroulette_guest_achievements', JSON.stringify([...achievementsUnlocked]));
-                 localStorage.setItem('solroulette_guest_spin_count', guestSpinCount); // Save guest spin count
+                 guestSpinCount++; // Increment guest spin count
+                 localStorage.setItem('solroulette_guest_spin_count', guestSpinCount);
                  localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save fake winnings
              } else {
                  localStorage.setItem('solroulette_wallet_balance', walletBalance); // Save balance
@@ -2428,6 +2596,7 @@
                  localStorage.setItem('solroulette_user_avatar', user.avatar);
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
+             localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
 
 
              // Check low balance after result (only in real wallet mode)
@@ -2475,18 +2644,22 @@
              // spinAgainBtn.onclick = () => { closeResultModal(); };
 
              modal.classList.add('visible');
+             resetIdleTimer(); // Reset idle timer on modal open
+             stopAutoDemo(); // Stop auto demo on modal open
          }
 
          function closeResultModal() {
               playSound('click');
               if (navigator.vibrate) navigator.vibrate(50);
               document.getElementById('resultModal').classList.remove('visible');
+              resetIdleTimer(); // Reset idle timer on modal close
          }
 
          // Refill Fake SOL Modal
          function openRefillFakeSolModal() {
              document.getElementById('refillFakeSolModal').classList.add('visible');
              resetIdleTimer(); // Reset idle timer on modal open
+             stopAutoDemo(); // Stop auto demo on modal open
          }
 
          function closeRefillFakeSolModal() {
@@ -2514,6 +2687,8 @@
         function spinWheel() {
             isSpinning = true;
             playSound('whoosh', 0.7); // Play whoosh sound
+            if (navigator.vibrate) navigator.vibrate([80]); // Haptic feedback on spin start
+
 
             const wheel = document.getElementById('rouletteCanvas');
             const pointer = document.getElementById('pointer');
@@ -2720,6 +2895,7 @@
              document.getElementById('messageBoxContent').textContent = message;
              document.getElementById('messageBox').classList.add('visible');
              resetIdleTimer(); // Reset idle timer on modal open
+             stopAutoDemo(); // Stop auto demo on modal open
          }
 
          function closeMessageBox() {
@@ -2864,6 +3040,7 @@
                  localStorage.removeItem('solroulette_fake_intro_shown'); // Reset onboarding flag too
                  localStorage.removeItem('solroulette_guest_modal_shown'); // Reset enjoyment modal flag
                  localStorage.removeItem('solroulette_onboarding_shown'); // Reset onboarding tooltip flag
+                 localStorage.removeItem('solroulette_first_real_bet_placed'); // Reset real bet flag
 
                  location.reload(); // Reload the page to restart in fresh guest mode
              }
@@ -2983,6 +3160,9 @@
          }
 
          // Leaderboard (Mock Data with Tabs)
+         let leaderboardScrollTimer = null;
+         const LEADERBOARD_SCROLL_INTERVAL = 5000; // Scroll every 5 seconds
+
          function updateLeaderboard() {
              const leaderboardContent = document.getElementById('leaderboardContent');
 
@@ -3035,7 +3215,35 @@
                      });
                  }
              });
+
+             // Start auto-scrolling if there are more than 5 entries
+             const activeTabContent = leaderboardContent.querySelector('.leaderboard-content-tab.active');
+             if (activeTabContent && activeTabContent.children.length > 5) {
+                 startLeaderboardScroll();
+             } else {
+                 stopLeaderboardScroll();
+             }
          }
+
+         function startLeaderboardScroll() {
+             if (leaderboardScrollTimer === null) {
+                 const leaderboardPanel = document.getElementById('leaderboardPanel');
+                 leaderboardScrollTimer = setInterval(() => {
+                     // Scroll down by a small amount
+                     leaderboardPanel.scrollBy({ top: 20, behavior: 'smooth' });
+                     // If scrolled to the bottom, reset to top
+                     if (leaderboardPanel.scrollTop + leaderboardPanel.clientHeight >= leaderboardPanel.scrollHeight) {
+                         leaderboardPanel.scrollTo({ top: 0, behavior: 'smooth' });
+                     }
+                 }, LEADERBOARD_SCROLL_INTERVAL / 5); // Scroll more frequently in smaller steps
+             }
+         }
+
+         function stopLeaderboardScroll() {
+             clearInterval(leaderboardScrollTimer);
+             leaderboardScrollTimer = null;
+         }
+
 
          // Leaderboard Tab Switching
          document.querySelectorAll('.leaderboard-tab').forEach(tab => {
@@ -3049,6 +3257,7 @@
                          content.classList.add('active');
                      }
                  });
+                 updateLeaderboard(); // Update leaderboard content and restart scroll
              });
          });
 
@@ -3146,8 +3355,7 @@
                  localStorage.setItem('solroulette_fake_intro_shown', 'true');
                  isGuestMode = true; // Explicitly set guest mode
                  localStorage.setItem('solroulette_is_guest', 'true');
-                 walletBalance = 500; // Set initial fake balance
-                 localStorage.setItem('solroulette_guest_balance', walletBalance);
+                 // walletBalance is already set to 500 on initial load if fakeIntroShown is false
 
                  // Initialize other guest stats if they don't exist
                  if (localStorage.getItem('solroulette_guest_xp') === null) localStorage.setItem('solroulette_guest_xp', '0');
@@ -3161,7 +3369,7 @@
                  if (localStorage.getItem('solroulette_guest_daily_bonus_day') === null) localStorage.setItem('solroulette_guest_daily_bonus_day', '0');
                  if (localStorage.getItem('solroulette_fake_winnings_total') === null) localStorage.setItem('solroulette_fake_winnings_total', '0');
 
-                 // Reload guest stats after setting them
+                 // Load guest stats after setting them
                  xp = parseInt(localStorage.getItem('solroulette_guest_xp'));
                  tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens'));
                  totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered'));
@@ -3265,8 +3473,9 @@
 
          // Auto Demo Mode Functions
          function startAutoDemo() {
-             if (!isGuestMode || isSpinning || document.querySelector('.modal-overlay.visible')) {
-                 isAutoDemo = false; // Cannot start auto demo if not guest, spinning, or modal is open
+             // Only start auto demo if in guest mode, no real bet placed, not spinning, and no modal is open
+             if (!isGuestMode || firstRealBetPlaced || isSpinning || document.querySelector('.modal-overlay.visible')) {
+                 isAutoDemo = false;
                  document.getElementById('autoDemoBanner').style.display = 'none';
                  return;
              }
@@ -3296,7 +3505,8 @@
 
              // Place the bet after a short delay
              setTimeout(() => {
-                 if (isAutoDemo && !isSpinning && spinTimer > 3) { // Double check state before placing bet
+                 // Double check state before placing bet in auto demo
+                 if (isAutoDemo && !isSpinning && spinTimer > 3) {
                      placeBet();
                  } else {
                      // If conditions aren't met, try starting demo again later
@@ -3314,6 +3524,95 @@
              currentBet = { multiplier: null, amount: 0 };
              document.getElementById('betSlider').value = 0.5; // Reset slider visually
              updateUIDebounced(); // Update UI
+         }
+
+         // Keyboard Detection for Mobile Sticky Bet Button
+         let initialViewportHeight = window.innerHeight;
+         let keyboardOpen = false;
+
+         function checkKeyboard() {
+             const currentViewportHeight = window.innerHeight;
+             const heightDifference = initialViewportHeight - currentViewportHeight;
+             // A common heuristic: keyboard is open if viewport height decreases significantly (e.g., > 150px)
+             const keyboardThreshold = 150;
+
+             if (heightDifference > keyboardThreshold && !keyboardOpen) {
+                 // Keyboard opened
+                 keyboardOpen = true;
+                 document.body.classList.add('keyboard-open');
+             } else if (heightDifference <= keyboardThreshold && keyboardOpen) {
+                 // Keyboard closed
+                 keyboardOpen = false;
+                 document.body.classList.remove('keyboard-open');
+             }
+         }
+
+         // Add event listeners to check keyboard state
+         window.addEventListener('resize', checkKeyboard);
+         // Also check on focus/blur of input fields as resize might not fire consistently
+         document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+             input.addEventListener('focus', checkKeyboard);
+             input.addEventListener('blur', checkKeyboard);
+         });
+
+
+         // Daily Reward Prompt
+         let activeUseTimer = null;
+         let activeUseDuration = 0; // Track active use time in seconds
+         const DAILY_REWARD_THRESHOLD = 180; // 3 minutes in seconds (180)
+
+         function startActiveUseTimer() {
+             if (activeUseTimer === null) {
+                 activeUseTimer = setInterval(() => {
+                     activeUseDuration++;
+                     // console.log('Active use duration:', activeUseDuration); // For debugging
+                     if (activeUseDuration >= DAILY_REWARD_THRESHOLD && isGuestMode && !dailyRewardClaimedToday) {
+                         showDailyRewardModal();
+                         stopActiveUseTimer(); // Stop the timer once threshold is met
+                     }
+                 }, 1000); // Check every second
+             }
+         }
+
+         function stopActiveUseTimer() {
+             clearInterval(activeUseTimer);
+             activeUseTimer = null;
+         }
+
+         function resetActiveUseTimer() {
+             activeUseDuration = 0;
+             stopActiveUseTimer();
+             startActiveUseTimer();
+         }
+
+         function showDailyRewardModal() {
+             const modal = document.getElementById('dailyRewardModal');
+              // Only show if no other modal is visible and in guest mode and not claimed today
+             const anyModalVisible = document.querySelector('.modal-overlay.visible');
+             if (!anyModalVisible && isGuestMode && !dailyRewardClaimedToday) {
+                modal.classList.add('visible');
+                resetIdleTimer(); // Reset idle timer on modal open
+                stopAutoDemo(); // Stop auto demo on modal open
+             }
+         }
+
+         function closeDailyRewardModal() {
+             const modal = document.getElementById('dailyRewardModal');
+             modal.classList.remove('visible');
+             resetIdleTimer(); // Reset idle timer on modal close
+         }
+
+         function claimDailyReward() {
+             playSound('win');
+             if (navigator.vibrate) navigator.vibrate([50, 50]);
+             const rewardAmount = 0.05; // 0.05 $SPIN
+             tokensEarned += rewardAmount;
+             localStorage.setItem('solroulette_spin_tokens', tokensEarned);
+             dailyRewardClaimedToday = true;
+             localStorage.setItem('solroulette_daily_reward_claimed', new Date().toDateString()); // Mark as claimed today
+             showMessageBox('Reward Claimed!', `You claimed ${rewardAmount.toFixed(2)} $SPIN!`);
+             updateUIDebounced();
+             closeDailyRewardModal();
          }
 
 
@@ -3371,6 +3670,7 @@
                  placeBetBtn.style.display = 'block';
                  guestModeBanner.style.display = 'none'; // Hide guest banner for real users
 
+                 // Place Bet button requires multiplier selected, amount > 0, and betting allowed by timer
                  placeBetBtn.disabled = !bettingAllowedByTimer || currentBet.multiplier === null || parseFloat(betSlider.value) <= 0;
                  placeBetBtn.title = bettingAllowedByTimer ? '' : 'Betting is closed';
 
@@ -3441,18 +3741,35 @@
         // Idle Timer Functions
         function resetIdleTimer() {
             clearTimeout(idleTimer);
-            idleTimer = setTimeout(showIdleModal, IDLE_TIMEOUT);
+            idleTimer = setTimeout(showIdleModalOrAutoDemo, IDLE_TIMEOUT); // Use a combined function
+
+
              // Stop auto demo if it's running when user interacts
              if (isAutoDemo) {
                  stopAutoDemo();
              }
+             // Restart active use timer on interaction
+             resetActiveUseTimer();
+        }
+
+        function showIdleModalOrAutoDemo() {
+             const anyModalVisible = document.querySelector('.modal-overlay.visible');
+             // If no modal is open and in guest mode with no real bet placed, start auto demo
+             if (!anyModalVisible && isGuestMode && !firstRealBetPlaced) {
+                 startAutoDemo();
+             } else if (!anyModalVisible) {
+                 // Otherwise, show the idle modal if no modal is open
+                 showIdleModal();
+             }
+             // Reset timer regardless
+             resetIdleTimer();
         }
 
         function showIdleModal() {
             const idleModal = document.getElementById('idleModal');
-            // Only show if no other modal is visible and not in auto demo
+            // Only show if no other modal is visible
             const anyModalVisible = document.querySelector('.modal-overlay.visible');
-            if (!anyModalVisible && !isAutoDemo) {
+            if (!anyModalVisible) {
                 idleModal.classList.add('visible');
             }
              // Reset timer even if modal wasn't shown, to prevent immediate re-trigger
@@ -3570,6 +3887,11 @@
                  // closeIdleModal(); // Keep idle modal open until user clicks button
              }
          });
+         document.getElementById('dailyRewardModal').addEventListener('click', (e) => {
+             if (e.target === document.getElementById('dailyRewardModal')) {
+                 // Keep daily reward modal open until user clicks button
+             }
+         });
 
 
         // Add event listeners for buttons that had inline onclick
@@ -3601,6 +3923,7 @@
          document.getElementById('resultModalSpinAgainBtn').addEventListener('click', closeResultModal); // Spin Again button in result modal
          document.getElementById('refillFakeSolBtn').addEventListener('click', refillFakeSol); // Refill fake SOL button
          document.getElementById('closeIdleModalBtn').addEventListener('click', closeIdleModal); // Close Idle Modal button
+         document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward); // Claim Daily Reward button
 
 
         // Add event listener for the Shop button (assuming you add one in the header or elsewhere)
@@ -3613,6 +3936,33 @@
         shopButton.style.marginLeft = '10px';
         shopButton.addEventListener('click', openShopModal);
         document.querySelector('.header').appendChild(shopButton);
+
+        // Chat Toggle Functionality
+        const chatBox = document.getElementById('chatBox');
+        const toggleChatBtn = document.getElementById('toggleChatBtn');
+        let chatCollapsed = false;
+
+        function toggleChat() {
+            chatCollapsed = !chatCollapsed;
+            if (chatCollapsed) {
+                chatBox.classList.add('collapsed');
+                // Change icon to comment bubble with potential unread dot
+                toggleChatBtn.innerHTML = '<i class="fas fa-comment"></i><span class="unread-dot"></span>';
+                 // Hide unread dot when chat is manually collapsed and opened
+                 const unreadDot = chatBox.querySelector('.unread-dot');
+                 if (unreadDot) unreadDot.style.display = 'none';
+
+            } else {
+                chatBox.classList.remove('collapsed');
+                // Change icon back to times
+                toggleChatBtn.innerHTML = '<i class="fas fa-times"></i>';
+                 // Scroll to bottom when chat is expanded
+                 document.getElementById('chatFeed').scrollTop = document.getElementById('chatFeed').scrollHeight;
+            }
+             resetIdleTimer(); // Reset idle timer on chat toggle
+             stopAutoDemo(); // Stop auto demo on chat toggle
+        }
+        toggleChatBtn.addEventListener('click', toggleChat);
 
 
         // Add particle effects to the background overlay
@@ -3722,7 +4072,7 @@
                  xp = parseInt(localStorage.getItem('solroulette_guest_xp') || '0');
                  tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens') || '0');
                  totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
-                 winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak') || '0');
+                 winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0');
                  tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
                  achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements') || '[]'));
                  guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0');
@@ -3784,19 +4134,23 @@
              // Check daily bonus on load
              checkDailyBonus();
 
-             // Start auto demo after a delay if in guest mode and idle timer is running (user hasn't interacted yet)
+             // Start auto demo after a delay if in guest mode, no real bet placed, and idle timer is running (user hasn't interacted yet)
              // This is handled by the idle timer now. When the idle timer triggers, it checks if a modal is open.
              // If no modal is open, it shows the idle modal. If the user closes the idle modal without interacting,
              // the idle timer will reset and eventually trigger again.
-             // To start auto demo after initial load inactivity, we can add a check here:
-             if (isGuestMode && onboardingShown && !isAutoDemo) { // Only start auto demo for returning guests who have seen onboarding
-                 // Start auto demo after a delay if no interaction occurs
-                 autoDemoTimer = setTimeout(startAutoDemo, IDLE_TIMEOUT); // Use the same timeout as idle modal
+             // To start auto demo after initial load inactivity, we use the idle timer's timeout.
+             if (isGuestMode && !firstRealBetPlaced) {
+                 autoDemoTimer = setTimeout(showIdleModalOrAutoDemo, IDLE_TIMEOUT); // Use the combined function
              }
+
+             // Start active use timer
+             startActiveUseTimer();
         };
 
         // Ensure canvas resizes with window
         window.addEventListener('resize', setupCanvas);
+        window.addEventListener('resize', checkKeyboard); // Check keyboard on resize
+
 
         // Reset idle timer on user activity
         document.addEventListener('mousemove', resetIdleTimer);
@@ -3804,6 +4158,21 @@
         document.addEventListener('touchstart', resetIdleTimer);
         document.addEventListener('click', resetIdleTimer); // Also reset on click anywhere
         document.addEventListener('scroll', resetIdleTimer); // Also reset on scroll
+
+         // Event listeners for input focus/blur to detect keyboard
+         document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+             input.addEventListener('focus', checkKeyboard);
+             input.addEventListener('blur', checkKeyboard);
+         });
+
+         // Event listener for daily reward modal close and claim buttons
+         document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward);
+         document.getElementById('dailyRewardModal').addEventListener('click', (e) => {
+             if (e.target === document.getElementById('dailyRewardModal')) {
+                 closeDailyRewardModal();
+             }
+         });
+
 
     </script>
 </body>
