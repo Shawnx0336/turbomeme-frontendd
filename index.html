@@ -1767,7 +1767,61 @@
                 right: 10px;
              }
         }
-    </style>
+    
+/* ===== Header & Wallet Button ===== */
+.connect-wallet-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 12px;
+    font-size: 0.9em;
+    margin-left: auto;
+    order: 3;
+    background: var(--primary);
+    border-radius: 20px;
+}
+/* ===== Wheel Positioning ===== */
+.wheel-container {
+    margin-top: 90px !important; /* Override existing */
+}
+/* ===== Timer & CTA Positioning ===== */
+.global-timer {
+    top: 60px;
+    left: 20px;
+    transform: none;
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+.pre-spin-cta {
+    top: 95px;
+    left: 20px;
+    transform: none;
+    text-align: left;
+}
+/* ===== Chat Toggle ===== */
+.live-panel-toggle-btn {
+    top: 80px;
+    right: 10px;
+    bottom: auto;
+}
+/* ===== Modal Close Buttons ===== */
+.modal-content .close-btn {
+    font-size: 1.2em;
+    top: 5px;
+    right: 5px;
+    padding: 2px;
+    background: none;
+}
+@media (max-width: 375px) {
+    .header { padding: 8px 10px; }
+    .connect-wallet-btn { padding: 6px 10px; }
+}
+@media (min-width: 390px) and (max-width: 428px) {
+    .wheel-container { margin-top: 110px; }
+}
+
+</style>
 </head>
 <body>
     <div class="background-overlay" id="backgroundOverlay"></div>
@@ -1783,12 +1837,16 @@
          </div>
 
 
-        <div class="header">
-            <div class="site-title">SolRoulette LIVE</div>
-            <div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
-            <div class="user-profile" id="userProfile">
-                </div>
-        </div>
+        
+<div class="header">
+    <div class="site-title">SolRoulette LIVE</div>
+    <div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
+    <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
+    <div class="user-profile" id="userProfile">
+        <!-- Keep your existing user profile content -->
+    </div>
+</div>
+
 
         <div class="global-timer" id="globalTimer">⏳ Next Spin: 25s</div>
          <div class="pre-spin-cta" id="preSpinCta">Place your bets...</div>
