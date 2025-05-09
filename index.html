@@ -339,13 +339,13 @@
         /* Roulette Wheel */
         .wheel-container {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 280px;
+            height: 280px;
             margin: 40px auto 20px auto; /* More space */
             perspective: 1000px;
             animation: enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 5; /* Below timer, above background */
-             margin-top: 20px; /* Space for header/timer/cta on desktop */
+             margin-top: 5px !important; /* Space for header/timer/cta on desktop */
         }
          #rouletteCanvas {
             width: 100%;
@@ -4610,17 +4610,6 @@
          document.getElementById('closeDailyRewardModalBtn').addEventListener('click', closeDailyRewardModal);
          document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward); // Claim Daily Reward button
 
-
-        // Add event listener for the Shop button (assuming you add one in the header or elsewhere)
-        // For now, let's add a mock button in the header for testing
-        // (You might want to integrate this into the profile modal later)
-        const shopButton = document.createElement('div');
-        shopButton.className = 'players-online'; // Reuse styling
-        shopButton.innerHTML = '<i class="fas fa-store"></i> Shop';
-        shopButton.style.cursor = 'pointer';
-        shopButton.style.marginLeft = '10px';
-        shopButton.addEventListener('click', openShopModal);
-        document.querySelector('.header').appendChild(shopButton);
 
         // Live Panel Tab Switching Functionality
         const livePanelTabs = document.querySelectorAll('.live-panel-tab');
