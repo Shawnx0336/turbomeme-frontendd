@@ -1909,6 +1909,60 @@
     }
 }
 
+
+/* FINAL UI ADJUSTMENTS */
+
+/* Move Wheel Container Up (fully visible without scroll) */
+.wheel-container {
+    margin-top: 115px !important;
+}
+
+/* Move Recent Spins to clearly empty space above the wheel */
+.recent-spins {
+    top: 140px !important;  /* clearly visible position above the wheel */
+    bottom: auto !important;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px !important;
+    font-size: 0.7em !important;
+    z-index: 20;
+    background: var(--panel-background);
+    border-radius: var(--button-border-radius);
+}
+
+/* Slightly smaller and cleaner Recent Spins for better UI clarity */
+.recent-spins .label, 
+.recent-spins .outcome {
+    font-size: 0.65em !important;
+}
+
+/* Ensure other elements are precisely aligned and scaled properly */
+.guest-banner {
+    top: 45px !important;
+}
+
+.global-timer {
+    top: 70px !important;
+}
+
+.pre-spin-cta {
+    top: 95px !important;
+}
+
+.live-panel-toggle-btn {
+    top: 180px !important;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 428px) {
+    .wheel-container {
+        margin-top: 125px !important;
+    }
+    .recent-spins {
+        top: 150px !important;
+    }
+}
+
 </style>
 </head>
 <body>
