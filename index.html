@@ -1768,214 +1768,139 @@
              }
         }
     
-/* ===== Header & Wallet Button ===== */
-.connect-wallet-btn {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 8px 12px;
-    font-size: 0.9em;
-    margin-left: auto;
-    order: 3;
-    background: var(--primary);
-    border-radius: 20px;
-}
-/* ===== Wheel Positioning ===== */
-.wheel-container {
-    margin-top: 90px !important; /* Override existing */
-}
-/* ===== Timer & CTA Positioning ===== */
+/* Final fix for global timer and CTA alignment */
 .global-timer {
-    top: 60px;
-    left: 20px;
-    transform: none;
-    padding: 8px 12px;
-    font-size: 0.9em;
+    top: 100px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    max-width: 200px;
+    white-space: nowrap !important;
+    text-align: center;
+    padding: 8px 12px !important;
+    font-size: 0.9em !important;
+    z-index: 20;
 }
+
 .pre-spin-cta {
-    top: 95px;
-    left: 20px;
-    transform: none;
-    text-align: left;
+    top: 140px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    max-width: 220px;
+    white-space: nowrap !important;
+    text-align: center;
+    padding: 8px 12px !important;
+    font-size: 0.9em !important;
+    z-index: 20;
 }
-/* ===== Chat Toggle ===== */
-.live-panel-toggle-btn {
-    top: 80px;
-    right: 10px;
-    bottom: auto;
+
+
+/* Raise wheel higher for full visibility */
+.wheel-container {
+    margin-top: 70px !important;
 }
-/* ===== Modal Close Buttons ===== */
+
+/* Resize and reposition the modal close button */
 .modal-content .close-btn {
-    font-size: 1.2em;
-    top: 5px;
-    right: 5px;
-    padding: 2px;
-    background: none;
-}
-@media (max-width: 375px) {
-    .header { padding: 8px 10px; }
-    .connect-wallet-btn { padding: 6px 10px; }
-}
-@media (min-width: 390px) and (max-width: 428px) {
-    .wheel-container { margin-top: 110px; }
+    font-size: 1.2em !important;
+    transform: scale(0.7) !important;
+    top: 8px !important;
+    right: 8px !important;
+    padding: 2px !important;
+    line-height: 1 !important;
+    background: none !important;
+    z-index: 999 !important;
 }
 
 
-/* Header adjustments for better alignment */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    padding: 10px;
-}
-
-/* Connect Wallet button adjustments */
-.connect-wallet-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 6px 12px;
-    font-size: 0.85em;
-    border-radius: 20px;
-    background: var(--primary);
-    z-index: 100; /* Make sure it’s on top */
-}
-
-/* Wheel adjustments to provide adequate space */
-.wheel-container {
-    margin-top: 140px !important; /* Adjust for full visibility */
-}
-
-/* Demo Mode banner position */
-.guest-banner {
-    top: 70px !important; /* clearly above timer and bets labels */
-    font-size: 0.75em !important;
-    padding: 4px 8px !important;
-    z-index: 20;
-}
-
-/* Global Timer adjustments */
+/* Position timer and CTA just below the shop button */
 .global-timer {
-    top: 105px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 6px 10px;
-    font-size: 0.85em;
-    z-index: 15;
+    position: absolute !important;
+    top: 54px !important;
+    left: 90px !important;
+    transform: none !important;
+    font-size: 0.8em !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+    max-width: 180px;
+    z-index: 25;
 }
 
-/* Pre-spin CTA positioning adjustments */
 .pre-spin-cta {
-    top: 130px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 6px 10px;
-    font-size: 0.85em;
-    z-index: 15;
-}
-
-/* Live Panel toggle repositioned clearly */
-.live-panel-toggle-btn {
-    top: 160px;
-    right: 5px;
-}
-
-/* Remove duplicate buttons by setting appropriate visibility */
-.bet-controls .connect-wallet-btn {
-    display: none; /* Hide duplicate Connect Wallet buttons */
-}
-
-/* Responsive fine-tuning */
-@media (max-width: 428px) {
-    .wheel-container {
-        margin-top: 160px !important;
-    }
-    .header {
-        padding: 6px;
-    }
-    .connect-wallet-btn {
-        padding: 4px 8px;
-        font-size: 0.75em;
-    }
-    .global-timer,
-    .pre-spin-cta {
-        font-size: 0.75em;
-    }
-    .guest-banner {
-        font-size: 0.65em !important;
-    }
+    position: absolute !important;
+    top: 78px !important;
+    left: 90px !important;
+    transform: none !important;
+    font-size: 0.8em !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+    max-width: 180px;
+    z-index: 25;
 }
 
 
-/* FINAL UI ADJUSTMENTS */
-
-/* Move Wheel Container Up (fully visible without scroll) */
-.wheel-container {
-    margin-top: 115px !important;
+/* Lock final positioning of Next Spin & Place Your Bets just below Shop button */
+.global-timer {
+    position: absolute !important;
+    top: 135px !important;
+    left: 20px !important;
+    transform: none !important;
+    font-size: 0.8em !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+    max-width: 180px;
+    z-index: 25;
 }
 
-/* Move Recent Spins to clearly empty space above the wheel */
+.pre-spin-cta {
+    position: absolute !important;
+    top: 160px !important;
+    left: 20px !important;
+    transform: none !important;
+    font-size: 0.8em !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+    max-width: 180px;
+    z-index: 25;
+}
+
+
+/* Move Recent Spins into top-right area below header */
 .recent-spins {
-    top: 140px !important;  /* clearly visible position above the wheel */
+    position: absolute !important;
+    top: 135px !important;
+    right: 20px !important;
+    left: auto !important;
     bottom: auto !important;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 4px 8px !important;
+    transform: none !important;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 4px 10px !important;
     font-size: 0.7em !important;
-    z-index: 20;
-    background: var(--panel-background);
-    border-radius: var(--button-border-radius);
-}
-
-/* Slightly smaller and cleaner Recent Spins for better UI clarity */
-.recent-spins .label, 
-.recent-spins .outcome {
-    font-size: 0.65em !important;
-}
-
-/* Ensure other elements are precisely aligned and scaled properly */
-.guest-banner {
-    top: 45px !important;
-}
-
-.global-timer {
-    top: 70px !important;
-}
-
-.pre-spin-cta {
-    top: 95px !important;
-}
-
-.live-panel-toggle-btn {
-    top: 180px !important;
-}
-
-/* Responsive adjustments for small screens */
-@media (max-width: 428px) {
-    .wheel-container {
-        margin-top: 125px !important;
-    }
-    .recent-spins {
-        top: 150px !important;
-    }
+    border-radius: 10px !important;
+    z-index: 30 !important;
 }
 
 
-.connect-wallet-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    padding: 4px 10px;
-    font-size: 0.7em;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 16px;
-    z-index: 9999;
-    display: block !important;
+/* Forcefully remove Recent Spins from wheel and place in top-right */
+.recent-spins {
+    position: absolute !important;
+    top: 135px !important;
+    right: 16px !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    padding: 4px 10px !important;
+    font-size: 0.7em !important;
+    border-radius: 10px !important;
+    z-index: 999 !important;
+    pointer-events: none !important;
+}
+
+/* Override any wheel container rules forcing it inside */
+.wheel-container .recent-spins {
+    position: absolute !important;
 }
 
 </style>
@@ -1994,15 +1919,12 @@
          </div>
 
 
-        
-<div class="header">
-    <div class="site-title">SolRoulette LIVE</div>
-    <div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
-    <div class="user-profile" id="userProfile">
-        <!-- Keep your existing user profile content -->
-    </div>
-</div>
-
+        <div class="header">
+            <div class="site-title">SolRoulette LIVE</div>
+            <div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
+            <div class="user-profile" id="userProfile">
+                </div>
+        </div>
 
         <div class="global-timer" id="globalTimer">⏳ Next Spin: 25s</div>
          <div class="pre-spin-cta" id="preSpinCta">Place your bets...</div>
