@@ -136,7 +136,7 @@
          @keyframes pulse-glow-red {
             0% { filter: drop-shadow(0 0 4px var(--danger)); }
             100% { filter: drop-shadow(0 0 16px var(--danger)); }
-         }
+        }
         @keyframes enter {
             0% { transform: scale(0.9); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -149,12 +149,12 @@
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
-            }
+        }
         @keyframes vibrate {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-2px); }
             75% { transform: translateX(2px); }
-            }
+        }
          @keyframes confetti-fall {
             0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
@@ -370,7 +370,7 @@
             transform: translateX(-50%);
             width: 30px;
             height: 40px;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
             background: var(--accent);
             filter: drop-shadow(0 0 12px var(--accent));
             z-index: 2;
@@ -1768,84 +1768,28 @@
                 right: 10px;
              }
         }
-
-/* Final fix for global timer and CTA alignment */
-.global-timer {
-    position: absolute !important;
-    top: 135px !important;
-    left: 20px !important;
-    transform: none !important;
-    font-size: 0.8em !important;
-    padding: 4px 8px !important;
-    white-space: nowrap !important;
-    max-width: 180px;
-    z-index: 25;
+    
+.global-timer, .pre-spin-cta {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 auto;
 }
-
-.pre-spin-cta {
-    position: absolute !important;
-    top: 160px !important;
-    left: 20px !important;
-    transform: none !important;
-    font-size: 0.8em !important;
-    padding: 4px 8px !important;
-    white-space: nowrap !important;
-    max-width: 180px;
-    z-index: 25;
-}
-
-
-/* Raise wheel higher for full visibility */
-.wheel-container {
-    margin-top: 70px !important;
-}
-
-/* Resize and reposition the modal close button */
-.modal-content .close-btn {
-    font-size: 1.2em !important;
-    transform: scale(0.7) !important;
-    top: 8px !important;
-    right: 8px !important;
-    padding: 2px !important;
-    line-height: 1 !important;
-    background: none !important;
-    z-index: 999 !important;
-}
-
-
-/* Position timer and CTA just below the shop button */
-/* Removed conflicting rules */
-
-
-/* Lock final positioning of Next Spin & Place Your Bets just below Shop button */
-/* Removed conflicting rules */
-
-
-/* Move Recent Spins into top-right area below header */
-.recent-spins {
-    position: absolute !important;
-    top: 135px !important;
-    right: 16px !important;
-    left: auto !important;
-    bottom: auto !important;
-    transform: none !important;
-    background-color: rgba(0, 0, 0, 0.6) !important;
-    padding: 4px 10px !important;
-    font-size: 0.7em !important;
-    border-radius: 10px !important;
-    z-index: 999 !important;
-    pointer-events: none !important;
-}
-
-/* Override any wheel container rules forcing it inside */
-.wheel-container .recent-spins {
-    position: absolute !important;
-}
-
-
-.tooltip-warning, #tooltip, .onboarding-tooltip.visible { display: none !important; opacity: 0 !important; pointer-events: none !important; }</style>
+</style>
 </head>
 <body>
+<div class="modal-overlay visible" id="howToPlayModal" style="z-index: 9999;">
+<div class="modal-content">
+<button class="close-btn" onclick="document.getElementById('howToPlayModal').style.display='none'">×</button>
+<h2>How to Play</h2>
+<p>1. Pick a multiplier (e.g., 2x, 3x, 5x).<br/>
+    2. Adjust your SOL bet amount.<br/>
+    3. Press “Place Bet” and watch the wheel spin.<br/>
+    4. Win if it lands on your multiplier!</p>
+<button onclick="document.getElementById('howToPlayModal').style.display='none'">Got it!</button>
+</div>
+</div>
 <div class="background-overlay" id="backgroundOverlay"></div>
 <div class="strobe-overlay" id="strobeOverlay"></div>
 <div class="container">
@@ -1861,9 +1805,9 @@
 <div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
 <div class="user-profile" id="userProfile">
 </div>
-</div>
-<div class="global-timer" id="globalTimer">⏳ Next Spin: 25s</div>
-<div class="pre-spin-cta" id="preSpinCta">Place your bets...</div>
+</div><div class="timer-wrapper" style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px;"><div class="global-timer" id="globalTimer">⏳ Next Spin: 10s</div><div class="pre-spin-cta" id="preSpinCta">Place your bets...</div></div>
+
+
 <div class="bonus-banner" id="bonusBanner">Double $SPIN next 10 spins! 🔥</div>
 <div class="live-panel-container" id="livePanelContainer">
 <div class="live-panel" id="livePanel">
@@ -2078,7 +2022,9 @@
              Low Balance! Your SOL is running low.
              <button id="topUpWalletBtn">Top Up Now (Mock)</button>
 </div>
-
+<div class="low-balance-alert" id="guestModeToast" style="background: rgba(153, 69, 255, 0.9); display: none;">
+             Demo Mode – Playing with Demo SOL. Connect wallet to win real rewards.
+         </div>
 <div class="bonus-banner" id="fakeActivityBanner" style="background: rgba(0,0,0,0.6); color: #fff; animation: none; top: 50px; font-size: 0.8em; padding: 5px 10px;">
 <span id="activityWatchers">🎯 32 watching</span> | <span id="activityBetting">7 betting 10x</span> | <span id="activityWins">3 wins just hit!</span>
 </div>
@@ -2092,7 +2038,7 @@
 <script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.19/dist/index.js"></script>
 <script>
         // State Management
-        let spinTimer = 25;
+        let spinTimer = 10;
         let isSpinning = false;
         let walletBalance = parseFloat(localStorage.getItem('solroulette_wallet_balance') || '0'); // Load balance from localStorage
         let tokensEarned = parseFloat(localStorage.getItem('solroulette_spin_tokens') || '0'); // Load tokens from localStorage
@@ -2655,7 +2601,7 @@
                 if (!isSpinning) { // Only spin if not already spinning
                      spinWheel();
                 }
-                spinTimer = 25; // Reset timer
+                spinTimer = 10; // Reset timer
                 playerBets = []; // Clear bets for the new round
                 // Clear bet feed UI (now inside live panel)
                 document.getElementById('liveBetsContent').innerHTML = ''; // Clear existing bet entries
@@ -3255,10 +3201,6 @@
                  pointer.classList.remove('vibrate');
                  playSound('clank'); // Play clank sound on landing
             }, spinDuration);
-
-            // Emit spinstart event
-            const event = new Event('spinstart');
-            document.getElementById('rouletteCanvas').dispatchEvent(event);
         }
 
 
@@ -3372,7 +3314,7 @@
                  document.body.appendChild(confetti);
                  // Remove confetti after animation
                  confetti.addEventListener('animationend', () => confetti.remove());
-             }
+            }
          }
 
         // Share Modal
@@ -4514,6 +4456,11 @@
          document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward); // Claim Daily Reward button
 
 
+        // Add event listener for the Shop button (assuming you add one in the header or elsewhere)
+        // For now, let's add a mock button in the header for testing
+        // (You might want to integrate this into the profile modal later)
+    
+
         // Live Panel Tab Switching Functionality
         const livePanelTabs = document.querySelectorAll('.live-panel-tab');
         const livePanelContents = document.querySelectorAll('.live-panel-content-tab');
@@ -4797,17 +4744,14 @@
          // Event listener for Send Chat button (moved from general listeners)
          document.getElementById('sendChatBtn').addEventListener('click', sendChat);
 
-        // Collapse Multiplier Options on Spin
-        document.getElementById('rouletteCanvas').addEventListener('spinstart', () => {
-            const multiplierOptions = document.getElementById('multiplierOptions');
-            multiplierOptions.style.display = 'none';
-            // Show multiplier options again after 4 seconds
-            setTimeout(() => {
-                multiplierOptions.style.display = 'grid';
-            }, 4000);
-        });
-
 
     </script>
-</body>
+<script>
+// Show tutorial modal only once per session
+if (!sessionStorage.getItem("seenHowToPlay")) {
+    const tutorial = document.getElementById("howToPlayModal");
+    if (tutorial) tutorial.style.display = "flex";
+    sessionStorage.setItem("seenHowToPlay", "true");
+}
+</script></body>
 </html>
