@@ -1821,6 +1821,94 @@
     .wheel-container { margin-top: 110px; }
 }
 
+
+/* Header adjustments for better alignment */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding: 10px;
+}
+
+/* Connect Wallet button adjustments */
+.connect-wallet-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 12px;
+    font-size: 0.85em;
+    border-radius: 20px;
+    background: var(--primary);
+    z-index: 100; /* Make sure it’s on top */
+}
+
+/* Wheel adjustments to provide adequate space */
+.wheel-container {
+    margin-top: 140px !important; /* Adjust for full visibility */
+}
+
+/* Demo Mode banner position */
+.guest-banner {
+    top: 70px !important; /* clearly above timer and bets labels */
+    font-size: 0.75em !important;
+    padding: 4px 8px !important;
+    z-index: 20;
+}
+
+/* Global Timer adjustments */
+.global-timer {
+    top: 105px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    font-size: 0.85em;
+    z-index: 15;
+}
+
+/* Pre-spin CTA positioning adjustments */
+.pre-spin-cta {
+    top: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    font-size: 0.85em;
+    z-index: 15;
+}
+
+/* Live Panel toggle repositioned clearly */
+.live-panel-toggle-btn {
+    top: 160px;
+    right: 5px;
+}
+
+/* Remove duplicate buttons by setting appropriate visibility */
+.bet-controls .connect-wallet-btn {
+    display: none; /* Hide duplicate Connect Wallet buttons */
+}
+
+/* Responsive fine-tuning */
+@media (max-width: 428px) {
+    .wheel-container {
+        margin-top: 160px !important;
+    }
+    .header {
+        padding: 6px;
+    }
+    .connect-wallet-btn {
+        padding: 4px 8px;
+        font-size: 0.75em;
+    }
+    .global-timer,
+    .pre-spin-cta {
+        font-size: 0.75em;
+    }
+    .guest-banner {
+        font-size: 0.65em !important;
+    }
+}
+
 </style>
 </head>
 <body>
