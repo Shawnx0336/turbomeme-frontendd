@@ -135,7 +135,7 @@
          @keyframes pulse-glow-red {
             0% { filter: drop-shadow(0 0 4px var(--danger)); }
             100% { filter: drop-shadow(0 0 16px var(--danger)); }
-        }
+         }
         @keyframes enter {
             0% { transform: scale(0.9); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -148,12 +148,12 @@
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
-        }
+            }
         @keyframes vibrate {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-2px); }
             75% { transform: translateX(2px); }
-        }
+            }
          @keyframes confetti-fall {
             0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
@@ -337,15 +337,15 @@
 
 
         /* Roulette Wheel */
-      .wheel-container {
-    position: relative;
-    width: 300px;
-    height: 300px;
-    margin: 20px auto;
-    perspective: 1000px;
-    animation: enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 5;
-}
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 40px auto 20px auto; /* More space */
+            perspective: 1000px;
+            animation: enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 5; /* Below timer, above background */
+             margin-top: 80px !important; /* Space for header/timer/cta on desktop */
         }
          #rouletteCanvas {
             width: 100%;
@@ -1767,80 +1767,8 @@
                 right: 10px;
              }
         }
-    
+
 /* Final fix for global timer and CTA alignment */
-.global-timer {
-    top: 100px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: auto !important;
-    max-width: 200px;
-    white-space: nowrap !important;
-    text-align: center;
-    padding: 8px 12px !important;
-    font-size: 0.9em !important;
-    z-index: 20;
-}
-
-.pre-spin-cta {
-    top: 140px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: auto !important;
-    max-width: 220px;
-    white-space: nowrap !important;
-    text-align: center;
-    padding: 8px 12px !important;
-    font-size: 0.9em !important;
-    z-index: 20;
-}
-
-
-/* Raise wheel higher for full visibility */
-.wheel-container {
-    margin-top: 70px !important;
-}
-
-/* Resize and reposition the modal close button */
-.modal-content .close-btn {
-    font-size: 1.2em !important;
-    transform: scale(0.7) !important;
-    top: 8px !important;
-    right: 8px !important;
-    padding: 2px !important;
-    line-height: 1 !important;
-    background: none !important;
-    z-index: 999 !important;
-}
-
-
-/* Position timer and CTA just below the shop button */
-.global-timer {
-    position: absolute !important;
-    top: 54px !important;
-    left: 90px !important;
-    transform: none !important;
-    font-size: 0.8em !important;
-    padding: 4px 8px !important;
-    white-space: nowrap !important;
-    max-width: 180px;
-    z-index: 25;
-}
-
-.pre-spin-cta {
-    position: absolute !important;
-    top: 78px !important;
-    left: 90px !important;
-    transform: none !important;
-    font-size: 0.8em !important;
-    padding: 4px 8px !important;
-    white-space: nowrap !important;
-    max-width: 180px;
-    z-index: 25;
-}
-
-
-/* Lock final positioning of Next Spin & Place Your Bets just below Shop button */
 .global-timer {
     position: absolute !important;
     top: 135px !important;
@@ -1866,23 +1794,33 @@
 }
 
 
-/* Move Recent Spins into top-right area below header */
-.recent-spins {
-    position: absolute !important;
-    top: 135px !important;
-    right: 20px !important;
-    left: auto !important;
-    bottom: auto !important;
-    transform: none !important;
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 4px 10px !important;
-    font-size: 0.7em !important;
-    border-radius: 10px !important;
-    z-index: 30 !important;
+/* Raise wheel higher for full visibility */
+.wheel-container {
+    margin-top: 70px !important;
+}
+
+/* Resize and reposition the modal close button */
+.modal-content .close-btn {
+    font-size: 1.2em !important;
+    transform: scale(0.7) !important;
+    top: 8px !important;
+    right: 8px !important;
+    padding: 2px !important;
+    line-height: 1 !important;
+    background: none !important;
+    z-index: 999 !important;
 }
 
 
-/* Forcefully remove Recent Spins from wheel and place in top-right */
+/* Position timer and CTA just below the shop button */
+/* Removed conflicting rules */
+
+
+/* Lock final positioning of Next Spin & Place Your Bets just below Shop button */
+/* Removed conflicting rules */
+
+
+/* Move Recent Spins into top-right area below header */
 .recent-spins {
     position: absolute !important;
     top: 135px !important;
@@ -3356,6 +3294,10 @@
                  pointer.classList.remove('vibrate');
                  playSound('clank'); // Play clank sound on landing
             }, spinDuration);
+
+            // Emit spinstart event
+            const event = new Event('spinstart');
+            document.getElementById('rouletteCanvas').dispatchEvent(event);
         }
 
 
@@ -3469,7 +3411,7 @@
                  document.body.appendChild(confetti);
                  // Remove confetti after animation
                  confetti.addEventListener('animationend', () => confetti.remove());
-            }
+             }
          }
 
         // Share Modal
@@ -4893,6 +4835,16 @@
 
          // Event listener for Send Chat button (moved from general listeners)
          document.getElementById('sendChatBtn').addEventListener('click', sendChat);
+
+        // Collapse Multiplier Options on Spin
+        document.getElementById('rouletteCanvas').addEventListener('spinstart', () => {
+            const multiplierOptions = document.getElementById('multiplierOptions');
+            multiplierOptions.style.display = 'none';
+            // Show multiplier options again after 4 seconds
+            setTimeout(() => {
+                multiplierOptions.style.display = 'grid';
+            }, 4000);
+        });
 
 
     </script>
