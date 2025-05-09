@@ -1794,9 +1794,7 @@
 <div class="strobe-overlay" id="strobeOverlay"></div>
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
-<div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-             ⚠️ Demo Mode – Demo SOL Only
-        </div>
+
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
          </div>
@@ -1806,8 +1804,6 @@
 <div class="user-profile" id="userProfile">
 </div>
 </div><div class="timer-wrapper" style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px;"><div class="global-timer" id="globalTimer">⏳ Next Spin: 10s</div><div class="pre-spin-cta" id="preSpinCta">Place your bets...</div></div>
-
-
 <div class="bonus-banner" id="bonusBanner">Double $SPIN next 10 spins! 🔥</div>
 <div class="live-panel-container" id="livePanelContainer">
 <div class="live-panel" id="livePanel">
@@ -1850,7 +1846,7 @@
 </div>
 </div>
 <div class="wheel-container" id="wheelContainer">
-<div class="pointer" id="pointer"></div>
+<div class="pointer" id="pointer" style="clip-path: polygon(50% 100%, 0% 0%, 100% 0%) !important;"></div>
 <canvas id="rouletteCanvas"></canvas>
 <div class="recent-spins" id="recentSpins">
 <span class="label">Recent:</span>
@@ -2031,7 +2027,7 @@
 <div class="bonus-banner" id="tenXHitBanner" style="background: linear-gradient(90deg, var(--danger), var(--accent)); color: #fff; animation: bounce 0.5s infinite alternate; top: 150px; font-size: 1em; padding: 8px 15px; display: none;">
              🔥 3 others just hit 10x! 🔥
          </div>
-</div>
+<button class="cancel-round-btn" onclick="cancelRound();" style="margin: 10px auto; background: red; color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; display: block;">Cancel Round</button></div>
 <script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
 <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.19/dist/index.js"></script>
 <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.9/dist/index.js"></script>
