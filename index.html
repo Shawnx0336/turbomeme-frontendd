@@ -1,15 +1,16 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>SolRoulette LIVE - Spin to Win</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<title>SolRoulette LIVE - Spin to Win</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
+<style>
         /* Reset and Base Styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
@@ -1841,295 +1842,257 @@
     position: absolute !important;
 }
 
-</style>
+
+.tooltip-warning, #tooltip, .onboarding-tooltip.visible { display: none !important; opacity: 0 !important; pointer-events: none !important; }</style>
 </head>
 <body>
-    <div class="background-overlay" id="backgroundOverlay"></div>
-    <div class="strobe-overlay" id="strobeOverlay"></div>
-    <div class="container">
-        <div class="flash-screen" id="flashScreen"></div>
-
-        <div id="guestModeBanner" class="guest-banner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
+<div class="background-overlay" id="backgroundOverlay"></div>
+<div class="strobe-overlay" id="strobeOverlay"></div>
+<div class="container">
+<div class="flash-screen" id="flashScreen"></div>
+<div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
              ⚠️ Demo Mode – Demo SOL Only
         </div>
-         <div id="autoDemoBanner" class="auto-demo-banner" style="display: none;">
+<div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
          </div>
-
-
-        <div class="header">
-            <div class="site-title">SolRoulette LIVE</div>
-            <div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
-            <div class="user-profile" id="userProfile">
-                </div>
-        </div>
-
-        <div class="global-timer" id="globalTimer">⏳ Next Spin: 25s</div>
-         <div class="pre-spin-cta" id="preSpinCta">Place your bets...</div>
-
-
-        <div class="bonus-banner" id="bonusBanner">Double $SPIN next 10 spins! 🔥</div>
-
-        <div class="live-panel-container" id="livePanelContainer">
-             <div class="live-panel" id="livePanel">
-                 <div class="live-panel-tabs">
-                     <div class="live-panel-tab active" data-tab="bets">Live Bets <span class="unread-dot" id="betsUnreadDot"></span></div>
-                     <div class="live-panel-tab" data-tab="chat">Live Chat <span class="unread-dot" id="chatUnreadDot"></span></div>
-                 </div>
-                 <div class="live-panel-content">
-                     <div id="liveBetsContent" class="live-panel-content-tab active">
-                         <div class="bet-entry"><i class="fas fa-dice"></i> <span class="system">System:</span> Welcome to SolRoulette LIVE!</div>
-                     </div>
-                     <div id="liveChatContent" class="live-panel-content-tab">
-                         <div class="chat-feed" id="chatFeed">
-                              <div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
-                         </div>
-                         <div class="chat-input">
-                             <input type="text" id="chatInput" placeholder="Say something..." aria-label="Chat input">
-                             <button id="sendChatBtn" aria-label="Send chat message">Send</button>
-                         </div>
-                     </div>
-                 </div>
-             </div>
-             </div>
-        <button id="toggleLivePanel" class="live-panel-toggle-btn" aria-label="Toggle Live Panel">
-            <i class="fas fa-chevron-left"></i> <span class="unread-dot" id="livePanelUnreadDot"></span>
-        </button>
-
-
-        <div class="leaderboard-panel" id="leaderboardPanel">
-             <div class="leaderboard-tabs">
-                 <div class="leaderboard-tab active" data-tab="wager">Top Wager</div>
-                 <div class="leaderboard-tab" data-tab="streak">Streak</div>
-                 <div class="leaderboard-tab" data-tab="10x">10x Wins</div>
-             </div>
-            <div id="leaderboardContent">
-                 <div class="leaderboard-content-tab active" data-tab="wager">
-                     </div>
-                 <div class="leaderboard-content-tab" data-tab="streak">
-                      </div>
-                 <div class="leaderboard-content-tab" data-tab="10x">
-                      </div>
-            </div>
-        </div>
-
-
-        <div class="wheel-container" id="wheelContainer">
-            <div class="pointer" id="pointer"></div>
-            <canvas id="rouletteCanvas"></canvas>
-             <div class="recent-spins" id="recentSpins">
-                 <span class="label">Recent:</span>
-                 </div>
-        </div>
-
-        <div class="bet-controls">
-            <div class="onboarding-tooltip" id="onboardingTooltip">Start here – Pick your multiplier.</div>
-            <div class="bet-label">Select Multiplier</div>
-            <div class="multiplier-options" id="multiplierOptions">
-                <button class="multiplier-btn" data-multiplier="1.5" data-probability="30" title="">1.5x<small>Chance: 30%</small></button>
-                <button class="multiplier-btn" data-multiplier="2" data-probability="20" title="">2x<small>Chance: 20%</small></button>
-                <button class="multiplier-btn" data-multiplier="3" data-probability="20" title="">3x<small>Chance: 20%</small></button>
-                <button class="multiplier-btn" data-multiplier="5" data-probability="15" title="">5x<small>Chance: 15%</small></button>
-                <button class="multiplier-btn" data-multiplier="10" data-probability="15" title="">10x<small>Chance: 15%</small></button>
-            </div>
-            <div class="bet-amount">
-                 <div class="bet-amount-top">
-                    <span class="bet-amount-label">Bet Amount:</span>
-                    <input type="range" class="bet-slider" id="betSlider" min="0.01" max="10" step="0.01" value="0.5" title="">
-                    <span class="bet-value" id="betValue">◎0.50 SOL</span>
-                 </div>
-                 <div class="max-win-text">Max Win Per Round: ◎50</div>
-            </div>
-             <div class="bet-summary" id="betSummary" style="display: none;">
-                 </div>
-             <button class="connect-wallet-btn" id="connectWalletBtn" >Connect Wallet</button>
-            <button class="place-bet" id="placeBetBtn" style="display: none;" title="Connect your wallet to place real bets">🔒 Place Bet</button>
-        </div>
-
-        <div class="token-notification" id="tokenNotification" style="display: none;">
-            <i class="fas fa-coins"></i> Earned: <span id="tokenCount">0.000</span> $SPIN
-            <button id="claimModalBtn" aria-label="Claim SPIN tokens">Claim</button>
-        </div>
-
-        <div id="achievementContainer"></div>
-
-        <div class="modal-overlay" id="walletModal">
-            <div class="modal-content">
-                <button class="close-btn" id="closeWalletModalBtn" aria-label="Close wallet modal">&times;</button>
-                <h2>Connect Your Wallet</h2>
-                <p>Choose a wallet to connect and start betting.</p>
-                <button id="connectPhantomBtn" class="connect-wallet-button haptic-feedback" data-wallet="phantom" aria-label="Connect Phantom Wallet">
+<div class="header">
+<div class="site-title">SolRoulette LIVE</div>
+<div class="players-online"><i class="fas fa-users"></i> <span id="playersOnline">1,247</span> Online</div>
+<div class="user-profile" id="userProfile">
+</div>
+</div>
+<div class="global-timer" id="globalTimer">⏳ Next Spin: 25s</div>
+<div class="pre-spin-cta" id="preSpinCta">Place your bets...</div>
+<div class="bonus-banner" id="bonusBanner">Double $SPIN next 10 spins! 🔥</div>
+<div class="live-panel-container" id="livePanelContainer">
+<div class="live-panel" id="livePanel">
+<div class="live-panel-tabs">
+<div class="live-panel-tab active" data-tab="bets">Live Bets <span class="unread-dot" id="betsUnreadDot"></span></div>
+<div class="live-panel-tab" data-tab="chat">Live Chat <span class="unread-dot" id="chatUnreadDot"></span></div>
+</div>
+<div class="live-panel-content">
+<div class="live-panel-content-tab active" id="liveBetsContent">
+<div class="bet-entry"><i class="fas fa-dice"></i> <span class="system">System:</span> Welcome to SolRoulette LIVE!</div>
+</div>
+<div class="live-panel-content-tab" id="liveChatContent">
+<div class="chat-feed" id="chatFeed">
+<div class="chat-message"><i class="fas fa-robot"></i> <span class="system">System:</span> Spin to win big! <span class="reaction">🔥</span></div>
+</div>
+<div class="chat-input">
+<input aria-label="Chat input" id="chatInput" placeholder="Say something..." type="text"/>
+<button aria-label="Send chat message" id="sendChatBtn">Send</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<button aria-label="Toggle Live Panel" class="live-panel-toggle-btn" id="toggleLivePanel">
+<i class="fas fa-chevron-left"></i> <span class="unread-dot" id="livePanelUnreadDot"></span>
+</button>
+<div class="leaderboard-panel" id="leaderboardPanel">
+<div class="leaderboard-tabs">
+<div class="leaderboard-tab active" data-tab="wager">Top Wager</div>
+<div class="leaderboard-tab" data-tab="streak">Streak</div>
+<div class="leaderboard-tab" data-tab="10x">10x Wins</div>
+</div>
+<div id="leaderboardContent">
+<div class="leaderboard-content-tab active" data-tab="wager">
+</div>
+<div class="leaderboard-content-tab" data-tab="streak">
+</div>
+<div class="leaderboard-content-tab" data-tab="10x">
+</div>
+</div>
+</div>
+<div class="wheel-container" id="wheelContainer">
+<div class="pointer" id="pointer"></div>
+<canvas id="rouletteCanvas"></canvas>
+<div class="recent-spins" id="recentSpins">
+<span class="label">Recent:</span>
+</div>
+</div>
+<div class="bet-controls">
+<div class="onboarding-tooltip" id="onboardingTooltip">Start here – Pick your multiplier.</div>
+<div class="bet-label">Select Multiplier</div>
+<div class="multiplier-options" id="multiplierOptions">
+<button class="multiplier-btn" data-multiplier="1.5" data-probability="30" title="">1.5x<small>Chance: 30%</small></button>
+<button class="multiplier-btn" data-multiplier="2" data-probability="20" title="">2x<small>Chance: 20%</small></button>
+<button class="multiplier-btn" data-multiplier="3" data-probability="20" title="">3x<small>Chance: 20%</small></button>
+<button class="multiplier-btn" data-multiplier="5" data-probability="15" title="">5x<small>Chance: 15%</small></button>
+<button class="multiplier-btn" data-multiplier="10" data-probability="15" title="">10x<small>Chance: 15%</small></button>
+</div>
+<div class="bet-amount">
+<div class="bet-amount-top">
+<span class="bet-amount-label">Bet Amount:</span>
+<input class="bet-slider" id="betSlider" max="10" min="0.01" step="0.01" title="" type="range" value="0.5"/>
+<span class="bet-value" id="betValue">◎0.50 SOL</span>
+</div>
+<div class="max-win-text">Max Win Per Round: ◎50</div>
+</div>
+<div class="bet-summary" id="betSummary" style="display: none;">
+</div>
+<button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
+<button class="place-bet" id="placeBetBtn" style="display: none;" title="Connect your wallet to place real bets">🔒 Place Bet</button>
+</div>
+<div class="token-notification" id="tokenNotification" style="display: none;">
+<i class="fas fa-coins"></i> Earned: <span id="tokenCount">0.000</span> $SPIN
+            <button aria-label="Claim SPIN tokens" id="claimModalBtn">Claim</button>
+</div>
+<div id="achievementContainer"></div>
+<div class="modal-overlay" id="walletModal">
+<div class="modal-content">
+<button aria-label="Close wallet modal" class="close-btn" id="closeWalletModalBtn">×</button>
+<h2>Connect Your Wallet</h2>
+<p>Choose a wallet to connect and start betting.</p>
+<button aria-label="Connect Phantom Wallet" class="connect-wallet-button haptic-feedback" data-wallet="phantom" id="connectPhantomBtn">
                     Connect Phantom
                 </button>
-                 <button class="secondary-btn" id="justWatchingBtn">Just Watching? Close</button>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="profileModal">
-            <div class="modal-content">
-                 <button class="close-btn" id="closeProfileModalBtn" aria-label="Close profile modal">&times;</button>
-                 <h2>Your Profile</h2>
-                 <div id="profileContent">
-                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                         <div class="avatar large" id="profileAvatar">😎</div>
-                         <div>
-                             <div style="font-size: 1.2em; font-weight: bold;" id="profileName">Guest</div>
-                             <div style="color: #aaa;">Level <span id="profileLevel">1</span></div>
-                             <div class="xp-bar large" style="width: 150px;"><div class="xp-fill" id="profileXpFill" style="width: 0%;"></div></div>
-                         </div>
-                     </div>
-                     <p>Wallet: <span id="profileWallet">Not Connected</span></p>
-                     <p>Balance: <span id="profileBalance">0.00 SOL</span></p>
-                     <p>Total Wagered: <span id="profileTotalWagered">0.00 SOL</span></p>
-                     <p>Win Streak: <span id="profileWinStreak">0</span></p>
-                     <p>10x Wins: <span id="profileTenXWins">0</span></p>
-                     <p id="profileFakeWinnings" style="display: none;">Demo Winnings: <span id="fakeWinningsTotal">0.00</span> SOL</p>
-
-
-                     <h3>Achievements</h3>
-                     <div id="profileAchievementsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 10px; margin-top: 10px;">
-                         </div>
-
-                     <h3>Referral Code</h3>
-                     <input type="text" id="referralLinkInput" readonly>
-                     <button id="copyReferralLinkBtn">Copy Referral Link</button>
-
-                     <button id="resetGuestProgressBtn" style="display: none; background: var(--danger); color: var(--text); margin-top: 20px;">Reset Guest Progress</button>
-
-                 </div>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="shopModal">
-            <div class="modal-content">
-                 <button class="close-btn" id="closeShopModalBtn" aria-label="Close shop modal">&times;</button>
-                 <h2>$SPIN Shop</h2>
-                 <p>Your $SPIN Balance: <span id="shopSpinBalance">0.000</span></p>
-                 <div id="shopItems" style="margin-top: 20px;">
-                     <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                         <span>🚀 Rocket Avatar</span>
-                         <span>10 $SPIN <button class="buy-item-btn" data-item-id="rocket_avatar" data-cost="10">Buy</button></span>
-                     </div>
-                      <div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                         <span>🔥 Fire Chat Emote</span>
-                         <span>5 $SPIN <button class="buy-item-btn" data-item-id="fire_emote" data-cost="5">Buy</button></span>
-                     </div>
-                 </div>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="dailyBonusModal">
-            <div class="modal-content">
-                 <button class="close-btn" id="closeDailyBonusModalBtn" aria-label="Close daily bonus modal">&times;</button>
-                 <h2>Daily Login Bonus!</h2>
-                 <p>Claim your bonus for Day <span id="dailyBonusDay">1</span>!</p>
-                 <p id="dailyBonusAmount">Reward: 0.01 $SPIN</p>
-                 <button id="claimDailyBonusBtn">Claim Bonus</button>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="doubleOrNothingModal">
-             <div class="modal-content">
-                 <button class="close-btn" id="closeDoubleOrNothingBtn" aria-label="Close double or nothing modal">&times;</button>
-                 <h2>Want to win back your loss?</h2>
-                 <p>Bet the same amount again on the same multiplier.</p>
-                 <button id="tryAgainBetBtn">Try Again</button>
-                 <button id="cancelDoubleOrNothingBtn">Cancel</button>
-             </div>
-        </div>
-
-        <div class="modal-overlay" id="resultModal">
-             <div class="modal-content">
-                 <button class="close-btn" id="closeResultModalBtn" aria-label="Close result modal">&times;</button>
-                 <h2 id="resultModalTitle"></h2>
-                 <p id="resultModalMessage"></p>
-                 <button id="resultModalSpinAgainBtn">Spin Again</button>
-             </div>
-        </div>
-
-         <div class="modal-overlay" id="onboardingModal">
-             <div class="modal-content">
-                 <h2>🎉 Welcome to SolRoulette LIVE!</h2>
-                 <p>Here’s ◎500 in Demo SOL to try your luck. Connect your wallet any time to win real rewards.</p>
-                 <button id="onboardingStartBtn">Start Playing</button>
-                 <button id="onboardingConnectBtn">Connect Wallet</button>
-             </div>
-         </div>
-
-         <div class="modal-overlay" id="refillFakeSolModal">
-             <div class="modal-content">
-                 <button class="close-btn" id="closeRefillFakeSolModalBtn" aria-label="Close refill modal">&times;</button>
-                 <h2>Out of SOL?</h2>
-                 <p>Looks like your demo SOL balance is low.</p>
-                 <button id="refillFakeSolBtn">Refill ◎500 Demo SOL!</button>
-             </div>
-         </div>
-
-         <div class="modal-overlay" id="idleModal">
-             <div class="modal-content">
-                 <button class="close-btn" id="closeIdleModalBtn" aria-label="Close idle modal">&times;</button>
-                 <h2>Still here?</h2>
-                 <p>Try a spin and feel the rush 🔥</p>
-                 <button id="closeIdleModalBtn">OK</button>
-             </div>
-         </div>
-
-         <div class="modal-overlay" id="dailyRewardModal">
-             <div class="modal-content">
-                 <button class="close-btn" id="closeDailyRewardModalBtn" aria-label="Close daily reward modal">&times;</button>
-                 <h2>Daily Reward!</h2>
-                 <p>Thanks for playing! Claim your bonus $SPIN.</p>
-                 <p id="dailyRewardAmount">+0.05 $SPIN</p>
-                 <button id="claimDailyRewardBtn">Claim</button>
-             </div>
-         </div>
-
-
-        <div class="modal-overlay" id="shareModal">
-            <div class="modal-content">
-                <button class="close-btn" id="closeShareModalBtn" aria-label="Close share modal">&times;</button>
-                <h2 id="shareTitle">Big Win!</h2>
-                <p id="shareMessage">Share your victory on X!</p>
-                <input type="text" id="shareText" readonly aria-label="Share link">
-                <button id="copyShareTextBtn"><i class="fas fa-copy"></i> Copy Link</button>
-                 <button id="tweetWinBtn"><i class="fab fa-twitter"></i> Tweet Now</button>
-            </div>
-        </div>
-
-         <div class="modal-overlay" id="messageBox">
-             <div class="modal-content">
-                 <button class="close-btn" id="closeMessageBoxBtn" aria-label="Close message box">&times;</button>
-                 <h2 id="messageBoxTitle"></h2>
-                 <p id="messageBoxContent"></p>
-                 <button id="closeMessageBoxBtn">OK</button>
-             </div>
-         </div>
-
-         <div class="low-balance-alert" id="lowBalanceAlert">
+<button class="secondary-btn" id="justWatchingBtn">Just Watching? Close</button>
+</div>
+</div>
+<div class="modal-overlay" id="profileModal">
+<div class="modal-content">
+<button aria-label="Close profile modal" class="close-btn" id="closeProfileModalBtn">×</button>
+<h2>Your Profile</h2>
+<div id="profileContent">
+<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+<div class="avatar large" id="profileAvatar">😎</div>
+<div>
+<div id="profileName" style="font-size: 1.2em; font-weight: bold;">Guest</div>
+<div style="color: #aaa;">Level <span id="profileLevel">1</span></div>
+<div class="xp-bar large" style="width: 150px;"><div class="xp-fill" id="profileXpFill" style="width: 0%;"></div></div>
+</div>
+</div>
+<p>Wallet: <span id="profileWallet">Not Connected</span></p>
+<p>Balance: <span id="profileBalance">0.00 SOL</span></p>
+<p>Total Wagered: <span id="profileTotalWagered">0.00 SOL</span></p>
+<p>Win Streak: <span id="profileWinStreak">0</span></p>
+<p>10x Wins: <span id="profileTenXWins">0</span></p>
+<p id="profileFakeWinnings" style="display: none;">Demo Winnings: <span id="fakeWinningsTotal">0.00</span> SOL</p>
+<h3>Achievements</h3>
+<div id="profileAchievementsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 10px; margin-top: 10px;">
+</div>
+<h3>Referral Code</h3>
+<input id="referralLinkInput" readonly="" type="text"/>
+<button id="copyReferralLinkBtn">Copy Referral Link</button>
+<button id="resetGuestProgressBtn" style="display: none; background: var(--danger); color: var(--text); margin-top: 20px;">Reset Guest Progress</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="shopModal">
+<div class="modal-content">
+<button aria-label="Close shop modal" class="close-btn" id="closeShopModalBtn">×</button>
+<h2>$SPIN Shop</h2>
+<p>Your $SPIN Balance: <span id="shopSpinBalance">0.000</span></p>
+<div id="shopItems" style="margin-top: 20px;">
+<div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+<span>🚀 Rocket Avatar</span>
+<span>10 $SPIN <button class="buy-item-btn" data-cost="10" data-item-id="rocket_avatar">Buy</button></span>
+</div>
+<div style="border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+<span>🔥 Fire Chat Emote</span>
+<span>5 $SPIN <button class="buy-item-btn" data-cost="5" data-item-id="fire_emote">Buy</button></span>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="dailyBonusModal">
+<div class="modal-content">
+<button aria-label="Close daily bonus modal" class="close-btn" id="closeDailyBonusModalBtn">×</button>
+<h2>Daily Login Bonus!</h2>
+<p>Claim your bonus for Day <span id="dailyBonusDay">1</span>!</p>
+<p id="dailyBonusAmount">Reward: 0.01 $SPIN</p>
+<button id="claimDailyBonusBtn">Claim Bonus</button>
+</div>
+</div>
+<div class="modal-overlay" id="doubleOrNothingModal">
+<div class="modal-content">
+<button aria-label="Close double or nothing modal" class="close-btn" id="closeDoubleOrNothingBtn">×</button>
+<h2>Want to win back your loss?</h2>
+<p>Bet the same amount again on the same multiplier.</p>
+<button id="tryAgainBetBtn">Try Again</button>
+<button id="cancelDoubleOrNothingBtn">Cancel</button>
+</div>
+</div>
+<div class="modal-overlay" id="resultModal">
+<div class="modal-content">
+<button aria-label="Close result modal" class="close-btn" id="closeResultModalBtn">×</button>
+<h2 id="resultModalTitle"></h2>
+<p id="resultModalMessage"></p>
+<button id="resultModalSpinAgainBtn">Spin Again</button>
+</div>
+</div>
+<div class="modal-overlay" id="onboardingModal">
+<div class="modal-content">
+<h2>🎉 Welcome to SolRoulette LIVE!</h2>
+<p>Here’s ◎500 in Demo SOL to try your luck. Connect your wallet any time to win real rewards.</p>
+<button id="onboardingStartBtn">Start Playing</button>
+<button id="onboardingConnectBtn">Connect Wallet</button>
+</div>
+</div>
+<div class="modal-overlay" id="refillFakeSolModal">
+<div class="modal-content">
+<button aria-label="Close refill modal" class="close-btn" id="closeRefillFakeSolModalBtn">×</button>
+<h2>Out of SOL?</h2>
+<p>Looks like your demo SOL balance is low.</p>
+<button id="refillFakeSolBtn">Refill ◎500 Demo SOL!</button>
+</div>
+</div>
+<div class="modal-overlay" id="idleModal">
+<div class="modal-content">
+<button aria-label="Close idle modal" class="close-btn" id="closeIdleModalBtn">×</button>
+<h2>Still here?</h2>
+<p>Try a spin and feel the rush 🔥</p>
+<button id="closeIdleModalBtn">OK</button>
+</div>
+</div>
+<div class="modal-overlay" id="dailyRewardModal">
+<div class="modal-content">
+<button aria-label="Close daily reward modal" class="close-btn" id="closeDailyRewardModalBtn">×</button>
+<h2>Daily Reward!</h2>
+<p>Thanks for playing! Claim your bonus $SPIN.</p>
+<p id="dailyRewardAmount">+0.05 $SPIN</p>
+<button id="claimDailyRewardBtn">Claim</button>
+</div>
+</div>
+<div class="modal-overlay" id="shareModal">
+<div class="modal-content">
+<button aria-label="Close share modal" class="close-btn" id="closeShareModalBtn">×</button>
+<h2 id="shareTitle">Big Win!</h2>
+<p id="shareMessage">Share your victory on X!</p>
+<input aria-label="Share link" id="shareText" readonly="" type="text"/>
+<button id="copyShareTextBtn"><i class="fas fa-copy"></i> Copy Link</button>
+<button id="tweetWinBtn"><i class="fab fa-twitter"></i> Tweet Now</button>
+</div>
+</div>
+<div class="modal-overlay" id="messageBox">
+<div class="modal-content">
+<button aria-label="Close message box" class="close-btn" id="closeMessageBoxBtn">×</button>
+<h2 id="messageBoxTitle"></h2>
+<p id="messageBoxContent"></p>
+<button id="closeMessageBoxBtn">OK</button>
+</div>
+</div>
+<div class="low-balance-alert" id="lowBalanceAlert">
              Low Balance! Your SOL is running low.
              <button id="topUpWalletBtn">Top Up Now (Mock)</button>
-         </div>
-
-          <div class="low-balance-alert" id="guestModeToast" style="background: rgba(153, 69, 255, 0.9); display: none;">
+</div>
+<div class="low-balance-alert" id="guestModeToast" style="background: rgba(153, 69, 255, 0.9); display: none;">
              Demo Mode – Playing with Demo SOL. Connect wallet to win real rewards.
          </div>
-
-         <div class="bonus-banner" id="fakeActivityBanner" style="background: rgba(0,0,0,0.6); color: #fff; animation: none; top: 50px; font-size: 0.8em; padding: 5px 10px;">
-             <span id="activityWatchers">🎯 32 watching</span> | <span id="activityBetting">7 betting 10x</span> | <span id="activityWins">3 wins just hit!</span>
-         </div>
-
-         <div class="bonus-banner" id="tenXHitBanner" style="background: linear-gradient(90deg, var(--danger), var(--accent)); color: #fff; animation: bounce 0.5s infinite alternate; top: 150px; font-size: 1em; padding: 8px 15px; display: none;">
+<div class="bonus-banner" id="fakeActivityBanner" style="background: rgba(0,0,0,0.6); color: #fff; animation: none; top: 50px; font-size: 0.8em; padding: 5px 10px;">
+<span id="activityWatchers">🎯 32 watching</span> | <span id="activityBetting">7 betting 10x</span> | <span id="activityWins">3 wins just hit!</span>
+</div>
+<div class="bonus-banner" id="tenXHitBanner" style="background: linear-gradient(90deg, var(--danger), var(--accent)); color: #fff; animation: bounce 0.5s infinite alternate; top: 150px; font-size: 1em; padding: 8px 15px; display: none;">
              🔥 3 others just hit 10x! 🔥
          </div>
-
-
-    </div>
-
-    <script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
-    <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.19/dist/index.js"></script>
-    <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.9/dist/index.js"></script>
-    <script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.19/dist/index.js"></script>
-    <script>
+</div>
+<script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.19/dist/index.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.9/dist/index.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.19/dist/index.js"></script>
+<script>
         // State Management
         let spinTimer = 25;
         let isSpinning = false;
