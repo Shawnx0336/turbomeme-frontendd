@@ -346,7 +346,7 @@
             perspective: 1000px;
             animation: enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 5; /* Below timer, above background */
-             margin-top: 180px; /* Space for header/timer/cta on desktop */
+             margin-top: 80px !important; /* Space for header/timer/cta on desktop */
         }
          #rouletteCanvas {
             width: 100%;
@@ -1850,9 +1850,6 @@
 <div class="strobe-overlay" id="strobeOverlay"></div>
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
-<div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-             ⚠️ Demo Mode – Demo SOL Only
-        </div>
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
          </div>
@@ -2078,7 +2075,9 @@
              Low Balance! Your SOL is running low.
              <button id="topUpWalletBtn">Top Up Now (Mock)</button>
 </div>
-
+<div class="low-balance-alert" id="guestModeToast" style="background: rgba(153, 69, 255, 0.9); display: none;">
+             Demo Mode – Playing with Demo SOL. Connect wallet to win real rewards.
+         </div>
 <div class="bonus-banner" id="fakeActivityBanner" style="background: rgba(0,0,0,0.6); color: #fff; animation: none; top: 50px; font-size: 0.8em; padding: 5px 10px;">
 <span id="activityWatchers">🎯 32 watching</span> | <span id="activityBetting">7 betting 10x</span> | <span id="activityWins">3 wins just hit!</span>
 </div>
@@ -2477,6 +2476,8 @@
 
                 updateUIDebounced();
                 addChatMessage('System', `${user.name} joined the game!`, '🤝', 'system');
+
+
 
                 // Hide connect button, show place bet button
                 document.getElementById('connectWalletBtn').style.display = 'none';
