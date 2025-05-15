@@ -1,0 +1,221 @@
+.bet-controls {
+    background: #222;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.bet-controls select,
+.bet-controls input {
+    padding: 10px;
+    margin: 10px;
+    font-size: 16px;
+    border-radius: 4px;
+    width: calc(100% - 24px);
+    border: 1px solid #444;
+    background: #333;
+    color: #fff;
+}
+
+.bet-button, .connect-wallet {
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px;
+    width: calc(100% - 24px);
+    border: none;
+}
+
+.bet-button {
+    background: var(--success);
+    color: #fff;
+}
+
+.connect-wallet {
+    background: var(--primary);
+    color: #fff;
+}
+
+.bet-button:hover, .connect-wallet:hover {
+    opacity: 0.9;
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.modal.visible {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #fff;
+    color: #000;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 90%;
+    width: 400px;
+    position: relative;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+}
+
+.modal-content button {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.modal-content button:hover {
+    opacity: 0.9;
+}
+
+/* Close Button */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #999;
+}
+
+.close-button:hover {
+    color: #000;
+}
+
+/* Toast */
+#toast-container {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 2000;
+}
+
+.toast {
+    background: #333;
+    color: #fff;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+    border-left: 4px solid var(--success);
+}
+
+.toast.error {
+    border-left: 4px solid var(--danger);
+}
+
+.toast.info {
+    border-left: 4px solid var(--info);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .live-panel {
+        width: 280px;
+    }
+    
+    main {
+        padding: 10px;
+    }
+    
+    .bet-controls {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        margin: 0;
+        z-index: 50;
+    }
+    
+    .bet-controls select,
+    .bet-controls input {
+        padding: 12px;
+        font-size: 18px;
+    }
+    
+    .bet-button,
+    .connect-wallet {
+        padding: 14px;
+        font-size: 18px;
+    }
+    
+    .modal-content {
+        padding: 15px;
+        width: 95%;
+    }
+    
+    .header {
+        padding: 8px;
+    }
+    
+    #menu-toggle {
+        padding: 10px 14px;
+    }
+}
+
+/* Utility Classes */
+.system {
+    font-style: italic;
+    color: #999;
+}
+
+/* Hide class for JavaScript */
+.hidden {
+    display: none !important;
+}
