@@ -1,3 +1,4 @@
+
 // State Management
 let walletBalance = 500;
 let tokensEarned = 0;
@@ -7,9 +8,9 @@ const INACTIVITY_THRESHOLD = 5 * 60 * 1000;
 let firstBetPlaced = false;
 let connectedWallet = null;
 
-// Connect Phantom Wallet (with fallback to deep link for mobile)
+// Connect Phantom Wallet (with proper deep linking for mobile)
 async function connectPhantom() {
-    console.log("Attempting wallet connect...");
+    console.log("Connect attempt");
 
     setTimeout(async () => {
         if (window.solana && window.solana.isPhantom) {
@@ -24,14 +25,13 @@ async function connectPhantom() {
                 showToast("Wallet connection cancelled", "error");
             }
         } else {
-            // Phantom deep link fallback (mobile)
             const dappUrl = encodeURIComponent("https://turbomeme.fun");
-            window.location.href = `https://phantom.app/ul/browse/${dappUrl}`;
+            window.location.href = `phantom://browse/${dappUrl}`;
         }
     }, 300);
 }
 
-// Auto-connect if already approved
+// Auto-reconnect on load
 window.addEventListener("load", async () => {
     setTimeout(async () => {
         if (window.solana && window.solana.isPhantom) {
@@ -48,7 +48,7 @@ window.addEventListener("load", async () => {
     }, 500);
 });
 
-// Attach connect listener to button
+// DOM Loaded Hook
 document.addEventListener("DOMContentLoaded", () => {
     const connectBtn = document.getElementById("connectWalletBtn");
     if (connectBtn) {
