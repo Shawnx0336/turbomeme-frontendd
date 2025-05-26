@@ -43,8 +43,16 @@ window.addEventListener("load", async () => {
     }
 });
 
-// Connect Button Event Binding
+// Add wallet connect button listeners
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("connectWalletBtn");
-  if (btn) btn.addEventListener("click", connectPhantom);
+    const connectWalletBtn = document.getElementById("connectWalletBtn");
+    const connectPhantomBtn = document.getElementById("connectPhantomBtn");
+
+    if (connectWalletBtn) {
+        connectWalletBtn.addEventListener("click", connectPhantom);
+    }
+
+    if (connectPhantomBtn) {
+        connectPhantomBtn.addEventListener("click", connectPhantom);
+    }
 });
