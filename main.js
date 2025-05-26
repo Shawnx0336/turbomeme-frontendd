@@ -211,7 +211,7 @@ window.addEventListener("load", async () => {
             }
             updateUIDebounced(); // Update UI to reflect guest/disconnected state
         }
-    }, 500); // Give a bit more time for injection
+    }, 2000); // Give a bit more time for injection - INCREASED FROM 500ms TO 2000ms
 });
 
 
