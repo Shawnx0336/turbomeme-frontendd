@@ -45,6 +45,6 @@ window.addEventListener("load", async () => {
 
 // Connect Button Event Binding
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("connectPhantomBtn");
+  const btn = document.getElementById("connectWalletBtn");
   if (btn) btn.addEventListener("click", connectPhantom);
 });
