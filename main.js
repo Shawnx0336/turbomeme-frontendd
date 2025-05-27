@@ -952,7 +952,7 @@ function addChatMessage(user, text, reaction, type) { // Added type parameter
 
     // Show unread dot if live panel is closed or on bets tab
     const livePanelContainer = document.getElementById('livePanelContainer');
-    const chatTab = document.querySelector('.live-panel-tab[data-tab="chat']');
+    const chatTab = document.querySelector('.live-panel-tab[data-tab="chat"]');
     // Fixed bug here: changed .add('active') to .contains('active')
     if (!livePanelContainer.classList.contains('active') || !chatTab.classList.contains('active')) {
         document.getElementById('livePanelUnreadDot').style.display = 'block';
