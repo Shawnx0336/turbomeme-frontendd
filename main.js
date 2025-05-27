@@ -1,4 +1,4 @@
-// State Management
+// Global State Management Variables (Moved to top for proper scope)
 let walletBalance = 500;
 let tokensEarned = 0;
 let currentBet = { multiplier: null, amount: 0 };
@@ -7,16 +7,79 @@ const INACTIVITY_THRESHOLD = 5 * 60 * 1000;
 let firstBetPlaced = false;
 let connectedWallet = null;
 
-// Helper function for showing toasts (if not already defined elsewhere)
+// User Profile (Part of state management)
+let user = {
+    wallet: localStorage.getItem('solroulette_wallet') || null, // Load wallet from localStorage
+    name: localStorage.getItem('solroulette_user_name') || 'Guest', // Load name
+    avatar: localStorage.getItem('solroulette_user_avatar') || '😎', // Load avatar
+    referral: localStorage.getItem('solroulette_referral_code') || generateReferralCode(), // Load or generate referral code
+};
+
+// Daily Bonus State
+let lastLoginDate = localStorage.getItem(user.isGuestMode ? 'solroulette_guest_last_login' : 'solroulette_last_login') || null;
+let dailyBonusDay = parseInt(localStorage.getItem(user.isGuestMode ? 'solroulette_guest_daily_bonus_day' : 'solroulette_daily_bonus_day') || '0');
+let dailyRewardClaimedToday = localStorage.getItem('solroulette_daily_reward_claimed') === new Date().toDateString(); // Track daily reward claim
+
+// Guest Mode state variable
+let isGuestMode = localStorage.getItem('solroulette_is_guest') === 'true' || user.wallet === null; // Initialize based on localStorage or no wallet
+let guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0'); // Initialize guest spin count
+let fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total') || '0'); // Initialize fake winnings total
+
+// User XP and Level (Initial load or default)
+let xp = parseInt(localStorage.getItem(isGuestMode ? 'solroulette_guest_xp' : 'solroulette_xp') || '0');
+let level = parseInt(localStorage.getItem(isGuestMode ? 'solroulette_guest_level' : 'solroulette_level') || '1');
+let totalWagered = parseFloat(localStorage.getItem(isGuestMode ? 'solroulette_guest_total_wagered' : 'solroulette_total_wagered') || '0');
+let winStreak = parseInt(localStorage.getItem(isGuestMode ? 'solroulette_guest_win_streak' : 'solroulette_win_streak') || '0');
+let tenXWins = parseInt(localStorage.getItem(isGuestMode ? 'solroulette_guest_ten_x_wins' : 'solroulette_ten_x_wins') || '0');
+let achievementsUnlocked = new Set(JSON.parse(localStorage.getItem(isGuestMode ? 'solroulette_guest_achievements' : 'solroulette_achievements') || '[]'));
+
+// Recent Spins State
+let recentSpins = JSON.parse(localStorage.getItem('solroulette_recent_spins') || '[]');
+let lastSpinResult = localStorage.getItem('solroulette_last_spin_result') || '1.5x'; // Default last spin for initial display
+
+// Last Loss Bet for Double or Nothing
+let lastLossBet = JSON.parse(localStorage.getItem('solroulette_last_loss_bet') || 'null');
+
+
+// Helper Functions (Declared early)
 function showToast(message, type) {
     console.log(`Toast (${type}): ${message}`); // Placeholder for actual toast implementation
-    // You would typically have a UI element for toasts here, e.g.:
-    // const toastElement = document.getElementById('myToastElement');
-    // toastElement.textContent = message;
-    // toastElement.className = `toast ${type}`;
-    // toastElement.classList.add('visible');
-    // setTimeout(() => toastElement.classList.remove('visible'), 3000);
+    // Implement your actual toast UI here
 }
+
+function showMessageBox(title, message) {
+     document.getElementById('messageBoxTitle').textContent = title;
+     document.getElementById('messageBoxContent').textContent = message;
+     document.getElementById('messageBox').classList.add('visible');
+     resetIdleTimer();
+     stopAutoDemo();
+ }
+
+function closeMessageBox() {
+     if (navigator.vibrate) navigator.vibrate(50);
+     document.getElementById('messageBox').classList.remove('visible');
+     resetIdleTimer();
+ }
+
+// Placeholder for playSound function (audio removed)
+function playSound(name, volume = 1.0, loop = false) {
+    console.log(`Audio playback skipped for: ${name}`);
+    return null;
+}
+
+// Debounce function (also declared early)
+function debounce(func, delay) {
+    let inDebounce;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(inDebounce);
+        inDebounce = setTimeout(() => func.apply(context, args), delay);
+    }
+}
+
+// updateUI function (declared early as it's debounced and called frequently)
+const updateUIDebounced = debounce(updateUI, 50);
 
 // Connect Phantom Wallet (with proper deep linking for mobile and desktop popup)
 async function connectPhantomWallet() {
@@ -256,23 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// --- Existing functions from your main.js (kept as is, assuming they work) ---
-// State Management variables are defined at the top of the file
-// let walletBalance = 500;
-// let tokensEarned = 0;
-// let currentBet = { multiplier: null, amount: 0 };
-// let lastInteraction = Date.now();
-// const INACTIVITY_THRESHOLD = 5 * 60 * 1000;
-// let firstBetPlaced = false;
-// let connectedWallet = null;
-
-// User Profile (part of state management)
-let user = {
-    wallet: localStorage.getItem('solroulette_wallet') || null, // Load wallet from localStorage
-    name: localStorage.getItem('solroulette_user_name') || 'Guest', // Load name
-    avatar: localStorage.getItem('solroulette_user_avatar') || '😎', // Load avatar
-    referral: localStorage.getItem('solroulette_referral_code') || generateReferralCode(), // Load or generate referral code
-};
+// --- Other functions from your main.js ---
 
 // Daily Bonus State
 let lastLoginDate = localStorage.getItem(isGuestMode ? 'solroulette_guest_last_login' : 'solroulette_last_login') || null;
@@ -611,7 +658,7 @@ function simulateMultiplayer() {
     // Simulate fake chat messages
     if (Math.random() < 0.5) { // 50% chance to add a fake message
         const fakeMessages = ['Gonna hit 10x this round! 🚀', 'Feeling lucky today!', 'Any big bettors out there?', 'Let\'s gooo!', 'Hope I don\'t bust 😭', 'What multiplier are you guys on?', 'Spin it!', 'To the moon! 🌕', 'Wen 10x?', 'This wheel is rigged! 😉'];
-        addChatMessage(fakeUsers[Math.floor(Math.random() * fakeUsers.length)], fakeMessages[Math.floor(Math.random() * fakeMessages.length)], '💬', 'user');
+        addChatMessage(fakeUsers[Math.floor(Math.random() * fakeUsers.length)], fakeMessages[Math.floor(Math.random() * fakeMessages.length)], '�', 'user');
     }
 
     // Simulate leaderboard updates periodically
@@ -1840,7 +1887,6 @@ function closeShareModal() {
          localStorage.setItem('solroulette_user_avatar', user.avatar);
 
 
-         closeOnboardingModal();
          updateUIDebounced(); // Update UI to show the new balance and guest state
          showMessageBox('Demo SOL Added', '◎500 Demo SOL added. Start spinning!'); // Show toast
          showOnboardingTooltip(); // Show the onboarding tooltip after modal
@@ -2173,7 +2219,7 @@ function updateUI() {
              btn.title = bettingAllowedByTimer ? 'Using Demo SOL – Real rewards require a wallet' : 'Betting is closed';
          });
          betSlider.disabled = !bettingAllowedByTimer; // Disable based on timer
-         betSlider.title = bettingAllowedByTimer ? 'Using Demo SOL – Real rewards require a wallet' : 'Betting is closed';
+         betSlider.title = bettingAllowedByTimer ? 'Using Demo SOL – Real rewards require a wallet' : 'Connect Wallet to Bet';
     }
 
      // Disable Spin Again button if betting is not allowed by timer
