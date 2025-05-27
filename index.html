@@ -9,7 +9,7 @@
 <title>SolRoulette LIVE - Spin to Win</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
 <style>
         /* Reset and Base Styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2391,7 +2391,7 @@
             });
 
             window.socket.on('connect', () => {
-                console.log("✅ Socket connected");
+                console.log("✅ Socket connected!");
                 addChatMessage('System', 'Connected to game server!', '🔗', 'system');
                 // Request initial state from server if needed (server emits it on connection, but good to have a fallback)
                 // socket.emit('requestInitialState');
