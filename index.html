@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <meta content="yes" name="apple-mobile-web-app-capable" />
+<meta content="yes" name="mobile-web-app-capable">
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" />
 <title>SolRoulette LIVE - Spin to Win</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
@@ -2068,7 +2069,12 @@
          </div>
 </div>
 <script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-phantom@0.9.20/lib/index.iife.js"></script>
+<script type="module">
+    import { PhantomWalletAdapter } from 'https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-phantom@latest/lib/esm/adapter.js';
+    // Note: The Phantom extension itself injects `window.solana`.
+    // This import is primarily for direct usage of the adapter class if `window.solana` is not present.
+    // Your `connectWallet()` function should still rely on `window.solana`.
+</script>
 <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
 <script>
