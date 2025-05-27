@@ -256,7 +256,7 @@
             width: 70px; /* Slightly wider */
             height: 8px; /* Taller */
             background: #333;
-            border-radius: 4px; /* More rounded */
+            border-radius: 4px;
             overflow: hidden;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
              flex-shrink: 0; /* Prevent shrinking */
@@ -1814,7 +1814,259 @@
 }
 
 
-.tooltip-warning, #tooltip, .onboarding-tooltip.visible { display: none !important; opacity: 0 !important; pointer-events: none !important; }</style>
+.tooltip-warning, #tooltip, .onboarding-tooltip.visible { display: none !important; opacity: 0 !important; pointer-events: none !important; }
+
+/* Enhanced Wallet Modal Specific Styles */
+.wallet-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000; /* Higher than other modals */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.wallet-modal-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.wallet-modal-content {
+    background: var(--secondary);
+    padding: 20px;
+    border-radius: var(--panel-border-radius);
+    text-align: center;
+    max-width: 90%;
+    width: 450px; /* Slightly wider for wallet options */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    transform: translateY(-20px);
+    opacity: 0;
+    animation: enter 0.3s ease-out forwards;
+    position: relative;
+    margin: 20px;
+    display: flex; /* Use flex for internal layout */
+    flex-direction: column;
+    gap: 15px;
+}
+
+.wallet-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.wallet-modal-header h2 {
+    color: var(--primary);
+    margin: 0;
+}
+
+.wallet-modal-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8em; /* Larger close button */
+    color: #aaa;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.wallet-modal-header .close-btn:hover {
+    color: var(--danger);
+}
+
+.modal-description {
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.wallet-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Responsive grid */
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.wallet-option {
+    background: #333;
+    color: var(--text);
+    padding: 15px;
+    border: none;
+    border-radius: var(--button-border-radius);
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-height: 80px; /* Ensure a decent size */
+}
+
+.wallet-option:hover {
+    background: #444;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.wallet-option img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px; /* Slightly rounded logos */
+}
+
+.wallet-status {
+    font-size: 0.75em;
+    color: var(--accent);
+    margin-top: 5px;
+    font-weight: normal;
+}
+
+.wallet-help {
+    font-size: 0.85em;
+    color: #aaa;
+}
+
+.wallet-help .help-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.wallet-help .help-link:hover {
+    text-decoration: underline;
+}
+
+/* Connection Progress Screen */
+.wallet-connecting-screen,
+.wallet-verification-screen,
+.wallet-success-screen,
+.wallet-error-screen {
+    display: none; /* Hidden by default */
+    padding: 20px;
+    gap: 15px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.connection-status h3,
+.verification-status h3,
+.success-status h3,
+.error-status h3 {
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.connection-step,
+.verification-status p,
+.success-status p,
+.error-status p {
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.verification-icon,
+.success-icon,
+.error-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.verification-icon { color: var(--accent); }
+.success-icon { color: var(--success); }
+.error-icon { color: var(--danger); }
+
+.verification-details {
+    background: #333;
+    padding: 10px 15px;
+    border-radius: var(--input-border-radius);
+    font-size: 0.9em;
+    color: #eee;
+    word-break: break-all; /* Allow long addresses to wrap */
+}
+
+.continue-btn, .retry-btn, .help-btn {
+    background: var(--primary);
+    color: var(--text);
+    padding: 12px 25px;
+    border: none;
+    border-radius: var(--button-border-radius);
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 4px 10px rgba(153, 69, 255, 0.5);
+}
+
+.continue-btn:hover, .retry-btn:hover {
+    background: #7A37CC;
+    transform: translateY(-2px);
+}
+
+.error-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.retry-btn {
+    background: var(--primary);
+}
+
+.help-btn {
+    background: #555;
+}
+
+.help-btn:hover {
+    background: #777;
+}
+
+/* Profile Modal Disconnect Button */
+#profileModal .modal-content .disconnect-wallet-btn {
+    background: var(--danger);
+    color: var(--text);
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--button-border-radius);
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 20px;
+    width: 100%;
+}
+
+#profileModal .modal-content .disconnect-wallet-btn:hover {
+    background: #FF6B8A;
+}
+
+</style>
 </head>
 <body>
 <div class="background-overlay" id="backgroundOverlay"></div>
@@ -1822,7 +2074,7 @@
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
 <div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-             ⚠️ Demo Mode – Demo SOL Only
+          ⚠️ Demo Mode – Demo SOL Only
         </div>
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
@@ -1911,17 +2163,79 @@
             <button aria-label="Claim SPIN tokens" id="claimModalBtn">Claim</button>
 </div>
 <div id="achievementContainer"></div>
-<div class="modal-overlay" id="walletModal">
-<div class="modal-content">
-<button aria-label="Close wallet modal" class="close-btn" id="closeWalletModalBtn">×</button>
-<h2>Connect Your Wallet</h2>
-<p>Choose a wallet to connect and start betting.</p>
-<button aria-label="Connect Phantom Wallet" class="connect-wallet-button haptic-feedback" data-wallet="phantom" id="connectPhantomBtn">
-                    Connect Phantom
+<div class="wallet-modal-overlay" id="walletModal">
+    <div class="wallet-modal-content">
+        <div class="wallet-modal-header">
+            <h2>Connect Your Wallet</h2>
+            <button class="close-btn" id="closeWalletModalBtnNew">×</button>
+        </div>
+        
+        <div class="wallet-selection-screen" id="walletSelectionScreen">
+            <p class="modal-description">
+                Connect your Phantom or Solflare wallet to start playing with real SOL.
+            </p>
+            
+            <div class="wallet-options-grid">
+                <button class="wallet-option" data-wallet="phantom" id="phantomConnect">
+                    <img src="https://phantom.app/img/phantom-logo.png" alt="Phantom" onerror="this.src='https://placehold.co/40x40/9945FF/FFFFFF?text=P'">
+                    <span>Phantom</span>
+                    <div class="wallet-status">Most Popular</div>
                 </button>
-<button class="secondary-btn" id="justWatchingBtn">Just Watching? Close</button>
+                
+                <button class="wallet-option" data-wallet="solflare" id="solflareConnect">
+                    <img src="https://solflare.com/img/solflare-logo.png" alt="Solflare" onerror="this.src='https://placehold.co/40x40/FFB84D/FFFFFF?text=S'">
+                    <span>Solflare</span>
+                    <div class="wallet-status">Web & Mobile</div>
+                </button>
+            </div>
+            
+            <div class="wallet-help">
+                <p>New to Solana wallets? <a href="https://solana.com/ecosystem/wallets" target="_blank" class="help-link">Learn how to get started</a></p>
+            </div>
+        </div>
+        
+        <div class="wallet-connecting-screen" id="walletConnectingScreen">
+            <div class="connection-status">
+                <div class="spinner"></div>
+                <h3>Connecting to <span id="selected-wallet-name"></span></h3>
+                <p class="connection-step">Please approve the connection in your wallet...</p>
+            </div>
+        </div>
+        
+        <div class="wallet-verification-screen" id="walletVerificationScreen">
+            <div class="verification-status">
+                <div class="verification-icon">🔐</div>
+                <h3>Verify Wallet Ownership</h3>
+                <p>Please sign a message to verify you own this wallet. This doesn't cost any SOL.</p>
+                <div class="verification-details">
+                    <strong>Wallet:</strong> <span id="wallet-address"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="wallet-success-screen" id="walletSuccessScreen">
+            <div class="success-status">
+                <div class="success-icon">✅</div>
+                <h3>Wallet Connected Successfully!</h3>
+                <p>Your wallet is now connected and verified. You can start playing with real SOL.</p>
+                <button class="continue-btn" id="walletSuccessContinueBtn">Start Playing</button>
+            </div>
+        </div>
+        
+        <div class="wallet-error-screen" id="walletErrorScreen">
+            <div class="error-status">
+                <div class="error-icon">❌</div>
+                <h3>Connection Failed</h3>
+                <p class="error-message" id="walletErrorMessage">Failed to connect wallet. Please try again.</p>
+                <div class="error-actions">
+                    <button class="retry-btn" id="walletErrorRetryBtn">Try Again</button>
+                    <button class="help-btn" onclick="window.open('https://solana.com/ecosystem/wallets', '_blank')">Get Help</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-</div>
+
 <div class="modal-overlay" id="profileModal">
 <div class="modal-content">
 <button aria-label="Close profile modal" class="close-btn" id="closeProfileModalBtn">×</button>
@@ -1948,6 +2262,7 @@
 <input id="referralLinkInput" readonly="" type="text"/>
 <button id="copyReferralLinkBtn">Copy Referral Link</button>
 <button id="resetGuestProgressBtn" style="display: none; background: var(--danger); color: var(--text); margin-top: 20px;">Reset Guest Progress</button>
+<button class="disconnect-wallet-btn" id="disconnectWalletBtn" style="display: none;">Disconnect Wallet</button>
 </div>
 </div>
 </div>
@@ -2059,10 +2374,10 @@
              🔥 3 others just hit 10x! 🔥
          </div>
 </div>
-<script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.19/dist/index.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.9/dist/index.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.19/dist/index.js"></script>
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
 <script>
         // State Management
         let spinTimer = 25;
@@ -2099,6 +2414,8 @@
             name: localStorage.getItem('solroulette_user_name') || 'Guest', // Load name
             avatar: localStorage.getItem('solroulette_user_avatar') || '😎', // Load avatar
             referral: localStorage.getItem('solroulette_referral_code') || generateReferralCode(), // Load or generate referral code
+            walletType: localStorage.getItem('solroulette_wallet_type') || null, // Store wallet type
+            verificationData: JSON.parse(localStorage.getItem('solroulette_verification_data') || 'null') // Store verification data
         };
 
         // Daily Bonus State
@@ -2374,53 +2691,342 @@
          }
 
 
-        // Wallet Connection
-        async function connectWallet() {
-             playSound('click');
-             if (navigator.vibrate) navigator.vibrate(50);
+        // Wallet Connection Refinement - START
+        const WALLET_STATES = {
+            DISCONNECTED: 'disconnected',
+            CONNECTING: 'connecting',
+            VERIFYING: 'verifying',
+            CONNECTED: 'connected',
+            ERROR: 'error'
+        };
 
-            const connectWalletBtn = document.getElementById('connectWalletBtn');
-            connectWalletBtn.textContent = 'Connecting...';
-            connectWalletBtn.disabled = true;
+        const WALLET_ERRORS = {
+            WALLET_NOT_FOUND: {
+                title: 'Wallet Not Found',
+                message: 'Please install {walletName} wallet extension first.',
+                action: 'Install Wallet',
+                actionUrl: '{walletInstallUrl}'
+            },
+            USER_REJECTED: {
+                title: 'Connection Cancelled',
+                message: 'You cancelled the wallet connection. Please try again.',
+                action: 'Retry Connection'
+            },
+            VERIFICATION_FAILED: {
+                title: 'Verification Failed',
+                message: 'Could not verify wallet ownership. Please try signing the message again.',
+                action: 'Try Again'
+            },
+            NETWORK_ERROR: {
+                title: 'Network Error',
+                message: 'Unable to connect to Solana network. Please check your internet connection.',
+                action: 'Retry'
+            },
+            UNKNOWN_ERROR: {
+                title: 'Unknown Error',
+                message: 'An unexpected error occurred. Please try again.',
+                action: 'Try Again'
+            }
+        };
 
+        class WalletVerificationService {
+            // Creates a unique message for the user to sign to prove wallet ownership.
+            createVerificationMessage() {
+                const timestamp = Date.now();
+                const nonce = Math.random().toString(36).substring(2, 15);
+                return `SolRoulette Auth: ${Date.now()}` // Unique nonce;
+            }
 
-            try {
-                // Attempt to connect using a common adapter like Phantom
-                const { PhantomWalletAdapter } = window.SolanaWalletAdapters;
-                const adapter = new PhantomWalletAdapter();
+            // Verifies the signature against the message and public key using tweetnacl.
+            async verifySignature(signature, message, publicKey) {
+                try {
+                    // Handle different publicKey formats
+                    let pubKeyBytes;
+                    if (typeof publicKey === 'string') {
+                        // If it's a string, create PublicKey object
+                        const pubKey = new window.solanaWeb3.PublicKey(publicKey);
+                        pubKeyBytes = pubKey.toBytes();
+                    } else if (publicKey.toBytes) {
+                        // If it's already a PublicKey object
+                        pubKeyBytes = publicKey.toBytes();
+                    } else {
+                        // If it's already bytes
+                        pubKeyBytes = new Uint8Array(publicKey);
+                    }
+                    const signatureBytes = new Uint8Array(signature);
+                    // Ensure message is Uint8Array for nacl
+                    const messageBytes = new Uint8Array(message);
+                    
+                    // Use tweetnacl for verification
+                    return nacl.sign.detached.verify(messageBytes, signatureBytes, pubKeyBytes);
+                } catch (e) {
+                    console.error("Signature verification error:", e);
+                    return false;
+                }
+            }
 
-                // Check if the adapter is available and connectable
-                if (!adapter) {
-                    showMessageBox('Wallet Not Found', 'Phantom wallet not found. Please install it.');
-                    connectWalletBtn.textContent = 'Connect Wallet';
-                    connectWalletBtn.disabled = false;
-                    return;
+            // Orchestrates the wallet ownership verification process.
+            async verifyWalletOwnership(walletAdapter, publicKey) {
+                try {
+                    const message = this.createVerificationMessage();
+                    const encodedMessage = new TextEncoder().encode(message);
+
+                    // Request signature from wallet adapter
+                    let signature;
+                    if (walletAdapter.isPhantom) {
+                        signature = await walletAdapter.signMessage(encodedMessage);
+                    } else if (walletAdapter.isSolflare) {
+                        // Solflare's signMessage returns a signature object, need to extract
+                        const solflareSignature = await walletAdapter.signMessage(encodedMessage);
+                        signature = solflareSignature.signature;
+                    } else {
+                        // Generic case, assume it returns Uint8Array
+                        signature = await walletAdapter.signMessage(encodedMessage);
+                    }
+
+                    // Verify the signature
+                    const isValid = await this.verifySignature(
+                        signature,
+                        encodedMessage,
+                        publicKey
+                    );
+
+                    if (isValid) {
+                        return {
+                            success: true,
+                            verificationData: {
+                                publicKey: publicKey.toString(),
+                                signature: Array.from(signature), // Convert Uint8Array to array for localStorage
+                                timestamp: Date.now(),
+                                message: Array.from(encodedMessage) // Store encoded message as array
+                            }
+                        };
+                    } else {
+                        throw new Error('Signature verification failed');
+                    }
+                } catch (error) {
+                    console.error("Wallet ownership verification failed:", error);
+                    return {
+                        success: false,
+                        error: error.message || 'Verification failed.'
+                    };
+                }
+            }
+        }
+
+        // ADD this new function before the WalletConnectionManager class:
+        function detectAvailableWallets() {
+            const available = [];
+            if (window.solana && window.solana.isPhantom) {
+                available.push('phantom');
+            }
+            if (window.solflare && window.solflare.isSolflare) { // Check for Solflare's isSolflare property
+                available.push('solflare');
+            }
+            return available;
+        }
+
+        class WalletConnectionManager {
+            // REPLACE the broken constructor:
+            constructor() {
+                this.state = WALLET_STATES.DISCONNECTED;
+                this.verificationService = new WalletVerificationService();
+                this.selectedWalletType = null;
+                this.walletAdapter = null;
+                this.publicKey = null;
+                // FIX: Use proper wallet adapter initialization
+                this.wallets = this.initializeWallets();
+            }
+
+            // ADD this new method:
+            initializeWallets() {
+                const wallets = [];
+                try {
+                    // Check if wallet adapters are available globally
+                    if (typeof window !== 'undefined') {
+                        // Phantom Wallet
+                        if (window.solana && window.solana.isPhantom) {
+                            wallets.push({
+                                name: 'Phantom',
+                                adapter: window.solana,
+                                type: 'phantom'
+                            });
+                        }
+                        // Solflare Wallet
+                        if (window.solflare && window.solflare.isSolflare) {
+                            wallets.push({
+                                name: 'Solflare',
+                                adapter: window.solflare,
+                                type: 'solflare'
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Error initializing wallets:', error);
+                }
+                return wallets;
+            }
+
+            // REPLACE the existing getWalletAdapter method:
+            getWalletAdapter(walletType) {
+                // First try to find from initialized wallets
+                const wallet = this.wallets.find(w => w.type === walletType.toLowerCase());
+                if (wallet) {
+                    return wallet.adapter;
                 }
 
-                await adapter.connect();
-                user.wallet = adapter.publicKey.toString();
-                user.name = user.wallet.slice(0, 4) + '...' + user.wallet.slice(-4);
+                // Fallback: try to access directly from window (less robust, but for direct global access)
+                switch(walletType.toLowerCase()) {
+                    case 'phantom':
+                        return window.solana && window.solana.isPhantom ? window.solana : null;
+                    case 'solflare':
+                        return window.solflare && window.solflare.isSolflare ? window.solflare : null;
+                    default:
+                        console.error(`Adapter for ${walletType} not found.`);
+                        return null;
+                }
+            }
 
-                 // If coming from demo mode, save demo stats before switching
-                 if (isGuestMode) {
-                     localStorage.setItem('solroulette_guest_balance', walletBalance);
-                     localStorage.setItem('solroulette_guest_xp', xp);
-                     localStorage.setItem('solroulette_guest_tokens', tokensEarned);
-                     localStorage.setItem('solroulette_guest_total_wagered', totalWagered);
-                     localStorage.setItem('solroulette_guest_win_streak', winStreak);
-                     localStorage.setItem('solroulette_guest_ten_x_wins', tenXWins);
-                      localStorage.setItem('solroulette_guest_achievements', JSON.stringify([...achievementsUnlocked]));
-                      localStorage.setItem('solroulette_guest_spin_count', guestSpinCount); // Save guest spin count
-                      localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal); // Save demo winnings
-                 }
+            // Initiates the full wallet connection and verification flow.
+            async initiateConnection(walletType) {
+                this.selectedWalletType = walletType;
+                this.updateState(WALLET_STATES.CONNECTING);
+
+                try {
+                    // Step 1: Connect to wallet
+                    const walletInfo = await this.connectToWallet(walletType);
+                    this.walletAdapter = walletInfo.adapter;
+                    this.publicKey = walletInfo.publicKey;
+                    
+                    // Update wallet address in verification screen early
+                    document.getElementById('wallet-address').textContent = this.publicKey.toString();
+
+                    // Step 2: Verify ownership
+                    this.updateState(WALLET_STATES.VERIFYING);
+                    const verification = await this.verificationService.verifyWalletOwnership(
+                        this.walletAdapter,
+                        this.publicKey
+                    );
+
+                    if (verification.success) {
+                        // Step 3: Fetch balance and complete connection
+                        await this.fetchBalance(this.publicKey); // Fetch balance before completing connection
+                        await this.completeConnection(walletInfo, verification.verificationData);
+                        this.updateState(WALLET_STATES.CONNECTED);
+                        this.showSuccessScreen();
+                    } else {
+                        throw new Error(verification.error || 'Wallet verification failed.');
+                    }
+
+                } catch (error) {
+                    this.handleConnectionError(error);
+                }
+            }
+
+            // Provided by user for Phase 3: Live Balance Fetch
+            async fetchBalance(publicKey) {
+                const connection = new solanaWeb3.Connection(
+                    solanaWeb3.clusterApiUrl("mainnet-beta"),
+                    "confirmed"
+                );
+
+                try {
+                    const balance = await connection.getBalance(
+                        new solanaWeb3.PublicKey(publicKey)
+                    );
+                    const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                    
+                    // UPDATE UI WITH REAL DATA
+                    // document.getElementById("balanceDisplay").textContent = `◎${solBalance.toFixed(2)} SOL`; // This element doesn't exist directly
+                    walletBalance = solBalance; // Update global walletBalance
+                    localStorage.setItem("solroulette_wallet_balance", walletBalance); // Store live balance
+                    localStorage.setItem("walletState", "connected"); // This seems to be a generic flag, keep for now
+
+                } catch (error) {
+                    // showError(`Balance Check Failed: ${error.message}`); // Use showMessageBox
+                    throw new Error(`Balance Check Failed: ${error.message}`); // Re-throw to be caught by handleConnectionError
+                }
+            }
+
+            // REPLACE the existing connectToWallet method:
+            async connectToWallet(walletType) {
+                const adapter = this.getWalletAdapter(walletType);
+                if (!adapter) {
+                    throw new Error(`WALLET_NOT_FOUND:${walletType}`);
+                }
+                // ADD CONNECTION TIMEOUT
+                const connectionTimeout = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('NETWORK_ERROR:Connection timeout')), 30000);
+                });
+                try {
+                    let connectionPromise;
+                    if (walletType.toLowerCase() === 'phantom') {
+                        connectionPromise = adapter.connect();
+                    } else if (walletType.toLowerCase() === 'solflare') {
+                        connectionPromise = adapter.connect();
+                    } else {
+                        // Generic connection attempt for other wallets that might expose a connect()
+                        connectionPromise = adapter.connect();
+                    }
+                    // Race between connection and timeout
+                    const connectionResponse = await Promise.race([connectionPromise, connectionTimeout]);
+
+                    // Different connection methods for different wallets
+                    if (walletType.toLowerCase() === 'phantom') {
+                        // Phantom's connect() returns { publicKey } directly
+                        return {
+                            adapter: adapter,
+                            publicKey: connectionResponse.publicKey,
+                            type: walletType
+                        };
+                    } else if (walletType.toLowerCase() === 'solflare') {
+                        // Solflare's connect() updates adapter.publicKey directly
+                        return {
+                            adapter: adapter,
+                            publicKey: adapter.publicKey,
+                            type: walletType
+                        };
+                    } else {
+                        return {
+                            adapter: adapter,
+                            publicKey: adapter.publicKey, // Assuming adapter.publicKey is updated
+                            type: walletType
+                        };
+                    }
+                } catch (error) {
+                    // Check for user rejection or network errors based on common wallet adapter errors
+                    if (error.code === 4001 || error.message.includes('User rejected the request')) {
+                        throw new Error(`USER_REJECTED:${error.message}`);
+                    }
+                    throw new Error(`NETWORK_ERROR:${error.message}`);
+                }
+            }
+
+            // Completes the connection process by saving data and updating UI.
+            async completeConnection(wallet, verificationData) {
+                // Save wallet data to global user object and localStorage
+                user.wallet = wallet.publicKey.toString();
+                user.name = this.formatWalletName(user.wallet); // Format name from public key
+                user.walletType = wallet.type;
+                user.verificationData = verificationData;
+
+                // If coming from demo mode, save demo stats before switching
+                if (isGuestMode) {
+                    localStorage.setItem('solroulette_guest_balance', walletBalance); // Save current demo balance
+                    localStorage.setItem('solroulette_guest_xp', xp);
+                    localStorage.setItem('solroulette_guest_tokens', tokensEarned);
+                    localStorage.setItem('solroulette_guest_total_wagered', totalWagered);
+                    localStorage.setItem('solroulette_guest_win_streak', winStreak);
+                    localStorage.setItem('solroulette_guest_ten_x_wins', tenXWins);
+                    localStorage.setItem('solroulette_guest_achievements', JSON.stringify([...achievementsUnlocked]));
+                    localStorage.setItem('solroulette_guest_spin_count', guestSpinCount);
+                    localStorage.setItem('solroulette_fake_winnings_total', fakeWinningsTotal);
+                }
 
                 isGuestMode = false; // Exit demo mode on real wallet connection
 
-                // Mock balance - in a real app, fetch from the blockchain
-                walletBalance = parseFloat(localStorage.getItem('solroulette_wallet_balance') || (Math.random() * 10).toFixed(2)); // Load real balance or generate mock if first time
-
-
                 // Load real user data or initialize if first time connecting
+                // walletBalance is already updated by fetchBalance
                 xp = parseInt(localStorage.getItem('solroulette_xp') || '0');
                 level = parseInt(localStorage.getItem('solroulette_level') || '1');
                 tokensEarned = parseFloat(localStorage.getItem('solroulette_spin_tokens') || '0');
@@ -2428,12 +3034,143 @@
                 winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0');
                 tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements') || '[]'));
-
-
+                
                 // Save state to localStorage (real wallet keys)
+                this.saveWalletData();
+
+                // Mark that a real bet is now possible/wallet is connected
+                firstRealBetPlaced = true;
+                localStorage.setItem('solroulette_first_real_bet_placed', 'true');
+
+                // Update UI elements
+                updateUIDebounced();
+                addChatMessage('System', `${user.name} joined the game!`, '🤝', 'system');
+
+                // Stop auto demo if it was running
+                stopAutoDemo();
+                checkDailyBonus(); // Check for daily bonus after connecting wallet
+            }
+
+            // Updates the internal state and triggers UI refresh.
+            updateState(newState) {
+                this.state = newState;
+                this.updateModalUI();
+                console.log(`Wallet state changed to: ${newState}`);
+            }
+
+            // Manages the visibility of different screens within the wallet modal.
+            updateModalUI() {
+                // Hide all screens
+                document.getElementById('walletSelectionScreen').style.display = 'none';
+                document.getElementById('walletConnectingScreen').style.display = 'none';
+                document.getElementById('walletVerificationScreen').style.display = 'none';
+                document.getElementById('walletSuccessScreen').style.display = 'none';
+                document.getElementById('walletErrorScreen').style.display = 'none';
+
+                // Show appropriate screen based on state
+                switch(this.state) {
+                    case WALLET_STATES.DISCONNECTED:
+                        document.getElementById('walletSelectionScreen').style.display = 'flex'; // Use flex for layout
+                        break;
+                    case WALLET_STATES.CONNECTING:
+                        document.getElementById('walletConnectingScreen').style.display = 'flex';
+                        document.getElementById('selected-wallet-name').textContent = this.selectedWalletType;
+                        break;
+                    case WALLET_STATES.VERIFYING:
+                        document.getElementById('walletVerificationScreen').style.display = 'flex';
+                        // Update wallet address for verification screen
+                        if (this.publicKey) {
+                            document.getElementById('wallet-address').textContent = this.publicKey.toString();
+                        }
+                        break;
+                    case WALLET_STATES.CONNECTED:
+                        // This state is usually followed immediately by showing success screen
+                        // The success screen is shown by showSuccessScreen()
+                        break;
+                    case WALLET_STATES.ERROR:
+                        document.getElementById('walletErrorScreen').style.display = 'flex';
+                        break;
+                }
+            }
+
+            // Handles connection errors and displays appropriate messages.
+            handleConnectionError(error) {
+                this.updateState(WALLET_STATES.ERROR);
+                const errorMessageElement = document.getElementById('walletErrorMessage');
+                const errorRetryBtn = document.getElementById('walletErrorRetryBtn');
+
+                let errorType = WALLET_ERRORS.UNKNOWN_ERROR;
+                let rawMessage = error.message;
+
+                if (rawMessage.startsWith('WALLET_NOT_FOUND:')) {
+                    const walletName = rawMessage.split(':')[1];
+                    errorType = WALLET_ERRORS.WALLET_NOT_FOUND;
+                    errorMessageElement.innerHTML = errorType.message.replace('{walletName}', walletName);
+                    // Add install link if available (mock for now)
+                    if (walletName.toLowerCase() === 'phantom') {
+                        errorMessageElement.innerHTML += `<br><a href="https://phantom.app/download" target="_blank" class="help-link">Install Phantom</a>`;
+                    } else if (walletName.toLowerCase() === 'solflare') {
+                        errorMessageElement.innerHTML += `<br><a href="https://solflare.com/download" target="_blank" class="help-link">Install Solflare</a>`;
+                    }
+                    errorRetryBtn.textContent = errorType.action;
+                    errorRetryBtn.onclick = () => window.open(errorType.actionUrl, '_blank'); // Open install link
+                } else if (rawMessage.startsWith('USER_REJECTED:')) {
+                    errorType = WALLET_ERRORS.USER_REJECTED;
+                    errorMessageElement.textContent = errorType.message;
+                    errorRetryBtn.textContent = errorType.action;
+                    errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType); // Retry with selected wallet
+                } else if (rawMessage.includes('Signature verification failed')) {
+                    errorType = WALLET_ERRORS.VERIFICATION_FAILED;
+                    errorMessageElement.textContent = errorType.message;
+                    errorRetryBtn.textContent = errorType.action;
+                    errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType); // Retry verification
+                } else if (rawMessage.startsWith('NETWORK_ERROR:')) {
+                    errorType = WALLET_ERRORS.NETWORK_ERROR;
+                    errorMessageElement.textContent = errorType.message;
+                    errorRetryBtn.textContent = errorType.action;
+                    errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType); // Retry connection
+                } else if (rawMessage.includes('Balance Check Failed')) { // Handle balance check failure specifically
+                    errorType = WALLET_ERRORS.NETWORK_ERROR; // Treat as network error for now
+                    errorMessageElement.textContent = `Balance check failed. Please ensure you have an internet connection and try again. Original error: ${rawMessage.replace('Balance Check Failed: ', '')}`;
+                    errorRetryBtn.textContent = 'Try Again';
+                    errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType);
+                    localStorage.removeItem("walletAuth"); // Clear auth data if balance check fails
+                }
+                else {
+                    errorMessageElement.textContent = errorType.message;
+                    errorRetryBtn.textContent = errorType.action;
+                    errorRetryBtn.onclick = () => this.updateState(WALLET_STATES.DISCONNECTED); // Go back to selection
+                }
+                console.error("Wallet connection error:", error);
+                playSound('sad_trombone');
+                if (navigator.vibrate) navigator.vibrate(200);
+            }
+
+            // Shows the success screen and closes the modal after a delay.
+            showSuccessScreen() {
+                document.getElementById('walletSuccessScreen').style.display = 'flex';
+                playSound('fanfare');
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+                // Automatically close success screen after a short delay
+                setTimeout(() => {
+                    this.closeWalletModal();
+                    showMessageBox('Wallet Connected!', 'Your wallet is now live. Start spinning!');
+                }, 2000); // Close after 2 seconds
+            }
+
+            // Formats public key for display.
+            formatWalletName(publicKey) {
+                return publicKey.slice(0, 4) + '...' + publicKey.slice(-4);
+            }
+
+            // Saves wallet data to localStorage.
+            saveWalletData() {
                 localStorage.setItem('solroulette_wallet', user.wallet);
                 localStorage.setItem('solroulette_user_name', user.name);
-                localStorage.setItem('solroulette_wallet_balance', walletBalance); // Save balance
+                localStorage.setItem('solroulette_wallet_type', user.walletType);
+                localStorage.setItem('solroulette_verification_data', JSON.stringify(user.verificationData));
+                localStorage.setItem('solroulette_wallet_balance', walletBalance);
                 localStorage.setItem('solroulette_spin_tokens', tokensEarned);
                 localStorage.setItem('solroulette_xp', xp);
                 localStorage.setItem('solroulette_level', level);
@@ -2441,91 +3178,201 @@
                 localStorage.setItem('solroulette_win_streak', winStreak);
                 localStorage.setItem('solroulette_ten_x_wins', tenXWins);
                 localStorage.setItem('solroulette_achievements', JSON.stringify([...achievementsUnlocked]));
-                 localStorage.setItem('solroulette_is_guest', 'false'); // Update guest mode status
+                localStorage.setItem('solroulette_is_guest', 'false');
+            }
 
-                // Mark that a real bet is now possible/wallet is connected
-                firstRealBetPlaced = true;
-                localStorage.setItem('solroulette_first_real_bet_placed', 'true');
+            // Loads user data from localStorage (already handled by global vars, but good practice for a dedicated method).
+            loadUserData() {
+                // This function is mostly a placeholder as global variables are loaded at script start.
+                // In a more complex app, this might fetch from a backend.
+                walletBalance = parseFloat(localStorage.getItem('solroulette_wallet_balance') || '0');
+                tokensEarned = parseFloat(localStorage.getItem('solroulette_spin_tokens') || '0');
+                xp = parseInt(localStorage.getItem('solroulette_xp') || '0');
+                level = parseInt(localStorage.getItem('solroulette_level') || '1');
+                totalWagered = parseFloat(localStorage.getItem('solroulette_total_wagered') || '0');
+                winStreak = parseInt(localStorage.getItem('solroulette_win_streak') || '0');
+                tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
+                achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_achievements') || '[]'));
+            }
 
+            // Resets wallet connection state and UI.
+            resetConnectionState() {
+                this.state = WALLET_STATES.DISCONNECTED;
+                this.selectedWalletType = null;
+                this.walletAdapter = null;
+                this.publicKey = null;
+                this.updateModalUI();
+            }
 
-                updateUIDebounced();
-                addChatMessage('System', `${user.name} joined the game!`, '🤝', 'system');
-
-                // Hide connect button, show place bet button
-                document.getElementById('connectWalletBtn').style.display = 'none';
-                document.getElementById('placeBetBtn').style.display = 'block';
-
-                 closeWalletModal(); // Close the wallet modal on successful connection
-
-                 checkDailyBonus(); // Check for daily bonus after connecting wallet
-
-                 // Show welcome back modal
-                 showMessageBox('Welcome Back!', 'Your real wallet is now live.');
-
-                 // Stop auto demo if it was running
-                 stopAutoDemo();
-
-                 connectWalletBtn.textContent = '✅ Wallet Connected';
-                 connectWalletBtn.disabled = true;
-
-
-            } catch (err) {
-                console.error('Wallet connection failed:', err);
-                showMessageBox('Connection Failed', 'Failed to connect wallet. Please try again.');
-                if (navigator.vibrate) navigator.vibrate(200); // Vibrate on error
-                connectWalletBtn.textContent = 'Connect Wallet';
-                connectWalletBtn.disabled = false;
+            // Closes the wallet modal and resets its state.
+            closeWalletModal() {
+                playSound('click');
+                if (navigator.vibrate) navigator.vibrate(50);
+                document.getElementById('walletModal').classList.remove('visible');
+                this.resetConnectionState(); // Reset modal state when closing
+                resetIdleTimer();
             }
         }
 
-         // Wallet Connection Mobile Fixes
-         function handleWalletConnection() {
-             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        class MobileWalletHandler {
+            constructor(walletConnectionManager) {
+                this.walletConnectionManager = walletConnectionManager;
+                this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                this.deepLinkConfig = {
+                    phantom: {
+                        deepLink: `https://phantom.app/ul/browse/${encodeURIComponent(window.location.href)}?ref=solroulette`,
+                        fallbackUrl: 'https://phantom.app/download',
+                        name: 'Phantom'
+                    },
+                    solflare: {
+                        deepLink: `https://solflare.com/ul/v1/browse/${encodeURIComponent(window.location.href)}?ref=solroulette`,
+                        fallbackUrl: 'https://solflare.com/download',
+                        name: 'Solflare'
+                    }
+                };
+            }
 
-             // Deep linking configuration
-             const walletConfig = {
-                 phantom: {
-                     deepLink: 'https://phantom.app/ul/browse/',
-                     name: 'Phantom'
-                 },
-                 solflare: {
-                     deepLink: 'https://solflare.com/ul/v1/browse/',
-                     name: 'Solflare'
-                 }
-             };
+            // Initiates connection, potentially using deep links on mobile.
+            async connectMobileWallet(walletType) {
+                if (!this.isMobile) {
+                    // If not mobile, proceed with standard desktop connection
+                    return this.walletConnectionManager.initiateConnection(walletType);
+                }
 
-             function openWalletApp(wallet) {
-                 if (isMobile) {
-                     const currentURL = encodeURIComponent(window.location.href);
-                     const deepLink = walletConfig[wallet].deepLink + currentURL;
+                const config = this.deepLinkConfig[walletType];
+                if (config) {
+                    this.initiateDeepLink(config);
+                } else {
+                    // Fallback for wallets without explicit deep link config
+                    showMessageBox('Mobile Wallet', `Please open your ${walletType} app to connect.`);
+                    // Attempt standard connection, might fail if not installed or no bridge
+                    this.walletConnectionManager.initiateConnection(walletType).catch(e => {
+                        console.error("Mobile deep link fallback to standard connection failed:", e);
+                        // Optionally show a more specific error or install prompt
+                    });
+                }
+            }
 
-                     // Store wallet choice in sessionStorage for return visit
-                     sessionStorage.setItem('preferredWallet', wallet);
+            // Handles the deep link redirection and fallback.
+            initiateDeepLink(config) {
+                // Store connection attempt to check on return
+                sessionStorage.setItem('wallet_connection_attempt', JSON.stringify({
+                    timestamp: Date.now(),
+                    type: config.name,
+                    walletType: config.name.toLowerCase().replace(' ', '')
+                }));
 
-                     // Open wallet app
-                     window.location.href = deepLink;
-                 }
-             }
+                // Try deep link
+                window.location.href = config.deepLink;
 
-             // Add click handlers to wallet buttons
-             document.querySelectorAll('[data-wallet]').forEach(button => {
-                 button.addEventListener('click', (e) => {
-                     const wallet = e.target.dataset.wallet;
-                     openWalletApp(wallet);
+                // Fallback after timeout if user doesn't switch to wallet app
+                setTimeout(() => {
+                    if (document.hidden) return; // User likely went to wallet app
 
-                     // Add haptic feedback
-                     if (navigator.vibrate) {
-                         navigator.vibrate(50);
-                     }
-                 });
-             });
-         }
+                    // Show install prompt if user didn't leave the browser
+                    this.showInstallPrompt(config.fallbackUrl, config.name);
+                }, 3000); // 3 seconds to allow app switch
+            }
+
+            // Shows a prompt to install the wallet.
+            showInstallPrompt(installUrl, walletName) {
+                showMessageBox(
+                    'Wallet Not Found',
+                    `It seems you don't have ${walletName} installed or it didn't open. Please install it to continue.`,
+                    () => window.open(installUrl, '_blank') // Action to open install link
+                );
+            }
+
+            // Checks if a wallet connection attempt was made via deep link on page load.
+            checkDeepLinkReturn() {
+                const attempt = JSON.parse(sessionStorage.getItem('wallet_connection_attempt'));
+                if (attempt && (Date.now() - attempt.timestamp < 10000)) { // Within 10 seconds of attempt
+                    sessionStorage.removeItem('wallet_connection_attempt'); // Clear attempt
+                    // Attempt to connect the wallet that was previously selected
+                    this.walletConnectionManager.initiateConnection(attempt.walletType);
+                }
+            }
+        }
+
+        // Instantiate the managers
+        const walletConnectionManager = new WalletConnectionManager();
+        const mobileWalletHandler = new MobileWalletHandler(walletConnectionManager);
+        // Wallet Connection Refinement - END
 
 
-         function openWalletModal() {
+        // Old connectWallet function removed.
+        // The logic is now handled by WalletConnectionManager.initiateConnection()
+
+        // Disconnect Wallet Function
+        function disconnectWallet() {
+            showMessageBox('Confirm Disconnect', 'Are you sure you want to disconnect your wallet? You will return to demo mode.', async () => { // Made async to await wallet disconnect
+                // User confirmed
+                
+                // Attempt to disconnect from the wallet adapter if it exists
+                if (walletConnectionManager.walletAdapter) {
+                    try {
+                        await walletConnectionManager.walletAdapter.disconnect();
+                        console.log("Wallet adapter disconnected successfully.");
+                    } catch (error) {
+                        console.error("Error disconnecting wallet adapter:", error);
+                        // Continue with local state reset even if adapter disconnect fails
+                    }
+                }
+
+                user.wallet = null;
+                user.name = 'Guest';
+                user.avatar = '👋';
+                user.walletType = null;
+                user.verificationData = null;
+
+                // Clear real wallet data from localStorage
+                localStorage.removeItem('solroulette_wallet');
+                localStorage.removeItem('solroulette_user_name');
+                localStorage.removeItem('solroulette_wallet_type');
+                localStorage.removeItem('solroulette_verification_data');
+                localStorage.removeItem('solroulette_wallet_balance');
+                localStorage.removeItem('solroulette_spin_tokens');
+                localStorage.removeItem('solroulette_xp');
+                localStorage.removeItem('solroulette_level');
+                localStorage.removeItem('solroulette_total_wagered');
+                localStorage.removeItem('solroulette_win_streak');
+                localStorage.removeItem('solroulette_ten_x_wins');
+                localStorage.removeItem('solroulette_achievements');
+                localStorage.removeItem('solroulette_first_real_bet_placed');
+                localStorage.removeItem('solroulette_last_login'); // Clear real login date
+
+                // Restore guest mode state
+                isGuestMode = true;
+                localStorage.setItem('solroulette_is_guest', 'true');
+                walletBalance = parseFloat(localStorage.getItem('solroulette_guest_balance') || '500');
+                xp = parseInt(localStorage.getItem('solroulette_guest_xp') || '0');
+                tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens') || '0');
+                totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
+                winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak') || '0');
+                tenXWins = parseInt(localStorage.getItem('solroulette_guest_ten_x_wins') || '0');
+                achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements') || '[]'));
+                guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0');
+                dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day') || '0');
+                fakeWinningsTotal = parseFloat(localStorage.getItem('solroulette_fake_winnings_total') || '0');
+                lastLoginDate = localStorage.getItem('solroulette_guest_last_login') || null;
+
+
+                updateUIDebounced();
+                closeProfileModal();
+                showMessageBox('Disconnected', 'You are now in demo mode.');
+                startAutoDemo(); // Restart auto demo after disconnecting
+            }, () => {
+                // User cancelled
+                console.log("Wallet disconnect cancelled.");
+            });
+        }
+
+
+        function openWalletModal() {
              playSound('click');
              if (navigator.vibrate) navigator.vibrate(50);
              document.getElementById('walletModal').classList.add('visible');
+             walletConnectionManager.resetConnectionState(); // Ensure modal starts at selection screen
              resetIdleTimer(); // Reset idle timer on modal open
              stopAutoDemo(); // Stop auto demo on modal open
          }
@@ -2897,6 +3744,8 @@
                  localStorage.setItem('solroulette_wallet', user.wallet);
                  localStorage.setItem('solroulette_user_name', user.name);
                  localStorage.setItem('solroulette_user_avatar', user.avatar);
+                 localStorage.setItem('solroulette_wallet_type', user.walletType); // Save wallet type
+                 localStorage.setItem('solroulette_verification_data', JSON.stringify(user.verificationData)); // Save verification data
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
              localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
@@ -2924,7 +3773,7 @@
              // The bet has already been placed and currentBet is reset.
              // We need to find the user's bet from the playerBets array to get their picked multiplier.
              // FIX: Removed duplicate 'const' declaration for userBet
-             userBet = playerBets.find(bet => bet.isUser);
+             let userBet = playerBets.find(bet => bet.isUser); // Changed to let to avoid redeclaration error
              let userPickedMultiplierNumericString = userBet ? userBet.multiplier : null; // e.g., '2'
              let userPickedMultiplierDisplayString = userBet ? userBet.multiplier + 'x' : 'nullx'; // e.g., '2x' or 'nullx'
 
@@ -3011,6 +3860,10 @@
              // Update tokens based on participation or win (only in real wallet mode)
              if (!isGuestMode) {
                  updateTokens(userWon ? 0.05 : 0.01);
+                 // After a real wallet spin, fetch the latest balance from RPC
+                 if (user.wallet) {
+                     walletConnectionManager.fetchBalance(user.wallet).catch(e => console.error("Error fetching balance after spin:", e));
+                 }
              } else {
                  // Show demo mode toast after each spin in guest mode
                  showGuestModeToast();
@@ -3066,6 +3919,8 @@
                  localStorage.setItem('solroulette_wallet', user.wallet);
                  localStorage.setItem('solroulette_user_name', user.name);
                  localStorage.setItem('solroulette_user_avatar', user.avatar);
+                 localStorage.setItem('solroulette_wallet_type', user.walletType); // Save wallet type
+                 localStorage.setItem('solroulette_verification_data', JSON.stringify(user.verificationData)); // Save verification data
              }
              localStorage.setItem('solroulette_is_guest', isGuestMode); // Save guest mode status
              localStorage.setItem('solroulette_first_real_bet_placed', firstRealBetPlaced); // Save real bet flag
@@ -3391,10 +4246,24 @@
         }
 
          // Message Box (Custom Alert)
-         function showMessageBox(title, message) {
+         function showMessageBox(title, message, onOkCallback = null) { // Added optional callback
              document.getElementById('messageBoxTitle').textContent = title;
              document.getElementById('messageBoxContent').textContent = message;
-             document.getElementById('messageBox').classList.add('visible');
+             const messageBox = document.getElementById('messageBox');
+             messageBox.classList.add('visible');
+
+             const closeBtn = document.getElementById('closeMessageBoxBtn');
+             // Remove existing listener to prevent multiple calls
+             closeBtn.onclick = null;
+             closeBtn.addEventListener('click', () => {
+                 messageBox.classList.remove('visible');
+                 if (onOkCallback) {
+                     onOkCallback(); // Execute callback if provided
+                 }
+                 resetIdleTimer();
+                 stopAutoDemo();
+             }, { once: true }); // Ensure it runs only once
+
              resetIdleTimer(); // Reset idle timer on modal open
              stopAutoDemo(); // Stop auto demo on modal open
          }
@@ -3452,6 +4321,14 @@
                  resetGuestBtn.style.display = 'block';
              } else {
                  resetGuestBtn.style.display = 'none';
+             }
+
+             // Show/Hide Disconnect Wallet Button
+             const disconnectWalletBtn = document.getElementById('disconnectWalletBtn');
+             if (user.wallet && !isGuestMode) {
+                 disconnectWalletBtn.style.display = 'block';
+             } else {
+                 disconnectWalletBtn.style.display = 'none';
              }
 
 
@@ -3522,32 +4399,38 @@
 
          // Reset Guest Progress
          function resetGuestProgress() {
-             playSound('click');
-             if (navigator.vibrate) navigator.vibrate(50);
-             if (confirm('Are you sure you want to reset your demo progress? This cannot be undone.')) {
-                 // Clear only guest-specific localStorage items
-                 localStorage.removeItem('solroulette_is_guest');
-                 localStorage.removeItem('solroulette_guest_balance');
-                 localStorage.removeItem('solroulette_guest_xp');
-                 localStorage.removeItem('solroulette_guest_tokens');
-                 localStorage.removeItem('solroulette_guest_total_wagered');
-                 localStorage.removeItem('solroulette_guest_win_streak');
-                 localStorage.removeItem('solroulette_guest_ten_x_wins');
-                 localStorage.removeItem('solroulette_guest_achievements');
-                 localStorage.removeItem('solroulette_guest_spin_count');
-                 localStorage.removeItem('solroulette_guest_last_login');
-                 localStorage.removeItem('solroulette_guest_daily_bonus_day');
-                 localStorage.removeItem('solroulette_fake_winnings_total');
-                 localStorage.removeItem('solroulette_fake_intro_shown'); // Reset onboarding flag too
-                 localStorage.removeItem('solroulette_guest_modal_shown'); // Reset enjoyment modal flag
-                 localStorage.removeItem('solroulette_onboarding_shown'); // Reset onboarding tooltip flag
-                 localStorage.removeItem('solroulette_first_real_bet_placed'); // Reset real bet flag
-                 localStorage.removeItem('solroulette_current_multiplier'); // Clear current bet state
-                 localStorage.removeItem('solroulette_current_amount');
-                 localStorage.removeItem('solroulette_last_spin_result'); // Clear last spin result
+            showMessageBox('Confirm Reset', 'Are you sure you want to reset your demo progress? This cannot be undone.', () => {
+                // User confirmed
+                playSound('click');
+                if (navigator.vibrate) navigator.vibrate(50);
+                // Clear only guest-specific localStorage items
+                localStorage.removeItem('solroulette_is_guest');
+                localStorage.removeItem('solroulette_guest_balance');
+                localStorage.removeItem('solroulette_guest_xp');
+                localStorage.removeItem('solroulette_guest_tokens');
+                localStorage.removeItem('solroulette_guest_total_wagered');
+                localStorage.removeItem('solroulette_guest_win_streak');
+                localStorage.removeItem('solroulette_guest_ten_x_wins');
+                localStorage.removeItem('solroulette_guest_achievements');
+                localStorage.removeItem('solroulette_guest_spin_count');
+                localStorage.removeItem('solroulette_guest_last_login');
+                localStorage.removeItem('solroulette_guest_daily_bonus_day');
+                localStorage.removeItem('solroulette_fake_winnings_total');
+                localStorage.removeItem('solroulette_fake_intro_shown'); // Reset onboarding flag too
+                localStorage.removeItem('solroulette_guest_modal_shown'); // Reset enjoyment modal flag
+                localStorage.removeItem('solroulette_onboarding_shown'); // Reset onboarding tooltip flag
+                localStorage.removeItem('solroulette_first_real_bet_placed'); // Reset real bet flag
+                localStorage.removeItem('solroulette_current_multiplier'); // Clear current bet state
+                localStorage.removeItem('solroulette_current_amount');
+                localStorage.removeItem('solroulette_last_spin_result'); // Clear last spin result
 
-                 location.reload(); // Reload the page to restart in fresh guest mode
-             }
+                location.reload(); // Reload the page to restart in fresh guest mode
+            }, () => {
+                // User cancelled
+                playSound('click');
+                if (navigator.vibrate) navigator.vibrate(50);
+                console.log("Guest progress reset cancelled.");
+            });
          }
 
 
@@ -4454,12 +5337,14 @@
         document.getElementById('placeBetBtn').addEventListener('click', placeBet);
         // document.getElementById('sendChatBtn').addEventListener('click', sendChat); // Moved to Chat Toggle JS
         document.getElementById('claimModalBtn').addEventListener('click', openClaimModal);
-        document.getElementById('closeWalletModalBtn').addEventListener('click', closeWalletModal);
-        document.getElementById('justWatchingBtn').addEventListener('click', closeWalletModal); // "Just Watching" button
+        // document.getElementById('closeWalletModalBtn').addEventListener('click', closeWalletModal); // Replaced by closeWalletModalBtnNew
+        document.getElementById('closeWalletModalBtnNew').addEventListener('click', () => walletConnectionManager.closeWalletModal()); // New close button for enhanced modal
+        // document.getElementById('justWatchingBtn').addEventListener('click', closeWalletModal); // "Just Watching" button - Removed from new modal
         // document.getElementById('connectPhantomBtn').addEventListener('click', connectWallet); // Actual connect button inside modal - Now handled by handleWalletConnection
         document.getElementById('closeProfileModalBtn').addEventListener('click', closeProfileModal);
         document.getElementById('copyReferralLinkBtn').addEventListener('click', copyReferralLink);
         document.getElementById('resetGuestProgressBtn').addEventListener('click', resetGuestProgress); // Guest Reset Button
+        document.getElementById('disconnectWalletBtn').addEventListener('click', disconnectWallet); // Disconnect Wallet Button
         document.getElementById('closeShopModalBtn').addEventListener('click', closeShopModal);
         document.querySelectorAll('.buy-item-btn').forEach(btn => { // Event listeners for buy buttons
             btn.addEventListener('click', () => {
@@ -4485,6 +5370,46 @@
          // Added close button for daily reward modal
          document.getElementById('closeDailyRewardModalBtn').addEventListener('click', closeDailyRewardModal);
          document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward); // Claim Daily Reward button
+
+        // Event listeners for the new wallet options
+        // REPLACE the existing wallet option event listeners:
+        document.querySelectorAll('.wallet-option').forEach(button => {
+            button.addEventListener('click', () => {
+                const walletType = button.dataset.wallet;
+                const availableWallets = detectAvailableWallets();
+                
+                if (!availableWallets.includes(walletType)) {
+                    // Show install prompt
+                    const installUrls = {
+                        phantom: 'https://phantom.app/download',
+                        solflare: 'https://solflare.com/download'
+                    };
+                    
+                    showMessageBox(
+                        'Wallet Not Installed',
+                        `Please install ${walletType.charAt(0).toUpperCase() + walletType.slice(1)} wallet first.`, // Capitalize wallet type for display
+                        () => window.open(installUrls[walletType] || '#', '_blank')
+                    );
+                    return;
+                }
+                
+                // Proceed with connection
+                mobileWalletHandler.connectMobileWallet(walletType);
+            });
+        });
+
+        // Event listener for the "Start Playing" button on the success screen
+        document.getElementById('walletSuccessContinueBtn').addEventListener('click', () => {
+            walletConnectionManager.closeWalletModal();
+        });
+
+        // Event listener for the "Try Again" button on the error screen
+        document.getElementById('walletErrorRetryBtn').addEventListener('click', () => {
+            // This button's action is dynamically set in handleConnectionError
+            // If it's a retry, it will call initiateConnection again.
+            // If it's "Install Wallet", it will open the install link.
+            // If it's "Try Again" for verification, it will call initiateConnection again.
+        });
 
 
         // Live Panel Tab Switching Functionality
@@ -4573,6 +5498,20 @@
          }, Math.random() * 30000 + 30000); // Between 30 and 60 seconds
 
 
+        // ADD this for development testing (remove in production):
+        // Only enable mock wallets with explicit development flag
+        // This block is removed as per CRITICAL REQUIREMENTS - ZERO TOLERANCE FOR MOCK LOGIC.
+        // if (!window.solana && location.hostname === 'localhost' && window.DEVELOPMENT_MODE) {
+        //     console.warn('🚨 Development mode: Mock wallet enabled');
+        //     window.solana = {
+        //         isPhantom: true,
+        //         publicKey: { toString: () => 'DEV_MOCK_WALLET_123' },
+        //         connect: () => Promise.resolve({ publicKey: { toString: () => 'DEV_MOCK_WALLET_123' } }),
+        //         signMessage: (msg) => Promise.resolve(new Uint8Array(64))
+        //     };
+        // }
+
+
         // Initial setup on page load
         window.onload = function() {
             setupCanvas(); // Setup canvas size and initial draw
@@ -4617,7 +5556,7 @@
                  localStorage.setItem('solroulette_user_avatar', user.avatar);
 
 
-                 updateUIDebounced(); // Update UI to show the initial balance and guest state
+                 updateUIDebounced(); // Update UI to show the new balance and guest state
                  showOnboardingModal(); // Show onboarding modal
 
              } else if (!user.wallet && fakeIntroShown) {
@@ -4714,6 +5653,9 @@
 
              // Start active use timer
              startActiveUseTimer();
+
+             // Check for deep link return if on mobile
+             mobileWalletHandler.checkDeepLinkReturn();
         };
 
         // Ensure canvas resizes with window
@@ -4740,7 +5682,7 @@
          // Removed Chat Toggle Event Listener (as the separate chat bubble is removed)
 
          // Wallet Connection Mobile Fixes - Initialize on page load
-         document.addEventListener('DOMContentLoaded', handleWalletConnection);
+         // document.addEventListener('DOMContentLoaded', handleWalletConnection); // Replaced by new WalletConnectionManager and MobileWalletHandler
 
          // Live Panel Toggle Logic
          document.getElementById('toggleLivePanel').addEventListener('click', function() {
