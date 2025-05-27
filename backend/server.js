@@ -1,0 +1,566 @@
+// server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const { Connection, PublicKey, SystemProgram, Transaction } = require('@solana/web3.js');
+const nacl = require('tweetnacl'); // For signature verification
+require('dotenv').config(); // Load environment variables
+
+// --- Database Connection ---
+const connectDB = require('./db');
+connectDB();
+
+// --- Mongoose Models ---
+const User = require('./models/User'); // User model
+const Bet = require('./models/Bet');   // Bet model (optional, for history)
+
+const app = express();
+const server = http.createServer(app);
+
+// Configure CORS for Express
+app.use(cors({
+    origin: 'http://localhost:8000', // Allow requests from your frontend
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
+
+app.use(express.json()); // For parsing application/json
+
+// --- JWT Secret (Replace with a strong, random secret in production) ---
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_12345';
+
+// --- Socket.IO Server Setup ---
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:8000', // Allow Socket.IO connections from your frontend
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
+
+// --- Middleware to authenticate Socket.IO connections ---
+io.use(async (socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error('Authentication error: No token provided.'));
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        socket.userId = decoded.userId;
+        socket.publicKey = decoded.publicKey;
+        // Fetch user data and attach to socket for easy access
+        const user = await User.findOne({ publicKey: socket.publicKey });
+        if (!user) {
+            return next(new Error('Authentication error: User not found.'));
+        }
+        socket.userData = user;
+        next();
+    } catch (err) {
+        console.error('JWT verification error:', err);
+        next(new Error('Authentication error: Invalid token.'));
+    }
+});
+
+// --- Global Game State ---
+let spinTimer = 25;
+let isSpinning = false;
+let betsQueue = []; // Stores bets for the current round
+let currentSpinResult = null; // Stores the result of the current spin
+
+// --- Solana Connection (for real balance checks and future transactions) ---
+const solanaConnection = new Connection('https://api.mainnet-beta.solana.com'); // Mainnet-beta
+
+// --- Helper: Get Random Multiplier (Server-side RNG for fairness) ---
+function getRandomMultiplier() {
+    const segments = [
+        { multiplier: '1.5x', probability: 0.3 },
+        { multiplier: '2x', probability: 0.2 },
+        { multiplier: '3x', probability: 0.2 },
+        { multiplier: '5x', probability: 0.15 },
+        { multiplier: '10x', probability: 0.15 }
+    ];
+
+    const totalProbability = segments.reduce((sum, seg) => sum + seg.probability, 0);
+    let random = Math.random() * totalProbability;
+
+    for (const segment of segments) {
+        if (random < segment.probability) {
+            return segment.multiplier;
+        }
+        random -= segment.probability;
+    }
+    return '1.5x'; // Fallback
+}
+
+// --- Helper: Resolve Bets ---
+async function resolveBet(bet, winningMultiplier) {
+    const user = await User.findById(bet.userId);
+    if (!user) {
+        console.error(`User not found for bet resolution: ${bet.userId}`);
+        return;
+    }
+
+    const betMultiplierNumeric = parseFloat(bet.multiplier);
+    const winningMultiplierNumeric = parseFloat(winningMultiplier.replace('x', ''));
+    let won = false;
+    let winnings = 0;
+
+    if (betMultiplierNumeric === winningMultiplierNumeric) {
+        won = true;
+        winnings = bet.amount * betMultiplierNumeric;
+        user.solBalance += winnings;
+        user.winStreak++;
+        if (winningMultiplierNumeric >= 5) { // 5x or 10x
+            user.tenXWins++;
+        }
+    } else {
+        user.winStreak = 0;
+    }
+
+    user.totalWagered += bet.amount;
+    user.xp += 10; // XP for playing a round
+    if (user.xp >= 100) { // Simple leveling
+        user.level = (user.level || 1) + 1;
+        user.xp -= 100;
+    }
+    // Check achievements (simplified, can be more complex)
+    if (user.winStreak >= 3 && !user.achievements.includes('Lucky Streak x3')) user.achievements.push('Lucky Streak x3');
+    if (user.totalWagered >= 50 && !user.achievements.includes('High Roller')) user.achievements.push('High Roller');
+    if (user.tenXWins >= 1 && !user.achievements.includes('Hit 10x')) user.achievements.push('Hit 10x');
+
+
+    await user.save();
+
+    return {
+        publicKey: user.publicKey,
+        username: user.username,
+        amount: bet.amount,
+        multiplier: bet.multiplier,
+        winningMultiplier: winningMultiplier,
+        won: won,
+        winnings: winnings,
+        solBalance: user.solBalance,
+        totalWagered: user.totalWagered,
+        winStreak: user.winStreak,
+        tenXWins: user.tenXWins,
+        xp: user.xp,
+        level: user.level,
+        achievements: user.achievements
+    };
+}
+
+// --- Global Spin Timer Loop ---
+setInterval(async () => {
+    // Broadcast countdown
+    io.emit('spinCountdown', { timeLeft: spinTimer });
+
+    if (spinTimer <= 0) {
+        if (!isSpinning) {
+            isSpinning = true;
+            console.log('Spinning started!');
+            io.emit('spinCountdown', { timeLeft: 'Spinning...' }); // Update UI to spinning state
+
+            // Determine winning multiplier
+            const winningMultiplier = getRandomMultiplier();
+            currentSpinResult = winningMultiplier;
+
+            // Resolve all bets in the queue
+            const betsOutcome = [];
+            for (const bet of betsQueue) {
+                const outcome = await resolveBet(bet, winningMultiplier);
+                betsOutcome.push(outcome);
+            }
+            betsQueue = []; // Clear queue for next round
+
+            // Simulate other players' activity for the leaderboard/chat
+            const mockUsers = await User.find({ publicKey: { $ne: 'mock_guest_user' } }).limit(10); // Get some real users
+            const mockLeaderboard = {
+                wager: (await User.find().sort({ totalWagered: -1 }).limit(7)).map(u => ({ username: u.username, totalWagered: u.totalWagered, avatar: u.avatar, publicKey: u.publicKey })),
+                streak: (await User.find().sort({ winStreak: -1 }).limit(7)).map(u => ({ username: u.username, winStreak: u.winStreak, avatar: u.avatar, publicKey: u.publicKey })),
+                '10x': (await User.find().sort({ tenXWins: -1 }).limit(7)).map(u => ({ username: u.username, tenXWins: u.tenXWins, avatar: u.avatar, publicKey: u.publicKey }))
+            };
+            const totalUsersOnline = await User.countDocuments(); // Simple count of registered users
+
+            // Broadcast spin result after animation duration (frontend spinDuration is 5s)
+            setTimeout(() => {
+                io.emit('spinResult', {
+                    winningMultiplier: winningMultiplier,
+                    betsOutcome: betsOutcome,
+                    newLeaderboard: mockLeaderboard,
+                    newUsersOnline: totalUsersOnline
+                });
+                isSpinning = false;
+                spinTimer = 25; // Reset timer for next round
+                console.log(`Spin finished. Result: ${winningMultiplier}. Next spin in ${spinTimer}s.`);
+            }, 5000); // Wait for frontend animation to finish
+        }
+    } else {
+        spinTimer--;
+    }
+}, 1000); // Run every second
+
+// --- API Routes ---
+
+// 1. Wallet Signature Verification and JWT Issuance
+app.post('/api/auth/verify-signature', async (req, res) => {
+    const { publicKey, message, signature } = req.body;
+
+    if (!publicKey || !message || !signature) {
+        return res.status(400).json({ message: 'Missing required fields: publicKey, message, signature.' });
+    }
+
+    try {
+        const decodedMessage = new TextEncoder().encode(atob(message)); // Decode base64 message
+        const signatureBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0)); // Decode base64 signature
+
+        const pubKey = new PublicKey(publicKey);
+        const verified = nacl.sign.detached.verify(decodedMessage, signatureBytes, pubKey.toBytes());
+
+        if (!verified) {
+            return res.status(401).json({ message: 'Signature verification failed.' });
+        }
+
+        // Find or create user
+        let user = await User.findOne({ publicKey });
+
+        if (!user) {
+            user = new User({
+                publicKey,
+                username: publicKey.slice(0, 4) + '...' + publicKey.slice(-4),
+                solBalance: 0.01, // Welcome bonus for new users
+                totalWagered: 0,
+                winStreak: 0,
+                tenXWins: 0,
+                achievements: [],
+                dailyBonusDay: 0,
+                lastLoginDate: null
+            });
+            await user.save();
+            console.log(`New user created: ${user.username} with welcome bonus.`);
+        }
+
+        // Check for welcome bonus (only if totalWagered is 0 and it's their first time getting this bonus)
+        // This is handled by the initial user creation above. If user already exists, no welcome bonus here.
+
+        const token = jwt.sign({ userId: user._id, publicKey: user.publicKey }, JWT_SECRET, { expiresIn: '1d' });
+
+        res.json({
+            token,
+            user: {
+                publicKey: user.publicKey,
+                username: user.username,
+                avatar: user.avatar,
+                solBalance: user.solBalance,
+                totalWagered: user.totalWagered,
+                winStreak: user.winStreak,
+                tenXWins: user.tenXWins,
+                xp: user.xp,
+                level: user.level,
+                achievements: user.achievements,
+                dailyBonusDay: user.dailyBonusDay,
+                lastLoginDate: user.lastLoginDate
+            }
+        });
+
+    } catch (error) {
+        console.error('Error during signature verification:', error);
+        res.status(500).json({ message: 'Server error during authentication.' });
+    }
+});
+
+// Middleware to protect routes
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: 'Access denied. No token provided.' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid or expired token.' });
+        }
+        req.user = user; // Attach decoded user payload
+        next();
+    });
+};
+
+// 2. Profile Editing - Update Username
+app.post('/api/profile/update-username', authenticateToken, async (req, res) => {
+    const { username } = req.body;
+    if (!username || username.length < 3) {
+        return res.status(400).json({ message: 'Username must be at least 3 characters.' });
+    }
+
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        user.username = username;
+        await user.save();
+
+        // Broadcast username change to all connected clients
+        io.emit('profileUpdate', { publicKey: user.publicKey, username: user.username, avatar: user.avatar });
+
+        res.json({
+            message: 'Username updated successfully.',
+            username: user.username,
+            avatar: user.avatar // Return avatar as well for consistency
+        });
+    } catch (error) {
+        console.error('Error updating username:', error);
+        res.status(500).json({ message: 'Failed to update username.' });
+    }
+});
+
+// 3. Mock Top Up (for testing purposes, not real SOL)
+app.post('/api/mock-top-up', authenticateToken, async (req, res) => {
+    const { amount } = req.body;
+    if (typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ message: 'Invalid top-up amount.' });
+    }
+
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        user.solBalance += amount;
+        await user.save();
+
+        res.json({
+            message: `Successfully topped up ${amount} SOL.`,
+            solBalance: user.solBalance
+        });
+    } catch (error) {
+        console.error('Error during mock top-up:', error);
+        res.status(500).json({ message: 'Failed to process mock top-up.' });
+    }
+});
+
+// 4. Claim Daily Bonus
+app.post('/api/claim-daily-bonus', authenticateToken, async (req, res) => {
+    const { amount, day } = req.body;
+    if (typeof amount !== 'number' || amount <= 0 || typeof day !== 'number') {
+        return res.status(400).json({ message: 'Invalid bonus data.' });
+    }
+
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        const today = new Date().toDateString();
+        if (user.lastLoginDate && new Date(user.lastLoginDate).toDateString() === today) {
+            return res.status(400).json({ message: 'Daily bonus already claimed today.' });
+        }
+
+        user.solBalance += amount;
+        user.lastLoginDate = new Date();
+        user.dailyBonusDay = day; // Sync daily bonus day from frontend
+
+        if (day === 7) { // Reset after day 7
+            user.dailyBonusDay = 0;
+        }
+
+        // Check for 'Daily Grinder' achievement
+        if (user.dailyBonusDay >= 5 && !user.achievements.includes('Daily Grinder')) {
+            user.achievements.push('Daily Grinder');
+        }
+
+        await user.save();
+
+        res.json({
+            message: `Daily bonus of ${amount} SOL claimed!`,
+            solBalance: user.solBalance,
+            dailyBonusDay: user.dailyBonusDay,
+            achievements: user.achievements
+        });
+
+    } catch (error) {
+        console.error('Error claiming daily bonus:', error);
+        res.status(500).json({ message: 'Failed to claim daily bonus.' });
+    }
+});
+
+
+// --- Socket.IO Event Handlers ---
+
+io.on('connection', (socket) => {
+    console.log(`User connected: ${socket.id} (PublicKey: ${socket.publicKey})`);
+
+    // Emit initial state to the newly connected client
+    socket.emit('initialState', {
+        spinTimer,
+        isSpinning,
+        user: socket.userData ? {
+            publicKey: socket.userData.publicKey,
+            username: socket.userData.username,
+            avatar: socket.userData.avatar,
+            solBalance: socket.userData.solBalance,
+            totalWagered: socket.userData.totalWagered,
+            winStreak: socket.userData.winStreak,
+            tenXWins: socket.userData.tenXWins,
+            xp: socket.userData.xp,
+            level: socket.userData.level,
+            achievements: socket.userData.achievements,
+            dailyBonusDay: socket.userData.dailyBonusDay,
+            lastLoginDate: socket.userData.lastLoginDate
+        } : null, // Send user data if authenticated
+        recentSpins: [], // Fetch from DB if storing, otherwise empty
+        leaderboard: {}, // Fetch from DB
+        playersOnline: io.engine.clientsCount // Number of connected sockets
+    });
+
+    // Handle 'authenticate' event from frontend (after token is received on client)
+    socket.on('authenticate', async ({ token }) => {
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            const user = await User.findById(decoded.userId);
+            if (!user) {
+                return socket.emit('authError', 'User not found.');
+            }
+            socket.userId = user._id;
+            socket.publicKey = user.publicKey;
+            socket.userData = user;
+            socket.emit('authenticated', {
+                publicKey: user.publicKey,
+                username: user.username,
+                avatar: user.avatar,
+                solBalance: user.solBalance,
+                totalWagered: user.totalWagered,
+                winStreak: user.winStreak,
+                tenXWins: user.tenXWins,
+                xp: user.xp,
+                level: user.level,
+                achievements: user.achievements,
+                dailyBonusDay: user.dailyBonusDay,
+                lastLoginDate: user.lastLoginDate
+            });
+            console.log(`User ${user.username} re-authenticated via Socket.IO.`);
+        } catch (err) {
+            socket.emit('authError', 'Invalid or expired token.');
+            console.error('Socket.IO authentication error:', err);
+        }
+    });
+
+    // Handle 'placeBet' event
+    socket.on('placeBet', async (betData) => {
+        if (!socket.userData) {
+            return socket.emit('betError', 'Not authenticated to place bets.');
+        }
+
+        const { amount, multiplier } = betData;
+
+        // Server-side validation
+        if (typeof amount !== 'number' || amount <= 0 || !multiplier) {
+            return socket.emit('betError', 'Invalid bet amount or multiplier.');
+        }
+        if (amount > socket.userData.solBalance) {
+            return socket.emit('betError', 'Insufficient SOL balance.');
+        }
+        // Ensure betting window is open (last 3 seconds of timer)
+        if (spinTimer > 3 || isSpinning) {
+            return socket.emit('betError', 'Betting is currently closed.');
+        }
+
+        try {
+            // Deduct amount from user's balance immediately
+            socket.userData.solBalance -= amount;
+            await socket.userData.save();
+
+            // Add bet to queue
+            betsQueue.push({
+                userId: socket.userData._id,
+                publicKey: socket.userData.publicKey,
+                username: socket.userData.username,
+                amount: amount,
+                multiplier: multiplier
+            });
+
+            // Emit confirmation to all clients (including self)
+            io.emit('betPlacedConfirmation', {
+                username: socket.userData.username,
+                amount: amount,
+                multiplier: multiplier
+            });
+
+            // Update client's balance immediately (optional, but good for UX)
+            socket.emit('balanceUpdate', { solBalance: socket.userData.solBalance });
+
+            console.log(`${socket.userData.username} placed a bet of ${amount} on ${multiplier}.`);
+        } catch (error) {
+            console.error('Error placing bet:', error);
+            socket.emit('betError', 'Failed to place bet due to server error.');
+        }
+    });
+
+    // Handle chat messages
+    socket.on('chatMessage', async (data) => {
+        if (!socket.userData) {
+            return socket.emit('chatError', 'Not authenticated to chat.');
+        }
+        const message = data.message.trim();
+        if (!message) return;
+
+        // Sanitize message (basic example)
+        const sanitizedMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        // Save chat message to DB (optional, if you want chat history)
+        // For now, just broadcast
+        console.log(`Chat from ${socket.userData.username}: ${sanitizedMessage}`);
+        io.emit('chatMessage', {
+            username: socket.userData.username,
+            message: sanitizedMessage,
+            publicKey: socket.userData.publicKey
+        });
+    });
+
+    // Handle profile updates (e.g., avatar changes - not implemented in frontend yet, but structure is here)
+    socket.on('profileUpdate', async (data) => {
+        if (!socket.userData) return;
+
+        // Example: If avatar is updated
+        if (data.avatar && typeof data.avatar === 'string' && data.avatar.length < 5) { // Simple validation
+            socket.userData.avatar = data.avatar;
+            await socket.userData.save();
+            io.emit('profileUpdate', { publicKey: socket.userData.publicKey, username: socket.userData.username, avatar: socket.userData.avatar });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`User disconnected: ${socket.id}`);
+        // Update players online count
+        io.emit('playersOnlineUpdate', io.engine.clientsCount);
+    });
+});
+
+// --- Leaderboard Update Loop ---
+setInterval(async () => {
+    try {
+        const leaderboard = {
+            wager: (await User.find().sort({ totalWagered: -1 }).limit(7)).map(u => ({ username: u.username, totalWagered: u.totalWagered, avatar: u.avatar, publicKey: u.publicKey })),
+            streak: (await User.find().sort({ winStreak: -1 }).limit(7)).map(u => ({ username: u.username, winStreak: u.winStreak, avatar: u.avatar, publicKey: u.publicKey })),
+            '10x': (await User.find().sort({ tenXWins: -1 }).limit(7)).map(u => ({ username: u.username, tenXWins: u.tenXWins, avatar: u.avatar, publicKey: u.publicKey }))
+        };
+        io.emit('leaderboardUpdate', leaderboard);
+        io.emit('playersOnlineUpdate', io.engine.clientsCount); // Also send updated player count
+    } catch (error) {
+        console.error('Error updating leaderboard:', error);
+    }
+}, 15000); // Update every 15 seconds
+
+// --- Start Server ---
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
