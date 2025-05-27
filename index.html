@@ -2070,10 +2070,11 @@
 </div>
 <script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
 <script type="module">
-    import { PhantomWalletAdapter } from 'https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-phantom@latest/lib/esm/adapter.js';
-    // Note: The Phantom extension itself injects `window.solana`.
-    // This import is primarily for direct usage of the adapter class if `window.solana` is not present.
-    // Your `connectWallet()` function should still rely on `window.solana`.
+    // This import from esm.sh *should* handle the internal dependencies
+    import { PhantomWalletAdapter } from 'https://esm.sh/@solana/wallet-adapter-phantom@latest';
+    // The Phantom extension still injects `window.solana`. This script
+    // ensures a working adapter is available if the extension isn't.
+    // Your connectWallet() function should still implicitly rely on `window.solana`.
 </script>
 <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
