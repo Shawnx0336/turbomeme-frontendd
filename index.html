@@ -10,7 +10,7 @@
 <title>SolRoulette LIVE - Spin to Win</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
 <style>
         /* Reset and Base Styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2021,10 +2021,10 @@
 </div>
 <div class="modal-overlay" id="idleModal">
 <div class="modal-content">
-<button aria-label="Close idle modal" class="close-btn" id="closeIdleModalBtn">×</button>
+<button aria-label="Close idle modal" class="close-btn close-idle-modal-btn">×</button>
 <h2>Still here?</h2>
 <p>Try a spin and feel the rush 🔥</p>
-<button id="closeIdleModalBtn">OK</button>
+<button class="close-idle-modal-btn">OK</button>
 </div>
 </div>
 <div class="modal-overlay" id="dailyRewardModal">
@@ -2048,10 +2048,10 @@
 </div>
 <div class="modal-overlay" id="messageBox">
 <div class="modal-content">
-<button aria-label="Close message box" class="close-btn" id="closeMessageBoxBtn">×</button>
+<button aria-label="Close message box" class="close-btn close-message-box-btn">×</button>
 <h2 id="messageBoxTitle"></h2>
 <p id="messageBoxContent"></p>
-<button id="closeMessageBoxBtn">OK</button>
+<button class="close-message-box-btn">OK</button>
 </div>
 </div>
 <div class="low-balance-alert" id="lowBalanceAlert">
@@ -4461,12 +4461,16 @@
         document.getElementById('closeShareModalBtn').addEventListener('click', closeShareModal);
         document.getElementById('copyShareTextBtn').addEventListener('click', copyShareText);
         document.getElementById('tweetWinBtn').addEventListener('click', tweetWin);
-        document.getElementById('closeMessageBoxBtn').addEventListener('click', closeMessageBox);
+        document.querySelectorAll('.close-message-box-btn').forEach(btn => {
+    btn.addEventListener('click', closeMessageBox);
+});
         document.getElementById('topUpWalletBtn').addEventListener('click', topUpWallet);
         document.getElementById('resultModalSpinAgainBtn').addEventListener('click', closeResultModal);
         document.getElementById('closeRefillFakeSolModalBtn').addEventListener('click', closeRefillFakeSolModal);
         document.getElementById('refillFakeSolBtn').addEventListener('click', refillFakeSol);
-        document.getElementById('closeIdleModalBtn').addEventListener('click', closeIdleModal);
+        document.querySelectorAll('.close-idle-modal-btn').forEach(btn => {
+    btn.addEventListener('click', closeIdleModal);
+});
         document.getElementById('closeDailyRewardModalBtn').addEventListener('click', closeDailyRewardModal);
         document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward);
 
