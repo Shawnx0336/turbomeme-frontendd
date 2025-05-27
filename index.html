@@ -2069,15 +2069,8 @@
          </div>
 </div>
 <script src="https://unpkg.com/@solana/web3.js@1.66.0/lib/index.iife.js"></script>
-<script type="module">
-    // This import from esm.sh *should* handle the internal dependencies
-    import { PhantomWalletAdapter } from 'https://esm.sh/@solana/wallet-adapter-phantom@latest';
-    // The Phantom extension still injects `window.solana`. This script
-    // ensures a working adapter is available if the extension isn't.
-    // Your connectWallet() function should still implicitly rely on `window.solana`.
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-phantom@0.9.20/lib/umd/index.js"></script>
 <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-
 <script>
         // Global flag for wallet verification status
         window.walletVerified = false;
