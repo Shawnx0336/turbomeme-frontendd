@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const { Connection, PublicKey, SystemProgram, Transaction } = require('@solana/web3.js');
 const nacl = require('tweetnacl'); // For signature verification
+const bs58 = require("bs58"); // Required for base58 encoding/decoding of Solana data
 require('dotenv').config(); // Load environment variables
 
 // --- Database Connection ---
@@ -14,7 +15,7 @@ const connectDB = require('./db');
 connectDB();
 
 // --- Mongoose Models ---
-const User = require('./models/User');
+const User = require('./models/User'); // Ensure this is the expanded User model
 const Bet = require('./models/Bet');
 
 const app = express();
@@ -26,7 +27,7 @@ app.use(cors({
     methods: ['GET', 'POST'],
     credentials: true
 }));
-app.use(express.json()); // For parsing application/json
+app.use(express.json()); // For parsing application/json - Ensure this is at the top of middleware setup
 
 // --- JWT Secret (Replace with a strong, random secret in production) ---
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_12345';
@@ -108,7 +109,7 @@ async function resolveBet(bet, winningMultiplier) {
     if (betMultiplierNumeric === winningMultiplierNumeric) {
         won = true;
         winnings = bet.amount * betMultiplierNumeric;
-        user.solBalance += winnings;
+        user.solBalance += winnings; // Use solBalance as per updated User model
         user.winStreak++;
         if (winningMultiplierNumeric >= 5) { // 5x or 10x
             user.tenXWins++;
@@ -133,6 +134,7 @@ async function resolveBet(bet, winningMultiplier) {
     return {
         publicKey: user.publicKey,
         username: user.username,
+        avatar: user.avatar, // Include avatar for frontend consistency
         amount: bet.amount,
         multiplier: bet.multiplier,
         winningMultiplier: winningMultiplier,
@@ -171,21 +173,20 @@ setInterval(async () => {
             }
             betsQueue = []; // Clear queue for next round
 
-            // Simulate other players' activity for the leaderboard/chat
-            const mockUsers = await User.find({ publicKey: { $ne: 'mock_guest_user' } }).limit(10); // Get some real users
-            const mockLeaderboard = {
+            // Fetch updated leaderboard and online players (using actual User model fields)
+            const updatedLeaderboard = {
                 wager: (await User.find().sort({ totalWagered: -1 }).limit(7)).map(u => ({ username: u.username, totalWagered: u.totalWagered, avatar: u.avatar, publicKey: u.publicKey })),
                 streak: (await User.find().sort({ winStreak: -1 }).limit(7)).map(u => ({ username: u.username, winStreak: u.winStreak, avatar: u.avatar, publicKey: u.publicKey })),
                 '10x': (await User.find().sort({ tenXWins: -1 }).limit(7)).map(u => ({ username: u.username, tenXWins: u.tenXWins, avatar: u.avatar, publicKey: u.publicKey }))
             };
-            const totalUsersOnline = await User.countDocuments(); // Simple count of registered users
+            const totalUsersOnline = io.engine.clientsCount; // Actual connected sockets
 
             // Broadcast spin result after animation duration (frontend spinDuration is 5s)
             setTimeout(() => {
                 io.emit('spinResult', {
                     winningMultiplier: winningMultiplier,
                     betsOutcome: betsOutcome,
-                    newLeaderboard: mockLeaderboard,
+                    newLeaderboard: updatedLeaderboard,
                     newUsersOnline: totalUsersOnline
                 });
                 isSpinning = false;
@@ -200,69 +201,79 @@ setInterval(async () => {
 
 // --- API Routes ---
 
-// 1. Wallet Signature Verification and JWT Issuance
-app.post('/api/auth/verify-signature', async (req, res) => {
-    const { publicKey, message, signature } = req.body;
+// Wallet Signature Verification Endpoint
+// This endpoint verifies wallet ownership via signed messages.
+app.post('/auth/verify', async (req, res) => {
+  try {
+    const { address, signature, message } = req.body;
 
-    if (!publicKey || !message || !signature) {
-        return res.status(400).json({ message: 'Missing required fields: publicKey, message, signature.' });
+    if (!address || !signature || !message) {
+      return res.status(400).json({ error: 'Missing fields.' });
     }
 
-    try {
-        const decodedMessage = new TextEncoder().encode(atob(message)); // Decode base64 message
-        const signatureBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0)); // Decode base64 signature
+    // Convert message string to Uint8Array
+    const msgUint8 = new TextEncoder().encode(message);
+    // Decode base58 signature string to Uint8Array
+    const sigUint8 = bs58.decode(signature);
+    // Decode base58 public key (address) string to Uint8Array
+    const pubKeyUint8 = bs58.decode(address);
 
-        const pubKey = new PublicKey(publicKey);
-        const verified = nacl.sign.detached.verify(decodedMessage, signatureBytes, pubKey.toBytes());
+    // Verify the signature using nacl.sign.detached.verify
+    const isValid = nacl.sign.detached.verify(msgUint8, sigUint8, pubKeyUint8);
 
-        if (!verified) {
-            return res.status(401).json({ message: 'Signature verification failed.' });
-        }
-
-        // Find or create user
-        let user = await User.findOne({ publicKey });
-
-        if (!user) {
-            user = new User({
-                publicKey,
-                username: publicKey.slice(0, 4) + '...' + publicKey.slice(-4),
-                solBalance: 0.01, // Welcome bonus for new users
-                totalWagered: 0,
-                winStreak: 0,
-                tenXWins: 0,
-                achievements: [],
-                dailyBonusDay: 0,
-                lastLoginDate: null
-            });
-            await user.save();
-            console.log(`New user created: ${user.username} with welcome bonus.`);
-        }
-
-        // Check for welcome bonus (only if totalWagered is 0 and it's their first time getting this bonus)
-        // This is handled by the initial user creation above. If user already exists, no welcome bonus here.
-
-        const token = jwt.sign({ userId: user._id, publicKey: user.publicKey }, JWT_SECRET, { expiresIn: '1d' });
-        res.json({
-            token,
-            user: {
-                publicKey: user.publicKey,
-                username: user.username,
-                avatar: user.avatar,
-                solBalance: user.solBalance,
-                totalWagered: user.totalWagered,
-                winStreak: user.winStreak,
-                tenXWins: user.tenXWins,
-                xp: user.xp,
-                level: user.level,
-                achievements: user.achievements,
-                dailyBonusDay: user.dailyBonusDay,
-                lastLoginDate: user.lastLoginDate
-            }
-        });
-    } catch (error) {
-        console.error('Error during signature verification:', error);
-        res.status(500).json({ message: 'Server error during authentication.' });
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid signature' });
     }
+
+    // Create/find user in DB based on the verified wallet address
+    let user = await User.findOne({ wallet: address });
+    if (!user) {
+      // If user does not exist, create a new user with the wallet address and a default balance
+      user = new User({
+          wallet: address,
+          publicKey: address, // Store wallet address as publicKey for consistency with existing code
+          username: address.slice(0, 4) + '...' + address.slice(-4), // Default username
+          solBalance: 0.01, // Welcome bonus (using solBalance field)
+          totalWagered: 0,
+          winStreak: 0,
+          tenXWins: 0,
+          achievements: [],
+          dailyBonusDay: 0,
+          lastLoginDate: null,
+          xp: 0, // Initialize XP
+          level: 1 // Initialize level
+      });
+      await user.save();
+      console.log(`New user created via /auth/verify: ${user.username} with welcome bonus.`);
+    }
+
+    // Generate a JWT token for the authenticated user
+    const token = jwt.sign({ userId: user._id, publicKey: user.publicKey }, JWT_SECRET, { expiresIn: '1d' });
+
+    // Respond with success and user data (all fields from the expanded User model)
+    return res.json({
+      success: true,
+      token: token, // Include the token in the response
+      user: {
+        wallet: user.wallet,
+        publicKey: user.publicKey,
+        username: user.username,
+        avatar: user.avatar,
+        solBalance: user.solBalance,
+        totalWagered: user.totalWagered,
+        winStreak: user.winStreak,
+        tenXWins: user.tenXWins,
+        xp: user.xp,
+        level: user.level,
+        achievements: user.achievements,
+        dailyBonusDay: user.dailyBonusDay,
+        lastLoginDate: user.lastLoginDate
+      }
+    });
+  } catch (err) {
+    console.error('Signature verification failed:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Middleware to protect routes
@@ -326,7 +337,7 @@ app.post('/api/mock-top-up', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'User not found.' });
         }
 
-        user.solBalance += amount;
+        user.solBalance += amount; // Use solBalance
         await user.save();
 
         res.json({
@@ -356,7 +367,7 @@ app.post('/api/claim-daily-bonus', authenticateToken, async (req, res) => {
             return res.status(400).json({ message: 'Daily bonus already claimed today.' });
         }
 
-        user.solBalance += amount;
+        user.solBalance += amount; // Use solBalance
         user.lastLoginDate = new Date();
         user.dailyBonusDay = day; // Sync daily bonus day from frontend
 
@@ -406,8 +417,8 @@ io.on('connection', (socket) => {
             dailyBonusDay: socket.userData.dailyBonusDay,
             lastLoginDate: socket.userData.lastLoginDate
         } : null, // Send user data if authenticated
-        recentSpins: [], // Fetch from DB if storing, otherwise empty
-        leaderboard: {}, // Fetch from DB
+        recentSpins: [], // This would ideally be fetched from a 'Spin' or 'Bet' history collection
+        leaderboard: {}, // This will be updated by the setInterval below
         playersOnline: io.engine.clientsCount // Number of connected sockets
     });
     // Handle 'authenticate' event from frontend (after token is received on client)
