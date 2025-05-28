@@ -14,7 +14,8 @@
     "mongoose": "^7.6.1",
     "tweetnacl": "^1.0.3",
     "socket.io": "^4.7.2",
-    "@solana/web3.js": "^1.89.0"
+    "@solana/web3.js": "^1.89.0",
+    "bs58": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

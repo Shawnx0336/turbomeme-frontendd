@@ -15,7 +15,7 @@ const connectDB = require('./db');
 connectDB();
 
 // --- Mongoose Models ---
-const User = require('./models/User');
+const User = require('./models/User'); // Ensure this is the expanded User model
 const Bet = require('./models/Bet');
 
 const app = express();
@@ -109,7 +109,7 @@ async function resolveBet(bet, winningMultiplier) {
     if (betMultiplierNumeric === winningMultiplierNumeric) {
         won = true;
         winnings = bet.amount * betMultiplierNumeric;
-        user.solBalance += winnings;
+        user.solBalance += winnings; // Use solBalance as per updated User model
         user.winStreak++;
         if (winningMultiplierNumeric >= 5) { // 5x or 10x
             user.tenXWins++;
@@ -134,6 +134,7 @@ async function resolveBet(bet, winningMultiplier) {
     return {
         publicKey: user.publicKey,
         username: user.username,
+        avatar: user.avatar, // Include avatar for frontend consistency
         amount: bet.amount,
         multiplier: bet.multiplier,
         winningMultiplier: winningMultiplier,
@@ -172,21 +173,20 @@ setInterval(async () => {
             }
             betsQueue = []; // Clear queue for next round
 
-            // Simulate other players' activity for the leaderboard/chat
-            const mockUsers = await User.find({ publicKey: { $ne: 'mock_guest_user' } }).limit(10); // Get some real users
-            const mockLeaderboard = {
+            // Fetch updated leaderboard and online players (using actual User model fields)
+            const updatedLeaderboard = {
                 wager: (await User.find().sort({ totalWagered: -1 }).limit(7)).map(u => ({ username: u.username, totalWagered: u.totalWagered, avatar: u.avatar, publicKey: u.publicKey })),
                 streak: (await User.find().sort({ winStreak: -1 }).limit(7)).map(u => ({ username: u.username, winStreak: u.winStreak, avatar: u.avatar, publicKey: u.publicKey })),
                 '10x': (await User.find().sort({ tenXWins: -1 }).limit(7)).map(u => ({ username: u.username, tenXWins: u.tenXWins, avatar: u.avatar, publicKey: u.publicKey }))
             };
-            const totalUsersOnline = await User.countDocuments(); // Simple count of registered users
+            const totalUsersOnline = io.engine.clientsCount; // Actual connected sockets
 
             // Broadcast spin result after animation duration (frontend spinDuration is 5s)
             setTimeout(() => {
                 io.emit('spinResult', {
                     winningMultiplier: winningMultiplier,
                     betsOutcome: betsOutcome,
-                    newLeaderboard: mockLeaderboard,
+                    newLeaderboard: updatedLeaderboard,
                     newUsersOnline: totalUsersOnline
                 });
                 isSpinning = false;
@@ -233,13 +233,15 @@ app.post('/auth/verify', async (req, res) => {
           wallet: address,
           publicKey: address, // Store wallet address as publicKey for consistency with existing code
           username: address.slice(0, 4) + '...' + address.slice(-4), // Default username
-          solBalance: 0.01, // Welcome bonus
+          solBalance: 0.01, // Welcome bonus (using solBalance field)
           totalWagered: 0,
           winStreak: 0,
           tenXWins: 0,
           achievements: [],
           dailyBonusDay: 0,
-          lastLoginDate: null
+          lastLoginDate: null,
+          xp: 0, // Initialize XP
+          level: 1 // Initialize level
       });
       await user.save();
       console.log(`New user created via /auth/verify: ${user.username} with welcome bonus.`);
@@ -248,7 +250,7 @@ app.post('/auth/verify', async (req, res) => {
     // Generate a JWT token for the authenticated user
     const token = jwt.sign({ userId: user._id, publicKey: user.publicKey }, JWT_SECRET, { expiresIn: '1d' });
 
-    // Respond with success and user data
+    // Respond with success and user data (all fields from the expanded User model)
     return res.json({
       success: true,
       token: token, // Include the token in the response
@@ -335,7 +337,7 @@ app.post('/api/mock-top-up', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'User not found.' });
         }
 
-        user.solBalance += amount;
+        user.solBalance += amount; // Use solBalance
         await user.save();
 
         res.json({
@@ -365,7 +367,7 @@ app.post('/api/claim-daily-bonus', authenticateToken, async (req, res) => {
             return res.status(400).json({ message: 'Daily bonus already claimed today.' });
         }
 
-        user.solBalance += amount;
+        user.solBalance += amount; // Use solBalance
         user.lastLoginDate = new Date();
         user.dailyBonusDay = day; // Sync daily bonus day from frontend
 
@@ -415,8 +417,8 @@ io.on('connection', (socket) => {
             dailyBonusDay: socket.userData.dailyBonusDay,
             lastLoginDate: socket.userData.lastLoginDate
         } : null, // Send user data if authenticated
-        recentSpins: [], // Fetch from DB if storing, otherwise empty
-        leaderboard: {}, // Fetch from DB
+        recentSpins: [], // This would ideally be fetched from a 'Spin' or 'Bet' history collection
+        leaderboard: {}, // This will be updated by the setInterval below
         playersOnline: io.engine.clientsCount // Number of connected sockets
     });
     // Handle 'authenticate' event from frontend (after token is received on client)
