@@ -2074,7 +2074,7 @@
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
 <div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-     ⚠️ Demo Mode – Demo SOL Only
+      ⚠️ Demo Mode – Demo SOL Only
         </div>
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
@@ -2244,7 +2244,7 @@
 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
 <div class="avatar large" id="profileAvatar">😎</div>
 <div>
-<div style="font-size: 1.2em; font-weight: bold;">Guest</div>
+<div id="profileName" style="font-size: 1.2em; font-weight: bold;">Guest</div>
 <div style="color: #aaa;">Level <span id="profileLevel">1</span></div>
 <div class="xp-bar large" style="width: 150px;"><div class="xp-fill" id="profileXpFill" style="width: 0%;"></div></div>
 </div>
@@ -2379,10 +2379,15 @@
 <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
 <script>
-        // 1. Implement Mobile Phantom Redirection - MUST FIRE BEFORE WALLET CONNECT LOGIC
-        if (/iPhone|Android/i.test(navigator.userAgent) && !window.solana?.isPhantom) {
-            window.location.href = 'https://phantom.app/ul/browse/turbomeme.fun';
-        }
+
+   function handleWalletConnect() {
+  if (/Android|iPhone/i.test(navigator.userAgent) && !window.solana?.isPhantom) {
+    window.location.href = "https://phantom.app/ul/browse/turbomeme.fun";
+    return;
+  }
+
+  handleWalletConnect();
+}
 
         // State Management
         let spinTimer = 25;
@@ -2675,7 +2680,7 @@
              // that brings the segment's middle angle to the pointer position (which is at the top, 0 degrees relative to the container)
 
              // The pointer is at the top (0 degrees relative to the container).
-             // The canvas is rotated. We want the segment's middle angle to align with the top.
+             // The canvas is rotated. We want the segment's middleAngle to align with the top.
              // If the segment's middle angle is M, we need to rotate the canvas by -M
              // However, the canvas drawing starts at 0 degrees to the right (standard canvas arc).
              // Our segments are defined starting from 0 degrees to the right.
@@ -2719,7 +2724,7 @@
             },
             VERIFICATION_FAILED: {
                 title: 'Verification Failed',
-                message: 'Signature failed. Please try again.', // Updated message as per requirements
+                message: 'Could not verify wallet ownership. Please try signing the message again.',
                 action: 'Try Again'
             },
             NETWORK_ERROR: {
@@ -2737,8 +2742,9 @@
         class WalletVerificationService {
             // Creates a unique message for the user to sign to prove wallet ownership.
             createVerificationMessage() {
-                // The messageText must include a timestamp (nonce) to prevent replay attacks
-                return `SolRoulette Auth: ${Date.now()}`;
+                const timestamp = Date.now();
+                const nonce = Math.random().toString(36).substring(2, 15);
+                return `SolRoulette Auth: ${Date.now()}`; // Unique nonce;
             }
 
             // Verifies the signature against the message and public key using tweetnacl.
@@ -2759,7 +2765,7 @@
                     }
                     const signatureBytes = new Uint8Array(signature);
                     // Ensure message is Uint8Array for nacl
-                    const messageBytes = new TextEncoder().encode(message); // Ensure message is encoded for verification
+                    const messageBytes = new Uint8Array(message);
                     
                     // Use tweetnacl for verification
                     return nacl.sign.detached.verify(messageBytes, signatureBytes, pubKeyBytes);
@@ -2772,54 +2778,42 @@
             // Orchestrates the wallet ownership verification process.
             async verifyWalletOwnership(walletAdapter, publicKey) {
                 try {
-                    const messageText = this.createVerificationMessage();
-                    const encodedMessage = new TextEncoder().encode(messageText);
+                    const message = this.createVerificationMessage();
+                    const encodedMessage = new TextEncoder().encode(message);
 
-                    let signedMessage;
-                    // ✅ 1. Add `if (!provider.signMessage)` check before calling `signMessage()`
+                    // Request signature from wallet adapter
+                    let signature;
+                    // Enforce signature on Phantom Connect
                     if (!walletAdapter.signMessage) {
-                        throw new Error("signMessage not supported by this wallet adapter. Please ensure your wallet is up to date.");
+                        throw new Error("signMessage not supported by this wallet");
                     }
-                    signedMessage = await walletAdapter.signMessage(encodedMessage, "utf8");
+                    signature = await walletAdapter.signMessage(encodedMessage, "utf8");
                     // Phantom's signMessage returns Uint8Array directly, Solflare's returns { signature }
-                    if (signedMessage && signedMessage.signature) { // For Solflare
-                        signedMessage = signedMessage.signature;
+                    if (signature && signature.signature) { // For Solflare
+                        signature = signature.signature;
                     }
 
-                    // ✅ 2. Convert the signed message to base64 safely
-                    const base64Signature = btoa(String.fromCharCode(...new Uint8Array(signedMessage)));
 
-                    // ✅ 3. POST the signature, wallet address, and original message to: /auth/verify-signature
-                    const response = await fetch("/auth/verify-signature", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            address: publicKey.toString(),
-                            signature: base64Signature,
-                            message: messageText // Use the original messageText with timestamp
-                        })
-                    });
+                    // Verify the signature
+                    const isValid = await this.verifySignature(
+                        signature,
+                        encodedMessage,
+                        publicKey
+                    );
 
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ message: "Unknown server error." }));
-                        throw new Error(`VERIFICATION_FAILED:Server verification failed: ${errorData.message || response.statusText}`);
-                    }
-
-                    const verificationResult = await response.json();
-                    if (verificationResult.success) { // Assuming server returns { success: true }
+                    if (isValid) {
                         return {
                             success: true,
                             verificationData: {
                                 publicKey: publicKey.toString(),
-                                signature: Array.from(signedMessage), // Store original Uint8Array as array
+                                signature: Array.from(signature), // Convert Uint8Array to array for localStorage
                                 timestamp: Date.now(),
-                                message: messageText // Store original message text
+                                message: Array.from(encodedMessage) // Store encoded message as array
                             }
                         };
                     } else {
-                        throw new Error(`VERIFICATION_FAILED:${verificationResult.message || 'Signature verification failed on server.'}`);
+                        throw new Error('Signature verification failed');
                     }
-
                 } catch (error) {
                     console.error("Wallet ownership verification failed:", error);
                     return {
@@ -3116,12 +3110,11 @@
                     errorMessageElement.textContent = errorType.message;
                     errorRetryBtn.textContent = errorType.action;
                     errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType); // Retry with selected wallet
-                } else if (rawMessage.startsWith('VERIFICATION_FAILED:')) { // Specific handling for verification failures
+                } else if (rawMessage.includes('Signature verification failed')) {
                     errorType = WALLET_ERRORS.VERIFICATION_FAILED;
-                    errorMessageElement.textContent = errorType.message; // Use the predefined message
+                    errorMessageElement.textContent = errorType.message;
                     errorRetryBtn.textContent = errorType.action;
                     errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType); // Retry verification
-                    showMessageBox("❌ Signature failed. Please try again.", "There was an issue verifying your wallet ownership. Please try again.");
                 } else if (rawMessage.startsWith('NETWORK_ERROR:')) {
                     errorType = WALLET_ERRORS.NETWORK_ERROR;
                     errorMessageElement.textContent = errorType.message;
@@ -3147,7 +3140,7 @@
             showSuccessScreen() {
                 document.getElementById('walletSuccessScreen').style.display = 'flex';
                 playSound('fanfare');
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]); // Win vibration pattern
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
                 // Automatically close success screen after a short delay
                 setTimeout(() => {
@@ -3353,7 +3346,7 @@
                 tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens') || '0');
                 totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
                 winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak') || '0');
-                tenXWins = parseInt(localStorage.getItem('solroulette_guest_ten_x_wins') || '0');
+                tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements') || '[]'));
                 guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0');
                 dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day') || '0');
@@ -3941,7 +3934,6 @@
                  document.getElementById('lowBalanceAlert').style.display = 'none'; // Hide alert in guest mode
              }
 
-
              // Loss Popup Appears Without Any Bet - Fix: Only show result modal if user had a bet
              if (userBet) {
                 // Show result modal
@@ -4206,7 +4198,7 @@
                  // Remove confetti after animation
                  confetti.addEventListener('animationend', () => confetti.remove());
              }
-        }
+         }
 
         // Share Modal
         function showShareModal(winnings, multiplier) {
