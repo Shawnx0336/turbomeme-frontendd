@@ -10,6 +10,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
 <style>
         /* Reset and Base Styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2074,7 +2075,7 @@
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
 <div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-    ⚠️ Demo Mode – Demo SOL Only
+   ⚠️ Demo Mode – Demo SOL Only
         </div>
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
@@ -2378,7 +2379,6 @@
 <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
 <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/main.min.js"></script>
 <script>
 
    function handleWalletConnect() {
@@ -2681,7 +2681,7 @@
              // that brings the segment's middle angle to the pointer position (which is at the top, 0 degrees relative to the container)
 
              // The pointer is at the top (0 degrees relative to the container).
-             // The canvas is rotated. We want the segment's middleAngle to align with the top.
+             // The canvas is rotated. We want the segment's middle angle to align with the top.
              // If the segment's middle angle is M, we need to rotate the canvas by -M
              // However, the canvas drawing starts at 0 degrees to the right (standard canvas arc).
              // Our segments are defined starting from 0 degrees to the right.
@@ -4205,7 +4205,7 @@
                  // Remove confetti after animation
                  confetti.addEventListener('animationend', () => confetti.remove());
              }
-         }
+        }
 
         // Share Modal
         function showShareModal(winnings, multiplier) {
