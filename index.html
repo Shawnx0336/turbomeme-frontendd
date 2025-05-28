@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"> <title>DegenDice - Slotana Style</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DegenDice - Slotana Style PvP</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -17,7 +18,9 @@
             --leaderboard-width: 250px; /* Define leaderboard width */
             --chat-height: 300px; /* Define chat height */
             --chat-width: 300px; /* Define chat width */
-             --chat-bubble-size: 60px; /* Size for the mobile chat bubble */
+            --chat-bubble-size: 60px; /* Size for the mobile chat bubble */
+            --player-dice-color: #00FF99; /* Green for player */
+            --opponent-dice-color: #FF3366; /* Pink for opponent */
         }
 
         body {
@@ -100,6 +103,7 @@
             display: flex;
             gap: 2rem;
             margin-bottom: 2rem;
+            position: relative; /* For VS animation positioning */
         }
 
         .dice {
@@ -116,6 +120,37 @@
             transition: transform 0.3s ease;
         }
 
+        .player-dice {
+            background-color: var(--player-dice-color);
+            color: var(--bg-dark);
+            box-shadow: var(--shadow-glow) var(--player-dice-color);
+        }
+
+        .opponent-dice {
+            background-color: var(--opponent-dice-color);
+            color: var(--bg-dark);
+            box-shadow: var(--shadow-glow) var(--opponent-dice-color);
+        }
+
+        .vs-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--text-light);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            animation: fadeInOut 1.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
         .controls {
             background: rgba(20, 20, 20, 0.8);
             padding: 1.5rem;
@@ -125,6 +160,24 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mode-toggle button {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .mode-toggle button.active {
+            background-color: var(--accent-green);
+            box-shadow: var(--shadow-glow) var(--accent-green);
         }
 
         .slider-container {
@@ -260,6 +313,23 @@
             align-items: center;
             font-size: 72px;
             color: var(--accent-green);
+            animation: flash 0.5s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .loss-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 51, 102, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 72px;
+            color: var(--accent-pink);
             animation: flash 0.5s;
             pointer-events: none;
             z-index: 100;
@@ -752,18 +822,88 @@
             margin-top: 1rem;
         }
 
-        /* Coin Shower Animation (using existing confetti) */
-        /* Confetti styles are already present */
-
 
         /* Micro-interactions (added to existing buttons) */
         button:active:not(:disabled) {
             transform: scale(0.95); /* Press down effect */
         }
 
-        /* Flash on Wins/Milestones (using existing .win-overlay) */
-        /* The .win-overlay already provides a flash effect */
+        /* PvP Specific Styles */
+        .duel-info {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
 
+        .pot-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            text-shadow: var(--shadow-glow) var(--accent-green);
+            margin-bottom: 1rem;
+        }
+
+        .duel-history {
+            background: rgba(20, 20, 20, 0.8);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            width: 100%;
+            max-width: 500px;
+            margin-top: 2rem;
+        }
+
+        .duel-history h4 {
+            margin-top: 0;
+            color: var(--accent-pink);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .duel-history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-pink) transparent;
+        }
+
+        .duel-history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .duel-history-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .duel-history-list::-webkit-scrollbar-thumb {
+            background-color: var(--accent-pink);
+            border-radius: 3px;
+        }
+
+        .duel-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .duel-history-item:last-child {
+            border-bottom: none;
+        }
+
+        .duel-history-item.win-entry {
+            color: var(--accent-green);
+        }
+
+        .duel-history-item.loss-entry {
+            color: var(--accent-pink);
+        }
 
         /* Responsive Adjustments */
         @media (max-width: 768px) {
@@ -927,15 +1067,28 @@
     </header>
 
     <div class="game-container">
+        <div class="mode-toggle">
+            <button id="solo-mode-btn" class="active">Solo Mode</button>
+            <button id="duel-mode-btn">Duel Mode</button>
+        </div>
+
         <div class="dice-area">
-            <div class="dice" id="die1">1</div>
-            <div class="dice" id="die2">1</div>
+            <div class="dice player-dice" id="player-die1">1</div>
+            <div class="dice player-dice" id="player-die2">1</div>
+            <div class="vs-text" id="vs-text" style="display: none;">VS</div>
+            <div class="dice opponent-dice" id="opponent-die1" style="display: none;">1</div>
+            <div class="dice opponent-dice" id="opponent-die2" style="display: none;">1</div>
+        </div>
+
+        <div class="duel-info" id="duel-info" style="display: none;">
+            <p id="matchmaking-status">Searching for opponent...</p>
+            <p class="pot-display" id="pot-display">Pot: 0.00 SOL</p>
         </div>
 
         <div class="result-display" id="result"></div>
 
         <div class="controls">
-            <div class="slider-container">
+            <div class="slider-container" id="solo-controls">
                 <div class="slider-labels">
                     <span>Roll Under:</span>
                     <span id="roll-under-value">7</span>
@@ -956,6 +1109,7 @@
             </div>
 
             <button class="roll-btn" id="roll-button">ROLL</button>
+            <button class="roll-btn" id="find-match-button" style="display: none;">Find Match</button>
         </div>
 
         <div class="daily-challenge-panel" id="daily-challenge-panel">
@@ -970,6 +1124,12 @@
              <p>Earn 0.05 SOL for each friend who joins!</p>
              <div class="referral-code" id="referral-code">YOURCODE123</div>
              <button id="copy-referral-btn">Copy Code</button>
+         </div>
+
+         <div class="duel-history" id="duel-history" style="display: none;">
+            <h4>Duel History</h4>
+            <ul class="duel-history-list" id="duel-history-list">
+                </ul>
          </div>
 
     </div>
@@ -1057,6 +1217,111 @@
     </div>
 
     <script>
+        // --- Firebase Mock Setup (for demonstration purposes) ---
+        // In a real application, you would initialize Firebase here and use its SDK.
+        // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Mock Firebase functions for demonstration
+        const mockFirestore = {
+            // Mock active matches collection
+            activeMatches: {},
+            // Mock match history collection
+            matchHistory: JSON.parse(localStorage.getItem('mockMatchHistory')) || [],
+            // Mock player stats collection
+            playerStats: JSON.parse(localStorage.getItem('mockPlayerStats')) || {},
+
+            // Simulate adding a document
+            addDoc: async (collectionRef, data) => {
+                const id = 'doc_' + Date.now() + Math.random().toString(36).substring(2, 9);
+                if (collectionRef === 'activeMatches') {
+                    mockFirestore.activeMatches[id] = { id, ...data };
+                    console.log('Mock: Active match added:', mockFirestore.activeMatches[id]);
+                    // Simulate onSnapshot for active matches
+                    if (mockFirestore.activeMatchesSnapshotCallback) {
+                        mockFirestore.activeMatchesSnapshotCallback(Object.values(mockFirestore.activeMatches));
+                    }
+                } else if (collectionRef === 'matchHistory') {
+                    mockFirestore.matchHistory.push({ id, ...data });
+                    localStorage.setItem('mockMatchHistory', JSON.stringify(mockFirestore.matchHistory));
+                    console.log('Mock: Match history added:', mockFirestore.matchHistory[mockFirestore.matchHistory.length - 1]);
+                    // Simulate onSnapshot for match history
+                    if (mockFirestore.matchHistorySnapshotCallback) {
+                        mockFirestore.matchHistorySnapshotCallback(mockFirestore.matchHistory);
+                    }
+                } else if (collectionRef === 'playerStats') {
+                    mockFirestore.playerStats[data.userId] = { ...mockFirestore.playerStats[data.userId], ...data };
+                    localStorage.setItem('mockPlayerStats', JSON.stringify(mockFirestore.playerStats));
+                    console.log('Mock: Player stats updated:', mockFirestore.playerStats[data.userId]);
+                }
+                return { id };
+            },
+
+            // Simulate getting a document
+            getDoc: async (collectionRef, id) => {
+                if (collectionRef === 'activeMatches') {
+                    return mockFirestore.activeMatches[id];
+                }
+                return null;
+            },
+
+            // Simulate updating a document
+            updateDoc: async (collectionRef, id, data) => {
+                if (collectionRef === 'activeMatches' && mockFirestore.activeMatches[id]) {
+                    mockFirestore.activeMatches[id] = { ...mockFirestore.activeMatches[id], ...data };
+                    console.log('Mock: Active match updated:', mockFirestore.activeMatches[id]);
+                    // Simulate onSnapshot for active matches
+                    if (mockFirestore.activeMatchesSnapshotCallback) {
+                        mockFirestore.activeMatchesSnapshotCallback(Object.values(mockFirestore.activeMatches));
+                    }
+                }
+            },
+
+            // Simulate deleting a document
+            deleteDoc: async (collectionRef, id) => {
+                if (collectionRef === 'activeMatches' && mockFirestore.activeMatches[id]) {
+                    delete mockFirestore.activeMatches[id];
+                    console.log('Mock: Active match deleted:', id);
+                    // Simulate onSnapshot for active matches
+                    if (mockFirestore.activeMatchesSnapshotCallback) {
+                        mockFirestore.activeMatchesSnapshotCallback(Object.values(mockFirestore.activeMatches));
+                    }
+                }
+            },
+
+            // Simulate onSnapshot listener
+            onSnapshot: (collectionRef, callback) => {
+                if (collectionRef === 'activeMatches') {
+                    mockFirestore.activeMatchesSnapshotCallback = callback;
+                    callback(Object.values(mockFirestore.activeMatches)); // Initial call
+                } else if (collectionRef === 'matchHistory') {
+                    mockFirestore.matchHistorySnapshotCallback = callback;
+                    callback(mockFirestore.matchHistory); // Initial call
+                }
+                // Return an unsubscribe function (mocked)
+                return () => {
+                    if (collectionRef === 'activeMatches') mockFirestore.activeMatchesSnapshotCallback = null;
+                    if (collectionRef === 'matchHistory') mockFirestore.matchHistorySnapshotCallback = null;
+                };
+            }
+        };
+
+        // Mock Auth (for userId)
+        const mockAuth = {
+            currentUser: {
+                uid: localStorage.getItem('mockUserId') || crypto.randomUUID(),
+                displayName: localStorage.getItem('username') || 'Anonymous',
+                photoURL: localStorage.getItem('avatar') || '👤'
+            },
+            onAuthStateChanged: (callback) => {
+                // Simulate initial auth state
+                setTimeout(() => callback(mockAuth.currentUser), 0);
+                // No actual state changes in this mock
+            }
+        };
+        localStorage.setItem('mockUserId', mockAuth.currentUser.uid); // Persist mock user ID
+
         // --- Existing Game Script (DO NOT MODIFY) ---
         // Game state
         const state = {
@@ -1064,7 +1329,7 @@
             chipValue: 1,
             diceValues: [1, 1],
             rollResult: null,
-            streak: 5,
+            streak: 0, // Reset streak to 0 for a fresh start
             payouts: {
                 3: 35,
                 4: 17,
@@ -1075,23 +1340,225 @@
                 9: 4,
                 10: 3,
                 11: 2.5
-            }
+            },
+            gameMode: 'solo', // 'solo' or 'duel'
+            isSearching: false,
+            activeMatch: null, // Stores current duel match data
+            duelHistory: [], // Stores recent duel outcomes
+            currentStake: 1, // Default stake for duels
         };
 
         // DOM elements
-        const die1 = document.getElementById('die1');
-        const die2 = document.getElementById('die2');
+        const playerDie1 = document.getElementById('player-die1');
+        const playerDie2 = document.getElementById('player-die2');
+        const opponentDie1 = document.getElementById('opponent-die1');
+        const opponentDie2 = document.getElementById('opponent-die2');
+        const vsText = document.getElementById('vs-text');
         const resultDisplay = document.getElementById('result');
         const rollUnderSlider = document.getElementById('roll-under-slider');
         const rollUnderValue = document.getElementById('roll-under-value');
         const multiplierDisplay = document.getElementById('multiplier');
         const rollButton = document.getElementById('roll-button');
+        const findMatchButton = document.getElementById('find-match-button');
         const chipButtons = document.querySelectorAll('.chip-btn');
-        const hotStreakDisplay = document.getElementById('hot-streak'); // Get hot streak element
+        const hotStreakDisplay = document.getElementById('hot-streak');
+        const soloModeBtn = document.getElementById('solo-mode-btn');
+        const duelModeBtn = document.getElementById('duel-mode-btn');
+        const soloControls = document.getElementById('solo-controls');
+        const duelInfo = document.getElementById('duel-info');
+        const matchmakingStatus = document.getElementById('matchmaking-status');
+        const potDisplay = document.getElementById('pot-display');
+        const duelHistorySection = document.getElementById('duel-history');
+        const duelHistoryList = document.getElementById('duel-history-list');
+
+        // --- PvP Specific Functions (Moved to before initialization) ---
+
+        function setGameMode(mode) {
+            state.gameMode = mode;
+            soloModeBtn.classList.remove('active');
+            duelModeBtn.classList.remove('active');
+
+            if (mode === 'solo') {
+                soloModeBtn.classList.add('active');
+                soloControls.style.display = 'flex';
+                multiplierDisplay.style.display = 'block';
+                rollButton.style.display = 'block';
+                findMatchButton.style.display = 'none';
+                opponentDie1.style.display = 'none';
+                opponentDie2.style.display = 'none';
+                duelInfo.style.display = 'none';
+                duelHistorySection.style.display = 'none';
+
+                // Reset dice colors to default white for solo
+                playerDie1.classList.remove('player-dice');
+                playerDie2.classList.remove('player-dice');
+                playerDie1.style.backgroundColor = 'white';
+                playerDie2.style.backgroundColor = 'white';
+                playerDie1.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.2)';
+                playerDie2.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.2)';
+
+                rollButton.disabled = false; // Always enabled in solo
+            } else { // Duel mode
+                duelModeBtn.classList.add('active');
+                soloControls.style.display = 'none';
+                multiplierDisplay.style.display = 'none';
+                rollButton.style.display = 'none'; // Hide roll button initially
+                findMatchButton.style.display = 'block'; // Show find match button
+                opponentDie1.style.display = 'flex'; // Show opponent dice
+                opponentDie2.style.display = 'flex'; // Show opponent dice
+                duelInfo.style.display = 'block';
+                duelHistorySection.style.display = 'block';
+
+                // Set distinct dice colors for player and opponent
+                playerDie1.classList.add('player-dice');
+                playerDie2.classList.add('player-dice');
+                opponentDie1.classList.add('opponent-dice');
+                opponentDie2.classList.add('opponent-dice');
+
+                // Ensure roll button is disabled until match found
+                rollButton.disabled = true;
+                findMatchButton.disabled = false;
+                matchmakingStatus.textContent = 'Select stake and find opponent!';
+                potDisplay.textContent = 'Pot: 0.00 SOL';
+                resultDisplay.textContent = ''; // Clear result display
+            }
+            // Reset dice values and result display when switching modes
+            playerDie1.textContent = '1';
+            playerDie2.textContent = '1';
+            opponentDie1.textContent = '1';
+            opponentDie2.textContent = '1';
+            resultDisplay.textContent = '';
+            vsText.style.display = 'none'; // Hide VS text
+        }
+
+        async function findMatch() {
+            if (!mockWallet.isConnected) {
+                showMessageBox('Please connect your wallet to participate in duels.', 'warning');
+                return;
+            }
+            if (mockWallet.balance < state.currentStake) {
+                showMessageBox('Insufficient balance for this stake amount!', 'error');
+                return;
+            }
+
+            state.isSearching = true;
+            findMatchButton.disabled = true;
+            rollButton.disabled = true;
+            matchmakingStatus.textContent = `Searching for opponent (Stake: ${state.currentStake} SOL)...`;
+            potDisplay.textContent = `Pot: ${state.currentStake * 2} SOL`;
+
+            // Simulate matchmaking process
+            await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate network delay
+
+            // Check for existing match in mock Firestore (not really needed for 1v1, but for concept)
+            // In a real system, you'd query 'activeMatches' for a suitable opponent.
+            // For this mock, we just create a new match.
+
+            // Simulate finding an opponent
+            const opponentUsername = 'DegenOpponent';
+            const opponentAvatar = '😈';
+            const opponentId = 'mockOpponent_' + crypto.randomUUID();
+
+            state.activeMatch = {
+                id: 'match_' + Date.now(),
+                player1: {
+                    userId: mockAuth.currentUser.uid,
+                    username: localStorage.getItem('username') || 'You',
+                    avatar: localStorage.getItem('avatar') || '👤',
+                    stake: state.currentStake
+                },
+                player2: {
+                    userId: opponentId,
+                    username: opponentUsername,
+                    avatar: opponentAvatar,
+                    stake: state.currentStake
+                },
+                status: 'active',
+                createdAt: new Date().toISOString()
+            };
+
+            // Add active match to mock Firestore
+            await mockFirestore.addDoc('activeMatches', state.activeMatch);
+
+            state.isSearching = false;
+            matchmakingStatus.textContent = `Opponent Found: ${opponentUsername}!`;
+            potDisplay.textContent = `Pot: ${(state.currentStake * 2).toFixed(2)} SOL`;
+            rollButton.disabled = false;
+            rollButton.style.display = 'block'; // Show roll button
+            findMatchButton.style.display = 'none'; // Hide find match button
+            showMessageBox(`Matched with ${opponentUsername}! Roll to duel!`, 'success');
+        }
+
+        function renderDuelHistory() {
+            duelHistoryList.innerHTML = '';
+            // Sort history by timestamp descending
+            const sortedHistory = [...state.duelHistory].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            sortedHistory.slice(0, 5).forEach(entry => { // Show last 5 duels
+                const listItem = document.createElement('li');
+                listItem.className = `duel-history-item ${entry.outcome === 'WIN' ? 'win-entry' : 'loss-entry'}`;
+                const date = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                listItem.innerHTML = `
+                    <span>${date} vs ${entry.opponent}</span>
+                    <span>${entry.outcome} (${entry.playerRoll} vs ${entry.opponentRoll})</span>
+                    <span>${entry.outcome === 'WIN' ? '+' : '-'}${entry.winnings.toFixed(2)} SOL</span>
+                `;
+                duelHistoryList.appendChild(listItem);
+            });
+        }
+
+        // Custom Message Box instead of alert()
+        function showMessageBox(message, type = 'info') {
+            const messageBox = document.createElement('div');
+            messageBox.style.position = 'fixed';
+            messageBox.style.top = '20px';
+            messageBox.style.left = '50%';
+            messageBox.style.transform = 'translateX(-50%)';
+            messageBox.style.padding = '15px 25px';
+            messageBox.style.borderRadius = '8px';
+            messageBox.style.color = 'white';
+            messageBox.style.zIndex = '10000';
+            messageBox.style.fontSize = '1.1rem';
+            messageBox.style.fontWeight = 'bold';
+            messageBox.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+            messageBox.style.opacity = '0';
+            messageBox.style.transition = 'opacity 0.3s ease-in-out, top 0.3s ease-in-out';
+            messageBox.textContent = message;
+
+            if (type === 'success') {
+                messageBox.style.backgroundColor = 'var(--accent-green)';
+            } else if (type === 'error') {
+                messageBox.style.backgroundColor = 'var(--accent-pink)';
+            } else if (type === 'warning') {
+                messageBox.style.backgroundColor = '#FFC107'; /* Yellow */
+            } else {
+                messageBox.style.backgroundColor = '#333'; /* Dark gray for info */
+            }
+
+            document.body.appendChild(messageBox);
+
+            // Animate in
+            setTimeout(() => {
+                messageBox.style.opacity = '1';
+                messageBox.style.top = '30px';
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.style.top = '10px';
+                setTimeout(() => messageBox.remove(), 300);
+            }, 3000);
+        }
 
         // Initialize
         updateMultiplier();
-        updateHotStreakDisplay(); // Initialize hot streak display
+        updateHotStreakDisplay();
+        setGameMode(state.gameMode); // Set initial UI based on solo mode
+
+        // Load duel history from mock Firestore (local storage)
+        state.duelHistory = mockFirestore.matchHistory;
+        renderDuelHistory();
 
         // Event listeners
         rollUnderSlider.addEventListener('input', function() {
@@ -1106,25 +1573,38 @@
                 this.classList.add('active');
 
                 if (this.dataset.value === 'MAX') {
-                    state.chipValue = 10; // In a real app, this would be wallet balance
+                    state.chipValue = mockWallet.balance; // Use actual balance for MAX
                 } else {
                     state.chipValue = parseFloat(this.dataset.value);
                 }
+                state.currentStake = state.chipValue; // Set current stake for duels
             });
         });
 
-        rollButton.addEventListener('click', rollDice);
+        rollButton.addEventListener('click', () => {
+            if (state.gameMode === 'solo') {
+                rollDiceSolo();
+            } else if (state.gameMode === 'duel' && state.activeMatch) {
+                rollDiceDuel();
+            } else if (state.gameMode === 'duel' && !state.activeMatch) {
+                showMessageBox('Please find an opponent first!', 'warning');
+            }
+        });
+
+        soloModeBtn.addEventListener('click', () => setGameMode('solo'));
+        duelModeBtn.addEventListener('click', () => setGameMode('duel'));
+        findMatchButton.addEventListener('click', findMatch);
 
         // Game functions
-        function rollDice() {
+        function rollDiceSolo() {
             // Disable button during roll
             rollButton.disabled = true;
 
             // Animate dice
-            animateDice();
+            animateDice([playerDie1, playerDie2]);
 
             // Play roll sound
-            playRollSound(); // Added sound effect
+            playRollSound();
 
             // After animation, show result
             setTimeout(() => {
@@ -1139,23 +1619,26 @@
                 state.rollResult = sum < state.rollUnder ? 'WIN' : 'LOSE';
 
                 // Update UI
-                die1.textContent = state.diceValues[0];
-                die2.textContent = state.diceValues[1];
+                playerDie1.textContent = state.diceValues[0];
+                playerDie2.textContent = state.diceValues[1];
+                playerDie1.classList.remove('animate-shake'); // Stop shake animation
+                playerDie2.classList.remove('animate-shake'); // Stop shake animation
 
                 resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
                 resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
 
                 // Show effects
                 if (state.rollResult === 'WIN') {
-                    showWinEffect();
+                    showWinEffect(state.chipValue * state.payouts[state.rollUnder]);
                     updateStreak(true);
-                    playWinSound(); // Play win sound
-                    triggerCoinShower(); // Trigger coin shower
-                    updateLeaderboardWins(); // Update leaderboard wins (mock)
-                    checkDailyChallenge(); // Check daily challenge progress
+                    playWinSound();
+                    triggerCoinShower();
+                    updateLeaderboardWins();
+                    checkDailyChallenge();
                 } else {
+                    showLossEffect();
                     updateStreak(false);
-                    playLossSound(); // Play loss sound
+                    playLossSound();
                 }
 
                 // Re-enable button
@@ -1163,29 +1646,145 @@
             }, 1000);
         }
 
-        function animateDice() {
-            die1.style.animation = 'none';
-            die2.style.animation = 'none';
+        function rollDiceDuel() {
+            if (!state.activeMatch) {
+                showMessageBox('No active duel. Please find a match first!', 'warning');
+                return;
+            }
+            if (mockWallet.balance < state.currentStake) {
+                showMessageBox('Insufficient balance to stake this amount!', 'error');
+                return;
+            }
 
-            // Trigger reflow
-            void die1.offsetWidth;
-            void die2.offsetWidth;
+            rollButton.disabled = true;
+            findMatchButton.disabled = true; // Disable find match button during duel
 
-            die1.style.animation = 'shake 0.5s infinite';
-            die2.style.animation = 'shake 0.5s infinite';
+            // Deduct stake immediately
+            mockWallet.balance -= state.currentStake;
+            updateWalletUI();
+
+            // Animate both players' dice
+            animateDice([playerDie1, playerDie2, opponentDie1, opponentDie2]);
+            vsText.style.display = 'block'; // Show VS text
+
+            playRollSound();
+
+            setTimeout(async () => {
+                // Player's roll
+                const playerRoll1 = Math.floor(Math.random() * 6) + 1;
+                const playerRoll2 = Math.floor(Math.random() * 6) + 1;
+                const playerTotal = playerRoll1 + playerRoll2;
+
+                // Opponent's roll (simulated)
+                const opponentRoll1 = Math.floor(Math.random() * 6) + 1;
+                const opponentRoll2 = Math.floor(Math.random() * 6) + 1;
+                const opponentTotal = opponentRoll1 + opponentRoll2;
+
+                // Update dice UI
+                playerDie1.textContent = playerRoll1;
+                playerDie2.textContent = playerRoll2;
+                opponentDie1.textContent = opponentRoll1;
+                opponentDie2.textContent = opponentRoll2;
+
+                playerDie1.classList.remove('animate-shake');
+                playerDie2.classList.remove('animate-shake');
+                opponentDie1.classList.remove('animate-shake');
+                opponentDie2.classList.remove('animate-shake');
+                vsText.style.display = 'none'; // Hide VS text
+
+                const pot = state.currentStake * 2;
+                const platformFee = pot * 0.05;
+                const winnings = pot - platformFee;
+
+                let duelOutcome = '';
+                let winAmount = 0;
+
+                if (playerTotal > opponentTotal) {
+                    duelOutcome = 'WIN';
+                    winAmount = winnings;
+                    mockWallet.balance += winnings; // Add winnings to player's balance
+                    showWinEffect(winAmount, 'duel');
+                    playWinSound();
+                    updateStreak(true);
+                    updateLeaderboardWins();
+                    checkDailyChallenge();
+                } else if (opponentTotal > playerTotal) {
+                    duelOutcome = 'LOSS';
+                    showLossEffect('duel');
+                    playLossSound();
+                    updateStreak(false);
+                } else {
+                    duelOutcome = 'TIE';
+                    winAmount = state.currentStake; // Return stake on tie
+                    mockWallet.balance += state.currentStake;
+                    showMessageBox('It\'s a Tie! Your stake has been returned.', 'info');
+                    playLossSound(); // Use loss sound for tie
+                    updateStreak(false); // No streak change on tie
+                }
+
+                updateWalletUI();
+
+                resultDisplay.textContent = `You: ${playerTotal} vs Opponent: ${opponentTotal} - You ${duelOutcome}!`;
+                resultDisplay.className = 'result-display ' + (duelOutcome === 'WIN' ? 'win' : (duelOutcome === 'LOSS' ? 'loss' : ''));
+
+                // Record duel history
+                const duelEntry = {
+                    playerRoll: playerTotal,
+                    opponentRoll: opponentTotal,
+                    outcome: duelOutcome,
+                    stake: state.currentStake,
+                    winnings: winAmount,
+                    timestamp: new Date().toISOString(),
+                    opponent: state.activeMatch.opponent.username
+                };
+                await mockFirestore.addDoc('matchHistory', duelEntry);
+                renderDuelHistory();
+
+                // Clear active match and return to lobby state
+                state.activeMatch = null;
+                matchmakingStatus.textContent = 'Ready for a new duel!';
+                potDisplay.textContent = 'Pot: 0.00 SOL';
+                rollButton.disabled = false;
+                findMatchButton.disabled = false;
+                rollButton.style.display = 'none'; // Hide roll button
+                findMatchButton.style.display = 'block'; // Show find match button
+
+            }, 1500); // Longer timeout for duel animation
         }
 
-        function showWinEffect() {
-            // Create win overlay
+        function animateDice(diceElements) {
+            diceElements.forEach(die => {
+                die.style.animation = 'none';
+                void die.offsetWidth; // Trigger reflow
+                die.classList.add('animate-shake'); // Add shake animation class
+            });
+        }
+
+        function showWinEffect(amount, mode = 'solo') {
             const overlay = document.createElement('div');
             overlay.className = 'win-overlay';
-            overlay.textContent = `+${(state.chipValue * state.payouts[state.rollUnder]).toFixed(2)} SOL!`;
+            overlay.textContent = `+${amount.toFixed(2)} SOL!`;
+            if (mode === 'duel') {
+                overlay.textContent = `YOU WIN! +${amount.toFixed(2)} SOL!`;
+            }
             document.body.appendChild(overlay);
 
-            // Create confetti
             triggerConfetti();
 
-            // Remove overlay after animation
+            setTimeout(() => {
+                overlay.remove();
+            }, 1000);
+        }
+
+        function showLossEffect(mode = 'solo') {
+            const overlay = document.createElement('div');
+            overlay.className = 'loss-overlay';
+            overlay.textContent = `YOU LOSE!`;
+            if (mode === 'solo') {
+                overlay.textContent = `- ${state.chipValue.toFixed(2)} SOL!`;
+            }
+            document.body.appendChild(overlay);
+
             setTimeout(() => {
                 overlay.remove();
             }, 1000);
@@ -1194,14 +1793,13 @@
         function updateStreak(isWin) {
             if (isWin) {
                 state.streak++;
-
-                if (state.streak >= 3 && state.streak % 3 === 0) { // Show popup every 3 wins after 3
+                if (state.streak >= 3 && state.streak % 3 === 0) {
                      showStreakPopup();
                 }
             } else {
                 state.streak = 0;
             }
-            updateHotStreakDisplay(); // Update hot streak display
+            updateHotStreakDisplay();
         }
 
         function showStreakPopup() {
@@ -1298,7 +1896,7 @@
         const profileAvatar = document.getElementById('profile-avatar');
         const depositBtn = document.getElementById('deposit-btn');
         const withdrawBtn = document.getElementById('withdraw-btn');
-        const referralBtn = document.getElementById('referral-btn'); // Get referral button
+        const referralBtn = document.getElementById('referral-btn');
 
         const closeButtons = document.querySelectorAll('.modal .close-button');
 
@@ -1424,15 +2022,17 @@
         function updateLeaderboardWins() {
             if (mockWallet.isConnected && mockWallet.address) {
                  // Find or add the current user to mock data
-                 let currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
+                 let currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
                  if (!currentUser) {
                      const username = localStorage.getItem('username') || 'You';
                      const avatar = localStorage.getItem('avatar') || '👤';
-                     currentUser = { id: 'current_user', username: username, avatar: avatar, wins: 0 };
+                     currentUser = { id: mockAuth.currentUser.uid, username: username, avatar: avatar, wins: 0 };
                      mockLeaderboardData.push(currentUser);
                  }
                  currentUser.wins++;
                  renderLeaderboard(); // Re-render leaderboard
+                 // Update mock player stats in Firestore
+                 mockFirestore.addDoc('playerStats', { userId: mockAuth.currentUser.uid, wins: currentUser.wins });
             }
         }
 
@@ -1446,7 +2046,7 @@
         const chatBody = document.getElementById('chat-body');
         const chatInput = document.getElementById('chat-input');
         const sendChatBtn = document.getElementById('send-chat-btn');
-        const chatBubbleIcon = document.getElementById('chat-bubble-icon'); // Get the bubble icon
+        const chatBubbleIcon = document.getElementById('chat-bubble-icon');
 
         let mockChatMessages = [
             { username: 'System', text: 'Welcome to DegenDice Chat!', type: 'system' },
@@ -1510,18 +2110,14 @@
         renderChatMessages();
 
         // Chat toggle for mobile
-        // Use the chat container itself as the toggle on mobile
         chatContainer.addEventListener('click', () => {
              if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open')) {
-                 // If on mobile and chat is not open, open it
                  document.body.classList.add('chat-open');
              }
         });
 
-        // Close chat when clicking the header on mobile
         chatHeader.addEventListener('click', () => {
              if (window.innerWidth <= 768 && document.body.classList.contains('chat-open')) {
-                 // If on mobile and chat is open, close it
                  document.body.classList.remove('chat-open');
              }
         });
@@ -1531,7 +2127,7 @@
         const usernameInput = document.getElementById('username-input');
         const avatarSelect = document.getElementById('avatar-select');
         const saveProfileBtn = document.getElementById('save-profile-btn');
-        const profileAvatarIcon = document.querySelector('#profile-avatar i'); // Get the icon element
+        const profileAvatarIcon = document.querySelector('#profile-avatar i');
 
         function loadProfile() {
             const savedUsername = localStorage.getItem('username');
@@ -1539,13 +2135,16 @@
 
             if (savedUsername) {
                 usernameInput.value = savedUsername;
+                mockAuth.currentUser.displayName = savedUsername; // Update mock auth
             }
             if (savedAvatar) {
                 avatarSelect.value = savedAvatar;
-                profileAvatarIcon.textContent = savedAvatar; // Update header icon
+                profileAvatarIcon.textContent = savedAvatar;
+                mockAuth.currentUser.photoURL = savedAvatar; // Update mock auth
             } else {
-                 profileAvatarIcon.className = ''; // Remove font awesome class
-                 profileAvatarIcon.textContent = '👤'; // Default emoji
+                 profileAvatarIcon.className = '';
+                 profileAvatarIcon.textContent = '👤';
+                 mockAuth.currentUser.photoURL = '👤'; // Default emoji
             }
         }
 
@@ -1560,11 +2159,10 @@
             }
             localStorage.setItem('avatar', avatar);
 
-            loadProfile(); // Update UI after saving
+            loadProfile();
             profileModal.style.display = 'none';
-             // Update leaderboard with new username/avatar if connected
              if (mockWallet.isConnected && mockWallet.address) {
-                 const currentUser = mockLeaderboardData.find(player => player.id === 'current_user');
+                 const currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
                  if (currentUser) {
                       currentUser.username = username || 'You';
                       currentUser.avatar = avatar;
@@ -1586,28 +2184,26 @@
         confirmDepositBtn.addEventListener('click', () => {
             const amount = parseFloat(depositAmountInput.value);
             if (amount > 0) {
-                // Simulate MoonPay flow (replace with actual integration)
-                alert(`Simulating deposit of ${amount.toFixed(2)} SOL via MoonPay... (This is a mock)`);
-                 mockWallet.balance += amount; // Update mock balance
-                 updateWalletUI(); // Update wallet display
+                showMessageBox(`Simulating deposit of ${amount.toFixed(2)} SOL via MoonPay... (This is a mock)`, 'info');
+                 mockWallet.balance += amount;
+                 updateWalletUI();
                  depositModal.style.display = 'none';
             } else {
-                alert('Please enter a valid deposit amount.');
+                showMessageBox('Please enter a valid deposit amount.', 'error');
             }
         });
 
         confirmWithdrawBtn.addEventListener('click', () => {
             const amount = parseFloat(withdrawAmountInput.value);
             if (amount > 0 && amount <= mockWallet.balance) {
-                // Simulate withdrawal transaction
-                alert(`Simulating withdrawal of ${amount.toFixed(2)} SOL... (This is a mock)`);
-                 mockWallet.balance -= amount; // Update mock balance
-                 updateWalletUI(); // Update wallet display
+                showMessageBox(`Simulating withdrawal of ${amount.toFixed(2)} SOL... (This is a mock)`, 'info');
+                 mockWallet.balance -= amount;
+                 updateWalletUI();
                  withdrawModal.style.display = 'none';
             } else if (amount > mockWallet.balance) {
-                alert('Insufficient balance for withdrawal.');
+                showMessageBox('Insufficient balance for withdrawal.', 'error');
             } else {
-                 alert('Please enter a valid withdrawal amount.');
+                 showMessageBox('Please enter a valid withdrawal amount.', 'error');
             }
         });
 
@@ -1615,14 +2211,13 @@
         // --- Engagement Boosters ---
 
         // Sound Effects
-        const rollSound = new Audio('https://www.soundjay.com/mechanical/gears-01.wav'); // Mock sound URL
-        const winSound = new Audio('https://www.soundjay.com/human/applause-01.wav'); // Mock sound URL
-        const lossSound = new Audio('https://www.soundjay.com/misc/fart-01.wav'); // Mock sound URL (Use a different sound if preferred!)
-        // Add chat sound if needed
+        const rollSound = new Audio('https://www.soundjay.com/mechanical/gears-01.wav');
+        const winSound = new Audio('https://www.soundjay.com/human/applause-01.wav');
+        const lossSound = new Audio('https://www.soundjay.com/misc/fart-01.wav');
 
         function playRollSound() {
-             if (rollSound.readyState >= 2) { // Check if sound is loaded
-                rollSound.currentTime = 0; // Rewind to start
+             if (rollSound.readyState >= 2) {
+                rollSound.currentTime = 0;
                 rollSound.play().catch(e => console.error("Error playing roll sound:", e));
              }
         }
@@ -1643,11 +2238,8 @@
 
         // Coin Shower Animation (using existing triggerConfetti function)
         function triggerCoinShower() {
-            // The existing triggerConfetti function serves as a coin shower effect
             triggerConfetti();
         }
-
-        // Glowing Hover Effect on Roll Button (Implemented in CSS)
 
         // Daily Challenge
         const dailyChallengePanel = document.getElementById('daily-challenge-panel');
@@ -1660,7 +2252,7 @@
             targetValue: 5,
             targetCount: 3,
             currentProgress: 0,
-            rewardAmount: 0.1, // Mock reward
+            rewardAmount: 0.1,
             isCompleted: false
         };
 
@@ -1682,7 +2274,7 @@
 
             if (dailyChallenge.isCompleted) {
                 challengeProgress.textContent = "Completed!";
-                claimRewardBtn.style.display = 'none'; // Hide claim button after claiming
+                claimRewardBtn.style.display = 'none';
             } else if (dailyChallenge.currentProgress >= dailyChallenge.targetCount) {
                  claimRewardBtn.style.display = 'block';
             } else {
@@ -1696,29 +2288,26 @@
                 localStorage.setItem('dailyChallengeProgress', dailyChallenge.currentProgress);
                 updateDailyChallengeUI();
                 if (dailyChallenge.currentProgress >= dailyChallenge.targetCount) {
-                     // Challenge completed!
                      dailyChallenge.isCompleted = true;
                      localStorage.setItem('dailyChallengeCompleted', 'true');
                      updateDailyChallengeUI();
-                     alert('Daily Challenge Completed! Claim your reward.'); // Notify user
+                     showMessageBox('Daily Challenge Completed! Claim your reward.', 'success');
                 }
             }
         }
 
         claimRewardBtn.addEventListener('click', () => {
             if (dailyChallenge.isCompleted && !localStorage.getItem('dailyChallengeClaimed')) {
-                // Simulate claiming reward
-                 alert(`Claiming mock reward of ${dailyChallenge.rewardAmount} SOL!`);
-                 mockWallet.balance += dailyChallenge.rewardAmount; // Add mock reward to balance
-                 updateWalletUI(); // Update wallet display
-                 localStorage.setItem('dailyChallengeClaimed', 'true'); // Mark as claimed
-                 claimRewardBtn.style.display = 'none'; // Hide button
+                 showMessageBox(`Claiming mock reward of ${dailyChallenge.rewardAmount} SOL!`, 'info');
+                 mockWallet.balance += dailyChallenge.rewardAmount;
+                 updateWalletUI();
+                 localStorage.setItem('dailyChallengeClaimed', 'true');
+                 claimRewardBtn.style.display = 'none';
             } else {
-                 alert('Reward already claimed or challenge not completed.');
+                 showMessageBox('Reward already claimed or challenge not completed.', 'warning');
             }
         });
 
-        // Load daily challenge progress on page load
         loadDailyChallengeProgress();
 
 
@@ -1727,7 +2316,6 @@
         const copyReferralBtn = document.getElementById('copy-referral-btn');
 
         function generateReferralCode() {
-             // Simple mock code generation
              const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
              let code = '';
              for (let i = 0; i < 7; i++) {
@@ -1736,39 +2324,42 @@
              return code;
         }
 
-        // Generate and display a mock referral code
         referralCodeElement.textContent = generateReferralCode();
 
         copyReferralBtn.addEventListener('click', () => {
              const code = referralCodeElement.textContent;
-             navigator.clipboard.writeText(code).then(() => {
-                 alert('Referral code copied to clipboard!');
-             }).catch(err => {
+             // Using document.execCommand('copy') for better iframe compatibility
+             const tempInput = document.createElement('textarea');
+             tempInput.value = code;
+             document.body.appendChild(tempInput);
+             tempInput.select();
+             try {
+                 document.execCommand('copy');
+                 showMessageBox('Referral code copied to clipboard!', 'success');
+             } catch (err) {
                  console.error('Failed to copy referral code: ', err);
-                 alert('Could not copy referral code.');
-             });
+                 showMessageBox('Could not copy referral code.', 'error');
+             }
+             document.body.removeChild(tempInput);
         });
 
 
         // --- UI/UX Enhancements ---
 
-        // Animated Background Gradient (Implemented in CSS)
-
-        // Micro-interactions (Button hover/active effects implemented in CSS)
-
-        // Safe Area Insets (Implemented in CSS padding)
-
-        // Mobile Chat Toggle (Implemented in CSS and JS event listeners)
-
         // Adjust leaderboard and chat visibility on window resize
         window.addEventListener('resize', () => {
+            const leaderboardSidebar = document.getElementById('leaderboard-sidebar');
+            const chatContainer = document.getElementById('chat-container');
+            const chatHeader = document.getElementById('chat-header');
+            const chatBody = document.getElementById('chat-body');
+            const chatInput = document.getElementById('chat-input');
+            const chatBubbleIcon = document.getElementById('chat-bubble-icon');
+
             if (window.innerWidth > 768) {
-                // Ensure leaderboard and chat are visible on desktop if window is resized
-                document.body.classList.remove('leaderboard-open'); // Assume leaderboard is always visible on desktop
-                document.body.classList.remove('chat-open'); // Chat is a fixed box on desktop
+                document.body.classList.remove('leaderboard-open');
+                document.body.classList.remove('chat-open');
                 leaderboardSidebar.style.transform = 'translateX(0)';
 
-                // Reset chat to desktop state
                 chatContainer.style.position = 'fixed';
                 chatContainer.style.width = 'var(--chat-width)';
                 chatContainer.style.height = 'var(--chat-height)';
@@ -1779,20 +2370,16 @@
                 chatContainer.style.left = 'auto';
                 chatContainer.style.borderRadius = 'var(--radius-md)';
                 chatContainer.style.background = 'rgba(20, 20, 20, 0.9)';
-                 chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
-                 chatContainer.style.cursor = 'default';
+                chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
+                chatContainer.style.cursor = 'default';
 
-                 chatBubbleIcon.style.display = 'none'; // Hide bubble icon on desktop
-                 chatHeader.style.display = 'flex'; // Show chat header on desktop
-                 chatBody.style.display = 'flex'; // Show chat body on desktop
-                 chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
-
-
+                chatBubbleIcon.style.display = 'none';
+                chatHeader.style.display = 'flex';
+                chatBody.style.display = 'flex';
+                chatInput.parentElement.style.display = 'flex';
             } else {
-                // On mobile, ensure leaderboard is hidden and chat is positioned correctly as a bubble
-                 leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard
+                 leaderboardSidebar.style.transform = 'translateX(100%)';
 
-                 // Set chat to mobile bubble state
                  if (!document.body.classList.contains('chat-open')) {
                      chatContainer.style.position = 'fixed';
                      chatContainer.style.width = 'var(--chat-bubble-size)';
@@ -1807,62 +2394,16 @@
                      chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
                      chatContainer.style.cursor = 'pointer';
 
-                     chatBubbleIcon.style.display = 'flex'; // Show bubble icon on mobile
-                     chatHeader.style.display = 'none'; // Hide chat header in bubble state
-                     chatBody.style.display = 'none'; // Hide chat body in bubble state
-                     chatInput.parentElement.style.display = 'none'; // Hide chat input area in bubble state
+                     chatBubbleIcon.style.display = 'flex';
+                     chatHeader.style.display = 'none';
+                     chatBody.style.display = 'none';
+                     chatInput.parentElement.style.display = 'none';
                  }
             }
         });
 
         // Initial check for mobile layout on load
-        if (window.innerWidth <= 768) {
-            leaderboardSidebar.style.transform = 'translateX(100%)'; // Hide leaderboard on mobile
-
-            // Set chat to mobile bubble state on load
-            chatContainer.style.position = 'fixed';
-            chatContainer.style.width = 'var(--chat-bubble-size)';
-            chatContainer.style.height = 'var(--chat-bubble-size)';
-            chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
-            chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
-            chatContainer.style.right = '1rem';
-            chatContainer.style.top = 'auto';
-            chatContainer.style.left = 'auto';
-            chatContainer.style.borderRadius = '50%';
-            chatContainer.style.background = 'var(--accent-pink)';
-            chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
-            chatContainer.style.cursor = 'pointer';
-
-            chatBubbleIcon.style.display = 'flex'; // Show bubble icon on mobile
-            chatHeader.style.display = 'none'; // Hide chat header in bubble state
-            chatBody.style.display = 'none'; // Hide chat body in bubble state
-            chatInput.parentElement.style.display = 'none'; // Hide chat input area in bubble state
-
-
-        } else {
-             leaderboardSidebar.style.transform = 'translateX(0)'; // Ensure leaderboard is visible on desktop
-
-             // Set chat to desktop state on load
-            chatContainer.style.position = 'fixed';
-            chatContainer.style.width = 'var(--chat-width)';
-            chatContainer.style.height = 'var(--chat-height)';
-            chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
-            chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
-            chatContainer.style.right = '1rem';
-            chatContainer.style.top = 'auto';
-            chatContainer.style.left = 'auto';
-            chatContainer.style.borderRadius = 'var(--radius-md)';
-            chatContainer.style.background = 'rgba(20, 20, 20, 0.9)';
-            chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
-            chatContainer.style.cursor = 'default';
-
-            chatBubbleIcon.style.display = 'none'; // Hide bubble icon on desktop
-            chatHeader.style.display = 'flex'; // Show chat header on desktop
-            chatBody.style.display = 'flex'; // Show chat body on desktop
-            chatInput.parentElement.style.display = 'flex'; // Show chat input area on desktop
-        }
-
-        // --- End of New Script ---
+        window.dispatchEvent(new Event('resize')); // Trigger resize on load to set initial layout
 
     </script>
 </body>
