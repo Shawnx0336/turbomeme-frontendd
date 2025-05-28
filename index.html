@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SolRoulette</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"
+        onload="console.log('bs58 loaded successfully')"
+        onerror="console.error('Failed to load bs58')"></script>
 
   <link rel="stylesheet" href="style.css" />
 
@@ -2777,6 +2779,20 @@
 
             // Orchestrates the wallet ownership verification process.
             async verifyWalletOwnership(walletAdapter, publicKey) {
+                // Add fallback loader for bs58
+                async function ensureBs58Loaded() {
+                    if (typeof bs58 === 'undefined') {
+                        await new Promise((resolve, reject) => {
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js';
+                            script.onload = resolve;
+                            script.onerror = reject;
+                            document.head.appendChild(script);
+                        });
+                    }
+                }
+                await ensureBs58Loaded(); // Add this line
+
                 try {
                     // Corrected Signature Fetch Logic:
                     if (!walletAdapter.signMessage) {
@@ -3352,7 +3368,7 @@
                 tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens') || '0');
                 totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
                 winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak') || '0');
-                tenXWins = parseInt(localStorage.getItem('solroulette_guest_ten_x_wins') || '0');
+                tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements') || '[]'));
                 guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0');
                 dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day') || '0');
