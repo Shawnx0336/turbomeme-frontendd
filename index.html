@@ -2074,7 +2074,7 @@
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
 <div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-      ⚠️ Demo Mode – Demo SOL Only
+     ⚠️ Demo Mode – Demo SOL Only
         </div>
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
@@ -2378,7 +2378,7 @@
 <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
 <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/main.min.js"></script> <script>
 
    function handleWalletConnect() {
   if (/Android|iPhone/i.test(navigator.userAgent) && !window.solana?.isPhantom) {
@@ -2778,25 +2778,31 @@
             // Orchestrates the wallet ownership verification process.
             async verifyWalletOwnership(walletAdapter, publicKey) {
                 try {
-                    const message = this.createVerificationMessage();
-                    const encodedMessage = new TextEncoder().encode(message);
-
-                    // Request signature from wallet adapter
-                    let signature;
-                    // Enforce signature on Phantom Connect
+                    // Corrected Signature Fetch Logic:
                     if (!walletAdapter.signMessage) {
-                        throw new Error("signMessage not supported by this wallet");
+                      throw new Error("signMessage not supported by this wallet adapter.");
                     }
-                    signature = await walletAdapter.signMessage(encodedMessage, "utf8");
-                    // Phantom's signMessage returns Uint8Array directly, Solflare's returns { signature }
-                    if (signature && signature.signature) { // For Solflare
-                        signature = signature.signature;
+                    const messageText = `SolRoulette Auth: ${Date.now()}`;
+                    const encodedMessage = new TextEncoder().encode(messageText);
+                    let signedMessage = await walletAdapter.signMessage(encodedMessage, "utf8");
+                    if (signedMessage && signedMessage.signature) {
+                      signedMessage = signedMessage.signature;
                     }
+                    // ✅ ENCODE IN BASE58, NOT BASE64
+                    const base58Signature = bs58.encode(signedMessage); // Use bs58.encode here
 
+                    const response = await fetch("/auth/verify-signature", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        address: publicKey.toString(),
+                        signature: base58Signature, // Send base58 encoded signature
+                        message: messageText // e.g. "SolRoulette Auth: 1716850312542"
+                      })
+                    });
 
-                    // Verify the signature
                     const isValid = await this.verifySignature(
-                        signature,
+                        signedMessage, // Use the raw signedMessage for client-side verification
                         encodedMessage,
                         publicKey
                     );
@@ -2806,7 +2812,7 @@
                             success: true,
                             verificationData: {
                                 publicKey: publicKey.toString(),
-                                signature: Array.from(signature), // Convert Uint8Array to array for localStorage
+                                signature: Array.from(signedMessage), // Convert Uint8Array to array for localStorage
                                 timestamp: Date.now(),
                                 message: Array.from(encodedMessage) // Store encoded message as array
                             }
@@ -3346,7 +3352,7 @@
                 tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens') || '0');
                 totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
                 winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak') || '0');
-                tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
+                tenXWins = parseInt(localStorage.getItem('solroulette_guest_ten_x_wins') || '0');
                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements') || '[]'));
                 guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0');
                 dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day') || '0');
