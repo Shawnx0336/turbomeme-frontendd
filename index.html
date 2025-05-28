@@ -528,11 +528,11 @@
             cursor: pointer;
             transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-             display: flex; /* Enable flex for label alignment */
-             flex-direction: column;
-             align-items: center;
-             justify-content: center;
-             gap: 4px;
+            display: flex; /* Enable flex for label alignment */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
         .multiplier-btn:hover:not(:disabled) {
             background: var(--primary);
@@ -1244,14 +1244,14 @@
              margin-top: 15px;
          }
          #doubleOrNothingModal .modal-content button:first-of-type {
-             background: var(--success); /* Green for Try Again */
+             background: var(--success);
              color: #000;
          }
          #doubleOrNothingModal .modal-content button:first-of-type:hover {
              background: #10C07D;
          }
          #doubleOrNothingModal .modal-content button:last-of-type {
-             background: #555; /* Darker for Cancel */
+             background: #555;
          }
          #doubleOrNothingModal .modal-content button:last-of-type:hover {
              background: #777;
@@ -1406,7 +1406,7 @@
                  border-radius: 0;
                  margin: 0;
                  padding: 10px; /* Reduced padding */
-                 padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* Add safe area inset */
+                 padding-bottom: calc(10px + env(safe-area-inset-bottom));
                  box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
                  gap: 10px; /* Reduced gap */
                  /* Remove desktop margin-top */
@@ -2074,7 +2074,7 @@
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
 <div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-         ⚠️ Demo Mode – Demo SOL Only
+       ⚠️ Demo Mode – Demo SOL Only
         </div>
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
@@ -2379,6 +2379,11 @@
 <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
 <script>
+        // 1. Implement Mobile Phantom Redirection - MUST FIRE BEFORE WALLET CONNECT LOGIC
+        if (/iPhone|Android/i.test(navigator.userAgent) && !window.solana?.isPhantom) {
+            window.location.href = 'https://phantom.app/ul/browse/turbomeme.fun';
+        }
+
         // State Management
         let spinTimer = 25;
         let isSpinning = false;
@@ -2734,7 +2739,7 @@
             createVerificationMessage() {
                 const timestamp = Date.now();
                 const nonce = Math.random().toString(36).substring(2, 15);
-                return `SolRoulette Auth: ${Date.now()}` // Unique nonce;
+                return `SolRoulette Auth: ${Date.now()}`; // Unique nonce;
             }
 
             // Verifies the signature against the message and public key using tweetnacl.
@@ -2773,7 +2778,7 @@
 
                     // Request signature from wallet adapter
                     let signature;
-                    // Use provider.signMessage as requested
+                    // Enforce signature on Phantom Connect
                     signature = await walletAdapter.signMessage(encodedMessage, "utf8");
                     // Phantom's signMessage returns Uint8Array directly, Solflare's returns { signature }
                     if (signature && signature.signature) { // For Solflare
@@ -2811,7 +2816,6 @@
             }
         }
 
-        // ADD this new function before the WalletConnectionManager class:
         function detectAvailableWallets() {
             const available = [];
             if (window.solana && window.solana.isPhantom) {
@@ -2824,22 +2828,18 @@
         }
 
         class WalletConnectionManager {
-            // REPLACE the broken constructor:
             constructor() {
                 this.state = WALLET_STATES.DISCONNECTED;
                 this.verificationService = new WalletVerificationService();
                 this.selectedWalletType = null;
                 this.walletAdapter = null;
                 this.publicKey = null;
-                // FIX: Use proper wallet adapter initialization
                 this.wallets = this.initializeWallets();
             }
 
-            // ADD this new method:
             initializeWallets() {
                 const wallets = [];
                 try {
-                    // Check if wallet adapters are available globally
                     if (typeof window !== 'undefined') {
                         // Phantom Wallet
                         if (window.solana && window.solana.isPhantom) {
@@ -2864,15 +2864,12 @@
                 return wallets;
             }
 
-            // REPLACE the existing getWalletAdapter method:
             getWalletAdapter(walletType) {
-                // First try to find from initialized wallets
                 const wallet = this.wallets.find(w => w.type === walletType.toLowerCase());
                 if (wallet) {
                     return wallet.adapter;
                 }
 
-                // Fallback: try to access directly from window (less robust, but for direct global access)
                 switch(walletType.toLowerCase()) {
                     case 'phantom':
                         return window.solana && window.solana.isPhantom ? window.solana : null;
@@ -2920,7 +2917,6 @@
                 }
             }
 
-            // Provided by user for Phase 3: Live Balance Fetch
             async fetchBalance(publicKey) {
                 const connection = new solanaWeb3.Connection(
                     solanaWeb3.clusterApiUrl("mainnet-beta"),
@@ -2942,40 +2938,32 @@
                 }
             }
 
-            // REPLACE the existing connectToWallet method:
             async connectToWallet(walletType) {
                 const adapter = this.getWalletAdapter(walletType);
                 if (!adapter) {
                     throw new Error(`WALLET_NOT_FOUND:${walletType}`);
                 }
-                // ADD CONNECTION TIMEOUT
                 const connectionTimeout = new Promise((_, reject) => {
                     setTimeout(() => reject(new Error('NETWORK_ERROR:Connection timeout')), 30000);
                 });
                 try {
                     let connectionPromise;
                     if (walletType.toLowerCase() === 'phantom') {
-                        // Call window.solana.connect() as requested for desktop
                         connectionPromise = adapter.connect();
                     } else if (walletType.toLowerCase() === 'solflare') {
                         connectionPromise = adapter.connect();
                     } else {
-                        // Generic connection attempt for other wallets that might expose a connect()
                         connectionPromise = adapter.connect();
                     }
-                    // Race between connection and timeout
                     const connectionResponse = await Promise.race([connectionPromise, connectionTimeout]);
 
-                    // Different connection methods for different wallets
                     if (walletType.toLowerCase() === 'phantom') {
-                        // Phantom's connect() returns { publicKey } directly
                         return {
                             adapter: adapter,
                             publicKey: connectionResponse.publicKey,
                             type: walletType
                         };
                     } else if (walletType.toLowerCase() === 'solflare') {
-                        // Solflare's connect() updates adapter.publicKey directly
                         return {
                             adapter: adapter,
                             publicKey: adapter.publicKey,
@@ -2984,12 +2972,11 @@
                     } else {
                         return {
                             adapter: adapter,
-                            publicKey: adapter.publicKey, // Assuming adapter.publicKey is updated
+                            publicKey: adapter.publicKey,
                             type: walletType
                         };
                     }
                 } catch (error) {
-                    // Check for user rejection or network errors based on common wallet adapter errors
                     if (error.code === 4001 || error.message.includes('User rejected the request')) {
                         throw new Error(`USER_REJECTED:${error.message}`);
                     }
@@ -3101,7 +3088,7 @@
                 if (rawMessage.startsWith('WALLET_NOT_FOUND:')) {
                     const walletName = rawMessage.split(':')[1];
                     errorType = WALLET_ERRORS.WALLET_NOT_FOUND;
-                    errorMessageElement.innerHTML = errorType.message.replace('{walletName}', walletName);
+                    errorMessageElement.innerHTML = errorType.message.replace('{walletName}', walletName.charAt(0).toUpperCase() + walletName.slice(1)); // Capitalize
                     // Add install link if available (mock for now)
                     if (walletName.toLowerCase() === 'phantom') {
                         errorMessageElement.innerHTML += `<br><a href="https://phantom.app/download" target="_blank" class="help-link">Install Phantom</a>`;
@@ -3150,7 +3137,8 @@
                 // Automatically close success screen after a short delay
                 setTimeout(() => {
                     this.closeWalletModal();
-                    showMessageBox('Wallet Connected!', 'Your wallet is now live. Start spinning!');
+                    // Feedback to User: Show clear toasts after connection
+                    showMessageBox("✅ Signature Verified. Wallet Connected.", 'Your wallet is now live. Start spinning!');
                 }, 2000); // Close after 2 seconds
             }
 
@@ -3237,7 +3225,15 @@
 
                 const config = this.deepLinkConfig[walletType];
                 if (config) {
-                    this.initiateDeepLink(config);
+                    // Check if wallet is already detected in the browser environment
+                    const availableWallets = detectAvailableWallets();
+                    if (availableWallets.includes(walletType)) {
+                        // Wallet is available in the current browser (e.g., Phantom app's internal browser)
+                        return this.walletConnectionManager.initiateConnection(walletType);
+                    } else {
+                        // Wallet not available in current browser, attempt deep link
+                        this.initiateDeepLink(config);
+                    }
                 } else {
                     // Fallback for wallets without explicit deep link config
                     showMessageBox('Mobile Wallet', `Please open your ${walletType} app to connect.`);
@@ -3295,9 +3291,6 @@
         const mobileWalletHandler = new MobileWalletHandler(walletConnectionManager);
         // Wallet Connection Refinement - END
 
-
-        // Old connectWallet function removed.
-        // The logic is now handled by WalletConnectionManager.initiateConnection()
 
         // Disconnect Wallet Function
         function disconnectWallet() {
@@ -5368,14 +5361,12 @@
          document.getElementById('claimDailyRewardBtn').addEventListener('click', claimDailyReward); // Claim Daily Reward button
 
         // Event listeners for the new wallet options
-        // REPLACE the existing wallet option event listeners:
         document.querySelectorAll('.wallet-option').forEach(button => {
             button.addEventListener('click', () => {
                 const walletType = button.dataset.wallet;
                 const availableWallets = detectAvailableWallets();
                 
                 if (!availableWallets.includes(walletType)) {
-                    // Show install prompt
                     const installUrls = {
                         phantom: 'https://phantom.app/download',
                         solflare: 'https://solflare.com/download'
@@ -5383,13 +5374,12 @@
                     
                     showMessageBox(
                         'Wallet Not Installed',
-                        `Please install ${walletType.charAt(0).toUpperCase() + walletType.slice(1)} wallet first.`, // Capitalize wallet type for display
+                        `Please install ${walletType.charAt(0).toUpperCase() + walletType.slice(1)} wallet first.`,
                         () => window.open(installUrls[walletType] || '#', '_blank')
                     );
                     return;
                 }
                 
-                // Proceed with connection
                 mobileWalletHandler.connectMobileWallet(walletType);
             });
         });
@@ -5402,9 +5392,6 @@
         // Event listener for the "Try Again" button on the error screen
         document.getElementById('walletErrorRetryBtn').addEventListener('click', () => {
             // This button's action is dynamically set in handleConnectionError
-            // If it's a retry, it will call initiateConnection again.
-            // If it's "Install Wallet", it will open the install link.
-            // If it's "Try Again" for verification, it will call initiateConnection again.
         });
 
 
