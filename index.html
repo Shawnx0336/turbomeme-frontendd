@@ -2074,7 +2074,7 @@
 <div class="container">
 <div class="flash-screen" id="flashScreen"></div>
 <div class="guest-banner" id="guestModeBanner" style="display: none;" title="You're playing with Demo SOL. Connect wallet to win real rewards.">
-          ⚠️ Demo Mode – Demo SOL Only
+         ⚠️ Demo Mode – Demo SOL Only
         </div>
 <div class="auto-demo-banner" id="autoDemoBanner" style="display: none;">
              Auto demo in progress – Tap anything to join
@@ -2773,16 +2773,13 @@
 
                     // Request signature from wallet adapter
                     let signature;
-                    if (walletAdapter.isPhantom) {
-                        signature = await walletAdapter.signMessage(encodedMessage);
-                    } else if (walletAdapter.isSolflare) {
-                        // Solflare's signMessage returns a signature object, need to extract
-                        const solflareSignature = await walletAdapter.signMessage(encodedMessage);
-                        signature = solflareSignature.signature;
-                    } else {
-                        // Generic case, assume it returns Uint8Array
-                        signature = await walletAdapter.signMessage(encodedMessage);
+                    // Use provider.signMessage as requested
+                    signature = await walletAdapter.signMessage(encodedMessage, "utf8");
+                    // Phantom's signMessage returns Uint8Array directly, Solflare's returns { signature }
+                    if (signature && signature.signature) { // For Solflare
+                        signature = signature.signature;
                     }
+
 
                     // Verify the signature
                     const isValid = await this.verifySignature(
@@ -2853,7 +2850,7 @@
                             });
                         }
                         // Solflare Wallet
-                        if (window.solflare && window.solflare.isSolflare) {
+                        if (window.solflare && window.solflare.isSolflare) { // Check for Solflare's isSolflare property
                             wallets.push({
                                 name: 'Solflare',
                                 adapter: window.solflare,
@@ -2937,13 +2934,10 @@
                     const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
                     
                     // UPDATE UI WITH REAL DATA
-                    // document.getElementById("balanceDisplay").textContent = `◎${solBalance.toFixed(2)} SOL`; // This element doesn't exist directly
                     walletBalance = solBalance; // Update global walletBalance
                     localStorage.setItem("solroulette_wallet_balance", walletBalance); // Store live balance
-                    localStorage.setItem("walletState", "connected"); // This seems to be a generic flag, keep for now
 
                 } catch (error) {
-                    // showError(`Balance Check Failed: ${error.message}`); // Use showMessageBox
                     throw new Error(`Balance Check Failed: ${error.message}`); // Re-throw to be caught by handleConnectionError
                 }
             }
@@ -2961,6 +2955,7 @@
                 try {
                     let connectionPromise;
                     if (walletType.toLowerCase() === 'phantom') {
+                        // Call window.solana.connect() as requested for desktop
                         connectionPromise = adapter.connect();
                     } else if (walletType.toLowerCase() === 'solflare') {
                         connectionPromise = adapter.connect();
@@ -3024,6 +3019,7 @@
                 }
 
                 isGuestMode = false; // Exit demo mode on real wallet connection
+                localStorage.setItem('solroulette_is_guest', 'false'); // Persist guest mode status
 
                 // Load real user data or initialize if first time connecting
                 // walletBalance is already updated by fetchBalance
@@ -3134,7 +3130,6 @@
                     errorMessageElement.textContent = `Balance check failed. Please ensure you have an internet connection and try again. Original error: ${rawMessage.replace('Balance Check Failed: ', '')}`;
                     errorRetryBtn.textContent = 'Try Again';
                     errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType);
-                    localStorage.removeItem("walletAuth"); // Clear auth data if balance check fails
                 }
                 else {
                     errorMessageElement.textContent = errorType.message;
@@ -3220,7 +3215,8 @@
                 this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 this.deepLinkConfig = {
                     phantom: {
-                        deepLink: `https://phantom.app/ul/browse/${encodeURIComponent(window.location.href)}?ref=solroulette`,
+                        // Use turbomeme.fun as specified by the user
+                        deepLink: `https://phantom.app/ul/browse/${encodeURIComponent('https://turbomeme.fun')}`,
                         fallbackUrl: 'https://phantom.app/download',
                         name: 'Phantom'
                     },
@@ -3349,7 +3345,7 @@
                 tokensEarned = parseFloat(localStorage.getItem('solroulette_guest_tokens') || '0');
                 totalWagered = parseFloat(localStorage.getItem('solroulette_guest_total_wagered') || '0');
                 winStreak = parseInt(localStorage.getItem('solroulette_guest_win_streak') || '0');
-                tenXWins = parseInt(localStorage.getItem('solroulette_guest_ten_x_wins') || '0');
+                tenXWins = parseInt(localStorage.getItem('solroulette_ten_x_wins') || '0');
                 achievementsUnlocked = new Set(JSON.parse(localStorage.getItem('solroulette_guest_achievements') || '[]'));
                 guestSpinCount = parseInt(localStorage.getItem('solroulette_guest_spin_count') || '0');
                 dailyBonusDay = parseInt(localStorage.getItem('solroulette_guest_daily_bonus_day') || '0');
@@ -4343,7 +4339,7 @@
                  { name: 'Lucky Streak x3', condition: winStreak >= 3, icon: '🔥' },
                  { name: 'Chatty', condition: xp >= 50, icon: '💬' }, // XP from chatting
                  { name: 'Daily Grinder', condition: dailyBonusDay >= 5, icon: '🗓️' } // Based on daily logins
-             ];
+            ];
 
              allAchievements.forEach(ach => {
                  const badge = document.createElement('div');
@@ -5496,20 +5492,6 @@
                  showTenXHitBanner();
              }
          }, Math.random() * 30000 + 30000); // Between 30 and 60 seconds
-
-
-        // ADD this for development testing (remove in production):
-        // Only enable mock wallets with explicit development flag
-        // This block is removed as per CRITICAL REQUIREMENTS - ZERO TOLERANCE FOR MOCK LOGIC.
-        // if (!window.solana && location.hostname === 'localhost' && window.DEVELOPMENT_MODE) {
-        //     console.warn('🚨 Development mode: Mock wallet enabled');
-        //     window.solana = {
-        //         isPhantom: true,
-        //         publicKey: { toString: () => 'DEV_MOCK_WALLET_123' },
-        //         connect: () => Promise.resolve({ publicKey: { toString: () => 'DEV_MOCK_WALLET_123' } }),
-        //         signMessage: (msg) => Promise.resolve(new Uint8Array(64))
-        //     };
-        // }
 
 
         // Initial setup on page load
