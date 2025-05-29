@@ -373,27 +373,183 @@
             text-shadow: var(--shadow-glow) var(--accent-green);
         }
 
+        /* Roll Mode Toggle Styles */
+        .roll-mode-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+        }
+
+        .roll-mode-btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .roll-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .roll-mode-btn.active {
+            background: var(--accent-pink);
+            color: white;
+            box-shadow: var(--shadow-glow) rgba(255, 51, 102, 0.3);
+        }
+
+        .roll-mode-btn i {
+            font-size: 0.8rem;
+        }
+
+        /* Enhanced Bet Controls Layout */
         .bet-controls {
             display: flex;
+            flex-direction: column;
             gap: 1rem;
             justify-content: center;
         }
 
-        button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-md);
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative; /* Needed for pseudo-elements/animations */
-            overflow: hidden; /* Hide overflow for glowing effect */
+        .chip-buttons-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
         }
 
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .chip-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            flex: 1;
+            min-width: 60px; /* Ensure minimum button width */
+        }
+
+        .chip-btn.active {
+            background-color: var(--accent-pink);
+            box-shadow: var(--shadow-glow) var(--accent-pink);
+        }
+
+        /* Custom Bet Input Styles */
+        .custom-bet-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-bet-input-wrapper {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .custom-bet-input {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            outline: none;
+            width: 100%;
+            min-width: 0; /* Allow input to shrink */
+        }
+
+        .custom-bet-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+        }
+
+        .custom-bet-input:focus {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Clear Button */
+        .clear-bet-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .clear-bet-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+        }
+
+        /* Balance Display */
+        .balance-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .balance-display:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .balance-display i.fa-coins {
+            color: #FFD700; /* Gold color for coins icon */
+            font-size: 1rem;
+        }
+
+        #balance-amount {
+            font-weight: 700;
+            color: var(--accent-green);
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-dropdown-icon {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            transition: transform 0.2s ease;
+        }
+
+        .balance-display:hover .balance-dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Input number styling (remove spinner arrows) */
+        .custom-bet-input::-webkit-outer-spin-button,
+        .custom-bet-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .custom-bet-input[type=number] {
+            -moz-appearance: textfield;
         }
 
         .roll-btn {
@@ -414,17 +570,6 @@
             100% { box-shadow: var(--shadow-glow) var(--accent-pink); }
         }
 
-
-        .chip-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            flex: 1;
-        }
-
-        .chip-btn.active {
-            background-color: var(--accent-pink);
-            box-shadow: var(--shadow-glow) var(--accent-pink);
-        }
 
         .result-display {
             font-size: 2rem;
@@ -1131,6 +1276,16 @@
                 font-size: 1.2rem;
             }
 
+            /* Mobile Responsiveness */
+            .roll-mode-btn {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
+            .roll-mode-btn i {
+                font-size: 0.7rem;
+            }
+
             .bet-controls {
                 gap: 0.5rem;
             }
@@ -1220,6 +1375,33 @@
                 display: none;
             }
 
+            /* Mobile Responsiveness for Custom Bet Input */
+            .custom-bet-container {
+                flex-direction: column;
+                gap: 0.75rem;
+                padding: 1rem;
+            }
+            
+            .custom-bet-input-wrapper {
+                width: 100%;
+            }
+            
+            .balance-display {
+                width: 100%;
+                justify-content: center;
+                padding: 1rem;
+            }
+            
+            .chip-buttons-row {
+                gap: 0.25rem;
+            }
+            
+            .chip-btn {
+                min-width: 50px;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
 
             .modal-content {
                 padding: 1.5rem;
@@ -1302,8 +1484,17 @@
 
         <div class="controls">
             <div class="slider-container" id="solo-controls">
+                <div class="roll-mode-toggle">
+                    <button id="roll-under-btn" class="roll-mode-btn active">
+                        <i class="fas fa-arrow-down"></i> Roll Under
+                    </button>
+                    <button id="roll-over-btn" class="roll-mode-btn">
+                        <i class="fas fa-arrow-up"></i> Roll Over
+                    </button>
+                </div>
+                
                 <div class="slider-labels">
-                    <span>Roll Under:</span>
+                    <span id="roll-mode-label">Roll Under:</span>
                     <span id="roll-under-value">7</span>
                 </div>
                 <input type="range" id="roll-under-slider" min="3" max="11" value="7" step="1">
@@ -1314,11 +1505,31 @@
             </div>
 
             <div class="bet-controls">
-                <button class="chip-btn" data-value="0.01">0.01</button>
-                <button class="chip-btn" data-value="0.1">0.1</button>
-                <button class="chip-btn active" data-value="1">1</button>
-                <button class="chip-btn" data-value="5">5</button>
-                <button class="chip-btn" data-value="MAX">MAX</button>
+                <div class="chip-buttons-row">
+                    <button class="chip-btn" data-value="0.01">0.01</button>
+                    <button class="chip-btn" data-value="0.1">0.1</button>
+                    <button class="chip-btn active" data-value="1">1</button>
+                    <button class="chip-btn" data-value="5">5</button>
+                    <button class="chip-btn" data-value="MAX">MAX</button>
+                </div>
+                
+                <div class="custom-bet-container">
+                    <div class="custom-bet-input-wrapper">
+                        <input type="number" 
+                               id="custom-bet-input" 
+                               placeholder="0" 
+                               min="0.01" 
+                               max="999999" 
+                               step="0.01"
+                               class="custom-bet-input">
+                        <button id="clear-bet-btn" class="clear-bet-btn">CLEAR</button>
+                    </div>
+                    <div class="balance-display">
+                        <i class="fas fa-coins"></i>
+                        <span id="balance-amount">SOL 1000.000</span>
+                        <i class="fas fa-chevron-down balance-dropdown-icon"></i>
+                    </div>
+                </div>
             </div>
 
             <button class="roll-btn" id="roll-button">ROLL</button>
@@ -1361,7 +1572,7 @@
             <div id="wallet-selection-screen">
                 <div class="wallet-options">
                     <button id="connect-phantom">
-                        <img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> 
+                        <img src="https://registry.walletconnect.com/api/v2/logo/md/phantom" alt="Phantom Icon"> 
                         Phantom
                     </button>
                     <button id="connect-solflare">
@@ -1647,6 +1858,7 @@
             diceValues: [1, 1],
             rollResult: null,
             streak: 0, // Reset streak to 0 for a fresh start
+            rollMode: 'under', // NEW: Add this line ('under' or 'over')
             payouts: {
                 3: 35,
                 4: 17,
@@ -1687,6 +1899,16 @@
         const potDisplay = document.getElementById('pot-display');
         const duelHistorySection = document.getElementById('duel-history');
         const duelHistoryList = document.getElementById('duel-history-list');
+
+        // NEW: Add these DOM element references for Roll Over feature
+        const rollUnderBtn = document.getElementById('roll-under-btn');
+        const rollOverBtn = document.getElementById('roll-over-btn');
+        const rollModeLabel = document.getElementById('roll-mode-label');
+
+        // NEW: Custom bet input functionality
+        const customBetInput = document.getElementById('custom-bet-input');
+        const clearBetBtn = document.getElementById('clear-bet-btn');
+        const balanceAmount = document.getElementById('balance-amount');
 
         // --- PvP Specific Functions (Moved to before initialization) ---
 
@@ -1868,33 +2090,73 @@
             }, 3000);
         }
 
+        // NEW: Roll mode toggle functions
+        function setRollMode(mode) {
+            state.rollMode = mode;
+            
+            // Update button states
+            rollUnderBtn.classList.remove('active');
+            rollOverBtn.classList.remove('active');
+            
+            if (mode === 'under') {
+                rollUnderBtn.classList.add('active');
+                rollModeLabel.textContent = 'Roll Under:';
+            } else {
+                rollOverBtn.classList.add('active');
+                rollModeLabel.textContent = 'Roll Over:';
+            }
+            
+            // Update multiplier display to reflect current mode
+            updateMultiplier();
+        }
+
+        // NEW: Get inverted payout values for Roll Over mode
+        function getPayoutForRollOver(rollValue) {
+            // Roll Over uses inverted logic: higher numbers = lower odds = higher payouts
+            const invertedValue = 14 - rollValue; // 14 - rollValue gives us the inverse
+            return state.payouts[invertedValue] || 2; // Fallback to 2x if not found
+        }
+
         // Initialize
         updateMultiplier();
         updateHotStreakDisplay();
         setGameMode(state.gameMode); // Set initial UI based on solo mode
+        // NEW: Initialize roll mode
+        setRollMode('under'); // Set default to Roll Under mode
 
         // Load duel history from mock Firestore (local storage)
         state.duelHistory = mockFirestore.matchHistory;
         renderDuelHistory();
 
         // Event listeners
+        // Update existing slider event listener to trigger multiplier update
         rollUnderSlider.addEventListener('input', function() {
             state.rollUnder = parseInt(this.value);
             rollUnderValue.textContent = state.rollUnder;
-            updateMultiplier();
+            updateMultiplier(); // This will now handle both modes
         });
 
+        // NEW: Roll mode toggle event listeners
+        rollUnderBtn.addEventListener('click', () => setRollMode('under'));
+        rollOverBtn.addEventListener('click', () => setRollMode('over'));
+
+        // Update existing chip button functionality to clear custom input
         chipButtons.forEach(button => {
             button.addEventListener('click', function() {
+                // Clear custom input when chip button is clicked
+                customBetInput.value = '';
+                customBetInput.style.borderColor = '';
+                
+                // Existing chip button logic
                 chipButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
 
                 if (this.dataset.value === 'MAX') {
-                    state.chipValue = realWallet.balance; // Use actual balance for MAX
+                    state.chipValue = realWallet.balance;
                 } else {
                     state.chipValue = parseFloat(this.dataset.value);
                 }
-                state.currentStake = state.chipValue; // Set current stake for duels
+                state.currentStake = state.chipValue;
             });
         });
 
@@ -1931,9 +2193,15 @@
                     Math.floor(Math.random() * 6) + 1
                 ];
 
-                // Calculate result
+                // Calculate result based on roll mode
                 const sum = state.diceValues[0] + state.diceValues[1];
-                state.rollResult = sum < state.rollUnder ? 'WIN' : 'LOSE';
+
+                if (state.rollMode === 'under') {
+                    state.rollResult = sum < state.rollUnder ? 'WIN' : 'LOSE';
+                } else {
+                    // Roll Over mode: win if sum is greater than the target
+                    state.rollResult = sum > state.rollUnder ? 'WIN' : 'LOSE';
+                }
 
                 // Update UI
                 playerDie1.textContent = state.diceValues[0];
@@ -1941,12 +2209,20 @@
                 playerDie1.classList.remove('animate-shake'); // Stop shake animation
                 playerDie2.classList.remove('animate-shake'); // Stop shake animation
 
+                // Show clean result message
                 resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
                 resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
 
                 // Show effects
                 if (state.rollResult === 'WIN') {
-                    showWinEffect(state.chipValue * state.payouts[state.rollUnder]);
+                    // Calculate winnings based on current roll mode
+                    let winnings;
+                    if (state.rollMode === 'under') {
+                        winnings = state.chipValue * state.payouts[state.rollUnder];
+                    } else {
+                        winnings = state.chipValue * getPayoutForRollOver(state.rollUnder);
+                    }
+                    showWinEffect(winnings);
                     updateStreak(true);
                     playWinSound();
                     triggerCoinShower();
@@ -2131,7 +2407,15 @@
         }
 
         function updateMultiplier() {
-            const multiplier = state.payouts[state.rollUnder];
+            let multiplier;
+            
+            if (state.rollMode === 'under') {
+                multiplier = state.payouts[state.rollUnder];
+            } else {
+                // For Roll Over, use inverted payout calculation
+                multiplier = getPayoutForRollOver(state.rollUnder);
+            }
+            
             multiplierDisplay.textContent = `Payout: ${multiplier}x`;
         }
 
@@ -2417,6 +2701,9 @@
                 } else {
                     walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
                 }
+                
+                // NEW: Update balance display in bet controls
+                updateBalanceDisplay();
             }
         }
         // Initialize real wallet manager
@@ -3032,6 +3319,98 @@
                 realWallet.resetModalState();
             }
         });
+
+        // NEW: Custom bet input functionality
+        // Format balance display
+        function updateBalanceDisplay() {
+            const balance = realWallet.balance || 0;
+            balanceAmount.textContent = `SOL ${balance.toLocaleString('en-US', {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            })}`;
+        }
+
+        // Handle custom bet input
+        function handleCustomBetInput() {
+            const customValue = parseFloat(customBetInput.value);
+            
+            if (customValue && customValue > 0) {
+                // Remove active class from all chip buttons
+                chipButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Set the custom bet value
+                state.chipValue = Math.min(customValue, realWallet.balance || 999999);
+                state.currentStake = state.chipValue;
+                
+                // Visual feedback for custom input
+                customBetInput.style.borderColor = 'var(--accent-green)';
+                setTimeout(() => {
+                    customBetInput.style.borderColor = '';
+                }, 300);
+            }
+        }
+
+        // Clear custom bet input
+        function clearCustomBet() {
+            customBetInput.value = '';
+            customBetInput.style.borderColor = '';
+            
+            // Reset to default chip value (1 SOL)
+            chipButtons.forEach(btn => btn.classList.remove('active'));
+            const defaultChip = document.querySelector('[data-value="1"]');
+            if (defaultChip) {
+                defaultChip.classList.add('active');
+                state.chipValue = 1;
+                state.currentStake = 1;
+            }
+        }
+
+        // Validate bet amount against balance
+        function validateBetAmount(amount) {
+            const balance = realWallet.balance || 0;
+            if (amount > balance) {
+                showMessageBox(`Bet amount (${amount.toFixed(3)} SOL) exceeds your balance (${balance.toFixed(3)} SOL)`, 'warning');
+                return false;
+            }
+            if (amount < 0.01) {
+                showMessageBox('Minimum bet amount is 0.01 SOL', 'warning');
+                return false;
+            }
+            return true;
+        }
+
+        // Event Listeners for Custom Bet Input
+        customBetInput.addEventListener('input', handleCustomBetInput);
+        customBetInput.addEventListener('blur', () => {
+            const value = parseFloat(customBetInput.value);
+            if (value && !validateBetAmount(value)) {
+                customBetInput.value = '';
+                clearCustomBet();
+            }
+        });
+
+        // Handle Enter key in custom input
+        customBetInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                customBetInput.blur();
+                // Optionally trigger a roll if in solo mode
+                if (state.gameMode === 'solo' && !rollButton.disabled) {
+                    rollButton.click();
+                }
+            }
+        });
+
+        // Clear button functionality
+        clearBetBtn.addEventListener('click', clearCustomBet);
+
+        // Balance display click (could open balance modal in future)
+        document.querySelector('.balance-display').addEventListener('click', () => {
+            // Future: Could open detailed balance/transaction history
+            showMessageBox(`Current Balance: ${realWallet.balance.toFixed(3)} SOL`, 'info');
+        });
+
+        // NEW: Initialize balance display
+        updateBalanceDisplay();
 
     </script>
 </body>
