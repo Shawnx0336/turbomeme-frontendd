@@ -221,6 +221,23 @@
             color: var(--accent-green);
         }
 
+        /* Close menu button for mobile nav overlay */
+        .close-menu-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: var(--text-light);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+            z-index: 100;
+        }
+
+        .close-menu-btn:hover {
+            color: var(--accent-pink);
+            transform: scale(1.1);
+        }
+
         .game-container {
             flex: 1;
             display: flex;
@@ -1138,6 +1155,7 @@
                 transform: translateX(-100%); /* Slide in from right */
             }
 
+            /* REPLACE the existing mobile chat bubble styles with: */
             /* Mobile Chat Bubble Position and Size */
             .chat-container {
                 width: var(--chat-bubble-size);
@@ -1145,43 +1163,48 @@
                 bottom: calc(1rem + constant(safe-area-inset-bottom));
                 bottom: calc(1rem + env(safe-area-inset-bottom));
                 right: 1rem;
-                border-radius: 50%; /* Make it a circle */
+                border-radius: 50%;
                 box-shadow: var(--shadow-glow) var(--accent-pink);
-                display: flex; /* Keep flex for centering icon */
+                display: flex;
                 justify-content: center;
                 align-items: center;
-                overflow: hidden; /* Hide chat content initially */
-                cursor: pointer; /* Indicate it's clickable */
-                background: var(--accent-pink); /* Bubble color */
+                overflow: hidden;
+                cursor: pointer;
+                background: var(--accent-pink);
+                transition: all 0.3s ease-in-out; /* Add transition */
             }
 
             .chat-container .chat-header,
             .chat-container .chat-body,
             .chat-container .chat-input-area {
-                display: none; /* Hide chat content in bubble state */
+                display: none;
             }
 
             /* Full-screen chat for mobile when open */
             body.chat-open .chat-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-                background: var(--bg-dark); /* Solid background for full screen */
-                z-index: 1000; /* Above everything */
-                display: flex; /* Show flex layout when open */
-                flex-direction: column;
-                box-shadow: none; /* Remove bubble shadow */
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                border-radius: 0 !important;
+                background: var(--bg-dark) !important;
+                z-index: 1000 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                box-shadow: none !important;
+                cursor: default !important;
             }
 
             body.chat-open .chat-container .chat-header,
             body.chat-open .chat-container .chat-body,
             body.chat-open .chat-container .chat-input-area {
-                display: flex; /* Show chat content when open */
+                display: flex !important;
             }
 
+            body.chat-open .chat-container #chat-bubble-icon {
+                display: none !important;
+            }
 
             body.chat-open .chat-header {
                 padding-top: constant(safe-area-inset-top);
@@ -1189,10 +1212,9 @@
             }
 
             body.chat-open .chat-input-area {
-                 padding-bottom: constant(safe-area-inset-bottom);
+                padding-bottom: constant(safe-area-inset-bottom);
                 padding-bottom: env(safe-area-inset-bottom);
             }
-
             /* Hide the separate chat toggle button on mobile, as the chat container itself is the toggle */
             .chat-toggle-btn {
                 display: none;
@@ -1244,6 +1266,9 @@
     </header>
 
     <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+        <div class="close-menu-btn" id="close-menu-btn">
+            <i class="fas fa-times"></i>
+        </div>
         <div class="nav-links">
             <a href="#" id="mobile-profile-btn"><i class="fas fa-user"></i> Profile</a>
             <a href="#" id="mobile-deposit-btn"><i class="fas fa-plus-circle"></i> Deposit</a>
@@ -2527,17 +2552,37 @@
         // Initial render of chat messages
         renderChatMessages();
 
-        // Chat toggle for mobile
-        chatContainer.addEventListener('click', () => {
-             if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open')) {
-                 document.body.classList.add('chat-open');
-             }
+        // Fix the mobile chat container click handler (around line 1240):
+        chatContainer.addEventListener('click', (e) => {
+            // Only trigger on mobile
+            if (window.innerWidth <= 768) {
+                e.stopPropagation(); // Prevent event bubbling
+                if (!document.body.classList.contains('chat-open')) {
+                    document.body.classList.add('chat-open');
+                    // Force display of chat elements
+                    document.getElementById('chat-header').style.display = 'flex';
+                    document.getElementById('chat-body').style.display = 'flex';
+                    document.getElementById('chat-input').parentElement.style.display = 'flex';
+                    document.getElementById('chat-bubble-icon').style.display = 'none';
+                }
+            }
         });
 
-        chatHeader.addEventListener('click', () => {
-             if (window.innerWidth <= 768 && document.body.classList.contains('chat-open')) {
-                 document.body.classList.remove('chat-open');
-             }
+        // Fix the chat header click handler (around line 1247):
+        chatHeader.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            if (window.innerWidth <= 768 && document.body.classList.contains('chat-open')) {
+                document.body.classList.remove('chat-open');
+                // Reset to bubble state
+                setTimeout(() => {
+                    if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open')) {
+                        document.getElementById('chat-header').style.display = 'none';
+                        document.getElementById('chat-body').style.display = 'none';
+                        document.getElementById('chat-input').parentElement.style.display = 'none';
+                        document.getElementById('chat-bubble-icon').style.display = 'flex';
+                    }
+                }, 300); // Wait for transition to complete
+            }
         });
 
 
@@ -2774,15 +2819,16 @@
             const chatInput = document.getElementById('chat-input');
             const chatBubbleIcon = document.getElementById('chat-bubble-icon');
 
+            // FIND this section in the resize event listener and UPDATE it:
             if (window.innerWidth > 768) {
                 document.body.classList.remove('leaderboard-open');
                 document.body.classList.remove('chat-open');
                 leaderboardSidebar.style.transform = 'translateX(0)';
 
+                // Desktop chat setup
                 chatContainer.style.position = 'fixed';
                 chatContainer.style.width = 'var(--chat-width)';
                 chatContainer.style.height = 'var(--chat-height)';
-                chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
                 chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
                 chatContainer.style.right = '1rem';
                 chatContainer.style.top = 'auto';
@@ -2797,27 +2843,27 @@
                 chatBody.style.display = 'flex';
                 chatInput.parentElement.style.display = 'flex';
             } else {
-                 leaderboardSidebar.style.transform = 'translateX(100%)';
+                leaderboardSidebar.style.transform = 'translateX(100%)';
 
-                 if (!document.body.classList.contains('chat-open')) {
-                     chatContainer.style.position = 'fixed';
-                     chatContainer.style.width = 'var(--chat-bubble-size)';
-                     chatContainer.style.height = 'var(--chat-bubble-size)';
-                     chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
-                     chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom));';
-                     chatContainer.style.right = '1rem';
-                     chatContainer.style.top = 'auto';
-                     chatContainer.style.left = 'auto';
-                     chatContainer.style.borderRadius = '50%';
-                     chatContainer.style.background = 'var(--accent-pink)';
-                     chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
-                     chatContainer.style.cursor = 'pointer';
+                // Mobile chat bubble setup (only if chat is not open)
+                if (!document.body.classList.contains('chat-open')) {
+                    chatContainer.style.position = 'fixed';
+                    chatContainer.style.width = 'var(--chat-bubble-size)';
+                    chatContainer.style.height = 'var(--chat-bubble-size)';
+                    chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
+                    chatContainer.style.right = '1rem';
+                    chatContainer.style.top = 'auto';
+                    chatContainer.style.left = 'auto';
+                    chatContainer.style.borderRadius = '50%';
+                    chatContainer.style.background = 'var(--accent-pink)';
+                    chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
+                    chatContainer.style.cursor = 'pointer';
 
-                     chatBubbleIcon.style.display = 'flex';
-                     chatHeader.style.display = 'none';
-                     chatBody.style.display = 'none';
-                     chatInput.parentElement.style.display = 'none';
-                 }
+                    chatBubbleIcon.style.display = 'flex';
+                    chatHeader.style.display = 'none';
+                    chatBody.style.display = 'none';
+                    chatInput.parentElement.style.display = 'none';
+                }
             }
         });
 
@@ -2843,6 +2889,12 @@
         const mobileReferralBtn = document.getElementById('mobile-referral-btn');
         const mobileDisconnectBtn = document.getElementById('mobile-disconnect-btn');
         const mobileConnectWalletBtn = document.getElementById('mobile-connect-wallet-btn');
+
+        // Close menu button event listener
+        document.getElementById('close-menu-btn').addEventListener('click', () => {
+            mobileNavOverlay.classList.remove('show');
+            hamburgerMenu.classList.remove('active');
+        });
 
         // Desktop dropdown event listeners
         dropdownProfileBtn.addEventListener('click', (e) => {
