@@ -1107,14 +1107,6 @@
              color: var(--text-light);
              outline: none;
         }
-        .profile-options button {
-            background-color: var(--accent-green);
-            color: var(--bg-dark);
-            font-weight: 700;
-        }
-        .profile-options button:hover {
-            background-color: #33ffb3;
-        }
         .profile-section { /* NEW: Styling for sections within profile modal */
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
@@ -1686,6 +1678,23 @@
                 display: none !important;
             }
         }
+
+        /* Add to CSS */
+        .stake-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+        }
+        #result-modal .modal-content {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .win { color: var(--accent-green); }
+        .loss { color: var(--accent-pink); }
     </style>
 </head>
 <body>
@@ -1729,8 +1738,8 @@
             <a href="#" id="mobile-profile-btn"><i class="fas fa-user"></i> Profile</a>
             <a href="#" id="mobile-deposit-btn"><i class="fas fa-plus-circle"></i> Deposit</a>
             <a href="#" id="mobile-withdraw-btn"><i class="fas fa-minus-circle"></i> Withdraw</a>
-            <a href="#" id="mobile-disconnect-btn"><i class="fas fa-power-off"></i> Disconnect</a>
             <a href="#" id="mobile-connect-wallet-btn"><i class="fas fa-wallet"></i> Connect Wallet</a>
+            <a href="#" id="mobile-disconnect-btn"><i class="fas fa-power-off"></i> Disconnect</a>
         </div>
     </div>
 
@@ -1774,7 +1783,14 @@
 
         <div class="duel-info" id="duel-info" style="display: none;">
             <p id="matchmaking-status">Searching for opponent...</p>
-            <p class="pot-display" id="pot-display">Pot: 0.00 SOL</p>
+            <div class="stake-display">
+                <span>Your Stake: <strong id="player-stake">0.00 SOL</strong></span>
+                <span>Opponent Stake: <strong id="opponent-stake">0.00 SOL</strong></span>
+            </div>
+            <p class="pot-display" id="pot-display">Total Pot: 0.00 SOL</p>
+            <button id="confirm-ready-btn" class="roll-btn" style="display: none; margin-top: 1rem">
+                CONFIRM READY
+            </button>
         </div>
 
         <div class="result-display" id="result"></div>
@@ -1829,6 +1845,9 @@
                 </div>
             </div>
 
+            <button id="stake-find-button" class="roll-btn" style="display: none; margin-top: 1rem">
+                STAKE & FIND MATCH
+            </button>
             <button class="roll-btn" id="roll-button">ROLL</button>
             <button class="roll-btn" id="find-match-button" style="display: none;">Find Match</button>
         </div>
@@ -1873,7 +1892,7 @@
             <div id="wallet-selection-screen">
                 <div class="wallet-options">
                     <button id="connect-phantom">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJpY2xleSBjeD0iNTQiIGN5PSI1NCIgcj0iNTQiIGZpbGw9InVybCgjcGFpbnQwbGluZWFyXzBfMSkiLz48cGF0aCBkPSJNNzYuNzI3OSA4My4yMDUyQzc0LjQyNTQgODUuNzg4NSA3MC41ODQ2IDg2LjUzNDkgNjcuMzIzNCA4NS4wNjU2TDUxLjg5MjUgNzguMjc2NEw0MS40MDc5IDgzLjY2ODhDMzguNjcyOSA4NS4xNTkgMzUuMjczNCA4NC43NzM2IDMyLjk2OTggODIuNjk5OEMzMC42NjYyIDgwLjYyNjEgMjkuODM3OCA3Ny4yMDkgMzEuMTQzOCA3NC4wMzA3QzMyLjI1NjYgNzEuMzE2OCAzNC41MjczIDY5LjE2MTMgMzcuMzY0MiA2OC4wMTdMNTIuMzY5NyA2Mi4zNjcwTDU5Ljk5MjEgNTkuOTg0OEM2NC4wNzUgNTguNDk3NiA2OC4zOTU5IDU5LjIzMTcgNzEuOTcyOCA2MS45OTAzQzc1LjU0OTYgNjQuNzQ4OSA3Ny44NzY4IDY4Ljk2MjIgNzguMzY5NSA3My42MzlMNzguNzY3MSA3Ni45OTE4Qzc5LjEzNjUgODAuMTQ1OCA3OC4yNDA4IDgxLjU5MjggNzYuNzI3OSA4My4yMDUyWiIgZmlsbD0id2hpdGUiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMF8xIiB4MT0iNTQiIHkxPSIwIiB4Mj0iNTQiIHkyPSIxMDgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNTM0QkIxIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTUxQkY5Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+" alt="Phantom Icon">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJpY2xleSBjeD0iNTQiIGN5PSI1NCIgcj0iNTQiIGZpbGw9InVybCgjcGFpbnQwbGluZWFyXzBfMSkiLz48cGF0aCBkPSJNNzYuNzI3OSA4My4yMDUyQzc0LjQyNTQgODUuNzg4NSA3MC41ODQ2IDg2LjUzNDkgNjcuMzIzNCA4NS4wNjU2TDUxLjg5MjUgNzguMjc2NEw0MS40MDc5IDgzLjY2ODhDMzguNjcyOSA4NS4xNTkgMzUuMjczNCA4NC43NzM2IDMyLjk2OTggODIuNjk5OEMzMC42NjYyIDgwLjYyNjEgMjkuODM3OCA3Ny4yMDkgMzEuMTQzOCA3NC4wMzA3QzMyLjI1NjYgNzEuMzE2OCAzNC41MjczIDY5LjE2MTMgMzcuMzY0MiA2OC4wMTdMNTIuMzY5NyA2Mi4zNjcwTDU5Ljk5MjEgNTkuOTg0OEM2NC4wNzUgNTguNDk3NiA2OC4zOTU5IDU5LjIyMzE3IDcxLjk3MjggNjEuOTkwM0M3NS41NDk2IDY0Ljc0ODkgNzcuODc2OCA2OC45NjIyIDc4LjM2OTUgNzMuNjM5TDc4Ljc2NzEgNzYuOTkxOUM3OS4xMzY1IDgwLjE0NTggNzguMjQwOCA4MS41OTI4IDc2LjcyNzkgODMuMjA1MloiIGZpbGw9IndoaXRlIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzBfMSIgeDE9IjU0IiB5MT0iMCcgeDI9IjU0IiB5Mj0iMTA4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzUzNEJCMSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzU1MUJGOiIvPjwvZGVmcz48L3N2Zz4=" alt="Phantom Icon">
                         Phantom
                     </button>
                     <button id="connect-solflare">
@@ -2054,6 +2073,16 @@
         <div class="chat-input-area">
             <input type="text" id="chat-input" placeholder="Type a message...">
             <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="result-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-button">&times;</span>
+            <h2 id="result-title">DUEL RESULTS</h2>
+            <div id="result-details" style="text-align: left; padding: 1rem">
+                </div>
+            <button id="result-close-btn" class="roll-btn">CONTINUE</button>
         </div>
     </div>
 
@@ -2278,7 +2307,7 @@
         const rollUnderValue = document.getElementById('roll-under-value');
         const multiplierDisplay = document.getElementById('multiplier');
         const rollButton = document.getElementById('roll-button');
-        const findMatchButton = document.getElementById('find-match-button');
+        const findMatchButton = document.getElementById('find-match-button'); // This button is now replaced by stake-find-button
         const chipButtons = document.querySelectorAll('.chip-btn');
         const hotStreakDisplay = document.getElementById('hot-streak');
         const soloModeBtn = document.getElementById('solo-mode-btn');
@@ -2300,6 +2329,18 @@
         const clearBetBtn = document.getElementById('clear-bet-btn');
         const balanceAmount = document.getElementById('balance-amount');
 
+        // NEW: Duel mode specific buttons/elements
+        const stakeFindButton = document.getElementById('stake-find-button');
+        const playerStakeDisplay = document.getElementById('player-stake');
+        const opponentStakeDisplay = document.getElementById('opponent-stake');
+        const confirmReadyBtn = document.getElementById('confirm-ready-btn');
+
+        // NEW: Result Modal elements
+        const resultModal = document.getElementById('result-modal');
+        const resultDetails = document.getElementById('result-details');
+        const resultCloseBtn = document.getElementById('result-close-btn');
+
+
         // --- PvP Specific Functions (Moved to before initialization) ---
 
         function setGameMode(mode) {
@@ -2312,7 +2353,7 @@
                 soloControls.style.display = 'flex';
                 multiplierDisplay.style.display = 'block';
                 rollButton.style.display = 'block';
-                findMatchButton.style.display = 'none';
+                stakeFindButton.style.display = 'none'; // Hide stake & find button
                 opponentDie1.style.display = 'none';
                 opponentDie2.style.display = 'none';
                 duelInfo.style.display = 'none';
@@ -2332,6 +2373,7 @@
                 soloControls.style.display = 'none';
                 multiplierDisplay.style.display = 'none';
                 rollButton.style.display = 'none'; // Hide roll button initially
+                stakeFindButton.style.display = 'block'; // Show stake & find button
                 opponentDie1.style.display = 'flex'; // Show opponent dice
                 opponentDie2.style.display = 'flex'; // Show opponent dice
                 duelInfo.style.display = 'block';
@@ -2345,9 +2387,12 @@
 
                 // Ensure roll button is disabled until match found
                 rollButton.disabled = true;
-                findMatchButton.disabled = false;
+                stakeFindButton.disabled = false; // Enable stake & find button
+                confirmReadyBtn.style.display = 'none'; // Hide confirm ready button
                 matchmakingStatus.textContent = 'Select stake and find opponent!';
-                potDisplay.textContent = 'Pot: 0.00 SOL';
+                potDisplay.textContent = 'Total Pot: 0.00 SOL';
+                playerStakeDisplay.textContent = '0.00 SOL';
+                opponentStakeDisplay.textContent = '0.00 SOL';
                 resultDisplay.textContent = ''; // Clear result display
             }
             // Reset dice values and result display when switching modes
@@ -2360,27 +2405,31 @@
         }
 
         async function findMatch() {
-            if (!mockWallet.isConnected) {
-                showMessageBox('Please connect your wallet to participate in duels.', 'warning');
+            if (!realWallet.isConnected) {
+                showMessageBox('Connect wallet to duel!', 'error');
                 return;
             }
-            if (mockWallet.balance < state.currentStake) {
-                showMessageBox('Insufficient balance for this stake amount!', 'error');
+            
+            const stakeAmount = state.currentStake;
+            if (realWallet.balance < stakeAmount) {
+                showMessageBox('Insufficient balance!', 'error');
                 return;
             }
+            
+            // Deduct stake immediately
+            realWallet.balance -= stakeAmount;
+            realWallet.updateWalletUI();
 
             state.isSearching = true;
-            findMatchButton.disabled = true;
+            stakeFindButton.disabled = true;
             rollButton.disabled = true;
             matchmakingStatus.textContent = `Searching for opponent (Stake: ${state.currentStake} SOL)...`;
-            potDisplay.textContent = `Pot: ${state.currentStake * 2} SOL`;
+            playerStakeDisplay.textContent = `${state.currentStake.toFixed(2)} SOL`;
+            opponentStakeDisplay.textContent = `Searching...`;
+            potDisplay.textContent = `Total Pot: ${(state.currentStake * 2).toFixed(2)} SOL`;
 
             // Simulate matchmaking process
             await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate network delay
-
-            // Check for existing match in mock Firestore (not really needed for 1v1, but for concept)
-            // In a real system, you'd query 'activeMatches' for a suitable opponent.
-            // For this mock, we just create a new match.
 
             // Simulate finding an opponent
             const opponentUsername = 'DegenOpponent';
@@ -2410,11 +2459,10 @@
 
             state.isSearching = false;
             matchmakingStatus.textContent = `Opponent Found: ${opponentUsername}!`;
-            potDisplay.textContent = `Pot: ${(state.currentStake * 2).toFixed(2)} SOL`;
-            rollButton.disabled = false;
-            rollButton.style.display = 'block';
-            findMatchButton.style.display = 'none';
-            showMessageBox(`Matched with ${opponentUsername}! Roll to duel!`, 'success');
+            opponentStakeDisplay.textContent = `${state.currentStake.toFixed(2)} SOL`; // Update opponent stake
+            confirmReadyBtn.style.display = 'block'; // Show confirm ready button
+            stakeFindButton.style.display = 'none'; // Hide stake & find button
+            showMessageBox(`Matched with ${opponentUsername}! Confirm ready to duel!`, 'success');
         }
 
         function renderDuelHistory() {
@@ -2561,7 +2609,38 @@
 
         soloModeBtn.addEventListener('click', () => setGameMode('solo'));
         duelModeBtn.addEventListener('click', () => setGameMode('duel'));
-        findMatchButton.addEventListener('click', findMatch);
+        // findMatchButton.addEventListener('click', findMatch); // This is replaced by stakeFindButton
+
+        // New event listener for stake-find-button
+        stakeFindButton.addEventListener('click', function() {
+            if (!realWallet.isConnected) {
+                showMessageBox('Connect wallet to duel!', 'error');
+                return;
+            }
+            
+            const stakeAmount = state.currentStake;
+            if (realWallet.balance < stakeAmount) {
+                showMessageBox('Insufficient balance!', 'error');
+                return;
+            }
+            
+            findMatch();
+        });
+
+        // New ready confirmation
+        confirmReadyBtn.addEventListener('click', function() {
+            this.disabled = true;
+            this.textContent = 'Waiting for opponent...';
+            
+            // Simulate opponent ready
+            setTimeout(() => {
+                rollButton.style.display = 'block';
+                rollButton.disabled = false; // Enable roll button
+                matchmakingStatus.textContent = 'Opponent ready! ROLL NOW';
+                confirmReadyBtn.style.display = 'none'; // Hide confirm ready button
+            }, 2000);
+        });
+
 
         // Game functions
         function rollDiceSolo() {
@@ -2651,17 +2730,23 @@
                 showMessageBox('No active duel. Please find a match first!', 'warning');
                 return;
             }
+            // Balance check is already done when staking, but a final check doesn't hurt.
             if (realWallet.balance < state.currentStake) {
-                showMessageBox('Insufficient balance to stake this amount!', 'error');
+                showMessageBox('Insufficient balance to complete the duel!', 'error');
+                // Refund the initial stake if balance is now too low for some reason
+                realWallet.balance += state.currentStake;
+                realWallet.updateWalletUI();
+                state.activeMatch = null; // Clear active match
+                stakeFindButton.style.display = 'block'; // Show stake & find button again
+                rollButton.style.display = 'none'; // Hide roll button
+                rollButton.disabled = true;
+                stakeFindButton.disabled = false;
+                matchmakingStatus.textContent = 'Duel cancelled due to insufficient balance.';
                 return;
             }
 
             rollButton.disabled = true;
-            findMatchButton.disabled = true;
-
-            // Deduct stake immediately
-            realWallet.balance -= state.currentStake;
-            realWallet.updateWalletUI();
+            stakeFindButton.disabled = true; // Keep disabled during roll
 
             // Animate both players' dice
             animateDice([playerDie1, playerDie2, opponentDie1, opponentDie2]);
@@ -2715,7 +2800,7 @@
                     updateStreak(false);
                 } else {
                     duelOutcome = 'TIE';
-                    winAmount = state.currentStake;
+                    winAmount = state.currentStake; // Return stake on tie
                     realWallet.balance += state.currentStake;
                     showMessageBox('It\'s a Tie! Your stake has been returned.', 'info');
                     playLossSound();
@@ -2724,8 +2809,25 @@
 
                 realWallet.updateWalletUI();
 
-                resultDisplay.textContent = `You: ${playerTotal} vs Opponent: ${opponentTotal} - You ${duelOutcome}!`;
-                resultDisplay.className = 'result-display ' + (duelOutcome === 'WIN' ? 'win' : (duelOutcome === 'LOSS' ? 'loss' : ''));
+                // Replace existing result display with new modal logic
+                let resultHTML = `
+                    <p><strong>Your Roll:</strong> ${playerTotal} (${playerRoll1} + ${playerRoll2})</p>
+                    <p><strong>Opponent Roll:</strong> ${opponentTotal} (${opponentRoll1} + ${opponentRoll2})</p>
+                    <hr style="margin: 1rem 0; border-color: #333;">
+                    <p class="${duelOutcome === 'WIN' ? 'win' : 'loss'}" 
+                       style="font-size: 1.5rem; text-align: center">
+                        YOU ${duelOutcome}!
+                    </p>`;
+                if (duelOutcome === 'WIN') {
+                    resultHTML += `<p>+${winAmount.toFixed(2)} SOL added to your balance!</p>`;
+                } else if (duelOutcome === 'LOSS') {
+                    resultHTML += `<p>-${state.currentStake.toFixed(2)} SOL deducted from your balance.</p>`;
+                } else if (duelOutcome === 'TIE') {
+                    resultHTML += `<p>Your stake of ${state.currentStake.toFixed(2)} SOL has been returned.</p>`;
+                }
+
+                resultDetails.innerHTML = resultHTML;
+                resultModal.style.display = 'flex'; // Show the result modal
 
                 // Record duel history
                 const duelEntry = {
@@ -2735,7 +2837,7 @@
                     stake: state.currentStake,
                     winnings: winAmount,
                     timestamp: new Date().toISOString(),
-                    opponent: state.activeMatch.opponent.username
+                    opponent: state.activeMatch.player2.username // Use opponent's username from active match
                 };
                 await mockFirestore.addDoc('matchHistory', duelEntry);
                 renderDuelHistory();
@@ -2743,11 +2845,12 @@
                 // Clear active match and return to lobby state
                 state.activeMatch = null;
                 matchmakingStatus.textContent = 'Ready for a new duel!';
-                potDisplay.textContent = 'Pot: 0.00 SOL';
-                rollButton.disabled = false;
-                findMatchButton.disabled = false;
-                rollButton.style.display = 'none';
-                findMatchButton.style.display = 'block';
+                potDisplay.textContent = 'Total Pot: 0.00 SOL';
+                playerStakeDisplay.textContent = '0.00 SOL';
+                opponentStakeDisplay.textContent = '0.00 SOL';
+                rollButton.style.display = 'none'; // Hide roll button
+                stakeFindButton.style.display = 'block'; // Show stake & find button
+                stakeFindButton.disabled = false; // Enable stake & find button
 
             }, 1500);
         }
@@ -2901,6 +3004,15 @@
         const depositModal = document.getElementById('deposit-modal');
         const withdrawModal = document.getElementById('withdraw-modal');
 
+        // Close handlers for result modal
+        resultCloseBtn.addEventListener('click', () => {
+            resultModal.style.display = 'none';
+        });
+
+        document.querySelector('#result-modal .close-button').addEventListener('click', () => {
+            resultModal.style.display = 'none';
+        });
+
         const closeButtons = document.querySelectorAll('.modal .close-button');
 
         // Close Modals
@@ -2919,6 +3031,7 @@
             if (event.target === profileModal) { profileModal.style.display = 'none'; }
             if (event.target === depositModal) { depositModal.style.display = 'none'; }
             if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; }
+            if (event.target === resultModal) { resultModal.style.display = 'none'; } // Close result modal on outside click
         });
 
 
