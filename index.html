@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DegenDice - Slotana Style PvP</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/index.umd.min.js"></script>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
-    <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <style>
         :root {
             --bg-dark: #0A0A0A;
@@ -27,17 +21,6 @@
             --chat-bubble-size: 60px; /* Size for the mobile chat bubble */
             --player-dice-color: #00FF99; /* Green for player */
             --opponent-dice-color: #FF3366; /* Pink for opponent */
-
-            /* New variables for Wallet Modal CSS */
-            --primary: #9945FF; /* Purple branding */
-            --danger: #FF375F; /* Red for losses */
-            --success: #14F195; /* Green for wins */
-            --accent: #FFD700; /* Gold for highlights */
-            --secondary: #1A1A1A; /* Dark panels */
-            --text: #FFFFFF;
-            --panel-border-radius: 12px;
-            --button-border-radius: 8px;
-            --input-border-radius: 8px;
         }
 
         body {
@@ -71,7 +54,7 @@
             padding: 0.5rem 1rem; /* Adjusted padding */
             height: var(--header-height); /* Set header height */
             display: flex;
-            justify-content: space-between; /* Space out logo and actions */
+            justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: fixed; /* Fixed header */
@@ -82,6 +65,7 @@
             box-sizing: border-box; /* Include padding in width */
         }
 
+        /* NEW HEADER STYLES */
         .header-logo {
             font-size: 1.8rem;
             font-weight: 800;
@@ -89,13 +73,11 @@
             text-shadow: var(--shadow-glow) var(--accent-green);
             letter-spacing: -1px;
         }
-
         .header-actions-right {
             display: flex;
             align-items: center;
-            gap: 1rem; /* Space between wallet info and profile dropdown */
+            gap: 1rem;
         }
-
         .wallet-info {
             font-weight: 400;
             font-size: 14px;
@@ -107,67 +89,59 @@
             border-radius: var(--radius-md);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease;
-            cursor: pointer; /* Make it clickable */
+            cursor: pointer;
         }
-
         .wallet-info:hover {
             background-color: rgba(255, 255, 255, 0.1);
             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.05);
         }
-
         .wallet-info i {
-            color: var(--accent-green); /* Icon color */
+            color: var(--accent-green);
         }
-
         /* Profile Dropdown Styles */
         .profile-dropdown-container {
             position: relative;
-            display: inline-block; /* Allows positioning of dropdown relative to this */
+            display: inline-block;
         }
-
         .profile-avatar {
             cursor: pointer;
-            width: 40px; /* Larger avatar size */
+            width: 40px;
             height: 40px;
             border-radius: 50%;
             background-color: rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.5rem; /* Icon size */
+            font-size: 1.5rem;
             border: 2px solid var(--accent-pink);
             box-shadow: var(--shadow-glow) var(--accent-pink);
             transition: all 0.2s ease;
         }
-
         .profile-avatar:hover {
             transform: scale(1.05);
             box-shadow: 0 0 15px var(--accent-pink);
         }
-
         .profile-dropdown {
-            display: none; /* Hidden by default */
+            display: none;
             position: absolute;
-            top: calc(100% + 10px); /* Position below avatar with some gap */
-            right: 0; /* Align to the right of the avatar */
+            top: calc(100% + 10px);
+            right: 0;
             background-color: rgba(20, 20, 20, 0.95);
             min-width: 180px;
             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
             border-radius: var(--radius-md);
-            overflow: hidden; /* For smooth animation */
+            overflow: hidden;
             opacity: 0;
             transform: translateY(-10px);
             transition: opacity 0.3s ease, transform 0.3s ease;
-            z-index: 100; /* Ensure it's above other content */
+            z-index: 100;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .profile-dropdown.show {
             display: block;
             opacity: 1;
             transform: translateY(0);
         }
-
         .profile-dropdown a {
             color: var(--text-light);
             padding: 12px 16px;
@@ -178,39 +152,32 @@
             font-size: 0.95rem;
             transition: background-color 0.2s ease, color 0.2s ease;
         }
-
         .profile-dropdown a:hover {
             background-color: rgba(255, 255, 255, 0.1);
             color: var(--accent-green);
         }
-
         .profile-dropdown a i {
-            width: 20px; /* Consistent icon width */
+            width: 20px;
             text-align: center;
         }
-
         /* Hamburger Menu for Mobile */
         .hamburger-menu {
-            display: none; /* Hidden by default on desktop */
+            display: none;
             cursor: pointer;
             font-size: 1.8rem;
             color: var(--text-light);
-            z-index: 101; /* Above dropdown */
-            margin-left: 1rem; /* Space from other header elements */
+            z-index: 101;
+            margin-left: 1rem;
         }
-
         .hamburger-menu.active .bar:nth-child(1) {
             transform: translateY(8px) rotate(45deg);
         }
-
         .hamburger-menu.active .bar:nth-child(2) {
             opacity: 0;
         }
-
         .hamburger-menu.active .bar:nth-child(3) {
             transform: translateY(-8px) rotate(-45deg);
         }
-
         .bar {
             width: 25px;
             height: 3px;
@@ -218,10 +185,9 @@
             margin: 5px 0;
             transition: 0.4s;
         }
-
         /* Mobile Nav Overlay */
         .mobile-nav-overlay {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -235,30 +201,25 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
         .mobile-nav-overlay.show {
             display: flex;
             opacity: 1;
         }
-
         .mobile-nav-overlay .nav-links {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
             text-align: center;
         }
-
         .mobile-nav-overlay .nav-links a {
             color: var(--text-light);
             font-size: 1.8rem;
             text-decoration: none;
             transition: color 0.2s ease;
         }
-
         .mobile-nav-overlay .nav-links a:hover {
             color: var(--accent-green);
         }
-
 
         .game-container {
             flex: 1;
@@ -555,18 +516,17 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* Hot Streak - New Position */
         .hot-streak {
-            position: absolute; /* Changed to absolute for positioning relative to game-container */
-            top: calc(var(--header-height) + 1rem); /* Position below header */
+            position: fixed;
+            top: 1rem;
             left: 50%;
             transform: translateX(-50%);
             background: var(--accent-pink);
             padding: 0.5rem 1rem;
             border-radius: var(--radius-md);
             font-weight: 700;
+            /* Removed pulse animation */
             z-index: 10; /* Below header, above game */
-            display: none; /* Hidden by default, shown when streak > 0 */
         }
 
 
@@ -632,7 +592,7 @@
             text-decoration: none;
         }
 
-        /* Wallet Connect Modal Specifics (old, to be replaced) */
+        /* Wallet Connect Modal Specifics */
         .wallet-options button {
             display: block;
             width: 100%;
@@ -1087,28 +1047,48 @@
         @media (max-width: 768px) {
             header {
                 padding: 0.5rem 1rem;
+                justify-content: space-between;
             }
-
             .header-logo {
                 font-size: 1.5rem;
             }
-
             /* Hide elements within header-actions-right on mobile */
             .header-actions-right .wallet-info,
             .header-actions-right .profile-dropdown-container {
                 display: none;
             }
-
             /* Ensure hamburger menu is visible and positioned on mobile */
             .hamburger-menu {
-                display: block; /* Make sure it's visible */
-                margin-left: auto; /* Push to the right */
+                display: block;
+                margin-left: auto;
+            }
+            
+            /* The .hot-streak element will now be part of the new header structure */
+            .hot-streak {
+                position: absolute; /* Changed from fixed to absolute within header */
+                top: 50%; /* Center vertically within header */
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 0.9rem;
+                padding: 0.4rem 0.8rem;
+                white-space: nowrap; /* Prevent text wrapping */
             }
 
-            .wallet-info { /* This rule is now for the mobile overlay's wallet info */
-                font-size: 12px;
-                padding: 0.4rem 0.6rem;
+
+            .header-left, .header-right {
+                gap: 0.5rem; /* Reduce gap on smaller screens */
             }
+
+            .wallet-info {
+                font-size: 12px;
+            }
+
+            /* Header Buttons Mobile Size */
+            header button {
+                padding: 0.5rem 0.8rem; /* Increased padding */
+                font-size: 0.8rem; /* Slightly smaller font for space */
+            }
+
 
             .dice {
                 width: 80px;
@@ -1156,7 +1136,7 @@
             .chat-container {
                 width: var(--chat-bubble-size);
                 height: var(--chat-bubble-size);
-                bottom: calc(1rem + constant(safe-area-inset-bottom)); /* Position above safe area */
+                bottom: calc(1rem + constant(safe-area-inset-bottom));
                 bottom: calc(1rem + env(safe-area-inset-bottom));
                 right: 1rem;
                 border-radius: 50%; /* Make it a circle */
@@ -1221,223 +1201,11 @@
                 font-size: 36px;
                 padding: 0.75rem 1.5rem;
             }
-
-            .hot-streak {
-                font-size: 0.9rem;
-                padding: 0.4rem 0.8rem;
-            }
-
-            .recent-wins {
-                font-size: 0.9rem;
-            }
         }
 
-        /* Enhanced Wallet Modal Specific Styles */
-        .wallet-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        .wallet-modal-overlay.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .wallet-modal-content {
-            background: var(--secondary);
-            padding: 20px;
-            border-radius: var(--panel-border-radius);
-            text-align: center;
-            max-width: 90%;
-            width: 450px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-            transform: translateY(-20px);
-            opacity: 0;
-            animation: enter 0.3s ease-out forwards;
-            position: relative;
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .wallet-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .wallet-modal-header h2 {
-            color: var(--primary);
-            margin: 0;
-        }
-
-        .wallet-modal-header .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.8em;
-            color: #aaa;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-            transition: color 0.2s;
-        }
-
-        .wallet-modal-header .close-btn:hover {
-            color: var(--danger);
-        }
-
-        .modal-description {
-            color: #ccc;
-            margin-bottom: 20px;
-        }
-
-        .wallet-options-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .wallet-option {
-            background: #333;
-            color: var(--text);
-            padding: 15px;
-            border: none;
-            border-radius: var(--button-border-radius);
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            min-height: 80px;
-        }
-
-        .wallet-option:hover {
-            background: #444;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .wallet-option img {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-        }
-
-        .wallet-status {
-            font-size: 0.75em;
-            color: var(--accent);
-            margin-top: 5px;
-            font-weight: normal;
-        }
-
-        .wallet-connecting-screen,
-        .wallet-verification-screen,
-        .wallet-success-screen,
-        .wallet-error-screen {
-            display: none;
-            padding: 20px;
-            gap: 15px;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .connection-status h3,
-        .verification-status h3,
-        .success-status h3,
-        .error-status h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .verification-icon,
-        .success-icon,
-        .error-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-
-        .verification-icon { color: var(--accent); }
-        .success-icon { color: var(--success); }
-        .error-icon { color: var(--danger); }
-
-        .verification-details {
-            background: #333;
-            padding: 10px 15px;
-            border-radius: var(--input-border-radius);
-            font-size: 0.9em;
-            color: #eee;
-            word-break: break-all;
-        }
-
-        .continue-btn, .retry-btn, .help-btn {
-            background: var(--primary);
-            color: var(--text);
-            padding: 12px 25px;
-            border: none;
-            border-radius: var(--button-border-radius);
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
-            box-shadow: 0 4px 10px rgba(153, 69, 255, 0.5);
-        }
-
-        .continue-btn:hover, .retry-btn:hover {
-            background: #7A37CC;
-            transform: translateY(-2px);
-        }
-
-        .error-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .help-btn {
-            background: #555;
-        }
-
-        .help-btn:hover {
-            background: #777;
-        }
     </style>
 </head>
 <body>
-    <div id="particles-js" style="position: fixed; width: 100vw; height: 100vh; z-index: 0; top: 0; left: 0; pointer-events: none;"></div>
     <header>
         <div class="header-logo">
             DegenDice
@@ -1446,9 +1214,8 @@
             <div class="wallet-info" id="wallet-info">
                 <i class="fas fa-wallet"></i> Wallet: Not connected
             </div>
-
             <div class="profile-dropdown-container">
-                <div class="profile-avatar" id="profile-avatar">
+                <div class="profile-avatar" id="profile-avatar-new">
                     <i class="fas fa-user-circle"></i>
                 </div>
                 <div class="profile-dropdown" id="profile-dropdown">
@@ -1465,6 +1232,9 @@
             <div class="bar"></div>
             <div class="bar"></div>
         </div>
+        <div class="hot-streak" id="hot-streak">
+            🔥 Hot Streak! 5 Wins
+        </div>
     </header>
 
     <div class="mobile-nav-overlay" id="mobile-nav-overlay">
@@ -1476,10 +1246,6 @@
             <a href="#" id="mobile-disconnect-btn"><i class="fas fa-power-off"></i> Disconnect</a>
             <a href="#" id="mobile-connect-wallet-btn"><i class="fas fa-wallet"></i> Connect Wallet</a>
         </div>
-    </div>
-
-    <div class="hot-streak" id="hot-streak">
-        🔥 Hot Streak! 5 Wins
     </div>
 
     <div class="game-container">
@@ -1556,71 +1322,14 @@
 
     <canvas id="confetti-canvas"></canvas>
 
-    <div class="wallet-modal-overlay" id="walletModal">
-        <div class="wallet-modal-content">
-            <div class="wallet-modal-header">
-                <h2>Connect Your Wallet</h2>
-                <button class="close-btn" id="closeWalletModalBtnNew">×</button>
-            </div>
-            
-            <div class="wallet-selection-screen" id="walletSelectionScreen">
-                <p class="modal-description">
-                    Connect your Phantom or Solflare wallet to start playing with real SOL.
-                </p>
-                
-                <div class="wallet-options-grid">
-                    <button class="wallet-option" data-wallet="phantom" id="phantomConnect">
-                        <img src="https://phantom.app/img/phantom-logo.png" alt="Phantom" onerror="this.src='https://placehold.co/40x40/9945FF/FFFFFF?text=P'">
-                        <span>Phantom</span>
-                        <div class="wallet-status">Most Popular</div>
-                    </button>
-                    
-                    <button class="wallet-option" data-wallet="solflare" id="solflareConnect">
-                        <img src="https://solflare.com/img/solflare-logo.png" alt="Solflare" onerror="this.src='https://placehold.co/40x40/FFB84D/FFFFFF?text=S'">
-                        <span>Solflare</span>
-                        <div class="wallet-status">Web & Mobile</div>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="wallet-connecting-screen" id="walletConnectingScreen">
-                <div class="connection-status">
-                    <div class="spinner"></div>
-                    <h3>Connecting to <span id="selected-wallet-name"></span></h3>
-                    <p class="connection-step">Please approve the connection in your wallet...</p>
-                </div>
-            </div>
-            
-            <div class="wallet-verification-screen" id="walletVerificationScreen">
-                <div class="verification-status">
-                    <div class="verification-icon">🔐</div>
-                    <h3>Verify Wallet Ownership</h3>
-                    <p>Please sign a message to verify you own this wallet. This doesn't cost any SOL.</p>
-                    <div class="verification-details">
-                        <strong>Wallet:</strong> <span id="wallet-address"></span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="wallet-success-screen" id="walletSuccessScreen">
-                <div class="success-status">
-                    <div class="success-icon">✅</div>
-                    <h3>Wallet Connected Successfully!</h3>
-                    <p>Your wallet is now connected and verified. You can start playing with real SOL.</p>
-                    <button class="continue-btn" id="walletSuccessContinueBtn">Start Playing</button>
-                </div>
-            </div>
-            
-            <div class="wallet-error-screen" id="walletErrorScreen">
-                <div class="error-status">
-                    <div class="error-icon">❌</div>
-                    <h3>Connection Failed</h3>
-                    <p class="error-message" id="walletErrorMessage">Failed to connect wallet. Please try again.</p>
-                    <div class="error-actions">
-                        <button class="retry-btn" id="walletErrorRetryBtn">Try Again</button>
-                        <button class="help-btn" onclick="window.open('https://solana.com/ecosystem/wallets', '_blank')">Get Help</button>
-                    </div>
-                </div>
+    <div id="wallet-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Connect Wallet</h2>
+            <div class="wallet-options">
+                <button id="connect-phantom"><img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> Phantom</button>
+                <button id="connect-solflare"><img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> Solflare</button>
+                <button id="disconnect-wallet" style="display: none;">Disconnect</button>
             </div>
         </div>
     </div>
@@ -1981,7 +1690,7 @@
         }
 
         // Custom Message Box instead of alert()
-        function showMessageBox(message, type = 'info', onOkCallback = null) {
+        function showMessageBox(message, type = 'info') {
             const messageBox = document.createElement('div');
             messageBox.style.position = 'fixed';
             messageBox.style.top = '20px';
@@ -2020,10 +1729,7 @@
             setTimeout(() => {
                 messageBox.style.opacity = '0';
                 messageBox.style.top = '10px';
-                setTimeout(() => {
-                    messageBox.remove();
-                    if (onOkCallback) onOkCallback(); // Execute callback after removal
-                }, 300);
+                setTimeout(() => messageBox.remove(), 300);
             }, 3000);
         }
 
@@ -2073,20 +1779,6 @@
 
         // Game functions
         function rollDiceSolo() {
-            // Check for real SOL balance if connected
-            if (mockWallet.isConnected && mockWallet.balance < state.chipValue) {
-                showMessageBox('Insufficient Balance', 'Not enough SOL to place this bet!', 'error');
-                return;
-            }
-
-            // Deduct real SOL if wallet is connected
-            if (mockWallet.isConnected) {
-                mockWallet.balance -= state.chipValue;
-                updateWalletUI();
-                // In a production environment, you'd create and send a Solana transaction here.
-                // For this mock, we just update the local balance.
-            }
-
             // Disable button during roll
             rollButton.disabled = true;
 
@@ -2119,12 +1811,7 @@
 
                 // Show effects
                 if (state.rollResult === 'WIN') {
-                    const winnings = state.chipValue * state.payouts[state.rollUnder];
-                    if (mockWallet.isConnected) {
-                        mockWallet.balance += winnings; // Add winnings to real balance
-                        updateWalletUI();
-                    }
-                    showWinEffect(winnings);
+                    showWinEffect(state.chipValue * state.payouts[state.rollUnder]);
                     updateStreak(true);
                     playWinSound();
                     triggerCoinShower();
@@ -2370,532 +2057,34 @@
 
         // Update hot streak display
         function updateHotStreakDisplay() {
-             if (state.streak > 0) {
-                hotStreakDisplay.style.display = 'block';
-                hotStreakDisplay.textContent = `🔥 Hot Streak! ${state.streak} Wins`;
-             } else {
-                hotStreakDisplay.style.display = 'none';
-             }
+             // Ensure hotStreakDisplay element exists before trying to access its style
+             if (hotStreakDisplay) {
+                if (state.streak > 0) {
+                    hotStreakDisplay.style.display = 'block';
+                    hotStreakDisplay.textContent = `🔥 Hot Streak! ${state.streak} Wins`;
+                } else {
+                    hotStreakDisplay.style.display = 'none';
+                }
+            }
         }
 
 
         // --- New Script for Added Features ---
 
-        // Wallet Connection States and Error Definitions
-        const WALLET_STATES = {
-            DISCONNECTED: 'disconnected',
-            CONNECTING: 'connecting',
-            VERIFYING: 'verifying',
-            CONNECTED: 'connected',
-            ERROR: 'error'
-        };
-
-        const WALLET_ERRORS = {
-            WALLET_NOT_FOUND: {
-                title: 'Wallet Not Found',
-                message: 'Please install {walletName} wallet extension first.',
-                action: 'Install Wallet',
-                actionUrl: '{walletInstallUrl}'
-            },
-            USER_REJECTED: {
-                title: 'Connection Cancelled',
-                message: 'You cancelled the wallet connection. Please try again.',
-                action: 'Retry Connection'
-            },
-            VERIFICATION_FAILED: {
-                title: 'Verification Failed',
-                message: 'Could not verify wallet ownership. Please try signing the message again.',
-                action: 'Try Again'
-            },
-            NETWORK_ERROR: {
-                title: 'Network Error',
-                message: 'Unable to connect to Solana network. Please check your internet connection.',
-                action: 'Retry'
-            },
-            UNKNOWN_ERROR: {
-                title: 'Unknown Error',
-                message: 'An unexpected error occurred. Please try again.',
-                action: 'Try Again'
-            }
-        };
-
-        // Wallet Verification Service Class
-        class WalletVerificationService {
-            createVerificationMessage() {
-                const timestamp = Date.now();
-                const nonce = Math.random().toString(36).substring(2, 15);
-                return `DegenDice Auth: ${Date.now()}`;
-            }
-
-            async verifySignature(signature, message, publicKey) {
-                try {
-                    let pubKeyBytes;
-                    if (typeof publicKey === 'string') {
-                        const pubKey = new window.solanaWeb3.PublicKey(publicKey);
-                        pubKeyBytes = pubKey.toBytes();
-                    } else if (publicKey.toBytes) {
-                        pubKeyBytes = publicKey.toBytes();
-                    } else {
-                        pubKeyBytes = new Uint8Array(publicKey);
-                    }
-                    const signatureBytes = new Uint8Array(signature);
-                    const messageBytes = new TextEncoder().encode(message); // Ensure message is Uint8Array
-                    
-                    return nacl.sign.detached.verify(messageBytes, signatureBytes, pubKeyBytes);
-                } catch (e) {
-                    console.error("Signature verification error:", e);
-                    return false;
-                }
-            }
-
-            async verifyWalletOwnership(walletAdapter, publicKey) {
-                // The bs58 script is already loaded in the head, so no need for ensureBs58Loaded() here.
-                try {
-                    if (!walletAdapter.signMessage) {
-                        throw new Error("signMessage not supported by this wallet adapter.");
-                    }
-                    const messageText = `DegenDice Auth: ${Date.now()}`;
-                    const encodedMessage = new TextEncoder().encode(messageText);
-                    let signedMessage = await walletAdapter.signMessage(encodedMessage, "utf8");
-                    if (signedMessage && signedMessage.signature) {
-                        signedMessage = signedMessage.signature;
-                    }
-                    
-                    const isValid = await this.verifySignature(
-                        signedMessage,
-                        messageText, // Pass original message string for verification
-                        publicKey
-                    );
-
-                    if (isValid) {
-                        return {
-                            success: true,
-                            verificationData: {
-                                publicKey: publicKey.toString(),
-                                signature: Array.from(signedMessage),
-                                timestamp: Date.now(),
-                                message: Array.from(encodedMessage)
-                            }
-                        };
-                    } else {
-                        throw new Error('Signature verification failed');
-                    }
-                } catch (error) {
-                    console.error("Wallet ownership verification failed:", error);
-                    return {
-                        success: false,
-                        error: error.message || 'Verification failed.'
-                    };
-                }
-            }
-        }
-
-        // Main Wallet Connection Manager Class
-        class WalletConnectionManager {
-            constructor() {
-                this.state = WALLET_STATES.DISCONNECTED;
-                this.verificationService = new WalletVerificationService();
-                this.selectedWalletType = null;
-                this.walletAdapter = null;
-                this.publicKey = null;
-                this.wallets = this.initializeWallets();
-            }
-
-            initializeWallets() {
-                const wallets = [];
-                try {
-                    if (typeof window !== 'undefined') {
-                        // Check for Phantom
-                        if (window.solana && window.solana.isPhantom) {
-                            wallets.push({
-                                name: 'Phantom',
-                                adapter: window.solana,
-                                type: 'phantom'
-                            });
-                        }
-                        // Check for Solflare
-                        if (window.solflare && window.solflare.isSolflare) {
-                            wallets.push({
-                                name: 'Solflare',
-                                adapter: window.solflare,
-                                type: 'solflare'
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Error initializing wallets:', error);
-                }
-                return wallets;
-            }
-
-            getWalletAdapter(walletType) {
-                const wallet = this.wallets.find(w => w.type === walletType.toLowerCase());
-                if (wallet) {
-                    return wallet.adapter;
-                }
-
-                switch(walletType.toLowerCase()) {
-                    case 'phantom':
-                        return window.solana && window.solana.isPhantom ? window.solana : null;
-                    case 'solflare':
-                        return window.solflare && window.solflare.isSolflare ? window.solflare : null;
-                    default:
-                        console.error(`Adapter for ${walletType} not found.`);
-                        return null;
-                }
-            }
-
-            async initiateConnection(walletType) {
-                this.selectedWalletType = walletType;
-                this.updateState(WALLET_STATES.CONNECTING);
-
-                try {
-                    const walletInfo = await this.connectToWallet(walletType);
-                    this.walletAdapter = walletInfo.adapter;
-                    this.publicKey = walletInfo.publicKey;
-                    
-                    document.getElementById('wallet-address').textContent = this.publicKey.toString();
-
-                    this.updateState(WALLET_STATES.VERIFYING);
-                    const verification = await this.verificationService.verifyWalletOwnership(
-                        this.walletAdapter,
-                        this.publicKey
-                    );
-
-                    if (verification.success) {
-                        await this.fetchBalance(this.publicKey);
-                        await this.completeConnection(walletInfo, verification.verificationData);
-                        this.updateState(WALLET_STATES.CONNECTED);
-                        this.showSuccessScreen();
-                    } else {
-                        throw new Error(verification.error || 'Wallet verification failed.');
-                    }
-
-                } catch (error) {
-                    this.handleConnectionError(error);
-                }
-            }
-
-            async fetchBalance(publicKey) {
-                const connection = new solanaWeb3.Connection(
-                    solanaWeb3.clusterApiUrl("mainnet-beta"),
-                    "confirmed"
-                );
-
-                try {
-                    const balance = await connection.getBalance(
-                        new solanaWeb3.PublicKey(publicKey)
-                    );
-                    const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
-                    
-                    // Update your game's wallet balance variable
-                    mockWallet.balance = solBalance;
-                    mockWallet.isConnected = true;
-                    mockWallet.address = publicKey.toString();
-                    
-                } catch (error) {
-                    throw new Error(`Balance Check Failed: ${error.message}`);
-                }
-            }
-
-            async connectToWallet(walletType) {
-                const adapter = this.getWalletAdapter(walletType);
-                if (!adapter) {
-                    throw new Error(`WALLET_NOT_FOUND:${walletType}`);
-                }
-                
-                const connectionTimeout = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('NETWORK_ERROR:Connection timeout')), 30000);
-                });
-                
-                try {
-                    let connectionPromise;
-                    if (adapter.connect) { // Check if connect method exists
-                        connectionPromise = adapter.connect();
-                    } else {
-                        throw new Error(`Connect method not found for ${walletType} adapter.`);
-                    }
-                    
-                    const connectionResponse = await Promise.race([connectionPromise, connectionTimeout]);
-
-                    // Handle different response structures for Phantom and Solflare
-                    if (walletType.toLowerCase() === 'phantom') {
-                        return {
-                            adapter: adapter,
-                            publicKey: connectionResponse.publicKey,
-                            type: walletType
-                        };
-                    } else if (walletType.toLowerCase() === 'solflare') {
-                        return {
-                            adapter: adapter,
-                            publicKey: adapter.publicKey, // Solflare often has publicKey directly on adapter after connect
-                            type: walletType
-                        };
-                    } else {
-                        // Fallback for other wallets if needed
-                        return {
-                            adapter: adapter,
-                            publicKey: adapter.publicKey,
-                            type: walletType
-                        };
-                    }
-                } catch (error) {
-                    if (error.code === 4001 || error.message.includes('User rejected the request')) {
-                        throw new Error(`USER_REJECTED:${error.message}`);
-                    }
-                    throw new Error(`NETWORK_ERROR:${error.message}`);
-                }
-            }
-
-            async completeConnection(wallet, verificationData) {
-                // Update your game's user object
-                // Example integration with DegenDice:
-                localStorage.setItem('degendice_wallet', wallet.publicKey.toString());
-                localStorage.setItem('degendice_wallet_type', wallet.type);
-                localStorage.setItem('degendice_verification_data', JSON.stringify(verificationData));
-                
-                // Update UI
-                updateWalletUI();
-                
-                console.log('Wallet connected successfully:', wallet.publicKey.toString());
-            }
-
-            updateState(newState) {
-                this.state = newState;
-                this.updateModalUI();
-                console.log(`Wallet state changed to: ${newState}`);
-            }
-
-            updateModalUI() {
-                // Hide all screens
-                document.getElementById('walletSelectionScreen').style.display = 'none';
-                document.getElementById('walletConnectingScreen').style.display = 'none';
-                document.getElementById('walletVerificationScreen').style.display = 'none';
-                document.getElementById('walletSuccessScreen').style.display = 'none';
-                document.getElementById('walletErrorScreen').style.display = 'none';
-
-                // Show appropriate screen based on state
-                switch(this.state) {
-                    case WALLET_STATES.DISCONNECTED:
-                        document.getElementById('walletSelectionScreen').style.display = 'flex';
-                        break;
-                    case WALLET_STATES.CONNECTING:
-                        document.getElementById('walletConnectingScreen').style.display = 'flex';
-                        document.getElementById('selected-wallet-name').textContent = this.selectedWalletType;
-                        break;
-                    case WALLET_STATES.VERIFYING:
-                        document.getElementById('walletVerificationScreen').style.display = 'flex';
-                        if (this.publicKey) {
-                            document.getElementById('wallet-address').textContent = this.publicKey.toString();
-                        }
-                        break;
-                    case WALLET_STATES.CONNECTED:
-                        break;
-                    case WALLET_STATES.ERROR:
-                        document.getElementById('walletErrorScreen').style.display = 'flex';
-                        break;
-                }
-            }
-
-            handleConnectionError(error) {
-                this.updateState(WALLET_STATES.ERROR);
-                const errorMessageElement = document.getElementById('walletErrorMessage');
-                const errorRetryBtn = document.getElementById('walletErrorRetryBtn');
-
-                let errorType = WALLET_ERRORS.UNKNOWN_ERROR;
-                let rawMessage = error.message;
-
-                if (rawMessage.startsWith('WALLET_NOT_FOUND:')) {
-                    const walletName = rawMessage.split(':')[1];
-                    errorType = WALLET_ERRORS.WALLET_NOT_FOUND;
-                    errorMessageElement.innerHTML = errorType.message.replace('{walletName}', walletName.charAt(0).toUpperCase() + walletName.slice(1));
-                    if (walletName.toLowerCase() === 'phantom') {
-                        errorMessageElement.innerHTML += `<br><a href="https://phantom.app/download" target="_blank" class="help-link">Install Phantom</a>`;
-                    } else if (walletName.toLowerCase() === 'solflare') {
-                        errorMessageElement.innerHTML += `<br><a href="https://solflare.com/download" target="_blank" class="help-link">Install Solflare</a>`;
-                    }
-                } else if (rawMessage.startsWith('USER_REJECTED:')) {
-                    errorType = WALLET_ERRORS.USER_REJECTED;
-                    errorMessageElement.textContent = errorType.message;
-                } else if (rawMessage.includes('Signature verification failed')) {
-                    errorType = WALLET_ERRORS.VERIFICATION_FAILED;
-                    errorMessageElement.textContent = errorType.message;
-                } else if (rawMessage.startsWith('NETWORK_ERROR:')) {
-                    errorType = WALLET_ERRORS.NETWORK_ERROR;
-                    errorMessageElement.textContent = errorType.message;
-                } else {
-                    errorMessageElement.textContent = rawMessage;
-                }
-
-                errorRetryBtn.textContent = errorType.action;
-                errorRetryBtn.onclick = () => this.initiateConnection(this.selectedWalletType);
-                
-                console.error("Wallet connection error:", error);
-            }
-
-            showSuccessScreen() {
-                document.getElementById('walletSuccessScreen').style.display = 'flex';
-                
-                setTimeout(() => {
-                    this.closeWalletModal();
-                    showMessageBox("✅ Wallet Connected Successfully!", 'success'); // Use the custom message box
-                }, 2000);
-            }
-
-            resetConnectionState() {
-                this.state = WALLET_STATES.DISCONNECTED;
-                this.selectedWalletType = null;
-                this.walletAdapter = null;
-                this.publicKey = null;
-                this.updateModalUI();
-            }
-
-            closeWalletModal() {
-                document.getElementById('walletModal').classList.remove('visible');
-                this.resetConnectionState();
-            }
-        }
-
-        // Mobile Wallet Handler Class
-        class MobileWalletHandler {
-            constructor(walletConnectionManager) {
-                this.walletConnectionManager = walletConnectionManager;
-                this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                this.deepLinkConfig = {
-                    phantom: {
-                        deepLink: `https://phantom.app/ul/browse/${encodeURIComponent(window.location.href)}`,
-                        fallbackUrl: 'https://phantom.app/download',
-                        name: 'Phantom'
-                    },
-                    solflare: {
-                        deepLink: `https://solflare.com/ul/v1/browse/${encodeURIComponent(window.location.href)}?ref=degendice`,
-                        fallbackUrl: 'https://solflare.com/download',
-                        name: 'Solflare'
-                    }
-                };
-            }
-
-            async connectMobileWallet(walletType) {
-                // If not mobile or wallet extension is already detected, proceed with normal connection
-                const availableWallets = this.detectAvailableWallets();
-                if (!this.isMobile || availableWallets.includes(walletType)) {
-                    return this.walletConnectionManager.initiateConnection(walletType);
-                }
-
-                const config = this.deepLinkConfig[walletType];
-                if (config) {
-                    this.initiateDeepLink(config);
-                } else {
-                    showMessageBox('Mobile Wallet', `Please open your ${walletType} app to connect.`, 'info');
-                    this.walletConnectionManager.initiateConnection(walletType).catch(e => {
-                        console.error("Mobile deep link fallback failed:", e);
-                    });
-                }
-            }
-
-            detectAvailableWallets() {
-                const available = [];
-                if (window.solana && window.solana.isPhantom) {
-                    available.push('phantom');
-                }
-                if (window.solflare && window.solflare.isSolflare) {
-                    available.push('solflare');
-                }
-                return available;
-            }
-
-            initiateDeepLink(config) {
-                // Store connection attempt details in session storage before redirecting
-                sessionStorage.setItem('wallet_connection_attempt', JSON.stringify({
-                    timestamp: Date.now(),
-                    type: config.name,
-                    walletType: config.name.toLowerCase().replace(' ', '')
-                }));
-
-                window.location.href = config.deepLink;
-
-                // Fallback if the deep link doesn't open the app
-                setTimeout(() => {
-                    // Check if the page is still visible (meaning the app probably didn't open)
-                    if (document.hidden) return; // If document is hidden, app likely opened
-                    this.showInstallPrompt(config.fallbackUrl, config.name);
-                }, 3000); // Give some time for the deep link to work
-            }
-
-            showInstallPrompt(installUrl, walletName) {
-                showMessageBox(
-                    `Wallet Not Found: ${walletName}`,
-                    `It seems you don't have ${walletName} installed. Please install it to continue.`,
-                    'error', // Use error type for styling
-                    () => window.open(installUrl, '_blank') // Callback to open install URL
-                );
-            }
-
-            // This function should be called on page load to check for returns from deep links
-            checkDeepLinkReturn() {
-                const attempt = JSON.parse(sessionStorage.getItem('wallet_connection_attempt'));
-                if (attempt && (Date.now() - attempt.timestamp < 10000)) { // Check if attempt was recent (within 10 seconds)
-                    sessionStorage.removeItem('wallet_connection_attempt'); // Clear the attempt
-                    // Re-initiate connection flow after returning from deep link
-                    this.walletConnectionManager.initiateConnection(attempt.walletType);
-                }
-            }
-        }
-
         // --- Modals ---
-        // Renamed walletModal to oldWalletModal for clarity, as it will be replaced
-        const oldWalletModal = document.getElementById('wallet-modal');
+        const walletModal = document.getElementById('wallet-modal');
         const profileModal = document.getElementById('profile-modal');
         const depositModal = document.getElementById('deposit-modal');
         const withdrawModal = document.getElementById('withdraw-modal');
 
-        // Header elements (updated IDs for dropdown items)
-        const profileAvatar = document.getElementById('profile-avatar');
-        const profileDropdown = document.getElementById('profile-dropdown');
-        const dropdownProfileBtn = document.getElementById('dropdown-profile-btn');
-        const dropdownDepositBtn = document.getElementById('dropdown-deposit-btn');
-        const dropdownWithdrawBtn = document.getElementById('dropdown-withdraw-btn');
-        const dropdownReferralBtn = document.getElementById('dropdown-referral-btn');
-        const dropdownDisconnectBtn = document.getElementById('dropdown-disconnect-btn');
-
-        // Mobile menu elements
-        const hamburgerMenu = document.getElementById('hamburger-menu');
-        const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
-        const mobileProfileBtn = document.getElementById('mobile-profile-btn');
-        const mobileDepositBtn = document.getElementById('mobile-deposit-btn');
-        const mobileWithdrawBtn = document.getElementById('mobile-withdraw-btn');
-        const mobileReferralBtn = document.getElementById('mobile-referral-btn');
-        const mobileDisconnectBtn = document.getElementById('mobile-disconnect-btn');
-        const mobileConnectWalletBtn = document.getElementById('mobile-connect-wallet-btn');
-
+        // REMOVED OLD EVENT LISTENERS:
+        // const connectWalletBtn = document.getElementById('connect-wallet-btn');
+        // const profileAvatar = document.getElementById('profile-avatar');
+        // const depositBtn = document.getElementById('deposit-btn');
+        // const withdrawBtn = document.getElementById('withdraw-btn');
+        // const referralBtn = document.getElementById('referral-btn');
 
         const closeButtons = document.querySelectorAll('.modal .close-button');
-
-        // Open Modals from Dropdown/Mobile Menu
-        dropdownProfileBtn.addEventListener('click', (e) => { e.preventDefault(); profileModal.style.display = 'flex'; profileDropdown.classList.remove('show'); });
-        dropdownDepositBtn.addEventListener('click', (e) => { e.preventDefault(); document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); depositModal.style.display = 'flex'; profileDropdown.classList.remove('show'); });
-        dropdownWithdrawBtn.addEventListener('click', (e) => { e.preventDefault(); document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); withdrawModal.style.display = 'flex'; profileDropdown.classList.remove('show'); });
-        dropdownReferralBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const referralPanel = document.getElementById('referral-feature');
-            referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
-            profileDropdown.classList.remove('show');
-        });
-        dropdownDisconnectBtn.addEventListener('click', (e) => { e.preventDefault(); disconnectWallet(); profileDropdown.classList.remove('show'); });
-
-        // Mobile Menu Button Listeners
-        mobileProfileBtn.addEventListener('click', (e) => { e.preventDefault(); profileModal.style.display = 'flex'; mobileNavOverlay.classList.remove('show'); hamburgerMenu.classList.remove('active'); });
-        mobileDepositBtn.addEventListener('click', (e) => { e.preventDefault(); document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); depositModal.style.display = 'flex'; mobileNavOverlay.classList.remove('show'); hamburgerMenu.classList.remove('active'); });
-        mobileWithdrawBtn.addEventListener('click', (e) => { e.preventDefault(); document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2); withdrawModal.style.display = 'flex'; mobileNavOverlay.classList.remove('show'); hamburgerMenu.classList.remove('active'); });
-        mobileReferralBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const referralPanel = document.getElementById('referral-feature');
-            referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
-            mobileNavOverlay.classList.remove('show'); hamburgerMenu.classList.remove('active');
-        });
-        mobileDisconnectBtn.addEventListener('click', (e) => { e.preventDefault(); disconnectWallet(); mobileNavOverlay.classList.remove('show'); hamburgerMenu.classList.remove('active'); });
-        mobileConnectWalletBtn.addEventListener('click', (e) => { e.preventDefault(); openWalletModal(); mobileNavOverlay.classList.remove('show'); hamburgerMenu.classList.remove('active'); });
-
 
         // Close Modals
         closeButtons.forEach(button => {
@@ -2905,63 +2094,67 @@
         });
 
         window.addEventListener('click', (event) => {
-            // Updated to use the new wallet modal ID
-            if (event.target === document.getElementById('walletModal')) { /* Do nothing, handled by internal close button */ }
+            if (event.target === walletModal) { walletModal.style.display = 'none'; }
             if (event.target === profileModal) { profileModal.style.display = 'none'; }
             if (event.target === depositModal) { depositModal.style.display = 'none'; }
             if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; }
-            // Close dropdown if clicked outside
-            if (!event.target.closest('.profile-dropdown-container') && profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
-            }
-            // Close mobile nav overlay if clicked outside
-            if (event.target === mobileNavOverlay) {
-                mobileNavOverlay.classList.remove('show');
-                hamburgerMenu.classList.remove('active');
-            }
         });
 
 
         // --- Wallet Connection (Mock) ---
         const walletInfo = document.getElementById('wallet-info');
-        // Removed old connect/disconnect buttons as they are replaced by the new modal structure
-        // const connectPhantomBtn = document.getElementById('connect-phantom');
-        // const connectSolflareBtn = document.getElementById('connect-solflare');
-        // const disconnectWalletBtn = document.getElementById('disconnect-wallet');
+        const connectPhantomBtn = document.getElementById('connect-phantom');
+        const connectSolflareBtn = document.getElementById('connect-solflare');
+        const disconnectWalletBtn = document.getElementById('disconnect-wallet');
 
-        // Update your existing mockWallet object or replace it
         const mockWallet = {
             isConnected: false,
             address: null,
-            balance: 10.00 // Starting balance
+            balance: 10.00 // Mock balance
         };
 
-        // Initialize wallet managers (placed after mockWallet declaration)
-        const walletConnectionManager = new WalletConnectionManager();
-        const mobileWalletHandler = new MobileWalletHandler(walletConnectionManager);
-
-        // Update your existing updateWalletUI function
         function updateWalletUI() {
             if (mockWallet.isConnected) {
-                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> ${mockWallet.address.substring(0, 6)}...${mockWallet.address.slice(-4)} (${mockWallet.balance.toFixed(2)} SOL)`;
-                mobileConnectWalletBtn.style.display = 'none'; // Hide mobile connect button if connected
+                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${mockWallet.address.substring(0, 6)}...${mockWallet.address.slice(-4)} (${mockWallet.balance.toFixed(2)} SOL)`;
+                // connectWalletBtn.style.display = 'none'; // This button is now part of the mobile menu
+                disconnectWalletBtn.style.display = 'block';
             } else {
-                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
-                mobileConnectWalletBtn.style.display = 'block'; // Show mobile connect button if not connected
+                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
+                // connectWalletBtn.style.display = 'block'; // This button is now part of the mobile menu
+                disconnectWalletBtn.style.display = 'none';
             }
         }
 
-        // Disconnect function (now integrated with the new wallet system)
-        function disconnectWallet() {
-            // This function should trigger the walletConnectionManager's disconnect logic
-            // For now, we'll simulate it locally. In a real app, you'd call walletAdapter.disconnect()
+        connectPhantomBtn.addEventListener('click', () => {
+            // Simulate connecting to Phantom
+            mockWallet.isConnected = true;
+            mockWallet.address = 'G4t1mE5b8...'; // Mock address
+            updateWalletUI();
+            walletModal.style.display = 'none';
+        });
+
+        connectSolflareBtn.addEventListener('click', () => {
+            // Simulate connecting to Solflare
+            mockWallet.isConnected = true;
+            mockWallet.address = 'S0lF1aR3...'; // Mock address
+            updateWalletUI();
+            walletModal.style.display = 'none';
+        });
+
+        disconnectWalletBtn.addEventListener('click', () => {
+            // Simulate disconnecting
             mockWallet.isConnected = false;
             mockWallet.address = null;
             updateWalletUI();
-            // Close any open wallet-related modals
-            document.getElementById('walletModal').classList.remove('visible');
-            showMessageBox('Wallet disconnected.', 'info');
-        }
+            walletModal.style.display = 'none';
+        });
+
+        // Add this event listener to make wallet info clickable for connection
+        document.getElementById('wallet-info').addEventListener('click', () => {
+            if (!mockWallet.isConnected) {
+                walletModal.style.display = 'flex';
+            }
+        });
 
         // Initial wallet UI update
         updateWalletUI();
@@ -3109,7 +2302,7 @@
         const usernameInput = document.getElementById('username-input');
         const avatarSelect = document.getElementById('avatar-select');
         const saveProfileBtn = document.getElementById('save-profile-btn');
-        const profileAvatarIcon = document.querySelector('#profile-avatar i');
+        const profileAvatarIcon = document.querySelector('#profile-avatar-new i'); // Updated selector for new avatar ID
 
         function loadProfile() {
             const savedUsername = localStorage.getItem('username');
@@ -3328,19 +2521,6 @@
 
         // --- UI/UX Enhancements ---
 
-        // Dropdown toggle for profile avatar
-        profileAvatar.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent click from bubbling to window and closing immediately
-            profileDropdown.classList.toggle('show');
-        });
-
-        // Hamburger menu toggle for mobile
-        hamburgerMenu.addEventListener('click', () => {
-            hamburgerMenu.classList.toggle('active');
-            mobileNavOverlay.classList.toggle('show');
-        });
-
-
         // Adjust leaderboard and chat visibility on window resize
         window.addEventListener('resize', () => {
             const leaderboardSidebar = document.getElementById('leaderboard-sidebar');
@@ -3372,14 +2552,6 @@
                 chatHeader.style.display = 'flex';
                 chatBody.style.display = 'flex';
                 chatInput.parentElement.style.display = 'flex';
-
-                // Ensure desktop header elements are visible
-                document.querySelector('.header-actions-right').style.display = 'flex';
-                document.querySelector('.header-actions-right .wallet-info').style.display = 'flex';
-                document.querySelector('.header-actions-right .profile-dropdown-container').style.display = 'inline-block';
-                hamburgerMenu.style.display = 'none';
-                mobileNavOverlay.classList.remove('show'); // Hide mobile overlay
-                hamburgerMenu.classList.remove('active'); // Deactivate hamburger
             } else {
                  leaderboardSidebar.style.transform = 'translateX(100%)';
 
@@ -3402,94 +2574,134 @@
                      chatBody.style.display = 'none';
                      chatInput.parentElement.style.display = 'none';
                  }
-
-                 // Ensure mobile header elements are visible/hidden correctly
-                 document.querySelector('.header-actions-right').style.display = 'none';
-                 hamburgerMenu.style.display = 'block';
             }
         });
 
         // Initial check for mobile layout on load
         window.dispatchEvent(new Event('resize')); // Trigger resize on load to set initial layout
 
-        // Open wallet modal
-        function openWalletModal() {
-            document.getElementById('walletModal').classList.add('visible');
-            walletConnectionManager.resetConnectionState();
-        }
 
-        // Event listeners for wallet options
-        document.querySelectorAll('.wallet-option').forEach(button => {
-            button.addEventListener('click', () => {
-                const walletType = button.dataset.wallet;
-                mobileWalletHandler.connectMobileWallet(walletType);
-            });
+        // New event listeners for the updated header
+        const profileAvatarNew = document.getElementById('profile-avatar-new');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const dropdownProfileBtn = document.getElementById('dropdown-profile-btn');
+        const dropdownDepositBtn = document.getElementById('dropdown-deposit-btn');
+        const dropdownWithdrawBtn = document.getElementById('dropdown-withdraw-btn');
+        const dropdownReferralBtn = document.getElementById('dropdown-referral-btn');
+        const dropdownDisconnectBtn = document.getElementById('dropdown-disconnect-btn');
+
+        // Mobile menu elements
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+        const mobileProfileBtn = document.getElementById('mobile-profile-btn');
+        const mobileDepositBtn = document.getElementById('mobile-deposit-btn');
+        const mobileWithdrawBtn = document.getElementById('mobile-withdraw-btn');
+        const mobileReferralBtn = document.getElementById('mobile-referral-btn');
+        const mobileDisconnectBtn = document.getElementById('mobile-disconnect-btn');
+        const mobileConnectWalletBtn = document.getElementById('mobile-connect-wallet-btn');
+
+        // Desktop dropdown event listeners
+        dropdownProfileBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             profileModal.style.display = 'flex';
+             profileDropdown.classList.remove('show');
+         });
+        dropdownDepositBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             depositModal.style.display = 'flex';
+             profileDropdown.classList.remove('show');
+         });
+        dropdownWithdrawBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             withdrawModal.style.display = 'flex';
+             profileDropdown.classList.remove('show');
+         });
+        dropdownReferralBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const referralPanel = document.getElementById('referral-feature');
+            referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
+            profileDropdown.classList.remove('show');
+        });
+        dropdownDisconnectBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             // Your existing disconnect logic
+            mockWallet.isConnected = false;
+            mockWallet.address = null;
+            updateWalletUI();
+            profileDropdown.classList.remove('show');
+         });
+
+        // Mobile menu button listeners
+        mobileProfileBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             profileModal.style.display = 'flex';
+             mobileNavOverlay.classList.remove('show');
+             hamburgerMenu.classList.remove('active');
+         });
+        mobileDepositBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             depositModal.style.display = 'flex';
+             mobileNavOverlay.classList.remove('show');
+             hamburgerMenu.classList.remove('active');
+         });
+        mobileWithdrawBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             withdrawModal.style.display = 'flex';
+             mobileNavOverlay.classList.remove('show');
+             hamburgerMenu.classList.remove('active');
+         });
+        mobileReferralBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const referralPanel = document.getElementById('referral-feature');
+            referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
+            mobileNavOverlay.classList.remove('show');
+             hamburgerMenu.classList.remove('active');
+        });
+        mobileDisconnectBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             // Your existing disconnect logic
+            mockWallet.isConnected = false;
+            mockWallet.address = null;
+            updateWalletUI();
+            mobileNavOverlay.classList.remove('show');
+             hamburgerMenu.classList.remove('active');
+         });
+        mobileConnectWalletBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             walletModal.style.display = 'flex';
+             mobileNavOverlay.classList.remove('show');
+             hamburgerMenu.classList.remove('active');
+         });
+
+        // Dropdown toggle for profile avatar
+        profileAvatarNew.addEventListener('click', (event) => {
+            event.stopPropagation();
+            profileDropdown.classList.toggle('show');
         });
 
-        // Event listeners for wallet modal
-        document.getElementById('closeWalletModalBtnNew').addEventListener('click', () => {
-            walletConnectionManager.closeWalletModal();
+        // Hamburger menu toggle for mobile
+        hamburgerMenu.addEventListener('click', () => {
+            hamburgerMenu.classList.toggle('active');
+            mobileNavOverlay.classList.toggle('show');
         });
 
-        document.getElementById('walletSuccessContinueBtn').addEventListener('click', () => {
-            walletConnectionManager.closeWalletModal();
+        // Close dropdown and mobile menu when clicking outside
+        window.addEventListener('click', (event) => {
+            // Close dropdown if clicked outside
+            if (!event.target.closest('.profile-dropdown-container') && profileDropdown.classList.contains('show')) {
+                profileDropdown.classList.remove('show');
+            }
+            // Close mobile nav overlay if clicked outside
+            if (event.target === mobileNavOverlay) {
+                mobileNavOverlay.classList.remove('show');
+                hamburgerMenu.classList.remove('active');
+            }
         });
 
-        document.getElementById('walletErrorRetryBtn').addEventListener('click', () => {
-            // This button's action is dynamically set in handleConnectionError
-        });
-
-        // Add event listener to the wallet-info div to open the wallet modal
-        document.getElementById('wallet-info').addEventListener('click', openWalletModal);
-
-        // Check for deep link return on page load
-        window.addEventListener('load', () => {
-            mobileWalletHandler.checkDeepLinkReturn();
-        });
-
-    </script>
-    <script>
-        particlesJS("particles-js", {
-            "particles": {
-                "number": {
-                    "value": 25,
-                    "density": {
-                        "enable": true,
-                        "value_area": 1000
-                    }
-                },
-                "shape": {
-                    "type": "image",
-                    "image": {
-                        "src": "https://i.imgur.com/oaUb4Nf.png",  // Dice icon PNG
-                        "width": 32,
-                        "height": 32
-                    }
-                },
-                "opacity": {
-                    "value": 0.3,
-                    "random": true
-                },
-                "size": {
-                    "value": 24,
-                    "random": true
-                },
-                "move": {
-                    "enable": true,
-                    "speed": 0.8,
-                    "direction": "top",
-                    "random": true,
-                    "out_mode": "out"
-                }
-            },
-            "interactivity": {
-                "events": {
-                    "onhover": { "enable": false },
-                    "onclick": { "enable": false }
-                }
-            },
-            "retina_detect": true
-        });
     </script>
 </body>
 </html>
