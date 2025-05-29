@@ -1458,6 +1458,57 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
     
     <script>
+        // --- Minimal bs58 decode function for browser compatibility ---
+        // This function is included directly to avoid external script loading issues.
+        const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        const ALPHABET_MAP = {};
+        for(let i = 0; i < ALPHABET.length; i++) {
+            ALPHABET_MAP[ALPHABET.charAt(i)] = i;
+        }
+        const BASE = ALPHABET.length;
+
+        function bs58_decode(string) {
+            if (typeof string !== 'string') {
+                throw new Error('Expected a string for base58 decoding.');
+            }
+            if (string.length === 0) {
+                return new Uint8Array(0);
+            }
+
+            let bytes = [0];
+            for (let i = 0; i < string.length; i++) {
+                const char = string[i];
+                const value = ALPHABET_MAP[char];
+                if (value === undefined) {
+                    throw new Error(`Non-base58 character: ${char}`);
+                }
+
+                let carry = value;
+                for (let j = 0; j < bytes.length; ++j) {
+                    carry += bytes[j] * BASE;
+                    bytes[j] = carry & 0xFF;
+                    carry >>= 8;
+                }
+
+                while (carry) {
+                    bytes.push(carry & 0xFF);
+                    carry >>= 8;
+                }
+            }
+
+            // deal with leading zeros
+            let leadingZeros = 0;
+            for (let i = 0; i < string.length && string[i] === '1'; ++i) {
+                leadingZeros++;
+            }
+
+            const result = new Uint8Array(bytes.length + leadingZeros);
+            for (let i = 0; i < bytes.length; ++i) {
+                result[i + leadingZeros] = bytes[bytes.length - 1 - i];
+            }
+            return result;
+        }
+
         // --- Firebase Mock Setup (for demonstration purposes) ---
         // In a real application, you would initialize Firebase here and use its SDK.
         // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -2222,12 +2273,18 @@
                     const encodedMessage = new TextEncoder().encode(message);
                     
                     const signedMessage = await this.walletAdapter.signMessage(encodedMessage, "utf8");
-                    const signature = signedMessage.signature || signedMessage;
+                    let signature = signedMessage.signature || signedMessage;
+                    
+                    // If the signature is a string, assume it's base58 encoded and decode it
+                    // Using the inline bs58_decode function
+                    if (typeof signature === 'string') {
+                        signature = bs58_decode(signature); 
+                    }
                     
                     // Verify signature locally
                     const isValid = nacl.sign.detached.verify(
                         encodedMessage,
-                        new Uint8Array(signature),
+                        signature, // signature is now guaranteed to be Uint8Array
                         this.publicKey.toBytes()
                     );
 
@@ -2293,9 +2350,9 @@
             }
 
             showVerificationScreen() {
-                document.getElementById('wallet-connecting-screen').style.display = 'none';
-                document.getElementById('wallet-verification-screen').style.display = 'block';
-                document.getElementById('wallet-address-display').textContent = this.address;
+                    document.getElementById('wallet-connecting-screen').style.display = 'none';
+                    document.getElementById('wallet-verification-screen').style.display = 'block';
+                    document.getElementById('wallet-address-display').textContent = this.address;
             }
 
             showSuccessScreen() {
@@ -2747,7 +2804,7 @@
                      chatContainer.style.width = 'var(--chat-bubble-size)';
                      chatContainer.style.height = 'var(--chat-bubble-size)';
                      chatContainer.style.bottom = 'calc(1rem + constant(safe-area-inset-bottom))';
-                     chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom))';
+                     chatContainer.style.bottom = 'calc(1rem + env(safe-area-inset-bottom));';
                      chatContainer.style.right = '1rem';
                      chatContainer.style.top = 'auto';
                      chatContainer.style.left = 'auto';
