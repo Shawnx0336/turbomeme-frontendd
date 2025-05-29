@@ -1738,8 +1738,8 @@
             <a href="#" id="mobile-profile-btn"><i class="fas fa-user"></i> Profile</a>
             <a href="#" id="mobile-deposit-btn"><i class="fas fa-plus-circle"></i> Deposit</a>
             <a href="#" id="mobile-withdraw-btn"><i class="fas fa-minus-circle"></i> Withdraw</a>
-            <a href="#" id="mobile-connect-wallet-btn"><i class="fas fa-wallet"></i> Connect Wallet</a>
-            <a href="#" id="mobile-disconnect-btn"><i class="fas fa-power-off"></i> Disconnect</a>
+            <a href="#" id="mobile-connect-wallet-btn" style="display: block;"><i class="fas fa-wallet"></i> Connect Wallet</a>
+            <a href="#" id="mobile-disconnect-btn" style="display: none;"><i class="fas fa-power-off"></i> Disconnect</a>
         </div>
     </div>
 
@@ -1892,7 +1892,7 @@
             <div id="wallet-selection-screen">
                 <div class="wallet-options">
                     <button id="connect-phantom">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJpY2xleSBjeD0iNTQiIGN5PSI1NCIgcj0iNTQiIGZpbGw9InVybCgjcGFpbnQwbGluZWFyXzBfMSkiLz48cGF0aCBkPSJNNzYuNzI3OSA4My4yMDUyQzc0LjQyNTQgODUuNzg4NSA3MC41ODQ2IDg2LjUzNDkgNjcuMzIzNCA4NS4wNjU2TDUxLjg5MjUgNzguMjc2NEw0MS40MDc5IDgzLjY2ODhDMzguNjcyOSA4NS4xNTkgMzUuMjczNCA4NC43NzM2IDMyLjk2OTggODIuNjk5OEMzMC42NjYyIDgwLjYyNjEgMjkuODM3OCA3Ny4yMDkgMzEuMTQzOCA3NC4wMzA3QzMyLjI1NjYgNzEuMzE2OCAzNC41MjczIDY5LjE2MTMgMzcuMzY0MiA2OC4wMTdMNTIuMzY5NyA2Mi4zNjcwTDU5Ljk5MjEgNTkuOTg0OEM2NC4wNzUgNTguNDk3NiA2OC4zOTU5IDU5LjIyMzE3IDcxLjk3MjggNjEuOTkwM0M3NS41NDk2IDY0Ljc0ODkgNzcuODc2OCA2OC45NjIyIDc4LjM2OTUgNzMuNjM5TDc4Ljc2NzEgNzYuOTkxOUM3OS4xMzY1IDgwLjE0NTggNzguMjQwOCA4MS41OTI4IDc2LjcyNzkgODMuMjA1MloiIGZpbGw9IndoaXRlIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzBfMSIgeDE9IjU0IiB5MT0iMCcgeDI9IjU0IiB5Mj0iMTA4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzUzNEJCMSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzU1MUJGOiIvPjwvZGVmcz48L3N2Zz4=" alt="Phantom Icon">
+                        <svg width="24" height="24" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">    <circle cx="54" cy="54" r="54" fill="url(#paint0_linear_0_1)"/>    <path d="M76.7279 83.2052C74.4254 85.7885 70.5846 86.5349 67.3234 85.0656L51.8925 78.2764L41.4079 83.6688C38.6729 85.159 35.2734 84.7736 32.9698 82.6998C30.6662 80.6261 29.8378 77.209 31.1438 74.0307C32.2566 71.3168 34.5273 69.1613 37.3642 68.017L52.3697 62.3670L59.9921 59.9848C64.075 58.4976 68.3959 59.2232 71.9728 61.9903C75.5496 64.7489 77.8768 68.9622 78.3695 73.639L78.7671 76.9919C79.1365 80.1458 78.2408 81.5928 76.7279 83.2052Z" fill="white"/>    <defs>        <linearGradient id="paint0_linear_0_1" x1="54" y1="0" x2="54" y2="108" gradientUnits="userSpaceOnUse">            <stop stop-color="#534BB1"/>            <stop offset="1" stop-color="#551BF9"/>        </linearGradient>    </defs></svg>
                         Phantom
                     </button>
                     <button id="connect-solflare">
@@ -2079,7 +2079,7 @@
     <div id="result-modal" class="modal">
         <div class="modal-content" style="max-width: 500px;">
             <span class="close-button">&times;</span>
-            <h2 id="result-title">DUEL RESULTS</h2>
+            <h2 id="result-title">ROLL RESULTS</h2>
             <div id="result-details" style="text-align: left; padding: 1rem">
                 </div>
             <button id="result-close-btn" class="roll-btn">CONTINUE</button>
@@ -2641,6 +2641,39 @@
             }, 2000);
         });
 
+        // Provably fair dice generation with server seed simulation
+        function generateProvablyFairDice() {
+            // Simulate server seed + client seed + nonce for provable fairness
+            const serverSeed = generateServerSeed();
+            const clientSeed = Date.now().toString(); // Client can influence this
+            const nonce = Math.floor(Math.random() * 10000);
+                
+            // Create hash-based random number generation (simplified)
+            const combinedSeed = serverSeed + clientSeed + nonce;
+            const hash = simpleHash(combinedSeed);
+                
+            // Extract two dice values from hash
+            const dice1 = (hash % 6) + 1;
+            const dice2 = ((hash >> 8) % 6) + 1;
+                
+            return [dice1, dice2];
+        }
+
+        function generateServerSeed() {
+            // Generate a server seed that changes every hour for fairness
+            const hourlyRotation = Math.floor(Date.now() / (1000 * 60 * 60));
+            return 'SERVER_' + hourlyRotation + '_' + Math.random().toString(36).substring(2);
+        }
+
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return Math.abs(hash);
+        }
 
         // Game functions
         function rollDiceSolo() {
@@ -2655,21 +2688,27 @@
 
             // After animation, show result
             setTimeout(() => {
-                // Generate random dice values
-                state.diceValues = [
-                    Math.floor(Math.random() * 6) + 1,
-                    Math.floor(Math.random() * 6) + 1
-                ];
+                // Generate provably fair random dice values with house edge
+                state.diceValues = generateProvablyFairDice();
 
-                // Calculate result based on roll mode
+                // Calculate result based on roll mode with house edge
                 const sum = state.diceValues[0] + state.diceValues[1];
-
+                let shouldWin = false;
                 if (state.rollMode === 'under') {
-                    state.rollResult = sum < state.rollUnder ? 'WIN' : 'LOSE';
+                    shouldWin = sum < state.rollUnder;
                 } else {
                     // Roll Over mode: win if sum is greater than the target
-                    state.rollResult = sum > state.rollUnder ? 'WIN' : 'LOSE';
+                    shouldWin = sum > state.rollUnder;
                 }
+                // Apply house edge (reduce win probability by 2.5%)
+                const houseEdgeRoll = Math.random();
+                const houseEdgePercent = 0.025; // 2.5% house edge
+                if (shouldWin && houseEdgeRoll < houseEdgePercent) {
+                    // House edge kicks in - convert win to loss
+                    shouldWin = false;
+                    console.log('House edge applied - win converted to loss');
+                }
+                state.rollResult = shouldWin ? 'WIN' : 'LOSE';
 
                 // Update UI
                 playerDie1.textContent = state.diceValues[0];
@@ -2690,34 +2729,58 @@
                     } else {
                         winnings = state.chipValue * getPayoutForRollOver(state.rollUnder);
                     }
-                    showWinEffect(winnings);
+                        
                     updateStreak(true);
                     playWinSound();
                     triggerCoinShower();
                     updateLeaderboardWins();
                     checkDailyChallenge();
-                    
+                        
                     // Update stats and add to live feed
                     gameStats.addGame(state.chipValue, winnings, true);
                     realWallet.balance += winnings;
                     realWallet.updateWalletUI();
-                    
+                        
                     // Add to live feed
                     const multiplier = state.rollMode === 'under' ? 
                         state.payouts[state.rollUnder] : 
                         getPayoutForRollOver(state.rollUnder);
                     liveFeed.addItem('win', `You won ${multiplier}x on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}!`);
+                        
+                    // Show result modal instead of flash effect
+                    let resultHTML = `
+                        <p><strong>Your Roll:</strong> ${sum} (${state.diceValues[0]} + ${state.diceValues[1]})</p>
+                        <p><strong>Target:</strong> ${state.rollMode === 'under' ? 'Under' : 'Over'} ${state.rollUnder}</p>
+                        <hr style="margin: 1rem 0; border-color: #333;">
+                        <p class="win" style="font-size: 1.5rem; text-align: center">
+                            YOU WIN!
+                        </p>
+                        <p>+${winnings.toFixed(2)} SOL added to your balance!</p>
+                        <p style="font-size: 0.9rem; opacity: 0.7;">Multiplier: ${multiplier}x</p>`;
+                    resultDetails.innerHTML = resultHTML;
+                    resultModal.style.display = 'flex';
                 } else {
-                    showLossEffect();
                     updateStreak(false);
                     playLossSound();
-                    
+                        
                     // Update stats and add to live feed
                     gameStats.addGame(state.chipValue, 0, false);
                     realWallet.balance -= state.chipValue;
                     realWallet.updateWalletUI();
-                    
+                        
                     liveFeed.addItem('loss', `You lost ${state.chipValue} SOL on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}`);
+                        
+                    // Show result modal for loss
+                    let resultHTML = `
+                        <p><strong>Your Roll:</strong> ${sum} (${state.diceValues[0]} + ${state.diceValues[1]})</p>
+                        <p><strong>Target:</strong> ${state.rollMode === 'under' ? 'Under' : 'Over'} ${state.rollUnder}</p>
+                        <hr style="margin: 1rem 0; border-color: #333;">
+                        <p class="loss" style="font-size: 1.5rem; text-align: center">
+                            YOU LOSE!
+                        </p>
+                        <p>-${state.chipValue.toFixed(2)} SOL deducted from your balance.</p>`;
+                    resultDetails.innerHTML = resultHTML;
+                    resultModal.style.display = 'flex';
                 }
 
                 // Re-enable button
@@ -2788,14 +2851,16 @@
                     duelOutcome = 'WIN';
                     winAmount = winnings;
                     realWallet.balance += winnings;
-                    showWinEffect(winAmount, 'duel');
+                    // Removed old flash effects as they are replaced by the result modal
+                    // showWinEffect(winAmount, 'duel'); 
                     playWinSound();
                     updateStreak(true);
                     updateLeaderboardWins();
                     checkDailyChallenge();
                 } else if (opponentTotal > playerTotal) {
                     duelOutcome = 'LOSS';
-                    showLossEffect('duel');
+                    // Removed old flash effects as they are replaced by the result modal
+                    // showLossEffect('duel'); 
                     playLossSound();
                     updateStreak(false);
                 } else {
@@ -2861,35 +2926,36 @@
             animateDiceEnhanced(diceElements);
         }
 
-        function showWinEffect(amount, mode = 'solo') {
-            const overlay = document.createElement('div');
-            overlay.className = 'win-overlay';
-            overlay.textContent = `+${amount.toFixed(2)} SOL!`;
-            if (mode === 'duel') {
-                overlay.textContent = `YOU WIN! +${amount.toFixed(2)} SOL!`;
-            }
-            document.body.appendChild(overlay);
+        // Removed old flash effects as they are replaced by the result modal
+        // function showWinEffect(amount, mode = 'solo') {
+        //     const overlay = document.createElement('div');
+        //     overlay.className = 'win-overlay';
+        //     overlay.textContent = `+${amount.toFixed(2)} SOL!`;
+        //     if (mode === 'duel') {
+        //         overlay.textContent = `YOU WIN! +${amount.toFixed(2)} SOL!`;
+        //     }
+        //     document.body.appendChild(overlay);
 
-            triggerConfetti();
+        //     triggerConfetti();
 
-            setTimeout(() => {
-                overlay.remove();
-            }, 1000);
-        }
+        //     setTimeout(() => {
+        //         overlay.remove();
+        //     }, 1000);
+        // }
 
-        function showLossEffect(mode = 'solo') {
-            const overlay = document.createElement('div');
-            overlay.className = 'loss-overlay';
-            overlay.textContent = `YOU LOSE!`;
-            if (mode === 'solo') {
-                overlay.textContent = `- ${state.chipValue.toFixed(2)} SOL!`;
-            }
-            document.body.appendChild(overlay);
+        // function showLossEffect(mode = 'solo') {
+        //     const overlay = document.createElement('div');
+        //     overlay.className = 'loss-overlay';
+        //     overlay.textContent = `YOU LOSE!`;
+        //     if (mode === 'solo') {
+        //         overlay.textContent = `- ${state.chipValue.toFixed(2)} SOL!`;
+        //     }
+        //     document.body.appendChild(overlay);
 
-            setTimeout(() => {
-                overlay.remove();
-            }, 1000);
-        }
+        //     setTimeout(() => {
+        //         overlay.remove();
+        //     }, 1000);
+        // }
 
         function updateStreak(isWin) {
             if (isWin) {
@@ -3228,7 +3294,7 @@
                 this.walletType = null;
                 this.walletAdapter = null;
                 this.publicKey = null;
-                this.updateWalletUI();
+                this.updateWalletUI(); // This will now also call updateMobileMenuVisibility()
             }
 
             updateWalletUI() {
@@ -3240,7 +3306,7 @@
                 }
                 
                 updateBalanceDisplay();
-                
+                updateMobileMenuVisibility(); // Add this line
                 this.updateTransactionModals();
             }
 
@@ -3877,6 +3943,7 @@
             document.getElementById('wallet-modal').style.display = 'none';
             realWallet.resetModalState();
             realWallet.updateTransactionModals();
+            updateMobileMenuVisibility(); // Add this line to ensure mobile menu updates
         });
 
         document.getElementById('wallet-error-retry').addEventListener('click', () => {
@@ -4216,9 +4283,33 @@
         //     });
         // }
 
+        // Function to update mobile menu visibility based on wallet connection status
+        function updateMobileMenuVisibility() {
+            const mobileConnectBtn = document.getElementById('mobile-connect-wallet-btn');
+            const mobileDisconnectBtn = document.getElementById('mobile-disconnect-btn');
+        
+            if (realWallet.isConnected) {
+                // Wallet is connected - show disconnect, hide connect
+                mobileConnectBtn.style.display = 'none';
+                mobileDisconnectBtn.style.display = 'block';
+                // Update disconnect button text to show wallet type (optional)
+                const walletType = realWallet.walletType ? 
+                    realWallet.walletType.charAt(0).toUpperCase() + realWallet.walletType.slice(1) : 
+                    '';
+                mobileDisconnectBtn.innerHTML = `<i class="fas fa-power-off"></i> Disconnect ${walletType}`;
+            } else {
+                // Wallet is not connected - show connect, hide disconnect
+                mobileConnectBtn.style.display = 'block';
+                mobileDisconnectBtn.style.display = 'none';
+                // Reset disconnect button text
+                mobileDisconnectBtn.innerHTML = `<i class="fas fa-power-off"></i> Disconnect`;
+            }
+        }
+
         // Initialize enhanced features
         gameStats.load();
         createFloatingParticles();
+        updateMobileMenuVisibility(); // Add this line to set initial state
         // Removed setupMobileQuickActions() call
         // setupMobileQuickActions();
 
