@@ -6,99 +6,160 @@
     <title>DegenDice - Slotana Style PvP</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* 1. CSS Variables & Color Palette Enhancement */
         :root {
             --bg-dark: #0A0A0A;
+            --bg-gradient-start: #0A0A0A;
+            --bg-gradient-end: #1a0a1a;
             --accent-pink: #FF3366;
             --accent-green: #00FF99;
+            --accent-purple: #9D4EDD;
+            --accent-gold: #FFD700;
             --text-light: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-blur: blur(10px);
+            --radius-lg: 20px;
             --radius-md: 12px;
             --radius-sm: 6px;
             --shadow-glow: 0 0 10px;
-            --header-height: 60px; /* Define header height */
-            --leaderboard-width: 250px; /* Define leaderboard width */
-            --chat-height: 300px; /* Define chat height */
-            --chat-width: 300px; /* Define chat width */
-            --chat-bubble-size: 60px; /* Size for the mobile chat bubble */
-            --player-dice-color: #00FF99; /* Green for player */
-            --opponent-dice-color: #FF3366; /* Pink for opponent */
+            --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --header-height: 60px;
+            --leaderboard-width: 250px;
+            --chat-height: 300px;
+            --chat-width: 300px;
+            --chat-bubble-size: 60px;
+            --player-dice-color: #00FF99;
+            --opponent-dice-color: #FF3366;
+            --transition-fast: 0.2s ease;
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* 2. Enhanced Background Gradient */
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(180deg, var(--bg-dark) 0%, #1a0a1a 100%); /* Animated background gradient */
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 50%, #2d1b69 100%);
             background-size: 400% 400%;
-            animation: gradientAnimation 15s ease infinite;
+            animation: gradientAnimation 20s ease infinite;
             color: var(--text-light);
             margin: 0;
             padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative; /* Needed for fixed positioning */
-            /* Safe Area Insets for mobile */
+            position: relative;
             padding-top: constant(safe-area-inset-top);
             padding-top: env(safe-area-inset-top);
             padding-bottom: constant(safe-area-inset-bottom);
             padding-bottom: env(safe-area-inset-bottom);
-            overflow-x: hidden; /* Prevent horizontal scroll from fixed elements */
+            overflow-x: hidden;
         }
 
         @keyframes gradientAnimation {
             0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
             100% { background-position: 0% 50%; }
         }
 
+        /* 3. Glassmorphism Header */
         header {
-            background: linear-gradient(145deg, rgba(255, 51, 102, 0.2), rgba(0, 255, 153, 0.1));
-            padding: 0.5rem 1rem; /* Adjusted padding */
-            height: var(--header-height); /* Set header height */
+            background: linear-gradient(145deg, rgba(255, 51, 102, 0.15), rgba(0, 255, 153, 0.1), rgba(157, 78, 221, 0.1));
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            padding: 0.5rem 1rem;
+            height: var(--header-height);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: fixed; /* Fixed header */
+            border-bottom: 1px solid var(--glass-border);
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            z-index: 20; /* Ensure header is on top */
-            box-sizing: border-box; /* Include padding in width */
+            z-index: 20;
+            box-sizing: border-box;
+            transition: var(--transition-smooth);
         }
 
-        /* NEW HEADER STYLES */
+        /* 4. Enhanced Logo with Gradient Text */
         .header-logo {
             font-size: 1.8rem;
             font-weight: 800;
-            color: var(--accent-green);
-            text-shadow: var(--shadow-glow) var(--accent-green);
+            background: linear-gradient(45deg, var(--accent-green), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(0, 255, 153, 0.3);
             letter-spacing: -1px;
+            position: relative;
         }
+
+        .header-logo::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-purple));
+            border-radius: 1px;
+            opacity: 0.7;
+        }
+
+        /* 5. Enhanced Wallet Info with Shimmer Effect */
+        .wallet-info {
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .wallet-info:hover::before {
+            left: 100%;
+        }
+
+        .wallet-info:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Existing styles */
         .header-actions-right {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-        .wallet-info {
-            font-weight: 400;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background-color: rgba(255, 255, 255, 0.05);
-            padding: 0.5rem 0.75rem;
-            border-radius: var(--radius-md);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .wallet-info:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.05);
-        }
         .wallet-info i {
             color: var(--accent-green);
         }
-        /* Profile Dropdown Styles */
         .profile-dropdown-container {
             position: relative;
             display: inline-block;
@@ -160,7 +221,6 @@
             width: 20px;
             text-align: center;
         }
-        /* Hamburger Menu for Mobile */
         .hamburger-menu {
             display: none;
             cursor: pointer;
@@ -185,7 +245,6 @@
             margin: 5px 0;
             transition: 0.4s;
         }
-        /* Mobile Nav Overlay */
         .mobile-nav-overlay {
             display: none;
             position: fixed;
@@ -220,8 +279,6 @@
         .mobile-nav-overlay .nav-links a:hover {
             color: var(--accent-green);
         }
-
-        /* Close menu button for mobile nav overlay */
         .close-menu-btn {
             position: absolute;
             top: 2rem;
@@ -232,7 +289,6 @@
             transition: color 0.2s ease, transform 0.2s ease;
             z-index: 100;
         }
-
         .close-menu-btn:hover {
             color: var(--accent-pink);
             transform: scale(1.1);
@@ -245,46 +301,84 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
-            padding-top: calc(var(--header-height) + 2rem); /* Add padding to account for fixed header */
+            padding-top: calc(var(--header-height) + 2rem);
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
-            box-sizing: border-box; /* Include padding in width */
-            position: relative; /* Needed for z-index */
-            z-index: 1; /* Below fixed elements */
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
 
         .dice-area {
             display: flex;
             gap: 2rem;
             margin-bottom: 2rem;
-            position: relative; /* For VS animation positioning */
+            position: relative;
         }
 
+        /* 6. Enhanced Dice with 3D Effects */
         .dice {
             width: 100px;
             height: 100px;
-            background-color: white;
-            border-radius: var(--radius-sm);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border-radius: var(--radius-md);
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 3rem;
+            font-weight: 800;
             color: var(--bg-dark);
-            box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease;
+            box-shadow: 
+                0 8px 32px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
         }
 
+        .dice::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            opacity: 0;
+            transition: opacity var(--transition-smooth);
+        }
+
+        .dice:hover::before {
+            opacity: 1;
+            animation: shine 1.5s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+
+        /* 7. Enhanced Player & Opponent Dice */
         .player-dice {
-            background-color: var(--player-dice-color);
+            background: linear-gradient(145deg, var(--player-dice-color), rgba(0, 255, 153, 0.8));
             color: var(--bg-dark);
-            box-shadow: var(--shadow-glow) var(--player-dice-color);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 153, 0.4),
+                0 8px 32px rgba(0, 255, 153, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .opponent-dice {
-            background-color: var(--opponent-dice-color);
+            background: linear-gradient(145deg, var(--opponent-dice-color), rgba(255, 51, 102, 0.8));
             color: var(--bg-dark);
-            box-shadow: var(--shadow-glow) var(--opponent-dice-color);
+            box-shadow: 
+                0 0 30px rgba(255, 51, 102, 0.4),
+                0 8px 32px rgba(255, 51, 102, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .vs-text {
@@ -306,46 +400,60 @@
             100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
         }
 
+        /* 8. Glassmorphism Controls Panel */
         .controls {
-            background: rgba(20, 20, 20, 0.8);
-            padding: 1.5rem;
-            border-radius: var(--radius-md);
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
             width: 100%;
             max-width: 500px;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            box-shadow: var(--shadow-heavy);
+            position: relative;
+            overflow: hidden;
         }
 
+        .controls::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+            opacity: 0.6;
+        }
+
+        /* Existing styles for controls */
         .mode-toggle {
             display: flex;
             justify-content: center;
             gap: 1rem;
             margin-bottom: 1rem;
         }
-
         .mode-toggle button {
             flex: 1;
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
         }
-
         .mode-toggle button.active {
             background-color: var(--accent-green);
             box-shadow: var(--shadow-glow) var(--accent-green);
         }
-
         .slider-container {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
-
         .slider-labels {
             display: flex;
             justify-content: space-between;
         }
-
         input[type="range"] {
             width: 100%;
             height: 8px;
@@ -354,7 +462,6 @@
             border-radius: 4px;
             outline: none;
         }
-
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 24px;
@@ -364,7 +471,6 @@
             cursor: pointer;
             box-shadow: var(--shadow-glow) var(--accent-pink);
         }
-
         .multiplier-display {
             font-size: 1.5rem;
             font-weight: 700;
@@ -372,8 +478,6 @@
             color: var(--accent-green);
             text-shadow: var(--shadow-glow) var(--accent-green);
         }
-
-        /* Roll Mode Toggle Styles */
         .roll-mode-toggle {
             display: flex;
             gap: 0.5rem;
@@ -382,7 +486,6 @@
             padding: 0.25rem;
             border-radius: var(--radius-md);
         }
-
         .roll-mode-btn {
             flex: 1;
             padding: 0.75rem 1rem;
@@ -399,49 +502,39 @@
             justify-content: center;
             gap: 0.5rem;
         }
-
         .roll-mode-btn:hover {
             background: rgba(255, 255, 255, 0.1);
             color: var(--text-light);
         }
-
         .roll-mode-btn.active {
             background: var(--accent-pink);
             color: white;
             box-shadow: var(--shadow-glow) rgba(255, 51, 102, 0.3);
         }
-
         .roll-mode-btn i {
             font-size: 0.8rem;
         }
-
-        /* Enhanced Bet Controls Layout */
         .bet-controls {
             display: flex;
             flex-direction: column;
             gap: 1rem;
             justify-content: center;
         }
-
         .chip-buttons-row {
             display: flex;
             gap: 0.5rem;
             justify-content: center;
         }
-
         .chip-btn {
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
             flex: 1;
-            min-width: 60px; /* Ensure minimum button width */
+            min-width: 60px;
         }
-
         .chip-btn.active {
             background-color: var(--accent-pink);
             box-shadow: var(--shadow-glow) var(--accent-pink);
         }
-
-        /* Custom Bet Input Styles */
         .custom-bet-container {
             display: flex;
             align-items: center;
@@ -451,7 +544,6 @@
             border-radius: var(--radius-md);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .custom-bet-input-wrapper {
             display: flex;
             align-items: center;
@@ -461,7 +553,6 @@
             overflow: hidden;
             flex: 1;
         }
-
         .custom-bet-input {
             background: transparent;
             border: none;
@@ -471,19 +562,15 @@
             padding: 0.75rem 1rem;
             outline: none;
             width: 100%;
-            min-width: 0; /* Allow input to shrink */
+            min-width: 0;
         }
-
         .custom-bet-input::placeholder {
             color: rgba(255, 255, 255, 0.4);
             font-weight: 400;
         }
-
         .custom-bet-input:focus {
             background: rgba(255, 255, 255, 0.05);
         }
-
-        /* Clear Button */
         .clear-bet-btn {
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.7);
@@ -495,13 +582,10 @@
             transition: all 0.2s ease;
             letter-spacing: 0.5px;
         }
-
         .clear-bet-btn:hover {
             background: rgba(255, 255, 255, 0.2);
             color: var(--text-light);
         }
-
-        /* Balance Display */
         .balance-display {
             display: flex;
             align-items: center;
@@ -514,63 +598,121 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-
         .balance-display:hover {
             background: rgba(255, 255, 255, 0.1);
         }
-
         .balance-display i.fa-coins {
-            color: #FFD700; /* Gold color for coins icon */
+            color: #FFD700;
             font-size: 1rem;
         }
-
         #balance-amount {
             font-weight: 700;
             color: var(--accent-green);
             font-size: 1rem;
             letter-spacing: 0.5px;
         }
-
         .balance-dropdown-icon {
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.8rem;
             transition: transform 0.2s ease;
         }
-
         .balance-display:hover .balance-dropdown-icon {
             transform: rotate(180deg);
         }
-
-        /* Input number styling (remove spinner arrows) */
         .custom-bet-input::-webkit-outer-spin-button,
         .custom-bet-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-
         .custom-bet-input[type=number] {
             -moz-appearance: textfield;
         }
 
+        /* 9. Enhanced Button Styles */
+        button {
+            background: linear-gradient(145deg, var(--glass-bg), rgba(255, 255, 255, 0.08));
+            color: var(--text-light);
+            border: 1px solid var(--glass-border);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.3s ease;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover:not(:disabled) {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.2);
+            transform: translateY(-2px);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 10. Enhanced Roll Button */
         .roll-btn {
-            background-color: var(--accent-pink);
+            background: linear-gradient(145deg, var(--accent-pink), rgba(255, 51, 102, 0.8));
             color: white;
+            border: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+            box-shadow: 
+                0 0 30px rgba(255, 51, 102, 0.3),
+                0 8px 32px rgba(255, 51, 102, 0.2);
         }
 
-        /* Glowing hover effect for roll button */
         .roll-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-glow) var(--accent-pink);
-            animation: glowing 1.5s infinite;
+            background: linear-gradient(145deg, rgba(255, 51, 102, 0.9), var(--accent-pink));
+            transform: translateY(-3px);
+            box-shadow: 
+                0 0 40px rgba(255, 51, 102, 0.5),
+                0 12px 40px rgba(255, 51, 102, 0.3);
+            animation: pulse-glow 2s infinite;
         }
 
-        @keyframes glowing {
-            0% { box-shadow: var(--shadow-glow) var(--accent-pink); }
-            50% { box-shadow: 0 0 20px var(--accent-pink); }
-            100% { box-shadow: var(--shadow-glow) var(--accent-pink); }
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 40px rgba(255, 51, 102, 0.5),
+                    0 12px 40px rgba(255, 51, 102, 0.3);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 60px rgba(255, 51, 102, 0.7),
+                    0 16px 48px rgba(255, 51, 102, 0.4);
+            }
         }
 
-
+        /* Existing styles for results and effects */
         .result-display {
             font-size: 2rem;
             font-weight: 700;
@@ -578,29 +720,24 @@
             text-align: center;
             min-height: 3rem;
         }
-
         .win {
             color: var(--accent-green);
             animation: scale 0.5s;
         }
-
         .loss {
             color: var(--accent-pink);
             animation: shake 0.3s;
         }
-
         @keyframes scale {
             0% { transform: scale(0.8); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-5px); }
             40%, 80% { transform: translateX(5px); }
         }
-
         .win-overlay {
             position: fixed;
             top: 0;
@@ -617,7 +754,6 @@
             pointer-events: none;
             z-index: 100;
         }
-
         .loss-overlay {
             position: fixed;
             top: 0;
@@ -634,13 +770,11 @@
             pointer-events: none;
             z-index: 100;
         }
-
         @keyframes flash {
             0% { opacity: 0; }
             50% { opacity: 1; }
             100% { opacity: 0; }
         }
-
         .streak-popup {
             position: fixed;
             top: 50%;
@@ -654,7 +788,6 @@
             animation: scale 0.5s;
             z-index: 101;
         }
-
         .recent-wins {
             position: fixed;
             bottom: 1rem;
@@ -664,20 +797,17 @@
             white-space: nowrap;
             background: rgba(0, 0, 0, 0.5);
             padding: 0.5rem 0;
-            z-index: 10; /* Below game container, above background */
+            z-index: 10;
         }
-
         .recent-wins span {
             display: inline-block;
             padding-left: 100%;
             animation: slide-left 15s linear infinite;
         }
-
         @keyframes slide-left {
             0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
         }
-
         .hot-streak {
             position: fixed;
             top: 1rem;
@@ -687,11 +817,8 @@
             padding: 0.5rem 1rem;
             border-radius: var(--radius-md);
             font-weight: 700;
-            /* Removed pulse animation */
-            z-index: 10; /* Below header, above game */
+            z-index: 10;
         }
-
-
         #confetti-canvas {
             position: fixed;
             top: 0;
@@ -701,42 +828,36 @@
             pointer-events: none;
             z-index: 99;
         }
-
-        /* --- New Styles for Added Features --- */
-
-        /* Modals */
         .modal {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
-            z-index: 1000; /* High z-index for modals */
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
             animation: fadeIn 0.3s ease;
         }
-
         .modal-content {
             background-color: var(--bg-dark);
             padding: 2rem;
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
-            max-width: 400px;
+            /* Updated max-width for profile modal */
+            max-width: 500px; 
             width: 90%;
             text-align: center;
             position: relative;
             animation: slideInFromTop 0.3s ease;
         }
-
         .modal-content h2 {
             margin-top: 0;
             color: var(--accent-green);
         }
-
         .close-button {
             position: absolute;
             top: 10px;
@@ -747,14 +868,11 @@
             cursor: pointer;
             transition: color 0.2s ease;
         }
-
         .close-button:hover,
         .close-button:focus {
             color: var(--text-light);
             text-decoration: none;
         }
-
-        /* Wallet Connect Modal Specifics */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -782,87 +900,72 @@
             width: 24px;
             height: 24px;
         }
-
-        /* Leaderboard */
         .leaderboard-sidebar {
             position: fixed;
-            top: var(--header-height); /* Position below header */
+            top: var(--header-height);
             right: 0;
             width: var(--leaderboard-width);
-            height: calc(100% - var(--header-height)); /* Full height below header */
+            height: calc(100% - var(--header-height));
             background: rgba(20, 20, 20, 0.9);
             border-left: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1rem;
             box-sizing: border-box;
-            z-index: 15; /* Above game container, below header */
-            overflow-y: auto; /* Enable scrolling for long leaderboards */
-            transform: translateX(0); /* Default position */
+            z-index: 15;
+            overflow-y: auto;
+            transform: translateX(0);
             transition: transform 0.3s ease-in-out;
         }
-
         .leaderboard-sidebar h3 {
             margin-top: 0;
             color: var(--accent-green);
             text-align: center;
             margin-bottom: 1rem;
         }
-
         .leaderboard-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-
         .leaderboard-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            opacity: 1; /* Default opacity for animation */
+            opacity: 1;
             transition: opacity 0.5s ease-in-out;
         }
-
         .leaderboard-item:last-child {
             border-bottom: none;
         }
-
         .leaderboard-item .player-info {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-
         .leaderboard-item .player-info .avatar {
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.1); /* Placeholder background */
+            background-color: rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 1rem;
         }
-
         .leaderboard-item .wins {
             font-weight: 700;
             color: var(--accent-green);
         }
-
-        /* Leaderboard update animation */
         .leaderboard-item.fade-in {
             animation: fadeIn 0.5s ease;
         }
-
         .leaderboard-item.pulse {
             animation: pulse 1s infinite;
         }
-
-
-        /* Chat System */
         .chat-container {
             position: fixed;
-            bottom: calc(1rem + constant(safe-area-inset-bottom)); /* Position above safe area */
+            bottom: calc(1rem + constant(safe-area-inset-bottom));
             bottom: calc(1rem + env(safe-area-inset-bottom));
             right: 1rem;
             width: var(--chat-width);
@@ -870,13 +973,12 @@
             background: rgba(20, 20, 20, 0.9);
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-glow) rgba(255, 255, 255, 0.1);
-            z-index: 100; /* Above most elements */
+            z-index: 100;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            transition: all 0.3s ease-in-out; /* Added transition for smooth opening/closing */
+            transition: all 0.3s ease-in-out;
         }
-
         .chat-header {
             background: rgba(255, 255, 255, 0.05);
             padding: 0.75rem;
@@ -884,63 +986,51 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer; /* Toggle on click */
+            cursor: pointer;
         }
-
         .chat-header i {
              transition: transform 0.3s ease;
         }
-
         .chat-header i.rotated {
             transform: rotate(180deg);
         }
-
-
         .chat-body {
             flex: 1;
             padding: 1rem;
-            overflow-y: auto; /* Scrollable chat messages */
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             scrollbar-width: thin;
             scrollbar-color: var(--accent-pink) transparent;
         }
-
         .chat-body::-webkit-scrollbar {
             width: 6px;
         }
-
         .chat-body::-webkit-scrollbar-track {
             background: transparent;
         }
-
         .chat-body::-webkit-scrollbar-thumb {
             background-color: var(--accent-pink);
             border-radius: 3px;
         }
-
-
         .chat-message {
             background: rgba(255, 255, 255, 0.05);
             padding: 0.5rem;
             border-radius: var(--radius-sm);
-            word-break: break-word; /* Break long words */
+            word-break: break-word;
         }
-
         .chat-message .username {
             font-weight: 700;
             color: var(--accent-green);
             margin-right: 0.5rem;
         }
-
         .chat-input-area {
             display: flex;
             padding: 0.75rem;
             gap: 0.5rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .chat-input-area input[type="text"] {
             flex: 1;
             padding: 0.5rem;
@@ -950,11 +1040,9 @@
             color: var(--text-light);
             outline: none;
         }
-
         .chat-input-area input[type="text"]::placeholder {
             color: rgba(255, 255, 255, 0.5);
         }
-
         .chat-input-area button {
             padding: 0.5rem 1rem;
             background-color: var(--accent-pink);
@@ -962,14 +1050,11 @@
             border-radius: var(--radius-sm);
             font-weight: 700;
         }
-
         .chat-input-area button:hover {
             background-color: #ff6699;
         }
-
-        /* Mobile Chat Toggle Button (Bubble) */
         .chat-toggle-btn {
-            display: none; /* Hidden by default on desktop */
+            display: none;
             position: fixed;
             bottom: calc(1rem + constant(safe-area-inset-bottom));
             bottom: calc(1rem + env(safe-area-inset-bottom));
@@ -984,12 +1069,10 @@
             align-items: center;
             font-size: 1.5rem;
             box-shadow: var(--shadow-glow) var(--accent-pink);
-            z-index: 110; /* Above chat container */
+            z-index: 110;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
         }
-
-        /* Full-screen chat for mobile */
         body.chat-open .chat-container {
             position: fixed;
             top: 0;
@@ -997,32 +1080,25 @@
             width: 100%;
             height: 100%;
             border-radius: 0;
-            background: var(--bg-dark); /* Solid background for full screen */
-            z-index: 1000; /* Above everything */
+            background: var(--bg-dark);
+            z-index: 1000;
         }
-
         body.chat-open .chat-toggle-btn {
-            display: none; /* Hide toggle button when chat is full screen */
+            display: none;
         }
-
         body.chat-open .chat-header i {
-            transform: rotate(180deg); /* Indicate chat is open */
+            transform: rotate(180deg);
         }
-
-
-        /* Profile Modal Specifics */
         .profile-options {
             display: flex;
             flex-direction: column;
             gap: 1rem;
             margin-top: 1rem;
         }
-
         .profile-options label {
             text-align: left;
             font-weight: 700;
         }
-
         .profile-options input[type="text"] {
              padding: 0.75rem;
              border-radius: var(--radius-sm);
@@ -1031,25 +1107,29 @@
              color: var(--text-light);
              outline: none;
         }
-
         .profile-options button {
             background-color: var(--accent-green);
             color: var(--bg-dark);
             font-weight: 700;
         }
-
         .profile-options button:hover {
             background-color: #33ffb3;
         }
-
-        /* Deposit/Withdraw Modals */
+        .profile-section { /* NEW: Styling for sections within profile modal */
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .profile-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
         .transaction-options {
             display: flex;
             flex-direction: column;
             gap: 1rem;
             margin-top: 1rem;
         }
-
         .transaction-options input[type="number"] {
             padding: 0.75rem;
             border-radius: var(--radius-sm);
@@ -1058,18 +1138,14 @@
             color: var(--text-light);
             outline: none;
         }
-
         .transaction-options button {
             background-color: var(--accent-green);
             color: var(--bg-dark);
             font-weight: 700;
         }
-
         .transaction-options button:hover {
             background-color: #33ffb3;
         }
-
-        /* Daily Challenge */
         .daily-challenge-panel {
             background: rgba(20, 20, 20, 0.9);
             padding: 1rem;
@@ -1079,62 +1155,49 @@
             border: 1px solid var(--accent-green);
             animation: pulseBorder 2s infinite;
         }
-
         @keyframes pulseBorder {
             0%, 100% { border-color: var(--accent-green); }
             50% { border-color: rgba(0, 255, 153, 0.5); }
         }
-
         .daily-challenge-panel h4 {
             margin-top: 0;
             color: var(--accent-green);
         }
-
         .daily-challenge-panel .progress {
             margin: 0.5rem 0;
         }
-
         .daily-challenge-panel button {
             background-color: var(--accent-pink);
             color: white;
             margin-top: 1rem;
         }
-
-        /* Referral Feature */
+        /* Removed referral-feature positioning CSS as it's now in modal */
         .referral-feature {
             background: rgba(20, 20, 20, 0.9);
             padding: 1rem;
             border-radius: var(--radius-md);
-            margin-top: 2rem;
+            /* margin-top: 2rem; Removed from here, handled by profile-section */
             text-align: center;
             border: 1px solid var(--accent-pink);
         }
-
         .referral-feature h4 {
             margin-top: 0;
             color: var(--accent-pink);
         }
-
         .referral-code {
             font-size: 1.2rem;
             font-weight: 700;
             margin: 0.5rem 0;
             color: var(--accent-green);
         }
-
         .referral-feature button {
             background-color: var(--accent-green);
             color: var(--bg-dark);
             margin-top: 1rem;
         }
-
-
-        /* Micro-interactions (added to existing buttons) */
         button:active:not(:disabled) {
-            transform: scale(0.95); /* Press down effect */
+            transform: scale(0.95);
         }
-
-        /* PvP Specific Styles */
         .duel-info {
             text-align: center;
             margin-bottom: 1rem;
@@ -1142,7 +1205,6 @@
             font-weight: 600;
             color: var(--text-light);
         }
-
         .pot-display {
             font-size: 1.8rem;
             font-weight: 700;
@@ -1150,7 +1212,6 @@
             text-shadow: var(--shadow-glow) var(--accent-green);
             margin-bottom: 1rem;
         }
-
         .duel-history {
             background: rgba(20, 20, 20, 0.8);
             padding: 1rem;
@@ -1159,14 +1220,12 @@
             max-width: 500px;
             margin-top: 2rem;
         }
-
         .duel-history h4 {
             margin-top: 0;
             color: var(--accent-pink);
             text-align: center;
             margin-bottom: 1rem;
         }
-
         .duel-history-list {
             list-style: none;
             padding: 0;
@@ -1176,20 +1235,16 @@
             scrollbar-width: thin;
             scrollbar-color: var(--accent-pink) transparent;
         }
-
         .duel-history-list::-webkit-scrollbar {
             width: 6px;
         }
-
         .duel-history-list::-webkit-scrollbar-track {
             background: transparent;
         }
-
         .duel-history-list::-webkit-scrollbar-thumb {
             background-color: var(--accent-pink);
             border-radius: 3px;
         }
-
         .duel-history-item {
             display: flex;
             justify-content: space-between;
@@ -1198,20 +1253,251 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.9rem;
         }
-
         .duel-history-item:last-child {
             border-bottom: none;
         }
-
         .duel-history-item.win-entry {
             color: var(--accent-green);
         }
-
         .duel-history-item.loss-entry {
             color: var(--accent-pink);
         }
 
-        /* Responsive Adjustments */
+        /* 11. Add Floating Particles & Enhanced Animations */
+        /* Modern Floating Elements */
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(0, 255, 153, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { 
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Stats Display Enhancement */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            /* margin-bottom: 2rem; Removed from here, handled by profile-section */
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-green);
+            box-shadow: 0 8px 32px rgba(0, 255, 153, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Enhanced Animations for Dice Rolling */
+        @keyframes dice-roll {
+            0% { transform: rotateX(0) rotateY(0); }
+            25% { transform: rotateX(90deg) rotateY(90deg) scale(1.1); }
+            50% { transform: rotateX(180deg) rotateY(180deg) scale(0.9); }
+            75% { transform: rotateX(270deg) rotateY(270deg) scale(1.1); }
+            100% { transform: rotateX(360deg) rotateY(360deg) scale(1); }
+        }
+
+        .dice.rolling {
+            animation: dice-roll 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Sound Wave Visualization */
+        .sound-waves {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sound-waves.active {
+            opacity: 1;
+            animation: sound-pulse 1s ease-out;
+        }
+
+        .wave {
+            position: absolute;
+            border: 2px solid var(--accent-green);
+            border-radius: 50%;
+            animation: wave-expand 1s ease-out infinite;
+        }
+
+        .wave:nth-child(1) { animation-delay: 0s; }
+        .wave:nth-child(2) { animation-delay: 0.2s; }
+        .wave:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes wave-expand {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+
+        @keyframes sound-pulse {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Live Activity Feed */
+        .live-feed {
+            position: fixed;
+            top: calc(var(--header-height) + 1rem);
+            left: 1rem;
+            width: 300px;
+            max-height: 200px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            z-index: 5;
+            display: none;
+        }
+
+        .live-feed.show {
+            display: block;
+            animation: slideInLeft 0.3s ease;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .feed-header {
+            padding: 0.75rem 1rem;
+            background: rgba(0, 255, 153, 0.1);
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .feed-content {
+            max-height: 150px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-green) transparent;
+        }
+
+        .feed-item {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+
+        .feed-item.win {
+            color: var(--accent-green);
+        }
+
+        .feed-item.loss {
+            color: var(--text-secondary);
+        }
+
+        /* Enhanced Tooltips */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .tooltip:hover::after,
+        .tooltip:hover::before {
+            opacity: 1;
+        }
+
+        /* 13. Mobile Responsive Updates */
         @media (max-width: 768px) {
             header {
                 padding: 0.5rem 1rem;
@@ -1220,98 +1506,75 @@
             .header-logo {
                 font-size: 1.5rem;
             }
-            /* Hide elements within header-actions-right on mobile */
             .header-actions-right .wallet-info,
             .header-actions-right .profile-dropdown-container {
                 display: none;
             }
-            /* Ensure hamburger menu is visible and positioned on mobile */
             .hamburger-menu {
                 display: block;
                 margin-left: auto;
             }
             
-            /* The .hot-streak element will now be part of the new header structure */
             .hot-streak {
-                position: absolute; /* Changed from fixed to absolute within header */
-                top: 50%; /* Center vertically within header */
+                position: absolute;
+                top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 font-size: 0.9rem;
                 padding: 0.4rem 0.8rem;
-                white-space: nowrap; /* Prevent text wrapping */
+                white-space: nowrap;
             }
-
 
             .header-left, .header-right {
-                gap: 0.5rem; /* Reduce gap on smaller screens */
+                gap: 0.5rem;
             }
-
             .wallet-info {
                 font-size: 12px;
             }
-
-            /* Header Buttons Mobile Size */
             header button {
-                padding: 0.5rem 0.8rem; /* Increased padding */
-                font-size: 0.8rem; /* Slightly smaller font for space */
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
             }
-
-
             .dice {
                 width: 80px;
                 height: 80px;
                 font-size: 2.5rem;
             }
-
             .dice-area {
                 gap: 1rem;
             }
-
             .controls {
                 padding: 1rem;
             }
-
             .multiplier-display {
                 font-size: 1.2rem;
             }
-
-            /* Mobile Responsiveness */
             .roll-mode-btn {
                 padding: 0.6rem 0.8rem;
                 font-size: 0.8rem;
             }
-            
             .roll-mode-btn i {
                 font-size: 0.7rem;
             }
-
             .bet-controls {
                 gap: 0.5rem;
             }
-
             button {
                 padding: 0.6rem 1rem;
                 font-size: 0.9rem;
             }
-
             .result-display {
                 font-size: 1.5rem;
                 min-height: 2.5rem;
             }
-
             .leaderboard-sidebar {
-                width: 100%; /* Full width on mobile */
-                right: -100%; /* Hide off-screen initially */
+                width: 100%;
+                right: -100%;
                 transition: transform 0.3s ease-in-out;
             }
-
             body.leaderboard-open .leaderboard-sidebar {
-                transform: translateX(-100%); /* Slide in from right */
+                transform: translateX(-100%);
             }
-
-            /* REPLACE the existing mobile chat bubble styles with: */
-            /* Mobile Chat Bubble Position and Size */
             .chat-container {
                 width: var(--chat-bubble-size);
                 height: var(--chat-bubble-size);
@@ -1326,16 +1589,13 @@
                 overflow: hidden;
                 cursor: pointer;
                 background: var(--accent-pink);
-                transition: all 0.3s ease-in-out; /* Add transition */
+                transition: all 0.3s ease-in-out;
             }
-
             .chat-container .chat-header,
             .chat-container .chat-body,
             .chat-container .chat-input-area {
                 display: none;
             }
-
-            /* Full-screen chat for mobile when open */
             body.chat-open .chat-container {
                 position: fixed !important;
                 top: 0 !important;
@@ -1350,73 +1610,87 @@
                 box-shadow: none !important;
                 cursor: default !important;
             }
-
             body.chat-open .chat-container .chat-header,
             body.chat-open .chat-container .chat-body,
             body.chat-open .chat-container .chat-input-area {
                 display: flex !important;
             }
-
             body.chat-open .chat-container #chat-bubble-icon {
                 display: none !important;
             }
-
             body.chat-open .chat-header {
                 padding-top: constant(safe-area-inset-top);
                 padding-top: env(safe-area-inset-top);
             }
-
             body.chat-open .chat-input-area {
                 padding-bottom: constant(safe-area-inset-bottom);
                 padding-bottom: env(safe-area-inset-bottom);
             }
-            /* Hide the separate chat toggle button on mobile, as the chat container itself is the toggle */
             .chat-toggle-btn {
                 display: none;
             }
-
-
-            /* Mobile Responsiveness for Custom Bet Input */
             .custom-bet-container {
                 flex-direction: column;
                 gap: 0.75rem;
                 padding: 1rem;
             }
-            
             .custom-bet-input-wrapper {
                 width: 100%;
             }
-            
             .balance-display {
                 width: 100%;
                 justify-content: center;
                 padding: 1rem;
             }
-            
             .chip-buttons-row {
                 gap: 0.25rem;
             }
-            
             .chip-btn {
                 min-width: 50px;
                 padding: 0.5rem 0.75rem;
                 font-size: 0.85rem;
             }
-
-
             .modal-content {
                 padding: 1.5rem;
             }
-
             .streak-popup {
                 font-size: 36px;
                 padding: 0.75rem 1.5rem;
             }
-        }
 
+            /* Removed mobile-specific stats grid rules */
+            /* .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .stat-card {
+                padding: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            } */
+            
+            /* Removed mobile-quick-actions display rule */
+            /* .mobile-quick-actions {
+                display: block;
+            } */
+            
+            .live-feed {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="floating-particles" id="floating-particles"></div>
+
     <header>
         <div class="header-logo">
             DegenDice
@@ -1433,7 +1707,6 @@
                     <a href="#" id="dropdown-profile-btn"><i class="fas fa-user"></i> Profile</a>
                     <a href="#" id="dropdown-deposit-btn"><i class="fas fa-plus-circle"></i> Deposit</a>
                     <a href="#" id="dropdown-withdraw-btn"><i class="fas fa-minus-circle"></i> Withdraw</a>
-                    <a href="#" id="dropdown-referral-btn"><i class="fas fa-share-alt"></i> Referral</a>
                     <a href="#" id="dropdown-disconnect-btn"><i class="fas fa-power-off"></i> Disconnect</a>
                 </div>
             </div>
@@ -1456,7 +1729,6 @@
             <a href="#" id="mobile-profile-btn"><i class="fas fa-user"></i> Profile</a>
             <a href="#" id="mobile-deposit-btn"><i class="fas fa-plus-circle"></i> Deposit</a>
             <a href="#" id="mobile-withdraw-btn"><i class="fas fa-minus-circle"></i> Withdraw</a>
-            <a href="#" id="mobile-referral-btn"><i class="fas fa-share-alt"></i> Referral</a>
             <a href="#" id="mobile-disconnect-btn"><i class="fas fa-power-off"></i> Disconnect</a>
             <a href="#" id="mobile-connect-wallet-btn"><i class="fas fa-wallet"></i> Connect Wallet</a>
         </div>
@@ -1469,11 +1741,35 @@
         </div>
 
         <div class="dice-area">
-            <div class="dice player-dice" id="player-die1">1</div>
-            <div class="dice player-dice" id="player-die2">1</div>
+            <div class="dice player-dice" id="player-die1">1
+                <div class="sound-waves" id="sound-waves-1">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+            </div>
+            <div class="dice player-dice" id="player-die2">1
+                <div class="sound-waves" id="sound-waves-2">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+            </div>
             <div class="vs-text" id="vs-text" style="display: none;">VS</div>
-            <div class="dice opponent-dice" id="opponent-die1" style="display: none;">1</div>
-            <div class="dice opponent-dice" id="opponent-die2" style="display: none;">1</div>
+            <div class="dice opponent-dice" id="opponent-die1" style="display: none;">1
+                <div class="sound-waves" id="sound-waves-3">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+            </div>
+            <div class="dice opponent-dice" id="opponent-die2" style="display: none;">1
+                <div class="sound-waves" id="sound-waves-4">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+            </div>
         </div>
 
         <div class="duel-info" id="duel-info" style="display: none;">
@@ -1496,12 +1792,12 @@
                 
                 <div class="slider-labels">
                     <span id="roll-mode-label">Roll Under:</span>
-                    <span id="roll-under-value">7</span>
+                    <span id="roll-under-value" class="tooltip" data-tooltip="Current target number">7</span>
                 </div>
                 <input type="range" id="roll-under-slider" min="3" max="11" value="7" step="1">
             </div>
 
-            <div class="multiplier-display" id="multiplier">
+            <div class="multiplier-display tooltip" id="multiplier" data-tooltip="Your potential winnings multiplier">
                 Payout: 6x
             </div>
 
@@ -1544,18 +1840,22 @@
             <button id="claim-reward-btn" style="display: none;">Claim Reward (Mock)</button>
         </div>
 
-         <div class="referral-feature" id="referral-feature" style="display: none;">
-             <h4>Invite Friends</h4>
-             <p>Earn 0.05 SOL for each friend who joins!</p>
-             <div class="referral-code" id="referral-code">YOURCODE123</div>
-             <button id="copy-referral-btn">Copy Code</button>
-         </div>
-
          <div class="duel-history" id="duel-history" style="display: none;">
             <h4>Duel History</h4>
             <ul class="duel-history-list" id="duel-history-list">
                 </ul>
          </div>
+
+        <div class="live-feed" id="live-feed">
+            <div class="feed-header">
+                🔥 Live Activity
+            </div>
+            <div class="feed-content" id="feed-content">
+                <div class="feed-item win">Anonymous won 2.5x on Roll Under 8!</div>
+                <div class="feed-item loss">Player123 lost 1.2 SOL on Roll Over 6</div>
+                <div class="feed-item win">CryptoKing hit 5.5x multiplier!</div>
+            </div>
+        </div>
 
     </div>
 
@@ -1573,7 +1873,7 @@
             <div id="wallet-selection-screen">
                 <div class="wallet-options">
                     <button id="connect-phantom">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zz48Y2lyY2xlIGN4PSI1NCIgY3k9IjU0IiByPSI1NCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzBfMSkiLz48cGF0aCBkPSJNNzYuNzI3OSA4My4yMDUyQzc0LjQyNTQgODUuNzg4NSA3MC41ODQ2IDg2LjUzNDkgNjcuMzIzNCA4NS4wNjU2TDUxLjg5MjUgNzguMjc2NEw0MS40MDc5IDgzLjY2ODhDMzguNjcyOSA4NS4xNTkgMzUuMjczNCA4NC43NzM2IDMyLjk2OTggODIuNjk5OEMzMC42NjYyIDgwLjYyNjEgMjkuODM3OCA3Ny4yMDkgMzEuMTQzOCA3NC4wMzA3QzMyLjI1NjYgNzEuMzE2OCAzNC41MjczIDY5LjE2MTMgMzcuMzY0MiA2OC4wMTdMNTIuMzY5NyA2Mi4zNjcwTDU5Ljk5MjEgNTkuOTg0OEM2NC4wNzUgNTguNDk3NiA2OC4zOTU5IDU5LjIzMTcgNzEuOTcyOCA2MS45OTAzQzc1LjU0OTYgNjQuNzQ4OSA3Ny44NzY4IDY4Ljk2MjIgNzguMzY5NSA3My42MzlMNzguNzY3MSA3Ni45OTE4Qzc5LjEzNjUgODAuMTQ1OCA3OC4yNDA4IDgxLjU5MjggNzYuNzI3OSA4My4yMDUyWiIgZmlsbD0id2hpdGUiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMF8xIiB4MT0iNTQiIHkxPSIwIiB4Mj0iNTQiIHkyPSIxMDgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNTM0QkIxIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTUxQkY5Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+" alt="Phantom Icon">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJpY2xleSBjeD0iNTQiIGN5PSI1NCIgcj0iNTQiIGZpbGw9InVybCgjcGFpbnQwbGluZWFyXzBfMSkiLz48cGF0aCBkPSJNNzYuNzI3OSA4My4yMDUyQzc0LjQyNTQgODUuNzg4NSA3MC41ODQ2IDg2LjUzNDkgNjcuMzIzNCA4NS4wNjU2TDUxLjg5MjUgNzguMjc2NEw0MS40MDc5IDgzLjY2ODhDMzguNjcyOSA4NS4xNTkgMzUuMjczNCA4NC43NzM2IDMyLjk2OTggODIuNjk5OEMzMC42NjYyIDgwLjYyNjEgMjkuODM3OCA3Ny4yMDkgMzEuMTQzOCA3NC4wMzA3QzMyLjI1NjYgNzEuMzE2OCAzNC41MjczIDY5LjE2MTMgMzcuMzY0MiA2OC4wMTdMNTIuMzY5NyA2Mi4zNjcwTDU5Ljk5MjEgNTkuOTg0OEM2NC4wNzUgNTguNDk3NiA2OC4zOTU5IDU5LjIzMTcgNzEuOTcyOCA2MS45OTAzQzc1LjU0OTYgNjQuNzQ4OSA3Ny44NzY4IDY4Ljk2MjIgNzguMzY5NSA3My42MzlMNzguNzY3MSA3Ni45OTE4Qzc5LjEzNjUgODAuMTQ1OCA3OC4yNDA4IDgxLjU5MjggNzYuNzI3OSA4My4yMDUyWiIgZmlsbD0id2hpdGUiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMF8xIiB4MT0iNTQiIHkxPSIwIiB4Mj0iNTQiIHkyPSIxMDgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNTM0QkIxIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTUxQkY5Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+" alt="Phantom Icon">
                         Phantom
                     </button>
                     <button id="connect-solflare">
@@ -1629,7 +1929,7 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>Profile</h2>
-            <div class="profile-options">
+            <div class="profile-options profile-section">
                 <label for="username-input">Username:</label>
                 <input type="text" id="username-input" placeholder="Enter your username">
                  <label for="avatar-select">Choose Avatar:</label>
@@ -1640,8 +1940,32 @@
                      <option value="🚀">🚀</option>
                      <option value="💎">💎</option>
                  </select>
-                <button id="save-profile-btn">Save Profile</button>
             </div>
+            <div class="stats-grid profile-section">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-games">0</div>
+                    <div class="stat-label">Games</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="win-rate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-wagered">0.000</div>
+                    <div class="stat-label">Total Wagered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="net-profit">0.000</div>
+                    <div class="stat-label">Net Profit</div>
+                </div>
+            </div>
+            <div class="referral-section profile-section" style="margin-top: 1.5rem;">
+                <h4 style="color: var(--accent-pink); margin-bottom: 0.5rem;">Invite Friends</h4>
+                <p style="margin-bottom: 0.5rem;">Earn 0.05 SOL for each friend who joins!</p>
+                <div class="referral-code" id="referral-code" style="font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0; color: var(--accent-green);">YOURCODE123</div>
+                <button id="copy-referral-btn" style="background-color: var(--accent-green); color: var(--bg-dark);">Copy Code</button>
+            </div>
+            <button id="save-profile-btn">Save Profile</button>
         </div>
     </div>
 
@@ -2008,7 +2332,6 @@
                 soloControls.style.display = 'none';
                 multiplierDisplay.style.display = 'none';
                 rollButton.style.display = 'none'; // Hide roll button initially
-                findMatchButton.style.display = 'block'; // Show find match button
                 opponentDie1.style.display = 'flex'; // Show opponent dice
                 opponentDie2.style.display = 'flex'; // Show opponent dice
                 duelInfo.style.display = 'block';
@@ -2089,8 +2412,8 @@
             matchmakingStatus.textContent = `Opponent Found: ${opponentUsername}!`;
             potDisplay.textContent = `Pot: ${(state.currentStake * 2).toFixed(2)} SOL`;
             rollButton.disabled = false;
-            rollButton.style.display = 'block'; // Show roll button
-            findMatchButton.style.display = 'none'; // Hide find match button
+            rollButton.style.display = 'block';
+            findMatchButton.style.display = 'none';
             showMessageBox(`Matched with ${opponentUsername}! Roll to duel!`, 'success');
         }
 
@@ -2135,9 +2458,9 @@
             } else if (type === 'error') {
                 messageBox.style.backgroundColor = 'var(--accent-pink)';
             } else if (type === 'warning') {
-                messageBox.style.backgroundColor = '#FFC107'; /* Yellow */
+                messageBox.style.backgroundColor = '#FFC107';
             } else {
-                messageBox.style.backgroundColor = '#333'; /* Dark gray for info */
+                messageBox.style.backgroundColor = '#333';
             }
 
             document.body.appendChild(messageBox);
@@ -2272,14 +2595,14 @@
                 // Update UI
                 playerDie1.textContent = state.diceValues[0];
                 playerDie2.textContent = state.diceValues[1];
-                playerDie1.classList.remove('animate-shake'); // Stop shake animation
-                playerDie2.classList.remove('animate-shake'); // Stop shake animation
+                playerDie1.classList.remove('animate-shake');
+                playerDie2.classList.remove('animate-shake');
 
                 // Show clean result message
                 resultDisplay.textContent = `Roll: ${sum} - ${state.rollResult}`;
                 resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
 
-                // Show effects
+                // Show effects and update stats
                 if (state.rollResult === 'WIN') {
                     // Calculate winnings based on current roll mode
                     let winnings;
@@ -2294,10 +2617,28 @@
                     triggerCoinShower();
                     updateLeaderboardWins();
                     checkDailyChallenge();
+                    
+                    // Update stats and add to live feed
+                    gameStats.addGame(state.chipValue, winnings, true);
+                    realWallet.balance += winnings;
+                    realWallet.updateWalletUI();
+                    
+                    // Add to live feed
+                    const multiplier = state.rollMode === 'under' ? 
+                        state.payouts[state.rollUnder] : 
+                        getPayoutForRollOver(state.rollUnder);
+                    liveFeed.addItem('win', `You won ${multiplier}x on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}!`);
                 } else {
                     showLossEffect();
                     updateStreak(false);
                     playLossSound();
+                    
+                    // Update stats and add to live feed
+                    gameStats.addGame(state.chipValue, 0, false);
+                    realWallet.balance -= state.chipValue;
+                    realWallet.updateWalletUI();
+                    
+                    liveFeed.addItem('loss', `You lost ${state.chipValue} SOL on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}`);
                 }
 
                 // Re-enable button
@@ -2316,7 +2657,7 @@
             }
 
             rollButton.disabled = true;
-            findMatchButton.disabled = true; // Disable find match button during duel
+            findMatchButton.disabled = true;
 
             // Deduct stake immediately
             realWallet.balance -= state.currentStake;
@@ -2324,7 +2665,7 @@
 
             // Animate both players' dice
             animateDice([playerDie1, playerDie2, opponentDie1, opponentDie2]);
-            vsText.style.display = 'block'; // Show VS text
+            vsText.style.display = 'block';
 
             playRollSound();
 
@@ -2349,7 +2690,7 @@
                 playerDie2.classList.remove('animate-shake');
                 opponentDie1.classList.remove('animate-shake');
                 opponentDie2.classList.remove('animate-shake');
-                vsText.style.display = 'none'; // Hide VS text
+                vsText.style.display = 'none';
 
                 const pot = state.currentStake * 2;
                 const platformFee = pot * 0.05;
@@ -2361,7 +2702,7 @@
                 if (playerTotal > opponentTotal) {
                     duelOutcome = 'WIN';
                     winAmount = winnings;
-                    realWallet.balance += winnings; // Add winnings to player's balance
+                    realWallet.balance += winnings;
                     showWinEffect(winAmount, 'duel');
                     playWinSound();
                     updateStreak(true);
@@ -2374,11 +2715,11 @@
                     updateStreak(false);
                 } else {
                     duelOutcome = 'TIE';
-                    winAmount = state.currentStake; // Return stake on tie
+                    winAmount = state.currentStake;
                     realWallet.balance += state.currentStake;
                     showMessageBox('It\'s a Tie! Your stake has been returned.', 'info');
-                    playLossSound(); // Use loss sound for tie
-                    updateStreak(false); // No streak change on tie
+                    playLossSound();
+                    updateStreak(false);
                 }
 
                 realWallet.updateWalletUI();
@@ -2405,18 +2746,16 @@
                 potDisplay.textContent = 'Pot: 0.00 SOL';
                 rollButton.disabled = false;
                 findMatchButton.disabled = false;
-                rollButton.style.display = 'none'; // Hide roll button
-                findMatchButton.style.display = 'block'; // Show find match button
+                rollButton.style.display = 'none';
+                findMatchButton.style.display = 'block';
 
-            }, 1500); // Longer timeout for duel animation
+            }, 1500);
         }
 
+        /* 16. Update Existing Animation Function */
         function animateDice(diceElements) {
-            diceElements.forEach(die => {
-                die.style.animation = 'none';
-                void die.offsetWidth; // Trigger reflow
-                die.classList.add('animate-shake'); // Add shake animation class
-            });
+            // Use enhanced animation
+            animateDiceEnhanced(diceElements);
         }
 
         function showWinEffect(amount, mode = 'solo') {
@@ -2562,13 +2901,6 @@
         const depositModal = document.getElementById('deposit-modal');
         const withdrawModal = document.getElementById('withdraw-modal');
 
-        // REMOVED OLD EVENT LISTENERS:
-        // const connectWalletBtn = document.getElementById('connect-wallet-btn');
-        // const profileAvatar = document.getElementById('profile-avatar');
-        // const depositBtn = document.getElementById('deposit-btn');
-        // const withdrawBtn = document.getElementById('withdraw-btn');
-        // const referralBtn = document.getElementById('referral-btn');
-
         const closeButtons = document.querySelectorAll('.modal .close-button');
 
         // Close Modals
@@ -2603,7 +2935,6 @@
 
             async connectWallet(walletType) {
                 try {
-                    // STEP 5: Add Debug Console Logs
                     console.log('🔄 Starting wallet connection for:', walletType);
                     console.log('🔍 NaCl available:', typeof nacl !== 'undefined');
                     
@@ -2620,20 +2951,16 @@
                         throw new Error(`${walletType} wallet not found. Please install the ${walletType} extension.`);
                     }
 
-                    // Connect to wallet
                     const connectionResult = await adapter.connect();
                     this.walletAdapter = adapter;
                     this.publicKey = connectionResult.publicKey || adapter.publicKey;
                     this.address = this.publicKey.toString();
                     this.walletType = walletType;
 
-                    // Show verification screen
                     this.showVerificationScreen();
 
-                    // Verify wallet ownership
                     await this.verifyWalletOwnership();
 
-                    // Fetch balance
                     await this.fetchBalance();
 
                     this.isConnected = true;
@@ -2646,10 +2973,8 @@
                 }
             }
 
-            // STEP 4: Fix the verifyWalletOwnership Method
             async verifyWalletOwnership() {
                 try {
-                    // Check if nacl is available
                     if (typeof nacl === 'undefined') {
                         throw new Error('Cryptographic library not loaded. Please refresh the page.');
                     }
@@ -2657,11 +2982,9 @@
                     const message = `DegenDice Auth: ${Date.now()}`;
                     const encodedMessage = new TextEncoder().encode(message);
                     
-                    // Get signature from wallet
                     const signedMessage = await this.walletAdapter.signMessage(encodedMessage, "utf8");
                     let signature = signedMessage.signature || signedMessage;
                     
-                    // Convert signature to Uint8Array if it's a string
                     if (typeof signature === 'string') {
                         try {
                             signature = bs58_decode(signature);
@@ -2670,12 +2993,10 @@
                         }
                     }
                     
-                    // Ensure signature is Uint8Array
                     if (!(signature instanceof Uint8Array)) {
                         throw new Error('Signature must be a Uint8Array');
                     }
                     
-                    // Get public key bytes
                     let publicKeyBytes;
                     try {
                         publicKeyBytes = this.publicKey.toBytes();
@@ -2683,7 +3004,6 @@
                         throw new Error('Invalid public key format');
                     }
                     
-                    // Verify signature using nacl
                     const isValid = nacl.sign.detached.verify(
                         encodedMessage,
                         signature,
@@ -2717,7 +3037,6 @@
                 }
             }
 
-            // STEP 6: Add Additional Error Handling for Missing Wallet Extensions
             getWalletAdapter(walletType) {
                 console.log('🔍 Checking for wallet adapter:', walletType);
                 
@@ -2807,27 +3126,21 @@
                     walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
                 }
                 
-                // Update balance display in bet controls
                 updateBalanceDisplay();
                 
-                // Update deposit/withdraw modals based on connection status
                 this.updateTransactionModals();
             }
 
-            // Add this new method to update transaction modals based on wallet connection
             updateTransactionModals() {
-                // Deposit modal elements
                 const depositNotConnected = document.getElementById('deposit-not-connected');
                 const depositConnected = document.getElementById('deposit-connected');
                 const depositCurrentBalance = document.getElementById('deposit-current-balance');
                 
-                // Withdraw modal elements
                 const withdrawNotConnected = document.getElementById('withdraw-not-connected');
                 const withdrawConnected = document.getElementById('withdraw-connected');
                 const withdrawCurrentBalance = document.getElementById('withdraw-current-balance');
                 
                 if (this.isConnected) {
-                    // Connected state
                     depositNotConnected.style.display = 'none';
                     depositConnected.style.display = 'block';
                     depositCurrentBalance.textContent = this.balance.toFixed(3);
@@ -2836,11 +3149,9 @@
                     withdrawConnected.style.display = 'block';
                     withdrawCurrentBalance.textContent = this.balance.toFixed(3);
                     
-                    // Enable transaction buttons
                     document.getElementById('confirm-deposit-btn').disabled = false;
                     document.getElementById('confirm-withdraw-btn').disabled = false;
                 } else {
-                    // Not connected state
                     depositNotConnected.style.display = 'block';
                     depositConnected.style.display = 'none';
                     
@@ -2848,14 +3159,11 @@
                     withdrawConnected.style.display = 'none';
                 }
                 
-                // Update USD value estimates (mock implementation)
                 this.updateUsdValueEstimates();
             }
 
-            // Add this method to update USD value estimates
             updateUsdValueEstimates() {
-                // Mock SOL price in USD - in a real app, you would fetch this from an API
-                const solPriceUsd = 173.45; // Example price
+                const solPriceUsd = 173.45;
                 
                 const depositAmount = parseFloat(document.getElementById('deposit-amount').value) || 0;
                 const withdrawAmount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
@@ -2864,12 +3172,9 @@
                 document.getElementById('withdraw-usd-value').textContent = (withdrawAmount * solPriceUsd).toFixed(2);
             }
         }
-        // Initialize real wallet manager
         const realWallet = new RealWalletManager();
-        // Replace mockWallet references
-        const mockWallet = realWallet; // For compatibility with existing code
+        const mockWallet = realWallet;
 
-        // Initial wallet UI update
         realWallet.updateWalletUI();
 
 
@@ -2890,11 +3195,11 @@
         ];
 
         function renderLeaderboard() {
-            leaderboardList.innerHTML = ''; // Clear current list
-            mockLeaderboardData.sort((a, b) => b.wins - a.wins); // Sort by wins
+            leaderboardList.innerHTML = '';
+            mockLeaderboardData.sort((a, b) => b.wins - a.wins);
             mockLeaderboardData.slice(0, 10).forEach(player => {
                 const listItem = document.createElement('li');
-                listItem.className = 'leaderboard-item fade-in'; // Add fade-in class
+                listItem.className = 'leaderboard-item fade-in';
                 listItem.innerHTML = `
                     <div class="player-info">
                         <span class="avatar">${player.avatar}</span>
@@ -2906,10 +3211,8 @@
             });
         }
 
-        // Mock function to update wins for the connected user (if connected)
         function updateLeaderboardWins() {
             if (realWallet.isConnected && realWallet.address) {
-                 // Find or add the current user to mock data
                  let currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
                  if (!currentUser) {
                      const username = localStorage.getItem('username') || 'You';
@@ -2918,13 +3221,11 @@
                      mockLeaderboardData.push(currentUser);
                  }
                  currentUser.wins++;
-                 renderLeaderboard(); // Re-render leaderboard
-                 // Update mock player stats in Firestore
+                 renderLeaderboard();
                  mockFirestore.addDoc('playerStats', { userId: mockAuth.currentUser.uid, wins: currentUser.wins });
             }
         }
 
-        // Initial render of the leaderboard
         renderLeaderboard();
 
 
@@ -2943,7 +3244,7 @@
         ];
 
         function renderChatMessages() {
-            chatBody.innerHTML = ''; // Clear current messages
+            chatBody.innerHTML = '';
             mockChatMessages.forEach(msg => {
                 const msgElement = document.createElement('div');
                 msgElement.className = 'chat-message';
@@ -2956,7 +3257,6 @@
                 }
                 chatBody.appendChild(msgElement);
             });
-            // Auto-scroll to bottom
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
@@ -2965,9 +3265,8 @@
             if (text) {
                  const username = localStorage.getItem('username') || 'Anonymous';
                 mockChatMessages.push({ username: username, text: text, type: 'user' });
-                chatInput.value = ''; // Clear input
+                chatInput.value = '';
                 renderChatMessages();
-                 // Simulate receiving a response or another message
                  setTimeout(simulateNewChatMessage, 1000);
             }
         }
@@ -2979,7 +3278,6 @@
             }
         });
 
-        // Simulate new messages arriving
         function simulateNewChatMessage() {
              const simulatedMessages = [
                  { username: 'SOL_Roller', text: 'Anyone on a hot streak?', type: 'user' },
@@ -2991,20 +3289,15 @@
              renderChatMessages();
         }
 
-        // Simulate new messages every few seconds
-        setInterval(simulateNewChatMessage, 5000); // Simulate a new message every 5 seconds
+        setInterval(simulateNewChatMessage, 5000);
 
-        // Initial render of chat messages
         renderChatMessages();
 
-        // Fix the mobile chat container click handler (around line 1240):
         chatContainer.addEventListener('click', (e) => {
-            // Only trigger on mobile
             if (window.innerWidth <= 768) {
-                e.stopPropagation(); // Prevent event bubbling
+                e.stopPropagation();
                 if (!document.body.classList.contains('chat-open')) {
                     document.body.classList.add('chat-open');
-                    // Force display of chat elements
                     document.getElementById('chat-header').style.display = 'flex';
                     document.getElementById('chat-body').style.display = 'flex';
                     document.getElementById('chat-input').parentElement.style.display = 'flex';
@@ -3013,12 +3306,10 @@
             }
         });
 
-        // Fix the chat header click handler (around line 1247):
         chatHeader.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent event bubbling
+            e.stopPropagation();
             if (window.innerWidth <= 768 && document.body.classList.contains('chat-open')) {
                 document.body.classList.remove('chat-open');
-                // Reset to bubble state
                 setTimeout(() => {
                     if (window.innerWidth <= 768 && !document.body.classList.contains('chat-open')) {
                         document.getElementById('chat-header').style.display = 'none';
@@ -3026,7 +3317,7 @@
                         document.getElementById('chat-input').parentElement.style.display = 'none';
                         document.getElementById('chat-bubble-icon').style.display = 'flex';
                     }
-                }, 300); // Wait for transition to complete
+                }, 300);
             }
         });
 
@@ -3035,7 +3326,7 @@
         const usernameInput = document.getElementById('username-input');
         const avatarSelect = document.getElementById('avatar-select');
         const saveProfileBtn = document.getElementById('save-profile-btn');
-        const profileAvatarIcon = document.querySelector('#profile-avatar-new i'); // Updated selector for new avatar ID
+        const profileAvatarIcon = document.querySelector('#profile-avatar-new i');
 
         function loadProfile() {
             const savedUsername = localStorage.getItem('username');
@@ -3043,16 +3334,16 @@
 
             if (savedUsername) {
                 usernameInput.value = savedUsername;
-                mockAuth.currentUser.displayName = savedUsername; // Update mock auth
+                mockAuth.currentUser.displayName = savedUsername;
             }
             if (savedAvatar) {
                 avatarSelect.value = savedAvatar;
                 profileAvatarIcon.textContent = savedAvatar;
-                mockAuth.currentUser.photoURL = savedAvatar; // Update mock auth
+                mockAuth.currentUser.photoURL = savedAvatar;
             } else {
                  profileAvatarIcon.className = '';
                  profileAvatarIcon.textContent = '👤';
-                 mockAuth.currentUser.photoURL = '👤'; // Default emoji
+                 mockAuth.currentUser.photoURL = '👤';
             }
         }
 
@@ -3079,7 +3370,6 @@
              }
         });
 
-        // Load profile on page load
         loadProfile();
 
 
@@ -3087,22 +3377,18 @@
         const depositAmountInput = document.getElementById('deposit-amount');
         const confirmDepositBtn = document.getElementById('confirm-deposit-btn');
         const withdrawAmountInput = document.getElementById('withdraw-amount');
-        const currentBalanceDisplay = document.getElementById('current-balance');
         const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
 
-        // Deposit modal connect wallet button
         document.getElementById('deposit-connect-wallet-btn').addEventListener('click', () => {
             depositModal.style.display = 'none';
             walletModal.style.display = 'flex';
         });
 
-        // Withdraw modal connect wallet button
         document.getElementById('withdraw-connect-wallet-btn').addEventListener('click', () => {
             withdrawModal.style.display = 'none';
             walletModal.style.display = 'flex';
         });
 
-        // Update deposit button logic
         confirmDepositBtn.addEventListener('click', () => {
             if (!realWallet.isConnected) {
                 showMessageBox('Please connect your wallet first!', 'warning');
@@ -3115,7 +3401,6 @@
             if (amount > 0) {
                 showMessageBox(`Processing deposit of ${amount.toFixed(2)} SOL...`, 'info');
                 
-                // Simulate transaction processing delay
                 confirmDepositBtn.disabled = true;
                 confirmDepositBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                 
@@ -3133,7 +3418,6 @@
             }
         });
 
-        // Update withdraw button logic
         confirmWithdrawBtn.addEventListener('click', () => {
             if (!realWallet.isConnected) {
                 showMessageBox('Please connect your wallet first!', 'warning');
@@ -3146,7 +3430,6 @@
             if (amount > 0 && amount <= realWallet.balance) {
                 showMessageBox(`Processing withdrawal of ${amount.toFixed(2)} SOL...`, 'info');
                 
-                // Simulate transaction processing delay
                 confirmWithdrawBtn.disabled = true;
                 confirmWithdrawBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                 
@@ -3166,7 +3449,6 @@
             }
         });
 
-        // Update amount input event listeners to calculate USD values
         document.getElementById('deposit-amount').addEventListener('input', () => {
             realWallet.updateUsdValueEstimates();
         });
@@ -3296,7 +3578,6 @@
 
         copyReferralBtn.addEventListener('click', () => {
              const code = referralCodeElement.textContent;
-             // Using document.execCommand('copy') for better iframe compatibility
              const tempInput = document.createElement('textarea');
              tempInput.value = code;
              document.body.appendChild(tempInput);
@@ -3323,13 +3604,11 @@
             const chatInput = document.getElementById('chat-input');
             const chatBubbleIcon = document.getElementById('chat-bubble-icon');
 
-            // FIND this section in the resize event listener and UPDATE it:
             if (window.innerWidth > 768) {
                 document.body.classList.remove('leaderboard-open');
                 document.body.classList.remove('chat-open');
                 leaderboardSidebar.style.transform = 'translateX(0)';
 
-                // Desktop chat setup
                 chatContainer.style.position = 'fixed';
                 chatContainer.style.width = 'var(--chat-width)';
                 chatContainer.style.height = 'var(--chat-height)';
@@ -3349,7 +3628,6 @@
             } else {
                 leaderboardSidebar.style.transform = 'translateX(100%)';
 
-                // Mobile chat bubble setup (only if chat is not open)
                 if (!document.body.classList.contains('chat-open')) {
                     chatContainer.style.position = 'fixed';
                     chatContainer.style.width = 'var(--chat-bubble-size)';
@@ -3371,36 +3649,31 @@
             }
         });
 
-        // Initial check for mobile layout on load
-        window.dispatchEvent(new Event('resize')); // Trigger resize on load to set initial layout
+        window.dispatchEvent(new Event('resize'));
 
 
-        // New event listeners for the updated header
         const profileAvatarNew = document.getElementById('profile-avatar-new');
         const profileDropdown = document.getElementById('profile-dropdown');
         const dropdownProfileBtn = document.getElementById('dropdown-profile-btn');
         const dropdownDepositBtn = document.getElementById('dropdown-deposit-btn');
         const dropdownWithdrawBtn = document.getElementById('dropdown-withdraw-btn');
-        const dropdownReferralBtn = document.getElementById('dropdown-referral-btn');
+        // const dropdownReferralBtn = document.getElementById('dropdown-referral-btn'); // Removed
         const dropdownDisconnectBtn = document.getElementById('dropdown-disconnect-btn');
 
-        // Mobile menu elements
         const hamburgerMenu = document.getElementById('hamburger-menu');
         const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
         const mobileProfileBtn = document.getElementById('mobile-profile-btn');
         const mobileDepositBtn = document.getElementById('mobile-deposit-btn');
         const mobileWithdrawBtn = document.getElementById('mobile-withdraw-btn');
-        const mobileReferralBtn = document.getElementById('mobile-referral-btn');
+        // const mobileReferralBtn = document.getElementById('mobile-referral-btn'); // Removed
         const mobileDisconnectBtn = document.getElementById('mobile-disconnect-btn');
         const mobileConnectWalletBtn = document.getElementById('mobile-connect-wallet-btn');
 
-        // Close menu button event listener
         document.getElementById('close-menu-btn').addEventListener('click', () => {
             mobileNavOverlay.classList.remove('show');
             hamburgerMenu.classList.remove('active');
         });
 
-        // Desktop dropdown event listeners
         dropdownProfileBtn.addEventListener('click', (e) => {
              e.preventDefault();
              profileModal.style.display = 'flex';
@@ -3410,28 +3683,21 @@
              e.preventDefault();
              depositModal.style.display = 'flex';
              profileDropdown.classList.remove('show');
-             realWallet.updateTransactionModals(); // Ensure modal shows correct state
+             realWallet.updateTransactionModals();
          });
         dropdownWithdrawBtn.addEventListener('click', (e) => {
              e.preventDefault();
              withdrawModal.style.display = 'flex';
              profileDropdown.classList.remove('show');
-             realWallet.updateTransactionModals(); // Ensure modal shows correct state
+             realWallet.updateTransactionModals();
          });
-        dropdownReferralBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const referralPanel = document.getElementById('referral-feature');
-            referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
-            profileDropdown.classList.remove('show');
-        });
-        // Update dropdown disconnect logic
+        // Removed dropdownReferralBtn event listener
         dropdownDisconnectBtn.addEventListener('click', (e) => {
             e.preventDefault();
             realWallet.disconnect();
             profileDropdown.classList.remove('show');
         });
 
-        // Mobile menu button listeners
         mobileProfileBtn.addEventListener('click', (e) => {
              e.preventDefault();
              profileModal.style.display = 'flex';
@@ -3443,23 +3709,16 @@
              depositModal.style.display = 'flex';
              mobileNavOverlay.classList.remove('show');
              hamburgerMenu.classList.remove('active');
-             realWallet.updateTransactionModals(); // Ensure modal shows correct state
+             realWallet.updateTransactionModals();
          });
         mobileWithdrawBtn.addEventListener('click', (e) => {
              e.preventDefault();
              withdrawModal.style.display = 'flex';
              mobileNavOverlay.classList.remove('show');
              hamburgerMenu.classList.remove('active');
-             realWallet.updateTransactionModals(); // Ensure modal shows correct state
+             realWallet.updateTransactionModals();
          });
-        mobileReferralBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const referralPanel = document.getElementById('referral-feature');
-            referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
-            mobileNavOverlay.classList.remove('show');
-             hamburgerMenu.classList.remove('active');
-        });
-        // Update dropdown disconnect logic
+        // Removed mobileReferralBtn event listener
         mobileDisconnectBtn.addEventListener('click', (e) => {
             e.preventDefault();
             realWallet.disconnect();
@@ -3473,51 +3732,44 @@
              hamburgerMenu.classList.remove('active');
          });
 
-        // Dropdown toggle for profile avatar
         profileAvatarNew.addEventListener('click', (event) => {
             event.stopPropagation();
             profileDropdown.classList.toggle('show');
         });
 
-        // Hamburger menu toggle for mobile
         hamburgerMenu.addEventListener('click', () => {
             hamburgerMenu.classList.toggle('active');
             mobileNavOverlay.classList.toggle('show');
         });
 
-        // Close dropdown and mobile menu when clicking outside
         window.addEventListener('click', (event) => {
-            // Close dropdown if clicked outside
             if (!event.target.closest('.profile-dropdown-container') && profileDropdown.classList.contains('show')) {
                 profileDropdown.classList.remove('show');
             }
-            // Close mobile nav overlay if clicked outside
             if (event.target === mobileNavOverlay) {
                 mobileNavOverlay.classList.remove('show');
                 hamburgerMenu.classList.remove('active');
             }
         });
 
-        // Update wallet connection event listeners
         document.getElementById('connect-phantom').addEventListener('click', () => {
             realWallet.connectWallet('phantom');
         });
 
-        document.getElementById('connect-solflare').addEventListener('click', () => { // Fixed: Added 'click' event type
+        document.getElementById('connect-solflare').addEventListener('click', () => {
             realWallet.connectWallet('solflare');
         });
 
         document.getElementById('wallet-success-continue').addEventListener('click', () => {
             document.getElementById('wallet-modal').style.display = 'none';
             realWallet.resetModalState();
-            realWallet.updateTransactionModals(); // Refresh transaction UI after successful connect
+            realWallet.updateTransactionModals();
         });
 
         document.getElementById('wallet-error-retry').addEventListener('click', () => {
             realWallet.resetModalState();
         });
 
-        // Make wallet info clickable for connection
         document.getElementById('wallet-info').addEventListener('click', () => {
             if (!realWallet.isConnected) {
                 document.getElementById('wallet-modal').style.display = 'flex';
@@ -3525,7 +3777,6 @@
             }
         });
 
-        // Close modal when clicking outside or on close button
         document.querySelector('#wallet-modal .close-button').addEventListener('click', () => {
             document.getElementById('wallet-modal').style.display = 'none';
             realWallet.resetModalState();
@@ -3538,8 +3789,6 @@
             }
         });
 
-        // NEW: Custom bet input functionality
-        // Format balance display
         function updateBalanceDisplay() {
             const balance = realWallet.balance || 0;
             balanceAmount.textContent = `SOL ${balance.toLocaleString('en-US', {
@@ -3548,19 +3797,15 @@
             })}`;
         }
 
-        // Handle custom bet input
         function handleCustomBetInput() {
             const customValue = parseFloat(customBetInput.value);
             
             if (customValue && customValue > 0) {
-                // Remove active class from all chip buttons
                 chipButtons.forEach(btn => btn.classList.remove('active'));
                 
-                // Set the custom bet value
                 state.chipValue = Math.min(customValue, realWallet.balance || 999999);
                 state.currentStake = state.chipValue;
                 
-                // Visual feedback for custom input
                 customBetInput.style.borderColor = 'var(--accent-green)';
                 setTimeout(() => {
                     customBetInput.style.borderColor = '';
@@ -3568,12 +3813,10 @@
             }
         }
 
-        // Clear custom bet input
         function clearCustomBet() {
             customBetInput.value = '';
             customBetInput.style.borderColor = '';
             
-            // Reset to default chip value (1 SOL)
             chipButtons.forEach(btn => btn.classList.remove('active'));
             const defaultChip = document.querySelector('[data-value="1"]');
             if (defaultChip) {
@@ -3583,7 +3826,6 @@
             }
         }
 
-        // Validate bet amount against balance
         function validateBetAmount(amount) {
             const balance = realWallet.balance || 0;
             if (amount > balance) {
@@ -3597,7 +3839,6 @@
             return true;
         }
 
-        // Event Listeners for Custom Bet Input
         customBetInput.addEventListener('input', handleCustomBetInput);
         customBetInput.addEventListener('blur', () => {
             const value = parseFloat(customBetInput.value);
@@ -3607,54 +3848,45 @@
             }
         });
 
-        // Handle Enter key in custom input
         customBetInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 customBetInput.blur();
-                // Optionally trigger a roll if in solo mode
                 if (state.gameMode === 'solo' && !rollButton.disabled) {
                     rollButton.click();
                 }
             }
         });
 
-        // Clear button functionality
         clearBetBtn.addEventListener('click', clearCustomBet);
 
-        // Balance display click (could open balance modal in future)
         document.querySelector('.balance-display').addEventListener('click', () => {
-            // Future: Could open detailed balance/transaction history
             showMessageBox(`Current Balance: ${realWallet.balance.toFixed(3)} SOL`, 'info');
         });
 
-        // NEW: Initialize balance display
         updateBalanceDisplay();
 
-        // Initialize deposit/withdraw UI based on wallet connection status
         realWallet.updateTransactionModals();
 
-        // Update dropdown menu handlers to check wallet connection first
         dropdownDepositBtn.addEventListener('click', (e) => {
             e.preventDefault();
             depositModal.style.display = 'flex';
             profileDropdown.classList.remove('show');
-            realWallet.updateTransactionModals(); // Ensure modal shows correct state
+            realWallet.updateTransactionModals();
         });
 
         dropdownWithdrawBtn.addEventListener('click', (e) => {
             e.preventDefault();
             withdrawModal.style.display = 'flex';
             profileDropdown.classList.remove('show');
-            realWallet.updateTransactionModals(); // Ensure modal shows correct state
+            realWallet.updateTransactionModals();
         });
 
-        // Mobile menu handlers
         mobileDepositBtn.addEventListener('click', (e) => {
             e.preventDefault();
             depositModal.style.display = 'flex';
             mobileNavOverlay.classList.remove('show');
             hamburgerMenu.classList.remove('active');
-            realWallet.updateTransactionModals(); // Ensure modal shows correct state
+            realWallet.updateTransactionModals();
         });
 
         mobileWithdrawBtn.addEventListener('click', (e) => {
@@ -3662,15 +3894,225 @@
             withdrawModal.style.display = 'flex';
             mobileNavOverlay.classList.remove('show');
             hamburgerMenu.classList.remove('active');
-            realWallet.updateTransactionModals(); // Ensure modal shows correct state
+            realWallet.updateTransactionModals();
         });
 
-        // Update wallet success handler to refresh deposit/withdraw UI
         document.getElementById('wallet-success-continue').addEventListener('click', () => {
             document.getElementById('wallet-modal').style.display = 'none';
             realWallet.resetModalState();
-            realWallet.updateTransactionModals(); // Refresh transaction UI after successful connect
+            realWallet.updateTransactionModals();
         });
+
+        // 15. JavaScript Functionality
+        // --- Enhanced Game Statistics ---
+        const gameStats = {
+            totalGames: 0,
+            totalWins: 0,
+            totalWagered: 0,
+            totalWinnings: 0,
+            load: function() {
+                this.totalGames = parseInt(localStorage.getItem('totalGames')) || 0;
+                this.totalWins = parseInt(localStorage.getItem('totalWins')) || 0;
+                this.totalWagered = parseFloat(localStorage.getItem('totalWagered')) || 0;
+                this.totalWinnings = parseFloat(localStorage.getItem('totalWinnings')) || 0;
+                this.updateDisplay();
+            },
+            save: function() {
+                localStorage.setItem('totalGames', this.totalGames);
+                localStorage.setItem('totalWins', this.totalWins);
+                localStorage.setItem('totalWagered', this.totalWagered.toFixed(3));
+                localStorage.setItem('totalWinnings', this.totalWinnings.toFixed(3));
+            },
+            addGame: function(wagered, winnings = 0, isWin = false) {
+                this.totalGames++;
+                this.totalWagered += wagered;
+                if (isWin) {
+                    this.totalWins++;
+                    this.totalWinnings += winnings;
+                }
+                this.save();
+                this.updateDisplay();
+            },
+            updateDisplay: function() {
+                document.getElementById('total-games').textContent = this.totalGames.toLocaleString();
+                document.getElementById('win-rate').textContent = 
+                    this.totalGames > 0 ? Math.round((this.totalWins / this.totalGames) * 100) + '%' : '0%';
+                document.getElementById('total-wagered').textContent = this.totalWagered.toFixed(3);
+                document.getElementById('net-profit').textContent = (this.totalWinnings - this.totalWagered).toFixed(3);
+                
+                const profitElement = document.getElementById('net-profit');
+                const netProfit = this.totalWinnings - this.totalWagered;
+                if (netProfit > 0) {
+                    profitElement.style.color = 'var(--accent-green)';
+                } else if (netProfit < 0) {
+                    profitElement.style.color = 'var(--accent-pink)';
+                } else {
+                    profitElement.style.color = 'var(--text-light)';
+                }
+            }
+        };
+
+        // --- Floating Particles Background ---
+        function createFloatingParticles() {
+            const particlesContainer = document.getElementById('floating-particles');
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                
+                const colors = ['rgba(0, 255, 153, 0.1)', 'rgba(255, 51, 102, 0.1)', 'rgba(157, 78, 221, 0.1)'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                
+                particlesContainer.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 25000);
+            }
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(createParticle, i * 1000);
+            }
+            
+            setInterval(createParticle, 2000);
+        }
+
+        // --- Enhanced Dice Animation ---
+        function animateDiceEnhanced(diceElements) {
+            diceElements.forEach((die, index) => {
+                die.classList.add('rolling');
+                
+                const soundWaves = die.querySelector('.sound-waves');
+                if (soundWaves) {
+                    soundWaves.classList.add('active');
+                    setTimeout(() => {
+                        soundWaves.classList.remove('active');
+                    }, 1000);
+                }
+                
+                setTimeout(() => {
+                    die.classList.remove('rolling');
+                }, 1000);
+            });
+        }
+
+        // --- Live Activity Feed ---
+        const liveFeed = {
+            items: [
+                { type: 'win', message: 'Anonymous won 2.5x on Roll Under 8!' },
+                { type: 'loss', message: 'Player123 lost 1.2 SOL on Roll Over 6' },
+                { type: 'win', message: 'CryptoKing hit 5.5x multiplier!' },
+                { type: 'win', message: 'LuckyPlayer earned 3.2 SOL!' },
+                { type: 'loss', message: 'GamblerPro lost streak at 7 wins' }
+            ],
+            currentIndex: 0,
+            
+            show: function() {
+                const feedElement = document.getElementById('live-feed');
+                feedElement.classList.add('show');
+                this.startRotation();
+            },
+            
+            hide: function() {
+                const feedElement = document.getElementById('live-feed');
+                feedElement.classList.remove('show');
+                this.stopRotation();
+            },
+            
+            addItem: function(type, message) {
+                this.items.unshift({ type, message });
+                if (this.items.length > 10) {
+                    this.items.pop();
+                }
+                this.updateDisplay();
+            },
+            
+            updateDisplay: function() {
+                const feedContent = document.getElementById('feed-content');
+                feedContent.innerHTML = '';
+                this.items.slice(0, 5).forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = `feed-item ${item.type}`;
+                    itemElement.textContent = item.message;
+                    feedContent.appendChild(itemElement);
+                });
+            },
+            
+            startRotation: function() {
+                this.rotationInterval = setInterval(() => {
+                    const types = ['win', 'loss'];
+                    const messages = [
+                        'Player won big on dice roll!',
+                        'Someone hit the jackpot!',
+                        'Lucky streak continues...',
+                        'Close call - almost won!',
+                        'High roller betting big!'
+                    ];
+                    
+                    const randomType = types[Math.floor(Math.random() * types.length)];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    
+                    this.addItem(randomType, randomMessage);
+                }, 5000);
+            },
+            
+            stopRotation: function() {
+                if (this.rotationInterval) {
+                    clearInterval(this.rotationInterval);
+                }
+            }
+        };
+
+        // Removed setupMobileQuickActions function and its call
+        // function setupMobileQuickActions() {
+        //     const quickBetButtons = document.querySelectorAll('.quick-bet-btn');
+        //     const mobileRollBtn = document.getElementById('mobile-roll-btn');
+            
+        //     quickBetButtons.forEach(btn => {
+        //         btn.addEventListener('click', () => {
+        //             const amount = parseFloat(btn.dataset.amount);
+        //             state.chipValue = amount;
+        //             state.currentStake = amount;
+                    
+        //             quickBetButtons.forEach(b => b.style.opacity = '0.6');
+        //             btn.style.opacity = '1';
+                    
+        //             const customInput = document.getElementById('custom-bet-input');
+        //             if (customInput) {
+        //                 customInput.value = amount;
+        //             }
+        //         });
+        //     });
+            
+        //     mobileRollBtn.addEventListener('click', () => {
+        //         if (state.gameMode === 'solo') {
+        //             rollDiceSolo();
+        //         } else if (state.gameMode === 'duel' && state.activeMatch) {
+        //             rollDiceDuel();
+        //         }
+        //     });
+        // }
+
+        // Initialize enhanced features
+        gameStats.load();
+        createFloatingParticles();
+        // Removed setupMobileQuickActions() call
+        // setupMobileQuickActions();
+
+        // Show live feed on desktop
+        if (window.innerWidth > 768) {
+            setTimeout(() => liveFeed.show(), 2000);
+        }
     </script>
 </body>
 </html>
