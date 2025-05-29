@@ -593,6 +593,10 @@
         }
 
         /* Wallet Connect Modal Specifics */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         .wallet-options button {
             display: block;
             width: 100%;
@@ -604,15 +608,17 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
         }
-
+        .wallet-options button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
         .wallet-options button img {
             width: 24px;
             height: 24px;
-        }
-
-        .wallet-options button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
         }
 
         /* Leaderboard */
@@ -1326,10 +1332,58 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>Connect Wallet</h2>
-            <div class="wallet-options">
-                <button id="connect-phantom"><img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> Phantom</button>
-                <button id="connect-solflare"><img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> Solflare</button>
-                <button id="disconnect-wallet" style="display: none;">Disconnect</button>
+            
+            <div id="wallet-selection-screen">
+                <div class="wallet-options">
+                    <button id="connect-phantom">
+                        <img src="https://phantom.app/img/phantom-icon-purple.png" alt="Phantom Icon"> 
+                        Phantom
+                    </button>
+                    <button id="connect-solflare">
+                        <img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> 
+                        Solflare
+                    </button>
+                </div>
+            </div>
+            
+            <div id="wallet-connecting-screen" style="display: none;">
+                <div style="text-align: center;">
+                    <div class="spinner" style="margin: 20px auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-green); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <h3>Connecting to <span id="selected-wallet-name"></span></h3>
+                    <p>Please approve the connection in your wallet...</p>
+                </div>
+            </div>
+            
+            <div id="wallet-verification-screen" style="display: none;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 15px;">🔐</div>
+                    <h3>Verify Wallet Ownership</h3>
+                    <p>Please sign a message to verify you own this wallet. This doesn't cost any SOL.</p>
+                    <div style="background: #333; padding: 10px; border-radius: 8px; margin: 15px 0; word-break: break-all;">
+                        <strong>Wallet:</strong> <span id="wallet-address-display"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="wallet-success-screen" style="display: none;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 15px; color: var(--accent-green);">✅</div>
+                    <h3>Wallet Connected Successfully!</h3>
+                    <p>Your wallet is now connected and verified. You can start playing with real SOL.</p>
+                    <button id="wallet-success-continue">Start Playing</button>
+                </div>
+            </div>
+            
+            <div id="wallet-error-screen" style="display: none;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 15px; color: var(--accent-pink);">❌</div>
+                    <h3>Connection Failed</h3>
+                    <p id="wallet-error-message">Failed to connect wallet. Please try again.</p>
+                    <div style="margin-top: 20px;">
+                        <button id="wallet-error-retry">Try Again</button>
+                        <button onclick="window.open('https://solana.com/ecosystem/wallets', '_blank')" style="background: #666; margin-left: 10px;">Get Help</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1398,6 +1452,11 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
+    
     <script>
         // --- Firebase Mock Setup (for demonstration purposes) ---
         // In a real application, you would initialize Firebase here and use its SDK.
@@ -1755,7 +1814,7 @@
                 this.classList.add('active');
 
                 if (this.dataset.value === 'MAX') {
-                    state.chipValue = mockWallet.balance; // Use actual balance for MAX
+                    state.chipValue = realWallet.balance; // Use actual balance for MAX
                 } else {
                     state.chipValue = parseFloat(this.dataset.value);
                 }
@@ -1833,7 +1892,7 @@
                 showMessageBox('No active duel. Please find a match first!', 'warning');
                 return;
             }
-            if (mockWallet.balance < state.currentStake) {
+            if (realWallet.balance < state.currentStake) {
                 showMessageBox('Insufficient balance to stake this amount!', 'error');
                 return;
             }
@@ -1842,8 +1901,8 @@
             findMatchButton.disabled = true; // Disable find match button during duel
 
             // Deduct stake immediately
-            mockWallet.balance -= state.currentStake;
-            updateWalletUI();
+            realWallet.balance -= state.currentStake;
+            realWallet.updateWalletUI();
 
             // Animate both players' dice
             animateDice([playerDie1, playerDie2, opponentDie1, opponentDie2]);
@@ -1884,7 +1943,7 @@
                 if (playerTotal > opponentTotal) {
                     duelOutcome = 'WIN';
                     winAmount = winnings;
-                    mockWallet.balance += winnings; // Add winnings to player's balance
+                    realWallet.balance += winnings; // Add winnings to player's balance
                     showWinEffect(winAmount, 'duel');
                     playWinSound();
                     updateStreak(true);
@@ -1898,13 +1957,13 @@
                 } else {
                     duelOutcome = 'TIE';
                     winAmount = state.currentStake; // Return stake on tie
-                    mockWallet.balance += state.currentStake;
+                    realWallet.balance += state.currentStake;
                     showMessageBox('It\'s a Tie! Your stake has been returned.', 'info');
                     playLossSound(); // Use loss sound for tie
                     updateStreak(false); // No streak change on tie
                 }
 
-                updateWalletUI();
+                realWallet.updateWalletUI();
 
                 resultDisplay.textContent = `You: ${playerTotal} vs Opponent: ${opponentTotal} - You ${duelOutcome}!`;
                 resultDisplay.className = 'result-display ' + (duelOutcome === 'WIN' ? 'win' : (duelOutcome === 'LOSS' ? 'loss' : ''));
@@ -2090,74 +2149,201 @@
         closeButtons.forEach(button => {
             button.addEventListener('click', function() {
                 this.closest('.modal').style.display = 'none';
+                realWallet.resetModalState(); // Reset wallet modal state on close
             });
         });
 
         window.addEventListener('click', (event) => {
-            if (event.target === walletModal) { walletModal.style.display = 'none'; }
+            if (event.target === walletModal) { 
+                walletModal.style.display = 'none'; 
+                realWallet.resetModalState(); // Reset wallet modal state on close
+            }
             if (event.target === profileModal) { profileModal.style.display = 'none'; }
             if (event.target === depositModal) { depositModal.style.display = 'none'; }
             if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; }
         });
 
 
-        // --- Wallet Connection (Mock) ---
-        const walletInfo = document.getElementById('wallet-info');
-        const connectPhantomBtn = document.getElementById('connect-phantom');
-        const connectSolflareBtn = document.getElementById('connect-solflare');
-        const disconnectWalletBtn = document.getElementById('disconnect-wallet');
+        // --- Real Wallet Connection Implementation ---
+        class RealWalletManager {
+            constructor() {
+                this.isConnected = false;
+                this.address = null;
+                this.balance = 0;
+                this.walletType = null;
+                this.walletAdapter = null;
+                this.publicKey = null;
+            }
 
-        const mockWallet = {
-            isConnected: false,
-            address: null,
-            balance: 10.00 // Mock balance
-        };
+            async connectWallet(walletType) {
+                try {
+                    this.showConnectingScreen(walletType);
+                    
+                    // Mobile deep linking check
+                    if (this.isMobile() && !this.isWalletAvailable(walletType)) {
+                        this.redirectToWalletApp(walletType);
+                        return;
+                    }
 
-        function updateWalletUI() {
-            if (mockWallet.isConnected) {
-                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${mockWallet.address.substring(0, 6)}...${mockWallet.address.slice(-4)} (${mockWallet.balance.toFixed(2)} SOL)`;
-                // connectWalletBtn.style.display = 'none'; // This button is now part of the mobile menu
-                disconnectWalletBtn.style.display = 'block';
-            } else {
-                walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
-                // connectWalletBtn.style.display = 'block'; // This button is now part of the mobile menu
-                disconnectWalletBtn.style.display = 'none';
+                    const adapter = this.getWalletAdapter(walletType);
+                    if (!adapter) {
+                        throw new Error(`${walletType} wallet not found. Please install the ${walletType} extension.`);
+                    }
+
+                    // Connect to wallet
+                    const connectionResult = await adapter.connect();
+                    this.walletAdapter = adapter;
+                    this.publicKey = connectionResult.publicKey || adapter.publicKey;
+                    this.address = this.publicKey.toString();
+                    this.walletType = walletType;
+
+                    // Show verification screen
+                    this.showVerificationScreen();
+
+                    // Verify wallet ownership
+                    await this.verifyWalletOwnership();
+
+                    // Fetch balance
+                    await this.fetchBalance();
+
+                    this.isConnected = true;
+                    this.showSuccessScreen();
+                    this.updateWalletUI();
+
+                } catch (error) {
+                    console.error('Wallet connection error:', error);
+                    this.showErrorScreen(error.message);
+                }
+            }
+
+            async verifyWalletOwnership() {
+                try {
+                    const message = `DegenDice Auth: ${Date.now()}`;
+                    const encodedMessage = new TextEncoder().encode(message);
+                    
+                    const signedMessage = await this.walletAdapter.signMessage(encodedMessage, "utf8");
+                    const signature = signedMessage.signature || signedMessage;
+                    
+                    // Verify signature locally
+                    const isValid = nacl.sign.detached.verify(
+                        encodedMessage,
+                        new Uint8Array(signature),
+                        this.publicKey.toBytes()
+                    );
+
+                    if (!isValid) {
+                        throw new Error('Signature verification failed');
+                    }
+
+                } catch (error) {
+                    throw new Error('Failed to verify wallet ownership: ' + error.message);
+                }
+            }
+
+            async fetchBalance() {
+                try {
+                    const connection = new solanaWeb3.Connection(
+                        solanaWeb3.clusterApiUrl("mainnet-beta"),
+                        "confirmed"
+                    );
+                    
+                    const balance = await connection.getBalance(this.publicKey);
+                    this.balance = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                } catch (error) {
+                    console.error('Error fetching balance:', error);
+                    this.balance = 0;
+                }
+            }
+
+            getWalletAdapter(walletType) {
+                if (walletType === 'phantom') {
+                    return window.solana && window.solana.isPhantom ? window.solana : null;
+                } else if (walletType === 'solflare') {
+                    return window.solflare && window.solflare.isSolflare ? window.solflare : null;
+                }
+                return null;
+            }
+
+            isWalletAvailable(walletType) {
+                if (walletType === 'phantom') {
+                    return window.solana && window.solana.isPhantom;
+                } else if (walletType === 'solflare') {
+                    return window.solflare && window.solflare.isSolflare;
+                }
+                return false;
+            }
+
+            isMobile() {
+                return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            }
+
+            redirectToWalletApp(walletType) {
+                const currentUrl = encodeURIComponent(window.location.href);
+                if (walletType === 'phantom') {
+                    window.location.href = `https://phantom.app/ul/browse/${currentUrl}`;
+                } else if (walletType === 'solflare') {
+                    window.location.href = `https://solflare.com/ul/v1/browse/${currentUrl}`;
+                }
+            }
+
+            showConnectingScreen(walletType) {
+                document.getElementById('wallet-selection-screen').style.display = 'none';
+                document.getElementById('wallet-connecting-screen').style.display = 'block';
+                document.getElementById('selected-wallet-name').textContent = walletType.charAt(0).toUpperCase() + walletType.slice(1);
+            }
+
+            showVerificationScreen() {
+                document.getElementById('wallet-connecting-screen').style.display = 'none';
+                document.getElementById('wallet-verification-screen').style.display = 'block';
+                document.getElementById('wallet-address-display').textContent = this.address;
+            }
+
+            showSuccessScreen() {
+                document.getElementById('wallet-verification-screen').style.display = 'none';
+                document.getElementById('wallet-success-screen').style.display = 'block';
+            }
+
+            showErrorScreen(errorMessage) {
+                document.querySelectorAll('#wallet-modal > .modal-content > div[id*="screen"]').forEach(screen => {
+                    screen.style.display = 'none';
+                });
+                document.getElementById('wallet-error-screen').style.display = 'block';
+                document.getElementById('wallet-error-message').textContent = errorMessage;
+            }
+
+            resetModalState() {
+                document.querySelectorAll('#wallet-modal > .modal-content > div[id*="screen"]').forEach(screen => {
+                    screen.style.display = 'none';
+                });
+                document.getElementById('wallet-selection-screen').style.display = 'block';
+            }
+
+            disconnect() {
+                this.isConnected = false;
+                this.address = null;
+                this.balance = 0;
+                this.walletType = null;
+                this.walletAdapter = null;
+                this.publicKey = null;
+                this.updateWalletUI();
+            }
+
+            updateWalletUI() {
+                const walletInfo = document.getElementById('wallet-info');
+                if (this.isConnected) {
+                    walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${this.address.substring(0, 6)}...${this.address.slice(-4)} (${this.balance.toFixed(2)} SOL)`;
+                } else {
+                    walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
+                }
             }
         }
-
-        connectPhantomBtn.addEventListener('click', () => {
-            // Simulate connecting to Phantom
-            mockWallet.isConnected = true;
-            mockWallet.address = 'G4t1mE5b8...'; // Mock address
-            updateWalletUI();
-            walletModal.style.display = 'none';
-        });
-
-        connectSolflareBtn.addEventListener('click', () => {
-            // Simulate connecting to Solflare
-            mockWallet.isConnected = true;
-            mockWallet.address = 'S0lF1aR3...'; // Mock address
-            updateWalletUI();
-            walletModal.style.display = 'none';
-        });
-
-        disconnectWalletBtn.addEventListener('click', () => {
-            // Simulate disconnecting
-            mockWallet.isConnected = false;
-            mockWallet.address = null;
-            updateWalletUI();
-            walletModal.style.display = 'none';
-        });
-
-        // Add this event listener to make wallet info clickable for connection
-        document.getElementById('wallet-info').addEventListener('click', () => {
-            if (!mockWallet.isConnected) {
-                walletModal.style.display = 'flex';
-            }
-        });
+        // Initialize real wallet manager
+        const realWallet = new RealWalletManager();
+        // Replace mockWallet references
+        const mockWallet = realWallet; // For compatibility with existing code
 
         // Initial wallet UI update
-        updateWalletUI();
+        realWallet.updateWalletUI();
 
 
         // --- Leaderboard (Mock) ---
@@ -2195,7 +2381,7 @@
 
         // Mock function to update wins for the connected user (if connected)
         function updateLeaderboardWins() {
-            if (mockWallet.isConnected && mockWallet.address) {
+            if (realWallet.isConnected && realWallet.address) {
                  // Find or add the current user to mock data
                  let currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
                  if (!currentUser) {
@@ -2336,7 +2522,7 @@
 
             loadProfile();
             profileModal.style.display = 'none';
-             if (mockWallet.isConnected && mockWallet.address) {
+             if (realWallet.isConnected && realWallet.address) {
                  const currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
                  if (currentUser) {
                       currentUser.username = username || 'You';
@@ -2354,14 +2540,15 @@
         const depositAmountInput = document.getElementById('deposit-amount');
         const confirmDepositBtn = document.getElementById('confirm-deposit-btn');
         const withdrawAmountInput = document.getElementById('withdraw-amount');
+        const currentBalanceDisplay = document.getElementById('current-balance');
         const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
 
         confirmDepositBtn.addEventListener('click', () => {
             const amount = parseFloat(depositAmountInput.value);
             if (amount > 0) {
                 showMessageBox(`Simulating deposit of ${amount.toFixed(2)} SOL via MoonPay... (This is a mock)`, 'info');
-                 mockWallet.balance += amount;
-                 updateWalletUI();
+                 realWallet.balance += amount;
+                 realWallet.updateWalletUI();
                  depositModal.style.display = 'none';
             } else {
                 showMessageBox('Please enter a valid deposit amount.', 'error');
@@ -2370,12 +2557,12 @@
 
         confirmWithdrawBtn.addEventListener('click', () => {
             const amount = parseFloat(withdrawAmountInput.value);
-            if (amount > 0 && amount <= mockWallet.balance) {
+            if (amount > 0 && amount <= realWallet.balance) {
                 showMessageBox(`Simulating withdrawal of ${amount.toFixed(2)} SOL... (This is a mock)`, 'info');
-                 mockWallet.balance -= amount;
-                 updateWalletUI();
+                 realWallet.balance -= amount;
+                 realWallet.updateWalletUI();
                  withdrawModal.style.display = 'none';
-            } else if (amount > mockWallet.balance) {
+            } else if (amount > realWallet.balance) {
                 showMessageBox('Insufficient balance for withdrawal.', 'error');
             } else {
                  showMessageBox('Please enter a valid withdrawal amount.', 'error');
@@ -2474,8 +2661,8 @@
         claimRewardBtn.addEventListener('click', () => {
             if (dailyChallenge.isCompleted && !localStorage.getItem('dailyChallengeClaimed')) {
                  showMessageBox(`Claiming mock reward of ${dailyChallenge.rewardAmount} SOL!`, 'info');
-                 mockWallet.balance += dailyChallenge.rewardAmount;
-                 updateWalletUI();
+                 realWallet.balance += dailyChallenge.rewardAmount;
+                 realWallet.updateWalletUI();
                  localStorage.setItem('dailyChallengeClaimed', 'true');
                  claimRewardBtn.style.display = 'none';
             } else {
@@ -2608,13 +2795,13 @@
          });
         dropdownDepositBtn.addEventListener('click', (e) => {
              e.preventDefault();
-             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             document.getElementById('current-balance').textContent = realWallet.balance.toFixed(2);
              depositModal.style.display = 'flex';
              profileDropdown.classList.remove('show');
          });
         dropdownWithdrawBtn.addEventListener('click', (e) => {
              e.preventDefault();
-             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             document.getElementById('current-balance').textContent = realWallet.balance.toFixed(2);
              withdrawModal.style.display = 'flex';
              profileDropdown.classList.remove('show');
          });
@@ -2624,14 +2811,12 @@
             referralPanel.style.display = referralPanel.style.display === 'none' ? 'block' : 'none';
             profileDropdown.classList.remove('show');
         });
+        // Update dropdown disconnect logic
         dropdownDisconnectBtn.addEventListener('click', (e) => {
-             e.preventDefault();
-             // Your existing disconnect logic
-            mockWallet.isConnected = false;
-            mockWallet.address = null;
-            updateWalletUI();
+            e.preventDefault();
+            realWallet.disconnect();
             profileDropdown.classList.remove('show');
-         });
+        });
 
         // Mobile menu button listeners
         mobileProfileBtn.addEventListener('click', (e) => {
@@ -2642,14 +2827,14 @@
          });
         mobileDepositBtn.addEventListener('click', (e) => {
              e.preventDefault();
-             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             document.getElementById('current-balance').textContent = realWallet.balance.toFixed(2);
              depositModal.style.display = 'flex';
              mobileNavOverlay.classList.remove('show');
              hamburgerMenu.classList.remove('active');
          });
         mobileWithdrawBtn.addEventListener('click', (e) => {
              e.preventDefault();
-             document.getElementById('current-balance').textContent = mockWallet.balance.toFixed(2);
+             document.getElementById('current-balance').textContent = realWallet.balance.toFixed(2);
              withdrawModal.style.display = 'flex';
              mobileNavOverlay.classList.remove('show');
              hamburgerMenu.classList.remove('active');
@@ -2661,15 +2846,13 @@
             mobileNavOverlay.classList.remove('show');
              hamburgerMenu.classList.remove('active');
         });
+        // Update dropdown disconnect logic
         mobileDisconnectBtn.addEventListener('click', (e) => {
-             e.preventDefault();
-             // Your existing disconnect logic
-            mockWallet.isConnected = false;
-            mockWallet.address = null;
-            updateWalletUI();
+            e.preventDefault();
+            realWallet.disconnect();
             mobileNavOverlay.classList.remove('show');
-             hamburgerMenu.classList.remove('active');
-         });
+            hamburgerMenu.classList.remove('active');
+        });
         mobileConnectWalletBtn.addEventListener('click', (e) => {
              e.preventDefault();
              walletModal.style.display = 'flex';
@@ -2699,6 +2882,45 @@
             if (event.target === mobileNavOverlay) {
                 mobileNavOverlay.classList.remove('show');
                 hamburgerMenu.classList.remove('active');
+            }
+        });
+
+        // Update wallet connection event listeners
+        document.getElementById('connect-phantom').addEventListener('click', () => {
+            realWallet.connectWallet('phantom');
+        });
+
+        document.getElementById('connect-solflare').addEventListener('click', () => {
+            realWallet.connectWallet('solflare');
+        });
+
+        document.getElementById('wallet-success-continue').addEventListener('click', () => {
+            document.getElementById('wallet-modal').style.display = 'none';
+            realWallet.resetModalState();
+        });
+
+        document.getElementById('wallet-error-retry').addEventListener('click', () => {
+            realWallet.resetModalState();
+        });
+
+        // Make wallet info clickable for connection
+        document.getElementById('wallet-info').addEventListener('click', () => {
+            if (!realWallet.isConnected) {
+                document.getElementById('wallet-modal').style.display = 'flex';
+                realWallet.resetModalState();
+            }
+        });
+
+        // Close modal when clicking outside or on close button
+        document.querySelector('#wallet-modal .close-button').addEventListener('click', () => {
+            document.getElementById('wallet-modal').style.display = 'none';
+            realWallet.resetModalState();
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === document.getElementById('wallet-modal')) {
+                document.getElementById('wallet-modal').style.display = 'none';
+                realWallet.resetModalState();
             }
         });
 
