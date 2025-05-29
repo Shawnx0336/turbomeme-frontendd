@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
     <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/tweetnacl.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <style>
         :root {
             --bg-dark: #0A0A0A;
@@ -106,6 +107,7 @@
             border-radius: var(--radius-md);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease;
+            cursor: pointer; /* Make it clickable */
         }
 
         .wallet-info:hover {
@@ -1435,6 +1437,7 @@
     </style>
 </head>
 <body>
+    <div id="particles-js" style="position: fixed; width: 100vw; height: 100vh; z-index: 0; top: 0; left: 0; pointer-events: none;"></div>
     <header>
         <div class="header-logo">
             DegenDice
@@ -2502,6 +2505,7 @@
                 const wallets = [];
                 try {
                     if (typeof window !== 'undefined') {
+                        // Check for Phantom
                         if (window.solana && window.solana.isPhantom) {
                             wallets.push({
                                 name: 'Phantom',
@@ -2509,6 +2513,7 @@
                                 type: 'phantom'
                             });
                         }
+                        // Check for Solflare
                         if (window.solflare && window.solflare.isSolflare) {
                             wallets.push({
                                 name: 'Solflare',
@@ -2733,7 +2738,7 @@
                 
                 setTimeout(() => {
                     this.closeWalletModal();
-                    showMessageBox("✅ Wallet Connected Successfully!", 'Your wallet is now connected and verified.');
+                    showMessageBox("✅ Wallet Connected Successfully!", 'success'); // Use the custom message box
                 }, 2000);
             }
 
@@ -2771,20 +2776,17 @@
             }
 
             async connectMobileWallet(walletType) {
-                if (!this.isMobile) {
+                // If not mobile or wallet extension is already detected, proceed with normal connection
+                const availableWallets = this.detectAvailableWallets();
+                if (!this.isMobile || availableWallets.includes(walletType)) {
                     return this.walletConnectionManager.initiateConnection(walletType);
                 }
 
                 const config = this.deepLinkConfig[walletType];
                 if (config) {
-                    const availableWallets = this.detectAvailableWallets();
-                    if (availableWallets.includes(walletType)) {
-                        return this.walletConnectionManager.initiateConnection(walletType);
-                    } else {
-                        this.initiateDeepLink(config);
-                    }
+                    this.initiateDeepLink(config);
                 } else {
-                    showMessageBox('Mobile Wallet', `Please open your ${walletType} app to connect.`);
+                    showMessageBox('Mobile Wallet', `Please open your ${walletType} app to connect.`, 'info');
                     this.walletConnectionManager.initiateConnection(walletType).catch(e => {
                         console.error("Mobile deep link fallback failed:", e);
                     });
@@ -2803,6 +2805,7 @@
             }
 
             initiateDeepLink(config) {
+                // Store connection attempt details in session storage before redirecting
                 sessionStorage.setItem('wallet_connection_attempt', JSON.stringify({
                     timestamp: Date.now(),
                     type: config.name,
@@ -2811,24 +2814,29 @@
 
                 window.location.href = config.deepLink;
 
+                // Fallback if the deep link doesn't open the app
                 setTimeout(() => {
-                    if (document.hidden) return;
+                    // Check if the page is still visible (meaning the app probably didn't open)
+                    if (document.hidden) return; // If document is hidden, app likely opened
                     this.showInstallPrompt(config.fallbackUrl, config.name);
-                }, 3000);
+                }, 3000); // Give some time for the deep link to work
             }
 
             showInstallPrompt(installUrl, walletName) {
                 showMessageBox(
-                    'Wallet Not Found',
+                    `Wallet Not Found: ${walletName}`,
                     `It seems you don't have ${walletName} installed. Please install it to continue.`,
-                    () => window.open(installUrl, '_blank')
+                    'error', // Use error type for styling
+                    () => window.open(installUrl, '_blank') // Callback to open install URL
                 );
             }
 
+            // This function should be called on page load to check for returns from deep links
             checkDeepLinkReturn() {
                 const attempt = JSON.parse(sessionStorage.getItem('wallet_connection_attempt'));
-                if (attempt && (Date.now() - attempt.timestamp < 10000)) {
-                    sessionStorage.removeItem('wallet_connection_attempt');
+                if (attempt && (Date.now() - attempt.timestamp < 10000)) { // Check if attempt was recent (within 10 seconds)
+                    sessionStorage.removeItem('wallet_connection_attempt'); // Clear the attempt
+                    // Re-initiate connection flow after returning from deep link
                     this.walletConnectionManager.initiateConnection(attempt.walletType);
                 }
             }
@@ -3429,6 +3437,58 @@
 
         document.getElementById('walletErrorRetryBtn').addEventListener('click', () => {
             // This button's action is dynamically set in handleConnectionError
+        });
+
+        // Add event listener to the wallet-info div to open the wallet modal
+        document.getElementById('wallet-info').addEventListener('click', openWalletModal);
+
+        // Check for deep link return on page load
+        window.addEventListener('load', () => {
+            mobileWalletHandler.checkDeepLinkReturn();
+        });
+
+    </script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 25,
+                    "density": {
+                        "enable": true,
+                        "value_area": 1000
+                    }
+                },
+                "shape": {
+                    "type": "image",
+                    "image": {
+                        "src": "https://i.imgur.com/oaUb4Nf.png",  // Dice icon PNG
+                        "width": 32,
+                        "height": 32
+                    }
+                },
+                "opacity": {
+                    "value": 0.3,
+                    "random": true
+                },
+                "size": {
+                    "value": 24,
+                    "random": true
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 0.8,
+                    "direction": "top",
+                    "random": true,
+                    "out_mode": "out"
+                }
+            },
+            "interactivity": {
+                "events": {
+                    "onhover": { "enable": false },
+                    "onclick": { "enable": false }
+                }
+            },
+            "retina_detect": true
         });
     </script>
 </body>
