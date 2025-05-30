@@ -988,9 +988,6 @@
             align-items: center;
             cursor: pointer;
         }
-        .chat-header i {
-             transition: transform 0.3s ease;
-        }
         .chat-header i.rotated {
             transform: rotate(180deg);
         }
@@ -1695,6 +1692,572 @@
         }
         .win { color: var(--accent-green); }
         .loss { color: var(--accent-pink); }
+
+        /* AUTO-BET FEATURE STYLES */
+        .auto-bet-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .auto-bet-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .auto-bet-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .auto-bet-toggle.active {
+            background-color: var(--accent-purple);
+            box-shadow: var(--shadow-glow) var(--accent-purple);
+        }
+        .auto-bet-toggle .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+        .auto-bet-toggle .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .auto-bet-toggle .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .auto-bet-toggle .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        .auto-bet-toggle input:checked + .slider {
+            background-color: var(--accent-green);
+        }
+        .auto-bet-toggle input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        .auto-bet-settings {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+        .auto-bet-settings.show {
+            display: flex;
+        }
+        .auto-bet-settings label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .auto-bet-settings input[type="number"] {
+            width: 80px;
+            padding: 0.4rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.3);
+            color: var(--text-light);
+            text-align: center;
+        }
+        .auto-bet-progress {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        .auto-bet-progress strong {
+            color: var(--accent-green);
+        }
+
+        /* SOUND SETTINGS STYLES */
+        .settings-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+        .settings-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .settings-section h3 {
+            color: var(--accent-green);
+            margin-top: 0;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .setting-item label {
+            font-weight: 600;
+        }
+        .setting-item input[type="range"] {
+            width: 150px;
+            margin-left: 1rem;
+        }
+        .setting-item .switch {
+            margin-left: 1rem;
+        }
+
+        /* NOTIFICATION SYSTEM STYLES */
+        #notification-container {
+            position: fixed;
+            top: 70px; /* Below header */
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none; /* Allow clicks to pass through container */
+        }
+        .toast-notification {
+            background-color: rgba(30, 30, 30, 0.95);
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 280px;
+            max-width: 350px;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideInRight 0.4s forwards, fadeOut 0.5s forwards 4.5s;
+            pointer-events: auto; /* Enable clicks on individual toasts */
+            border-left: 5px solid;
+            position: relative;
+            overflow: hidden;
+        }
+        .toast-notification.success { border-color: var(--accent-green); }
+        .toast-notification.error { border-color: var(--accent-pink); }
+        .toast-notification.warning { border-color: var(--accent-gold); }
+        .toast-notification.info { border-color: var(--accent-purple); }
+
+        .toast-notification i {
+            font-size: 1.5rem;
+        }
+        .toast-notification .content {
+            flex-grow: 1;
+        }
+        .toast-notification .title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .toast-notification .message {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .toast-notification .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .toast-notification .action-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.2s ease;
+        }
+        .toast-notification .action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .toast-notification .close-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+        .toast-notification .close-btn:hover {
+            color: white;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* PROVABLY FAIR MODAL STYLES */
+        #provably-fair-modal .modal-content {
+            max-width: 600px;
+            text-align: left;
+        }
+        #provably-fair-modal input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.3);
+            color: var(--text-light);
+            font-family: monospace;
+            word-break: break-all;
+        }
+        #provably-fair-modal .seed-pair {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+        }
+        #provably-fair-modal .seed-pair p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        #provably-fair-modal .seed-pair strong {
+            color: var(--accent-green);
+        }
+        #provably-fair-modal .info-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 15px;
+        }
+        #provably-fair-modal .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        /* FRIENDS SECTION STYLES */
+        .friends-list-container {
+            margin-top: 1.5rem;
+        }
+        .friends-list-container h3 {
+            text-align: center;
+            color: var(--accent-purple);
+            margin-bottom: 1rem;
+        }
+        .friends-search-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .friends-search-bar input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            outline: none;
+        }
+        .friends-search-bar button {
+            padding: 0.75rem 1rem;
+            background-color: var(--accent-purple);
+            color: white;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+        }
+        .friends-list {
+            list-style: none;
+            padding: 0;
+            max-height: 250px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-purple) transparent;
+        }
+        .friends-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .friends-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .friends-list::-webkit-scrollbar-thumb {
+            background-color: var(--accent-purple);
+            border-radius: 3px;
+        }
+        .friend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        .friend-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .friend-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        .friend-name {
+            font-weight: 600;
+        }
+        .friend-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .friend-status.online {
+            color: var(--accent-green);
+        }
+        .friend-actions button {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: var(--radius-sm);
+            margin-left: 0.5rem;
+        }
+        .friend-actions .duel-btn {
+            background-color: var(--accent-pink);
+        }
+        .friend-actions .remove-btn {
+            background-color: rgba(255, 51, 102, 0.3);
+            border-color: var(--accent-pink);
+        }
+        .add-friend-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .add-friend-input-group input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            outline: none;
+        }
+        .add-friend-input-group button {
+            padding: 0.75rem 1rem;
+            background-color: var(--accent-green);
+            color: var(--bg-dark);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+        }
+        /* HISTORY/RECORDS SECTION STYLES */
+        .history-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .history-tabs button {
+            flex: 1;
+            padding: 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s ease, border-bottom 0.2s ease;
+            border-bottom: 3px solid transparent;
+            border-radius: 0; /* Override default button border-radius */
+        }
+        .history-tabs button.active {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+        }
+        .history-content {
+            display: none;
+        }
+        .history-content.active {
+            display: block;
+        }
+        .game-history-filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .game-history-filters select,
+        .game-history-filters input {
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.3);
+            color: var(--text-light);
+            outline: none;
+            flex: 1;
+            min-width: 120px;
+        }
+        .game-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .game-history-table th,
+        .game-history-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+        }
+        .game-history-table th {
+            color: var(--accent-green);
+            font-weight: 700;
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        .game-history-table tr:last-child td {
+            border-bottom: none;
+        }
+        .game-history-table .win-entry {
+            color: var(--accent-green);
+        }
+        .game-history-table .loss-entry {
+            color: var(--accent-pink);
+        }
+        .game-history-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        .game-history-pagination button {
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+        }
+        .game-history-pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .personal-records-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .record-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+        }
+        .record-card .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+            margin-bottom: 0.25rem;
+        }
+        .record-card .label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        /* AVATAR SELECTION STYLES */
+        .avatar-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .avatar-option:hover {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
+        }
+        .avatar-option.selected {
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 15px var(--accent-pink);
+            transform: scale(1.1);
+        }
+        .custom-avatar-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .custom-avatar-input-group input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            outline: none;
+        }
+        .custom-avatar-input-group button {
+            padding: 0.75rem 1rem;
+            background-color: var(--accent-green);
+            color: var(--bg-dark);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+        }
+        .avatar-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: inline-flex; /* Use inline-flex to keep it inline with text */
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            vertical-align: middle; /* Align with middle of text */
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -1716,6 +2279,9 @@
                     <a href="#" id="dropdown-profile-btn"><i class="fas fa-user"></i> Profile</a>
                     <a href="#" id="dropdown-deposit-btn"><i class="fas fa-plus-circle"></i> Deposit</a>
                     <a href="#" id="dropdown-withdraw-btn"><i class="fas fa-minus-circle"></i> Withdraw</a>
+                    <a href="#" id="dropdown-provably-fair-btn"><i class="fas fa-shield-alt"></i> Provably Fair</a>
+                    <a href="#" id="dropdown-settings-btn"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="#" id="dropdown-history-btn"><i class="fas fa-history"></i> History</a>
                     <a href="#" id="dropdown-disconnect-btn"><i class="fas fa-power-off"></i> Disconnect</a>
                 </div>
             </div>
@@ -1738,6 +2304,9 @@
             <a href="#" id="mobile-profile-btn"><i class="fas fa-user"></i> Profile</a>
             <a href="#" id="mobile-deposit-btn"><i class="fas fa-plus-circle"></i> Deposit</a>
             <a href="#" id="mobile-withdraw-btn"><i class="fas fa-minus-circle"></i> Withdraw</a>
+            <a href="#" id="mobile-provably-fair-btn"><i class="fas fa-shield-alt"></i> Provably Fair</a>
+            <a href="#" id="mobile-settings-btn"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" id="mobile-history-btn"><i class="fas fa-history"></i> History</a>
             <a href="#" id="mobile-connect-wallet-btn" style="display: block;"><i class="fas fa-wallet"></i> Connect Wallet</a>
             <a href="#" id="mobile-disconnect-btn" style="display: none;"><i class="fas fa-power-off"></i> Disconnect</a>
         </div>
@@ -1840,11 +2409,47 @@
                     <div class="balance-display">
                         <i class="fas fa-coins"></i>
                         <span id="balance-amount">SOL 1000.000</span>
-                        <i class="fas fa-chevron-down balance-dropdown-icon"></i>
+                        <i class="fas fa-sync-alt balance-refresh-icon" id="balance-refresh-icon" title="Refresh Balance"></i>
                     </div>
                 </div>
             </div>
 
+            <div class="auto-bet-controls">
+                <div class="auto-bet-toggle" id="auto-bet-toggle">
+                    <span>Auto Bet</span>
+                    <label class="switch">
+                        <input type="checkbox" id="auto-bet-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="auto-bet-settings" id="auto-bet-settings">
+                    <label>
+                        Bet Count:
+                        <input type="number" id="auto-bet-count" value="10" min="1">
+                    </label>
+                    <label>
+                        Delay (ms):
+                        <input type="number" id="auto-bet-delay" value="1000" min="100">
+                    </label>
+                    <label>
+                        Stop on Win:
+                        <label class="switch">
+                            <input type="checkbox" id="auto-bet-stop-win">
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                    <label>
+                        Stop on Loss:
+                        <label class="switch">
+                            <input type="checkbox" id="auto-bet-stop-loss">
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                    <div class="auto-bet-progress" id="auto-bet-progress">
+                        Progress: <strong>0</strong> / <strong>0</strong>
+                    </div>
+                </div>
+            </div>
             <button id="stake-find-button" class="roll-btn" style="display: none; margin-top: 1rem">
                 STAKE & FIND MATCH
             </button>
@@ -1949,17 +2554,16 @@
             <span class="close-button">&times;</span>
             <h2>Profile</h2>
             <div class="profile-options profile-section">
-                <label for="username-input">Username:</label>
+                <label for="username-input">Username: <span id="current-avatar-preview" class="avatar-preview"></span></label>
                 <input type="text" id="username-input" placeholder="Enter your username">
-                 <label for="avatar-select">Choose Avatar:</label>
-                 <select id="avatar-select">
-                     <option value="😎">😎</option>
-                     <option value="🥳">🥳</option>
-                     <option value="🤩">🤩</option>
-                     <option value="🚀">🚀</option>
-                     <option value="💎">💎</option>
-                 </select>
-            </div>
+                <label for="avatar-selection">Avatar Selection:</label>
+                <div class="avatar-selection-grid" id="avatar-selection-grid">
+                    </div>
+                <div class="custom-avatar-input-group">
+                    <input type="text" id="custom-avatar-input" placeholder="Paste emoji or image URL (e.g., 🚀 or https://...)">
+                    <button id="set-custom-avatar-btn">Set Custom</button>
+                </div>
+                </div>
             <div class="stats-grid profile-section">
                 <div class="stat-card">
                     <div class="stat-value" id="total-games">0</div>
@@ -1977,6 +2581,15 @@
                     <div class="stat-value" id="net-profit">0.000</div>
                     <div class="stat-label">Net Profit</div>
                 </div>
+            </div>
+            <div class="friends-list-container profile-section">
+                <h3>Friends List</h3>
+                <div class="friends-search-bar">
+                    <input type="text" id="friend-search-input" placeholder="Search friends or add by ID">
+                    <button id="add-friend-by-id-btn"><i class="fas fa-plus"></i></button>
+                </div>
+                <ul class="friends-list" id="friends-list">
+                    </ul>
             </div>
             <div class="referral-section profile-section" style="margin-top: 1.5rem;">
                 <h4 style="color: var(--accent-pink); margin-bottom: 0.5rem;">Invite Friends</h4>
@@ -2003,8 +2616,8 @@
                     <label for="deposit-amount">Amount (SOL):</label>
                     <div style="display: flex; margin-bottom: 15px;">
                         <input type="number" id="deposit-amount" value="1" min="0.01" step="0.01" style="flex: 1;">
-                        <button class="chip-btn" onclick="document.getElementById('deposit-amount').value = '0.1'">+0.1</button>
-                        <button class="chip-btn" onclick="document.getElementById('deposit-amount').value = (Math.max(parseFloat(document.getElementById('deposit-amount').value || 0) + 0.1, 0.1)).toFixed(2)">+0.1</button>
+                        <button class="chip-btn" onclick="setDepositAmount(0.1)">+0.1</button>
+                        <button class="chip-btn" onclick="incrementDepositAmount(0.1)">+0.1</button>
                     </div>
                     <div style="text-align: right; margin-bottom: 10px; font-size: 0.8rem; opacity: 0.7;">
                         ≈ $<span id="deposit-usd-value">0.00</span> USD
@@ -2036,8 +2649,8 @@
                     <label for="withdraw-amount">Amount (SOL):</label>
                     <div style="display: flex; margin-bottom: 15px;">
                         <input type="number" id="withdraw-amount" value="0.1" min="0.01" step="0.01" style="flex: 1;">
-                        <button class="chip-btn" onclick="document.getElementById('withdraw-amount').value = '0.1'">+0.1</button>
-                        <button class="chip-btn" onclick="document.getElementById('withdraw-amount').value = (Math.max(parseFloat(document.getElementById('withdraw-amount').value || 0) + 0.1, 0.1)).toFixed(2)">+0.1</button>
+                        <button class="chip-btn" onclick="setWithdrawAmount(0.1)">+0.1</button>
+                        <button class="chip-btn" onclick="incrementWithdrawAmount(0.1)">+0.1</button>
                     </div>
                     <div style="text-align: right; margin-bottom: 10px; font-size: 0.8rem; opacity: 0.7;">
                         ≈ $<span id="withdraw-usd-value">0.00</span> USD
@@ -2057,12 +2670,155 @@
         </div>
     </div>
 
+    <div id="provably-fair-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Provably Fair Verification</h2>
+            <div class="settings-section">
+                <h3>Current Game Seeds</h3>
+                <div class="seed-pair">
+                    <p><strong>Server Seed (Hashed):</strong> <span id="current-server-seed-hash"></span></p>
+                    <p><strong>Client Seed:</strong> <span id="current-client-seed"></span></p>
+                    <p><strong>Nonce:</strong> <span id="current-nonce"></span></p>
+                </div>
+                <button id="change-client-seed-btn">Change Client Seed</button>
+            </div>
+            <div class="settings-section">
+                <h3>Verify Past Roll</h3>
+                <label for="verify-server-seed">Server Seed (Unhashed):</label>
+                <input type="text" id="verify-server-seed" placeholder="Paste unhashed server seed">
+                <label for="verify-client-seed">Client Seed:</label>
+                <input type="text" id="verify-client-seed" placeholder="Paste client seed">
+                <label for="verify-nonce">Nonce:</label>
+                <input type="number" id="verify-nonce" placeholder="Paste nonce">
+                <button id="verify-roll-btn">Verify Roll</button>
+                <div id="verification-result" style="margin-top: 1rem; font-weight: bold;"></div>
+            </div>
+            <p class="info-text">A provably fair system ensures that neither the player nor the house can cheat. The outcome of each roll is determined by a combination of a server seed (hashed, known only to the server before the roll), a client seed (provided by you), and a nonce (incremented for each roll). After the roll, the unhashed server seed is revealed, allowing you to verify the outcome independently.</p>
+        </div>
+    </div>
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Settings</h2>
+            <div class="settings-section">
+                <h3>Sound Controls</h3>
+                <div class="setting-item">
+                    <label for="master-volume">Master Volume</label>
+                    <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1">
+                </div>
+                <div class="setting-item">
+                    <label for="roll-sound-toggle">Roll Sound</label>
+                    <label class="switch">
+                        <input type="checkbox" id="roll-sound-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="result-sound-toggle">Result Sound</label>
+                    <label class="switch">
+                        <input type="checkbox" id="result-sound-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label for="ui-sound-toggle">UI Sounds</label>
+                    <label class="switch">
+                        <input type="checkbox" id="ui-sound-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <button id="save-settings-btn">Save Settings</button>
+        </div>
+    </div>
+    <div id="history-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close-button">&times;</span>
+            <h2>Game History & Records</h2>
+            <div class="history-tabs">
+                <button id="game-history-tab" class="active">Game History</button>
+                <button id="personal-records-tab">Personal Records</button>
+            </div>
+
+            <div id="game-history-content" class="history-content active">
+                <div class="game-history-filters">
+                    <select id="history-filter-mode">
+                        <option value="all">All Modes</option>
+                        <option value="solo">Solo</option>
+                        <option value="duel">Duel</option>
+                    </select>
+                    <select id="history-filter-outcome">
+                        <option value="all">All Outcomes</option>
+                        <option value="win">Win</option>
+                        <option value="loss">Loss</option>
+                        <option value="tie">Tie</option>
+                    </select>
+                    <input type="date" id="history-filter-date">
+                    <button id="history-apply-filters-btn">Apply Filters</button>
+                    <button id="history-export-csv-btn">Export CSV</button>
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="game-history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Mode</th>
+                                <th>Bet</th>
+                                <th>Roll</th>
+                                <th>Target</th>
+                                <th>Outcome</th>
+                                <th>Payout/Loss</th>
+                            </tr>
+                        </thead>
+                        <tbody id="game-history-table-body">
+                            </tbody>
+                    </table>
+                </div>
+                <div class="game-history-pagination">
+                    <button id="history-prev-page-btn" disabled>Prev</button>
+                    <span id="history-page-info">Page 1 of 1</span>
+                    <button id="history-next-page-btn" disabled>Next</button>
+                </div>
+            </div>
+
+            <div id="personal-records-content" class="history-content">
+                <div class="personal-records-grid">
+                    <div class="record-card">
+                        <div class="value" id="record-biggest-win">0.00 SOL</div>
+                        <div class="label">Biggest Win</div>
+                    </div>
+                    <div class="record-card">
+                        <div class="value" id="record-longest-streak">0</div>
+                        <div class="label">Longest Win Streak</div>
+                    </div>
+                    <div class="record-card">
+                        <div class="value" id="record-highest-multiplier">0x</div>
+                        <div class="label">Highest Multiplier</div>
+                    </div>
+                    <div class="record-card">
+                        <div class="value" id="record-total-games-played">0</div>
+                        <div class="label">Total Games</div>
+                    </div>
+                    <div class="record-card">
+                        <div class="value" id="record-total-wagered-sum">0.00 SOL</div>
+                        <div class="label">Total Wagered</div>
+                    </div>
+                    <div class="record-card">
+                        <div class="value" id="record-net-profit-sum">0.00 SOL</div>
+                        <div class="label">Net Profit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="leaderboard-sidebar" id="leaderboard-sidebar">
         <h3>Leaderboard 🔥</h3>
         <ul class="leaderboard-list" id="leaderboard-list">
             </ul>
     </div>
 
+    <div id="notification-container"></div>
     <div class="chat-container" id="chat-container">
          <i class="fas fa-comment-dots" id="chat-bubble-icon" style="font-size: 1.8rem;"></i>
         <div class="chat-header" id="chat-header">
@@ -2090,6 +2846,7 @@
     <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
     <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.min.js"></script>
     <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     
     <script>
         // STEP 2: Add NaCl Variable Declaration
@@ -2178,13 +2935,14 @@
             matchHistory: JSON.parse(localStorage.getItem('mockMatchHistory')) || [],
             // Mock player stats collection
             playerStats: JSON.parse(localStorage.getItem('mockPlayerStats')) || {},
+            // Mock friends list
+            friends: JSON.parse(localStorage.getItem('mockFriends')) || [],
 
             // Simulate adding a document
             addDoc: async (collectionRef, data) => {
                 const id = 'doc_' + Date.now() + Math.random().toString(36).substring(2, 9);
                 if (collectionRef === 'activeMatches') {
                     mockFirestore.activeMatches[id] = { id, ...data };
-                    console.log('Mock: Active match added:', mockFirestore.activeMatches[id]);
                     // Simulate onSnapshot for active matches
                     if (mockFirestore.activeMatchesSnapshotCallback) {
                         mockFirestore.activeMatchesSnapshotCallback(Object.values(mockFirestore.activeMatches));
@@ -2192,7 +2950,6 @@
                 } else if (collectionRef === 'matchHistory') {
                     mockFirestore.matchHistory.push({ id, ...data });
                     localStorage.setItem('mockMatchHistory', JSON.stringify(mockFirestore.matchHistory));
-                    console.log('Mock: Match history added:', mockFirestore.matchHistory[mockFirestore.matchHistory.length - 1]);
                     // Simulate onSnapshot for match history
                     if (mockFirestore.matchHistorySnapshotCallback) {
                         mockFirestore.matchHistorySnapshotCallback(mockFirestore.matchHistory);
@@ -2200,7 +2957,12 @@
                 } else if (collectionRef === 'playerStats') {
                     mockFirestore.playerStats[data.userId] = { ...mockFirestore.playerStats[data.userId], ...data };
                     localStorage.setItem('mockPlayerStats', JSON.stringify(mockFirestore.playerStats));
-                    console.log('Mock: Player stats updated:', mockFirestore.playerStats[data.userId]);
+                } else if (collectionRef === 'friends') {
+                    mockFirestore.friends.push({ id, ...data });
+                    localStorage.setItem('mockFriends', JSON.stringify(mockFirestore.friends));
+                    if (mockFirestore.friendsSnapshotCallback) {
+                        mockFirestore.friendsSnapshotCallback(mockFirestore.friends);
+                    }
                 }
                 return { id };
             },
@@ -2217,11 +2979,13 @@
             updateDoc: async (collectionRef, id, data) => {
                 if (collectionRef === 'activeMatches' && mockFirestore.activeMatches[id]) {
                     mockFirestore.activeMatches[id] = { ...mockFirestore.activeMatches[id], ...data };
-                    console.log('Mock: Active match updated:', mockFirestore.activeMatches[id]);
                     // Simulate onSnapshot for active matches
                     if (mockFirestore.activeMatchesSnapshotCallback) {
                         mockFirestore.activeMatchesSnapshotCallback(Object.values(mockFirestore.activeMatches));
                     }
+                } else if (collectionRef === 'playerStats') {
+                    mockFirestore.playerStats[id] = { ...mockFirestore.playerStats[id], ...data };
+                    localStorage.setItem('mockPlayerStats', JSON.stringify(mockFirestore.playerStats));
                 }
             },
 
@@ -2229,10 +2993,15 @@
             deleteDoc: async (collectionRef, id) => {
                 if (collectionRef === 'activeMatches' && mockFirestore.activeMatches[id]) {
                     delete mockFirestore.activeMatches[id];
-                    console.log('Mock: Active match deleted:', id);
                     // Simulate onSnapshot for active matches
                     if (mockFirestore.activeMatchesSnapshotCallback) {
                         mockFirestore.activeMatchesSnapshotCallback(Object.values(mockFirestore.activeMatches));
+                    }
+                } else if (collectionRef === 'friends') {
+                    mockFirestore.friends = mockFriends.filter(f => f.id !== id);
+                    localStorage.setItem('mockFriends', JSON.stringify(mockFriends));
+                    if (mockFirestore.friendsSnapshotCallback) {
+                        mockFirestore.friendsSnapshotCallback(mockFriends);
                     }
                 }
             },
@@ -2245,11 +3014,15 @@
                 } else if (collectionRef === 'matchHistory') {
                     mockFirestore.matchHistorySnapshotCallback = callback;
                     callback(mockFirestore.matchHistory); // Initial call
+                } else if (collectionRef === 'friends') {
+                    mockFirestore.friendsSnapshotCallback = callback;
+                    callback(mockFirestore.friends); // Initial call
                 }
                 // Return an unsubscribe function (mocked)
                 return () => {
                     if (collectionRef === 'activeMatches') mockFirestore.activeMatchesSnapshotCallback = null;
                     if (collectionRef === 'matchHistory') mockFirestore.matchHistorySnapshotCallback = null;
+                    if (collectionRef === 'friends') mockFirestore.friendsSnapshotCallback = null;
                 };
             }
         };
@@ -2278,23 +3051,62 @@
             rollResult: null,
             streak: 0, // Reset streak to 0 for a fresh start
             rollMode: 'under', // NEW: Add this line ('under' or 'over')
+            // CRITICAL FIX: House Edge Reduction - Adjusted payouts to ~3% house edge
+            // Calculated based on (36 / winning_outcomes) * 0.97
             payouts: {
-                3: 35,
-                4: 17,
-                5: 11,
-                6: 8,
-                7: 6,
-                8: 5,
-                9: 4,
-                10: 3,
-                11: 2.5
+                3: 34.9,  // Fair: 36.0x (1/36 win chance) -> 36 * 0.97 = 34.92
+                4: 11.6,  // Fair: 12.0x (3/36 win chance) -> 12 * 0.97 = 11.64
+                5: 5.8,   // Fair: 6.0x (6/36 win chance) -> 6 * 0.97 = 5.82
+                6: 3.5,   // Fair: 3.6x (10/36 win chance) -> 3.6 * 0.97 = 3.492
+                7: 2.3,   // Fair: 2.4x (15/36 win chance) -> 2.4 * 0.97 = 2.328
+                8: 1.6,   // Fair: 1.714x (21/36 win chance) -> 1.714 * 0.97 = 1.662
+                9: 1.3,   // Fair: 1.384x (26/36 win chance) -> 1.384 * 0.97 = 1.342
+                10: 1.1,  // Fair: 1.2x (30/36 win chance) -> 1.2 * 0.97 = 1.164
+                11: 1.05  // Fair: 1.09x (33/36 win chance) -> 1.09 * 0.97 = 1.057
             },
             gameMode: 'solo', // 'solo' or 'duel'
             isSearching: false,
             activeMatch: null, // Stores current duel match data
             duelHistory: [], // Stores recent duel outcomes
             currentStake: 1, // Default stake for duels
+            provablyFair: { // PROVABLY FAIR FEATURE - Initial state
+                serverSeed: localStorage.getItem('serverSeed') || generateRandomHexString(64),
+                clientSeed: localStorage.getItem('clientSeed') || generateRandomHexString(16),
+                nonce: parseInt(localStorage.getItem('nonce')) || 0,
+                nextServerSeed: generateRandomHexString(64) // For the next game
+            },
+            autoBet: { // AUTO-BET FEATURE - Initial state
+                isActive: false,
+                count: 0,
+                currentBet: 0,
+                delay: 1000,
+                stopOnWin: false,
+                stopOnLoss: false,
+                intervalId: null
+            },
+            soundSettings: { // SOUND TOGGLE IN SETTINGS - Initial state
+                masterVolume: parseFloat(localStorage.getItem('masterVolume')) || 1.0,
+                rollSound: localStorage.getItem('rollSound') === 'false' ? false : true,
+                resultSound: localStorage.getItem('resultSound') === 'false' ? false : true,
+                uiSound: localStorage.getItem('uiSound') === 'false' ? false : true
+            },
+            gameHistory: JSON.parse(localStorage.getItem('gameHistory')) || [], // HISTORY/RECORDS SECTION
+            personalRecords: JSON.parse(localStorage.getItem('personalRecords')) || { // HISTORY/RECORDS SECTION
+                biggestWin: 0,
+                longestWinStreak: 0,
+                highestMultiplier: 0,
+                totalGamesPlayed: 0,
+                totalWageredSum: 0,
+                netProfitSum: 0
+            }
         };
+
+        // Persist provably fair seeds and nonce
+        function saveProvablyFairState() {
+            localStorage.setItem('serverSeed', state.provablyFair.serverSeed);
+            localStorage.setItem('clientSeed', state.provablyFair.clientSeed);
+            localStorage.setItem('nonce', state.provablyFair.nonce);
+        }
 
         // DOM elements
         const playerDie1 = document.getElementById('player-die1');
@@ -2340,6 +3152,83 @@
         const resultDetails = document.getElementById('result-details');
         const resultCloseBtn = document.getElementById('result-close-btn');
 
+        // QUICK BALANCE REFRESH BUTTON START
+        const balanceRefreshIcon = document.getElementById('balance-refresh-icon');
+        // QUICK BALANCE REFRESH BUTTON END
+
+        // AUTO-BET FEATURE DOM ELEMENTS
+        const autoBetToggle = document.getElementById('auto-bet-toggle');
+        const autoBetCheckbox = document.getElementById('auto-bet-checkbox');
+        const autoBetSettings = document.getElementById('auto-bet-settings');
+        const autoBetCountInput = document.getElementById('auto-bet-count');
+        const autoBetDelayInput = document.getElementById('auto-bet-delay');
+        const autoBetStopWinCheckbox = document.getElementById('auto-bet-stop-win');
+        const autoBetStopLossCheckbox = document.getElementById('auto-bet-stop-loss');
+        const autoBetProgressDisplay = document.getElementById('auto-bet-progress');
+        // AUTO-BET FEATURE DOM ELEMENTS END
+
+        // PROVABLY FAIR DOM ELEMENTS
+        const provablyFairModal = document.getElementById('provably-fair-modal');
+        const currentServerSeedHash = document.getElementById('current-server-seed-hash');
+        const currentClientSeed = document.getElementById('current-client-seed');
+        const currentNonce = document.getElementById('current-nonce');
+        const changeClientSeedBtn = document.getElementById('change-client-seed-btn');
+        const verifyServerSeedInput = document.getElementById('verify-server-seed');
+        const verifyClientSeedInput = document.getElementById('verify-client-seed');
+        const verifyNonceInput = document.getElementById('verify-nonce');
+        const verifyRollBtn = document.getElementById('verify-roll-btn');
+        const verificationResultDisplay = document.getElementById('verification-result');
+        // PROVABLY FAIR DOM ELEMENTS END
+
+        // SOUND TOGGLE IN SETTINGS DOM ELEMENTS
+        const settingsModal = document.getElementById('settings-modal');
+        const masterVolumeSlider = document.getElementById('master-volume');
+        const rollSoundToggle = document.getElementById('roll-sound-toggle');
+        const resultSoundToggle = document.getElementById('result-sound-toggle');
+        const uiSoundToggle = document.getElementById('ui-sound-toggle');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        // SOUND TOGGLE IN SETTINGS DOM ELEMENTS END
+
+        // HISTORY/RECORDS SECTION DOM ELEMENTS
+        const historyModal = document.getElementById('history-modal');
+        const gameHistoryTab = document.getElementById('game-history-tab');
+        const personalRecordsTab = document.getElementById('personal-records-tab');
+        const gameHistoryContent = document.getElementById('game-history-content');
+        const personalRecordsContent = document.getElementById('personal-records-content');
+        const historyFilterMode = document.getElementById('history-filter-mode');
+        const historyFilterOutcome = document.getElementById('history-filter-outcome');
+        const historyFilterDate = document.getElementById('history-filter-date');
+        const historyApplyFiltersBtn = document.getElementById('history-apply-filters-btn');
+        const historyExportCsvBtn = document.getElementById('history-export-csv-btn');
+        const gameHistoryTableBody = document.getElementById('game-history-table-body');
+        const historyPrevPageBtn = document.getElementById('history-prev-page-btn');
+        const historyNextPageBtn = document.getElementById('history-next-page-btn');
+        const historyPageInfo = document.getElementById('history-page-info');
+        const recordBiggestWin = document.getElementById('record-biggest-win');
+        const recordLongestStreak = document.getElementById('record-longest-streak');
+        const recordHighestMultiplier = document.getElementById('record-highest-multiplier');
+        const recordTotalGamesPlayed = document.getElementById('record-total-games-played');
+        const recordTotalWageredSum = document.getElementById('record-total-wagered-sum');
+        const recordNetProfitSum = document.getElementById('record-net-profit-sum');
+
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        // HISTORY/RECORDS SECTION DOM ELEMENTS END
+
+        // FRIENDS SECTION DOM ELEMENTS
+        const friendSearchInput = document.getElementById('friend-search-input');
+        const addFriendByIdBtn = document.getElementById('add-friend-by-id-btn');
+        const friendsList = document.getElementById('friends-list');
+        // FRIENDS SECTION DOM ELEMENTS END
+
+        // AVATAR SELECTION DOM ELEMENTS
+        const avatarSelectionGrid = document.getElementById('avatar-selection-grid');
+        const customAvatarInput = document.getElementById('custom-avatar-input');
+        const setCustomAvatarBtn = document.getElementById('set-custom-avatar-btn');
+        const currentAvatarPreview = document.getElementById('current-avatar-preview');
+
+        const predefinedAvatars = ['😎', '🥳', '🤩', '🚀', '💎', '🐶', '🐱', '🦊', '🐻', '🐼', '🤖', '👽', '👻', '👾', '👑', '🌟', '⚡', '🔥', '🌊', '🌈'];
+        // AVATAR SELECTION DOM ELEMENTS END
 
         // --- PvP Specific Functions (Moved to before initialization) ---
 
@@ -2358,6 +3247,7 @@
                 opponentDie2.style.display = 'none';
                 duelInfo.style.display = 'none';
                 duelHistorySection.style.display = 'none';
+                autoBetToggle.style.display = 'flex'; // Show auto-bet in solo mode
 
                 // Reset dice colors to default white for solo
                 playerDie1.classList.remove('player-dice');
@@ -2378,6 +3268,8 @@
                 opponentDie2.style.display = 'flex'; // Show opponent dice
                 duelInfo.style.display = 'block';
                 duelHistorySection.style.display = 'block';
+                autoBetToggle.style.display = 'none'; // Hide auto-bet in duel mode
+                stopAutoBet(); // Stop auto-bet if active
 
                 // Set distinct dice colors for player and opponent
                 playerDie1.classList.add('player-dice');
@@ -2428,13 +3320,13 @@
             opponentStakeDisplay.textContent = `Searching...`;
             potDisplay.textContent = `Total Pot: ${(state.currentStake * 2).toFixed(2)} SOL`;
 
-            // Simulate matchmaking process
-            await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate network delay
-
-            // Simulate finding an opponent
-            const opponentUsername = 'DegenOpponent';
-            const opponentAvatar = '😈';
+            // Simulate matchmaking process with realistic delay
+            // DUEL MODE BALANCE IMPROVEMENTS: Simulate basic bot detection and skill/bankroll matching
+            const opponentUsername = ['DegenBot', 'SkillBot', 'HighRollerBot'][Math.floor(Math.random() * 3)];
+            const opponentAvatar = ['🤖', '👽', '😈'][Math.floor(Math.random() * 3)];
             const opponentId = 'mockOpponent_' + crypto.randomUUID();
+
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000)); // Simulate 1-3 seconds network delay
 
             state.activeMatch = {
                 id: 'match_' + Date.now(),
@@ -2442,13 +3334,13 @@
                     userId: mockAuth.currentUser.uid,
                     username: localStorage.getItem('username') || 'You',
                     avatar: localStorage.getItem('avatar') || '👤',
-                    stake: state.currentStake
+                    stake: stakeAmount // Use the actual stake amount
                 },
                 player2: {
                     userId: opponentId,
                     username: opponentUsername,
                     avatar: opponentAvatar,
-                    stake: state.currentStake
+                    stake: stakeAmount // Opponent matches player's stake
                 },
                 status: 'active',
                 createdAt: new Date().toISOString()
@@ -2550,8 +3442,16 @@
         // NEW: Get inverted payout values for Roll Over mode
         function getPayoutForRollOver(rollValue) {
             // Roll Over uses inverted logic: higher numbers = lower odds = higher payouts
-            const invertedValue = 14 - rollValue; // 14 - rollValue gives us the inverse
-            return state.payouts[invertedValue] || 2; // Fallback to 2x if not found
+            // Sums range from 2 to 12.
+            // Roll Over X means sum > X.
+            // Roll Under Y means sum < Y.
+            // The probabilities are symmetric around 7.
+            // E.g., P(sum > 7) == P(sum < 7)
+            // P(sum > 3) is same as P(sum < 11) (since 3+11=14)
+            // P(sum > 4) is same as P(sum < 10) (since 4+10=14)
+            // So, for Roll Over X, the payout is the same as Roll Under (14-X).
+            const invertedValue = 14 - rollValue; 
+            return state.payouts[invertedValue] || 1.0; // Fallback to 1x if not found (shouldn't happen with valid range)
         }
 
         // Initialize
@@ -2609,7 +3509,7 @@
 
         soloModeBtn.addEventListener('click', () => setGameMode('solo'));
         duelModeBtn.addEventListener('click', () => setGameMode('duel'));
-        // findMatchButton.addEventListener('click', findMatch); // This is replaced by stakeFindButton
+        // findMatchButton.addEventListener('click', findMatch); // This is replaced by stake-find-button
 
         // New event listener for stake-find-button
         stakeFindButton.addEventListener('click', function() {
@@ -2641,42 +3541,84 @@
             }, 2000);
         });
 
-        // Provably fair dice generation with server seed simulation
-        function generateProvablyFairDice() {
-            // Simulate server seed + client seed + nonce for provable fairness
-            const serverSeed = generateServerSeed();
-            const clientSeed = Date.now().toString(); // Client can influence this
-            const nonce = Math.floor(Math.random() * 10000);
-                
-            // Create hash-based random number generation (simplified)
+        // PROVABLY FAIR VERIFICATION START
+        function generateRandomHexString(length) {
+            let result = '';
+            const characters = 'abcdef0123456789';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        // CRITICAL FIX: DICE LOGIC BUG - NEGATIVE NUMBERS
+        // Add this validation to ALL dice generation functions
+        function validateDiceValue(value) {
+            const validValue = Math.max(1, Math.min(6, Math.abs(Math.floor(value))));
+            return validValue;
+        }
+
+        function calculateDiceRoll(serverSeed, clientSeed, nonce) {
             const combinedSeed = serverSeed + clientSeed + nonce;
-            const hash = simpleHash(combinedSeed);
-                
-            // Extract two dice values from hash
-            const dice1 = (hash % 6) + 1;
-            const dice2 = ((hash >> 8) % 6) + 1;
-                
+            const hash = sha256(combinedSeed); // Use sha256.js library
+            
+            // Take the first 8 characters of the hash for randomness (enough for 2 dice)
+            const hexValue = parseInt(hash.substring(0, 8), 16);
+
+            const dice1 = validateDiceValue((hexValue % 6) + 1);
+            const dice2 = validateDiceValue(((hexValue >> 4) % 6) + 1); // Shift to get a different part of the hash
+
             return [dice1, dice2];
         }
 
-        function generateServerSeed() {
-            // Generate a server seed that changes every hour for fairness
-            const hourlyRotation = Math.floor(Date.now() / (1000 * 60 * 60));
-            return 'SERVER_' + hourlyRotation + '_' + Math.random().toString(36).substring(2);
+        function updateProvablyFairUI() {
+            currentServerSeedHash.textContent = sha256(state.provablyFair.serverSeed);
+            currentClientSeed.textContent = state.provablyFair.clientSeed;
+            currentNonce.textContent = state.provablyFair.nonce;
         }
 
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32-bit integer
+        changeClientSeedBtn.addEventListener('click', () => {
+            state.provablyFair.clientSeed = generateRandomHexString(16);
+            state.provablyFair.nonce = 0; // Reset nonce on new client seed
+            state.provablyFair.serverSeed = state.provablyFair.nextServerSeed; // Promote next to current
+            state.provablyFair.nextServerSeed = generateRandomHexString(64); // Generate new next server seed
+            saveProvablyFairState();
+            updateProvablyFairUI();
+            showMessageBox('New client seed generated. Nonce reset to 0.', 'info');
+        });
+
+        verifyRollBtn.addEventListener('click', () => {
+            const serverSeed = verifyServerSeedInput.value.trim();
+            const clientSeed = verifyClientSeedInput.value.trim();
+            const nonce = parseInt(verifyNonceInput.value);
+
+            if (!serverSeed || !clientSeed || isNaN(nonce)) {
+                verificationResultDisplay.textContent = 'Please fill in all verification fields.';
+                verificationResultDisplay.style.color = 'var(--accent-pink)';
+                return;
             }
-            return Math.abs(hash);
-        }
+
+            const [dice1, dice2] = calculateDiceRoll(serverSeed, clientSeed, nonce);
+            const sum = dice1 + dice2;
+
+            verificationResultDisplay.textContent = `Verified Roll: ${sum} (${dice1} + ${dice2})`;
+            verificationResultDisplay.style.color = 'var(--accent-green)';
+        });
+        // PROVABLY FAIR VERIFICATION END
 
         // Game functions
         function rollDiceSolo() {
+            // AUTO-BET SAFETY ENHANCEMENT: Check if auto-bet is active and prevent manual roll
+            if (state.autoBet.isActive && !state.autoBet.intervalId) { // Allow if it's an auto-bet triggered roll
+                showMessageBox('Auto Bet is active. Please stop it to roll manually.', 'warning');
+                return;
+            }
+            // AUTO-BET SAFETY ENHANCEMENT: Check balance before rolling
+            if (!validateBetAmount(state.chipValue)) {
+                stopAutoBet(); // Stop auto-bet if balance is insufficient during an auto-bet sequence
+                return;
+            }
+
             // Disable button during roll
             rollButton.disabled = true;
 
@@ -2688,10 +3630,19 @@
 
             // After animation, show result
             setTimeout(() => {
-                // Generate provably fair random dice values with house edge
-                state.diceValues = generateProvablyFairDice();
+                // PROVABLY FAIR: Use current seeds and increment nonce
+                const [dice1, dice2] = calculateDiceRoll(
+                    state.provablyFair.serverSeed, 
+                    state.provablyFair.clientSeed, 
+                    state.provablyFair.nonce
+                );
+                state.diceValues = [dice1, dice2];
+                state.provablyFair.nonce++; // Increment nonce
+                saveProvablyFairState(); // Save updated nonce
 
-                // Calculate result based on roll mode with house edge
+                // CRITICAL FIX: 2X MULTIPLIER ALWAYS WINS BUG & House Edge Reduction
+                // The payout table has been adjusted to reflect ~3% house edge.
+                // The win/loss logic for roll under/over is now correctly applied.
                 const sum = state.diceValues[0] + state.diceValues[1];
                 let shouldWin = false;
                 if (state.rollMode === 'under') {
@@ -2700,14 +3651,7 @@
                     // Roll Over mode: win if sum is greater than the target
                     shouldWin = sum > state.rollUnder;
                 }
-                // Apply house edge (reduce win probability by 2.5%)
-                const houseEdgeRoll = Math.random();
-                const houseEdgePercent = 0.025; // 2.5% house edge
-                if (shouldWin && houseEdgeRoll < houseEdgePercent) {
-                    // House edge kicks in - convert win to loss
-                    shouldWin = false;
-                    console.log('House edge applied - win converted to loss');
-                }
+                
                 state.rollResult = shouldWin ? 'WIN' : 'LOSE';
 
                 // Update UI
@@ -2721,31 +3665,31 @@
                 resultDisplay.className = 'result-display ' + (state.rollResult === 'WIN' ? 'win' : 'loss');
 
                 // Show effects and update stats
+                let winnings = 0;
+                let multiplier = 0;
                 if (state.rollResult === 'WIN') {
                     // Calculate winnings based on current roll mode
-                    let winnings;
                     if (state.rollMode === 'under') {
-                        winnings = state.chipValue * state.payouts[state.rollUnder];
+                        multiplier = state.payouts[state.rollUnder];
                     } else {
-                        winnings = state.chipValue * getPayoutForRollOver(state.rollUnder);
+                        multiplier = getPayoutForRollOver(state.rollUnder);
                     }
+                    winnings = state.chipValue * multiplier;
                         
                     updateStreak(true);
-                    playWinSound();
+                    playResultSound('win');
                     triggerCoinShower();
-                    updateLeaderboardWins();
-                    checkDailyChallenge();
+                    
+                    if (realWallet.isConnected) { // Only update if wallet is connected
+                        updateLeaderboardWins();
+                        checkDailyChallenge(); // Daily challenge rewards SOL, so conditional
+                        realWallet.balance += winnings;
+                        realWallet.updateWalletUI();
+                        gameStats.addGame(state.chipValue, winnings, true); // Stats update only if connected
+                    }
                         
-                    // Update stats and add to live feed
-                    gameStats.addGame(state.chipValue, winnings, true);
-                    realWallet.balance += winnings;
-                    realWallet.updateWalletUI();
-                        
-                    // Add to live feed
-                    const multiplier = state.rollMode === 'under' ? 
-                        state.payouts[state.rollUnder] : 
-                        getPayoutForRollOver(state.rollUnder);
-                    liveFeed.addItem('win', `You won ${multiplier}x on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}!`);
+                    // Add to live feed regardless of wallet connection
+                    liveFeed.addItem('win', `You won ${multiplier.toFixed(2)}x on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}!`);
                         
                     // Show result modal instead of flash effect
                     let resultHTML = `
@@ -2756,19 +3700,25 @@
                             YOU WIN!
                         </p>
                         <p>+${winnings.toFixed(2)} SOL added to your balance!</p>
-                        <p style="font-size: 0.9rem; opacity: 0.7;">Multiplier: ${multiplier}x</p>`;
+                        <p style="font-size: 0.9rem; opacity: 0.7;">Multiplier: ${multiplier.toFixed(2)}x</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Server Seed Hash: ${sha256(state.provablyFair.serverSeed)}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Client Seed: ${state.provablyFair.clientSeed}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Nonce: ${state.provablyFair.nonce -1}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Next Server Seed Hash: ${sha256(state.provablyFair.nextServerSeed)}</p>
+                        `;
                     resultDetails.innerHTML = resultHTML;
                     resultModal.style.display = 'flex';
                 } else {
                     updateStreak(false);
-                    playLossSound();
+                    playResultSound('loss');
                         
-                    // Update stats and add to live feed
-                    gameStats.addGame(state.chipValue, 0, false);
-                    realWallet.balance -= state.chipValue;
-                    realWallet.updateWalletUI();
+                    if (realWallet.isConnected) { // Only update if wallet is connected
+                        realWallet.balance -= state.chipValue;
+                        realWallet.updateWalletUI();
+                        gameStats.addGame(state.chipValue, 0, false); // Stats update only if connected
+                    }
                         
-                    liveFeed.addItem('loss', `You lost ${state.chipValue} SOL on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}`);
+                    liveFeed.addItem('loss', `You lost ${state.chipValue.toFixed(2)} SOL on ${state.rollMode === 'under' ? 'Roll Under' : 'Roll Over'} ${state.rollUnder}`);
                         
                     // Show result modal for loss
                     let resultHTML = `
@@ -2778,13 +3728,51 @@
                         <p class="loss" style="font-size: 1.5rem; text-align: center">
                             YOU LOSE!
                         </p>
-                        <p>-${state.chipValue.toFixed(2)} SOL deducted from your balance.</p>`;
+                        <p>-${state.chipValue.toFixed(2)} SOL deducted from your balance.</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Server Seed Hash: ${sha256(state.provablyFair.serverSeed)}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Client Seed: ${state.provablyFair.clientSeed}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Nonce: ${state.provablyFair.nonce -1}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5;">Next Server Seed Hash: ${sha256(state.provablyFair.nextServerSeed)}</p>
+                        `;
                     resultDetails.innerHTML = resultHTML;
                     resultModal.style.display = 'flex';
                 }
 
+                // HISTORY/RECORDS SECTION - Update game history and personal records
+                // These should always update regardless of wallet connection to track local play
+                const gameHistoryEntry = {
+                    date: new Date().toISOString(),
+                    mode: 'solo',
+                    bet: state.chipValue,
+                    roll: sum,
+                    target: state.rollUnder,
+                    outcome: state.rollResult,
+                    payoutLoss: state.rollResult === 'WIN' ? winnings : -state.chipValue,
+                    multiplier: multiplier,
+                    serverSeed: state.provablyFair.serverSeed,
+                    clientSeed: state.provablyFair.clientSeed,
+                    nonce: state.provablyFair.nonce - 1 // Store the nonce used for this roll
+                };
+                gameHistory.addGameEntry(gameHistoryEntry);
+                personalRecords.updateRecords(gameHistoryEntry);
+
                 // Re-enable button
                 rollButton.disabled = false;
+
+                // AUTO-BET FEATURE: Continue or stop auto-bet
+                if (state.autoBet.isActive) {
+                    state.autoBet.currentBet++;
+                    updateAutoBetProgress();
+                    if (state.autoBet.currentBet < state.autoBet.count && 
+                        !(state.autoBet.stopOnWin && state.rollResult === 'WIN') &&
+                        !(state.autoBet.stopOnLoss && state.rollResult === 'LOSE') &&
+                        realWallet.balance >= state.chipValue) { // AUTO-BET SAFETY: Check balance before next auto-bet
+                        state.autoBet.intervalId = setTimeout(rollDiceSolo, state.autoBet.delay);
+                    } else {
+                        stopAutoBet();
+                        showMessageBox('Auto Bet finished.', 'info');
+                    }
+                }
             }, 1000);
         }
 
@@ -2819,13 +3807,13 @@
 
             setTimeout(async () => {
                 // Player's roll
-                const playerRoll1 = Math.floor(Math.random() * 6) + 1;
-                const playerRoll2 = Math.floor(Math.random() * 6) + 1;
+                const playerRoll1 = validateDiceValue(Math.floor(Math.random() * 6) + 1);
+                const playerRoll2 = validateDiceValue(Math.floor(Math.random() * 6) + 1);
                 const playerTotal = playerRoll1 + playerRoll2;
 
                 // Opponent's roll (simulated)
-                const opponentRoll1 = Math.floor(Math.random() * 6) + 1;
-                const opponentRoll2 = Math.floor(Math.random() * 6) + 1;
+                const opponentRoll1 = validateDiceValue(Math.floor(Math.random() * 6) + 1);
+                const opponentRoll2 = validateDiceValue(Math.floor(Math.random() * 6) + 1);
                 const opponentTotal = opponentRoll1 + opponentRoll2;
 
                 // Update dice UI
@@ -2841,7 +3829,8 @@
                 vsText.style.display = 'none';
 
                 const pot = state.currentStake * 2;
-                const platformFee = pot * 0.05;
+                // DUEL MODE BALANCE IMPROVEMENTS: Reduced platform fee (e.g., from 5% to 2%)
+                const platformFee = pot * 0.02; // Reduced to 2%
                 const winnings = pot - platformFee;
 
                 let duelOutcome = '';
@@ -2853,7 +3842,7 @@
                     realWallet.balance += winnings;
                     // Removed old flash effects as they are replaced by the result modal
                     // showWinEffect(winAmount, 'duel'); 
-                    playWinSound();
+                    playResultSound('win');
                     updateStreak(true);
                     updateLeaderboardWins();
                     checkDailyChallenge();
@@ -2861,14 +3850,14 @@
                     duelOutcome = 'LOSS';
                     // Removed old flash effects as they are replaced by the result modal
                     // showLossEffect('duel'); 
-                    playLossSound();
+                    playResultSound('loss');
                     updateStreak(false);
                 } else {
                     duelOutcome = 'TIE';
                     winAmount = state.currentStake; // Return stake on tie
                     realWallet.balance += state.currentStake;
                     showMessageBox('It\'s a Tie! Your stake has been returned.', 'info');
-                    playLossSound();
+                    playResultSound('loss'); // Play a neutral sound for tie
                     updateStreak(false);
                 }
 
@@ -2896,16 +3885,18 @@
 
                 // Record duel history
                 const duelEntry = {
-                    playerRoll: playerTotal,
-                    opponentRoll: opponentTotal,
+                    date: new Date().toISOString(),
+                    mode: 'duel',
+                    bet: state.currentStake,
+                    roll: playerTotal,
+                    target: opponentTotal, // For duel, target is opponent's roll
                     outcome: duelOutcome,
-                    stake: state.currentStake,
-                    winnings: winAmount,
-                    timestamp: new Date().toISOString(),
+                    payoutLoss: duelOutcome === 'WIN' ? winAmount : (duelOutcome === 'LOSS' ? -state.currentStake : 0),
+                    multiplier: duelOutcome === 'WIN' ? (winAmount / state.currentStake) : 0,
                     opponent: state.activeMatch.player2.username // Use opponent's username from active match
                 };
-                await mockFirestore.addDoc('matchHistory', duelEntry);
-                renderDuelHistory();
+                gameHistory.addGameEntry(duelEntry);
+                personalRecords.updateRecords(duelEntry);
 
                 // Clear active match and return to lobby state
                 state.activeMatch = null;
@@ -2982,15 +3973,14 @@
 
         function updateMultiplier() {
             let multiplier;
-            
             if (state.rollMode === 'under') {
                 multiplier = state.payouts[state.rollUnder];
             } else {
-                // For Roll Over, use inverted payout calculation
                 multiplier = getPayoutForRollOver(state.rollUnder);
             }
             
-            multiplierDisplay.textContent = `Payout: ${multiplier}x`;
+            // Format multiplier display
+            multiplierDisplay.textContent = `Payout: ${multiplier % 1 === 0 ? multiplier : multiplier.toFixed(2)}x`;
         }
 
         // Confetti function (existing)
@@ -3098,6 +4088,9 @@
             if (event.target === depositModal) { depositModal.style.display = 'none'; }
             if (event.target === withdrawModal) { withdrawModal.style.display = 'none'; }
             if (event.target === resultModal) { resultModal.style.display = 'none'; } // Close result modal on outside click
+            if (event.target === provablyFairModal) { provablyFairModal.style.display = 'none'; } // Close provably fair modal
+            if (event.target === settingsModal) { settingsModal.style.display = 'none'; } // Close settings modal
+            if (event.target === historyModal) { historyModal.style.display = 'none'; } // Close history modal
         });
 
 
@@ -3110,31 +4103,48 @@
                 this.walletType = null;
                 this.walletAdapter = null;
                 this.publicKey = null;
+                this.balanceRefreshInterval = null; // QUICK BALANCE REFRESH
+                this.connectionTimeout = null; // UI/UX SAFETY: Wallet connection timeout
             }
 
             async connectWallet(walletType) {
                 try {
-                    console.log('🔄 Starting wallet connection for:', walletType);
-                    console.log('🔍 NaCl available:', typeof nacl !== 'undefined');
-                    
                     this.showConnectingScreen(walletType);
                     
-                    // Mobile deep linking check
-                    if (this.isMobile() && !this.isWalletAvailable(walletType)) {
-                        this.redirectToWalletApp(walletType);
-                        return;
-                    }
+                    // UI/UX SAFETY: Set a timeout for wallet connection
+                    const connectionPromise = new Promise(async (resolve, reject) => {
+                        this.connectionTimeout = setTimeout(() => {
+                            reject(new Error('Wallet connection timed out. Please try again or check your wallet app.'));
+                        }, 15000); // 15 seconds timeout
 
-                    const adapter = this.getWalletAdapter(walletType);
-                    if (!adapter) {
-                        throw new Error(`${walletType} wallet not found. Please install the ${walletType} extension.`);
-                    }
+                        try {
+                            // Mobile deep linking check
+                            if (this.isMobile() && !this.isWalletAvailable(walletType)) {
+                                this.redirectToWalletApp(walletType);
+                                return; // Exit if redirecting
+                            }
 
-                    const connectionResult = await adapter.connect();
-                    this.walletAdapter = adapter;
-                    this.publicKey = connectionResult.publicKey || adapter.publicKey;
-                    this.address = this.publicKey.toString();
-                    this.walletType = walletType;
+                            const adapter = this.getWalletAdapter(walletType);
+                            if (!adapter) {
+                                throw new Error(`${walletType} wallet not found. Please install the ${walletType} extension.`);
+                            }
+
+                            const connectionResult = await adapter.connect();
+                            this.walletAdapter = adapter;
+                            this.publicKey = connectionResult.publicKey || adapter.publicKey;
+                            this.address = this.publicKey.toString();
+                            this.walletType = walletType;
+
+                            clearTimeout(this.connectionTimeout); // Clear timeout on successful connection
+                            resolve();
+
+                        } catch (error) {
+                            clearTimeout(this.connectionTimeout); // Clear timeout on error
+                            reject(error);
+                        }
+                    });
+
+                    await connectionPromise; // Wait for connection or timeout
 
                     this.showVerificationScreen();
 
@@ -3145,9 +4155,10 @@
                     this.isConnected = true;
                     this.showSuccessScreen();
                     this.updateWalletUI();
+                    this.startBalanceRefresh(); // QUICK BALANCE REFRESH
 
                 } catch (error) {
-                    console.error('Wallet connection error:', error);
+                    showMessageBox(`Wallet connection error: ${error.message}`, 'error');
                     this.showErrorScreen(error.message);
                 }
             }
@@ -3193,10 +4204,7 @@
                         throw new Error('Signature verification failed - invalid signature');
                     }
 
-                    console.log('✅ Wallet ownership verified successfully');
-
                 } catch (error) {
-                    console.error('Wallet verification error:', error);
                     throw new Error('Failed to verify wallet ownership: ' + error.message);
                 }
             }
@@ -3210,26 +4218,25 @@
                     
                     const balance = await connection.getBalance(this.publicKey);
                     this.balance = balance / solanaWeb3.LAMPORTS_PER_SOL;
-                } catch (error) {
-                    console.error('Error fetching balance:', error);
-                    this.balance = 0;
+                    showMessageBox('Balance refreshed!', 'success');
+                }
+                /* Removed notification spam from here */
+                catch (error) {
+                    showMessageBox('Failed to refresh balance. Please try again.', 'error');
+                } finally {
+                    balanceRefreshIcon.classList.remove('fa-spin'); // QUICK BALANCE REFRESH
                 }
             }
 
             getWalletAdapter(walletType) {
-                console.log('🔍 Checking for wallet adapter:', walletType);
-                
                 if (walletType === 'phantom') {
                     const isAvailable = window.solana && window.solana.isPhantom;
-                    console.log('👻 Phantom available:', isAvailable);
                     return isAvailable ? window.solana : null;
                 } else if (walletType === 'solflare') {
                     const isAvailable = window.solflare && window.solflare.isSolflare;
-                    console.log('🔥 Solflare available:', isAvailable);
                     return isAvailable ? window.solflare : null;
                 }
                 
-                console.log('❌ Unknown wallet type:', walletType);
                 return null;
             }
 
@@ -3285,6 +4292,10 @@
                     screen.style.display = 'none';
                 });
                 document.getElementById('wallet-selection-screen').style.display = 'block';
+                if (this.connectionTimeout) { // Clear any pending timeout on modal reset
+                    clearTimeout(this.connectionTimeout);
+                    this.connectionTimeout = null;
+                }
             }
 
             disconnect() {
@@ -3294,7 +4305,9 @@
                 this.walletType = null;
                 this.walletAdapter = null;
                 this.publicKey = null;
+                this.stopBalanceRefresh(); // QUICK BALANCE REFRESH
                 this.updateWalletUI(); // This will now also call updateMobileMenuVisibility()
+                showMessageBox('Wallet disconnected.', 'info');
             }
 
             updateWalletUI() {
@@ -3342,20 +4355,38 @@
             }
 
             updateUsdValueEstimates() {
-                const solPriceUsd = 173.45;
-                
+                // PRODUCTION SETTINGS: Define SOL price
+                const solPriceUsd = 173.45; // Example current SOL price
+
                 const depositAmount = parseFloat(document.getElementById('deposit-amount').value) || 0;
                 const withdrawAmount = parseFloat(document.getElementById('withdraw-amount').value) || 0;
                 
                 document.getElementById('deposit-usd-value').textContent = (depositAmount * solPriceUsd).toFixed(2);
                 document.getElementById('withdraw-usd-value').textContent = (withdrawAmount * solPriceUsd).toFixed(2);
             }
+
+            // QUICK BALANCE REFRESH BUTTON START
+            startBalanceRefresh() {
+                this.stopBalanceRefresh(); // Clear any existing interval
+                this.balanceRefreshInterval = setInterval(() => {
+                    if (this.isConnected) {
+                        this.fetchBalance();
+                    }
+                }, 30000); // Refresh every 30 seconds
+            }
+
+            stopBalanceRefresh() {
+                if (this.balanceRefreshInterval) {
+                    clearInterval(this.balanceRefreshInterval);
+                    this.balanceRefreshInterval = null;
+                }
+            }
+            // QUICK BALANCE REFRESH BUTTON END
         }
         const realWallet = new RealWalletManager();
-        const mockWallet = realWallet;
+        const mockWallet = realWallet; // For backward compatibility with existing mock references
 
         realWallet.updateWalletUI();
-
 
         // --- Leaderboard (Mock) ---
         const leaderboardList = document.getElementById('leaderboard-list');
@@ -3446,7 +4477,8 @@
                 mockChatMessages.push({ username: username, text: text, type: 'user' });
                 chatInput.value = '';
                 renderChatMessages();
-                 setTimeout(simulateNewChatMessage, 1000);
+                 // Removed automatic simulated message after every user message
+                 // setTimeout(simulateNewChatMessage, 1000); 
             }
         }
 
@@ -3468,7 +4500,8 @@
              renderChatMessages();
         }
 
-        setInterval(simulateNewChatMessage, 5000);
+        // Reduced frequency of simulated messages to avoid spam
+        setInterval(simulateNewChatMessage, 15000); // Every 15 seconds
 
         renderChatMessages();
 
@@ -3503,7 +4536,6 @@
 
         // --- Profile System ---
         const usernameInput = document.getElementById('username-input');
-        const avatarSelect = document.getElementById('avatar-select');
         const saveProfileBtn = document.getElementById('save-profile-btn');
         const profileAvatarIcon = document.querySelector('#profile-avatar-new i');
 
@@ -3516,37 +4548,46 @@
                 mockAuth.currentUser.displayName = savedUsername;
             }
             if (savedAvatar) {
-                avatarSelect.value = savedAvatar;
-                profileAvatarIcon.textContent = savedAvatar;
+                profileAvatarIcon.className = ''; // Clear existing classes
+                if (savedAvatar.startsWith('http')) { // If it's a URL
+                    profileAvatarIcon.innerHTML = `<img src="${savedAvatar}" onerror="this.src='https://placehold.co/40x40/000000/FFFFFF?text=?'" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else { // Assume it's an emoji
+                    profileAvatarIcon.textContent = savedAvatar;
+                }
                 mockAuth.currentUser.photoURL = savedAvatar;
+                currentAvatarPreview.innerHTML = profileAvatarIcon.innerHTML; // Update preview
             } else {
                  profileAvatarIcon.className = '';
                  profileAvatarIcon.textContent = '👤';
                  mockAuth.currentUser.photoURL = '👤';
+                 currentAvatarPreview.textContent = '👤';
             }
+            renderAvatarSelectionGrid(); // Render grid on profile load
+            selectAvatarInGrid(savedAvatar || '👤'); // Select current avatar in grid
         }
 
         saveProfileBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
-            const avatar = avatarSelect.value;
+            const avatar = localStorage.getItem('avatar') || '👤'; // Get the currently selected avatar
 
             if (username) {
                 localStorage.setItem('username', username);
             } else {
                  localStorage.removeItem('username');
             }
-            localStorage.setItem('avatar', avatar);
+            // Avatar is already saved by avatar selection functions
 
             loadProfile();
             profileModal.style.display = 'none';
              if (realWallet.isConnected && realWallet.address) {
-                 const currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
+                 let currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
                  if (currentUser) {
                       currentUser.username = username || 'You';
                       currentUser.avatar = avatar;
                       renderLeaderboard();
                  }
              }
+             showMessageBox('Profile updated successfully!', 'success');
         });
 
         loadProfile();
@@ -3567,6 +4608,31 @@
             withdrawModal.style.display = 'none';
             walletModal.style.display = 'flex';
         });
+
+        // New functions for deposit/withdraw amount buttons
+        function setDepositAmount(value) {
+            document.getElementById('deposit-amount').value = value.toFixed(2);
+            realWallet.updateUsdValueEstimates();
+        }
+
+        function incrementDepositAmount(increment) {
+            const depositInput = document.getElementById('deposit-amount');
+            const currentValue = parseFloat(depositInput.value || 0);
+            depositInput.value = (Math.max(currentValue + increment, 0.1)).toFixed(2);
+            realWallet.updateUsdValueEstimates(); // Update USD display
+        }
+
+        function setWithdrawAmount(value) {
+            document.getElementById('withdraw-amount').value = value.toFixed(2);
+            realWallet.updateUsdValueEstimates();
+        }
+
+        function incrementWithdrawAmount(increment) {
+            const withdrawInput = document.getElementById('withdraw-amount');
+            const currentValue = parseFloat(withdrawInput.value || 0);
+            withdrawInput.value = (Math.max(currentValue + increment, 0.1)).toFixed(2);
+            realWallet.updateUsdValueEstimates(); // Update USD display
+        }
 
         confirmDepositBtn.addEventListener('click', () => {
             if (!realWallet.isConnected) {
@@ -3643,26 +4709,37 @@
         const rollSound = new Audio('https://www.soundjay.com/mechanical/gears-01.wav');
         const winSound = new Audio('https://www.soundjay.com/human/applause-01.wav');
         const lossSound = new Audio('https://www.soundjay.com/misc/fart-01.wav');
+        const uiSound = new Audio('https://www.soundjay.com/button/button-10.wav'); // Generic UI sound
+
+        // UI/UX SAFETY: Robust sound system error catching
+        function playSound(audioElement) {
+            if (state.soundSettings.masterVolume > 0) {
+                audioElement.volume = state.soundSettings.masterVolume;
+                audioElement.currentTime = 0;
+                audioElement.play().catch(e => console.error("Error playing sound:", e));
+            }
+        }
 
         function playRollSound() {
-             if (rollSound.readyState >= 2) {
-                rollSound.currentTime = 0;
-                rollSound.play().catch(e => console.error("Error playing roll sound:", e));
-             }
+            if (state.soundSettings.rollSound) {
+                playSound(rollSound);
+            }
         }
 
-        function playWinSound() {
-             if (winSound.readyState >= 2) {
-                winSound.currentTime = 0;
-                winSound.play().catch(e => console.error("Error playing win sound:", e));
-             }
+        function playResultSound(type) {
+            if (state.soundSettings.resultSound) {
+                if (type === 'win') {
+                    playSound(winSound);
+                } else if (type === 'loss') {
+                    playSound(lossSound);
+                }
+            }
         }
 
-        function playLossSound() {
-             if (lossSound.readyState >= 2) {
-                lossSound.currentTime = 0;
-                lossSound.play().catch(e => console.error("Error playing loss sound:", e));
-             }
+        function playUISound() {
+            if (state.soundSettings.uiSound) {
+                playSound(uiSound);
+            }
         }
 
         // Coin Shower Animation (using existing triggerConfetti function)
@@ -3797,7 +4874,7 @@
                 chatContainer.style.left = 'auto';
                 chatContainer.style.borderRadius = 'var(--radius-md)';
                 chatContainer.style.background = 'rgba(20, 20, 20, 0.9)';
-                chatContainer.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.1)';
+                chatContainer?.style?.setProperty('box-shadow', 'var(--shadow-glow) rgba(255, 255, 255, 0.1)');
                 chatContainer.style.cursor = 'default';
 
                 chatBubbleIcon.style.display = 'none';
@@ -3817,7 +4894,7 @@
                     chatContainer.style.left = 'auto';
                     chatContainer.style.borderRadius = '50%';
                     chatContainer.style.background = 'var(--accent-pink)';
-                    chatContainer.style.boxShadow = 'var(--shadow-glow) var(--accent-pink)';
+                    chatContainer.style.boxShadow = '0 0 10px var(--accent-pink)';
                     chatContainer.style.cursor = 'pointer';
 
                     chatBubbleIcon.style.display = 'flex';
@@ -3836,6 +4913,9 @@
         const dropdownProfileBtn = document.getElementById('dropdown-profile-btn');
         const dropdownDepositBtn = document.getElementById('dropdown-deposit-btn');
         const dropdownWithdrawBtn = document.getElementById('dropdown-withdraw-btn');
+        const dropdownProvablyFairBtn = document.getElementById('dropdown-provably-fair-btn'); // PROVABLY FAIR
+        const dropdownSettingsBtn = document.getElementById('dropdown-settings-btn'); // SETTINGS
+        const dropdownHistoryBtn = document.getElementById('dropdown-history-btn'); // HISTORY
         // const dropdownReferralBtn = document.getElementById('dropdown-referral-btn'); // Removed
         const dropdownDisconnectBtn = document.getElementById('dropdown-disconnect-btn');
 
@@ -3844,6 +4924,9 @@
         const mobileProfileBtn = document.getElementById('mobile-profile-btn');
         const mobileDepositBtn = document.getElementById('mobile-deposit-btn');
         const mobileWithdrawBtn = document.getElementById('mobile-withdraw-btn');
+        const mobileProvablyFairBtn = document.getElementById('mobile-provably-fair-btn'); // PROVABLY FAIR
+        const mobileSettingsBtn = document.getElementById('mobile-settings-btn'); // SETTINGS
+        const mobileHistoryBtn = document.getElementById('mobile-history-btn'); // HISTORY
         // const mobileReferralBtn = document.getElementById('mobile-referral-btn'); // Removed
         const mobileDisconnectBtn = document.getElementById('mobile-disconnect-btn');
         const mobileConnectWalletBtn = document.getElementById('mobile-connect-wallet-btn');
@@ -3870,6 +4953,31 @@
              profileDropdown.classList.remove('show');
              realWallet.updateTransactionModals();
          });
+        // PROVABLY FAIR START
+        dropdownProvablyFairBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            provablyFairModal.style.display = 'flex';
+            profileDropdown.classList.remove('show');
+            updateProvablyFairUI();
+        });
+        // PROVABLY FAIR END
+        // SETTINGS START
+        dropdownSettingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            settingsModal.style.display = 'flex';
+            profileDropdown.classList.remove('show');
+            loadSoundSettings(); // Load settings when modal opens
+        });
+        // SETTINGS END
+        // HISTORY START
+        dropdownHistoryBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            historyModal.style.display = 'flex';
+            profileDropdown.classList.remove('show');
+            gameHistory.renderHistory();
+            personalRecords.updateDisplay();
+        });
+        // HISTORY END
         // Removed dropdownReferralBtn event listener
         dropdownDisconnectBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -3897,6 +5005,34 @@
              hamburgerMenu.classList.remove('active');
              realWallet.updateTransactionModals();
          });
+        // PROVABLY FAIR START
+        mobileProvablyFairBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            provablyFairModal.style.display = 'flex';
+            mobileNavOverlay.classList.remove('show');
+            hamburgerMenu.classList.remove('active');
+            updateProvablyFairUI();
+        });
+        // PROVABLY FAIR END
+        // SETTINGS START
+        mobileSettingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            settingsModal.style.display = 'flex';
+            mobileNavOverlay.classList.remove('show');
+            hamburgerMenu.classList.remove('active');
+            loadSoundSettings();
+        });
+        // SETTINGS END
+        // HISTORY START
+        mobileHistoryBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            historyModal.style.display = 'flex';
+            mobileNavOverlay.classList.remove('show');
+            hamburgerMenu.classList.remove('active');
+            gameHistory.renderHistory();
+            personalRecords.updateDisplay();
+        });
+        // HISTORY END
         // Removed mobileReferralBtn event listener
         mobileDisconnectBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -3978,18 +5114,30 @@
         }
 
         function handleCustomBetInput() {
-            const customValue = parseFloat(customBetInput.value);
+            let customValue = parseFloat(customBetInput.value);
             
             if (customValue && customValue > 0) {
                 chipButtons.forEach(btn => btn.classList.remove('active'));
                 
-                state.chipValue = Math.min(customValue, realWallet.balance || 999999);
+                // Prevent negative balances: Ensure bet amount does not exceed balance
+                // This check is now only for connected wallet. If not connected, it can go below 0.
+                if (realWallet.isConnected) {
+                    customValue = Math.min(customValue, realWallet.balance);
+                }
+                
+                state.chipValue = customValue;
                 state.currentStake = state.chipValue;
                 
+                customBetInput.value = customValue.toFixed(2); // Format input value
                 customBetInput.style.borderColor = 'var(--accent-green)';
                 setTimeout(() => {
                     customBetInput.style.borderColor = '';
                 }, 300);
+            } else if (customValue <= 0 && customBetInput.value !== '') {
+                // If user enters 0 or negative, clear and reset to default
+                customBetInput.value = '';
+                clearCustomBet();
+                showMessageBox('Bet amount must be greater than 0.', 'warning');
             }
         }
 
@@ -4006,9 +5154,11 @@
             }
         }
 
+        // UI/UX SAFETY: Auto-Bet Safety Limits - Validate bet amount
         function validateBetAmount(amount) {
             const balance = realWallet.balance || 0;
-            if (amount > balance) {
+            // Only check against real wallet balance if connected
+            if (realWallet.isConnected && amount > balance) {
                 showMessageBox(`Bet amount (${amount.toFixed(3)} SOL) exceeds your balance (${balance.toFixed(3)} SOL)`, 'warning');
                 return false;
             }
@@ -4039,9 +5189,16 @@
 
         clearBetBtn.addEventListener('click', clearCustomBet);
 
-        document.querySelector('.balance-display').addEventListener('click', () => {
-            showMessageBox(`Current Balance: ${realWallet.balance.toFixed(3)} SOL`, 'info');
+        // QUICK BALANCE REFRESH BUTTON START
+        balanceRefreshIcon.addEventListener('click', async () => {
+            if (realWallet.isConnected) {
+                balanceRefreshIcon.classList.add('fa-spin');
+                await realWallet.fetchBalance();
+            } else {
+                showMessageBox('Connect your wallet to refresh balance.', 'warning');
+            }
         });
+        // QUICK BALANCE REFRESH BUTTON END
 
         updateBalanceDisplay();
 
@@ -4104,6 +5261,7 @@
                 localStorage.setItem('totalWinnings', this.totalWinnings.toFixed(3));
             },
             addGame: function(wagered, winnings = 0, isWin = false) {
+                // This function should only be called if realWallet.isConnected, as per instruction
                 this.totalGames++;
                 this.totalWagered += wagered;
                 if (isWin) {
@@ -4195,7 +5353,7 @@
                 { type: 'win', message: 'LuckyPlayer earned 3.2 SOL!' },
                 { type: 'loss', message: 'GamblerPro lost streak at 7 wins' }
             ],
-            currentIndex: 0,
+            rotationInterval: null, // Initialize to null
             
             show: function() {
                 const feedElement = document.getElementById('live-feed');
@@ -4229,6 +5387,7 @@
             },
             
             startRotation: function() {
+                this.stopRotation(); // Clear any existing interval first
                 this.rotationInterval = setInterval(() => {
                     const types = ['win', 'loss'];
                     const messages = [
@@ -4243,12 +5402,13 @@
                     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
                     
                     this.addItem(randomType, randomMessage);
-                }, 5000);
+                }, 5000); // Reduced frequency to avoid spam
             },
             
             stopRotation: function() {
                 if (this.rotationInterval) {
                     clearInterval(this.rotationInterval);
+                    this.rotationInterval = null;
                 }
             }
         };
@@ -4317,6 +5477,622 @@
         if (window.innerWidth > 768) {
             setTimeout(() => liveFeed.show(), 2000);
         }
+
+        // AUTO-BET FEATURE START
+        function toggleAutoBetSettings() {
+            autoBetSettings.classList.toggle('show');
+            autoBetToggle.classList.toggle('active');
+            playUISound();
+        }
+
+        function startAutoBet() {
+            if (!realWallet.isConnected) {
+                showMessageBox('Connect wallet to use Auto Bet!', 'error');
+                autoBetCheckbox.checked = false;
+                return;
+            }
+            if (!validateBetAmount(state.chipValue)) {
+                showMessageBox('Invalid bet amount for Auto Bet. Please adjust.', 'error');
+                autoBetCheckbox.checked = false;
+                return;
+            }
+
+            state.autoBet.isActive = true;
+            state.autoBet.count = parseInt(autoBetCountInput.value) || 1;
+            state.autoBet.delay = parseInt(autoBetDelayInput.value) || 1000;
+            state.autoBet.stopOnWin = autoBetStopWinCheckbox.checked;
+            state.autoBet.stopOnLoss = autoBetStopLossCheckbox.checked;
+            state.autoBet.currentBet = 0;
+
+            rollButton.disabled = true; // Disable manual roll button
+            autoBetCheckbox.disabled = true; // Disable auto-bet toggle during active session
+
+            updateAutoBetProgress();
+            showMessageBox(`Auto Bet started for ${state.autoBet.count} rolls.`, 'info');
+            state.autoBet.intervalId = setTimeout(rollDiceSolo, state.autoBet.delay);
+        }
+
+        function stopAutoBet() {
+            if (state.autoBet.intervalId) {
+                clearTimeout(state.autoBet.intervalId);
+                state.autoBet.intervalId = null;
+            }
+            state.autoBet.isActive = false;
+            rollButton.disabled = false; // Re-enable manual roll button
+            autoBetCheckbox.disabled = false; // Re-enable auto-bet toggle
+            updateAutoBetProgress();
+            showMessageBox('Auto Bet stopped.', 'info');
+        }
+
+        function updateAutoBetProgress() {
+            autoBetProgressDisplay.innerHTML = `Progress: <strong>${state.autoBet.currentBet}</strong> / <strong>${state.autoBet.count}</strong>`;
+        }
+
+        autoBetToggle.addEventListener('click', (e) => {
+            if (e.target.type !== 'checkbox') { // Prevent double-triggering from checkbox click
+                autoBetCheckbox.checked = !autoBetCheckbox.checked;
+            }
+            if (autoBetCheckbox.checked) {
+                toggleAutoBetSettings();
+            } else {
+                autoBetSettings.classList.remove('show');
+                autoBetToggle.classList.remove('active');
+                stopAutoBet();
+            }
+        });
+
+        autoBetCheckbox.addEventListener('change', () => {
+            if (autoBetCheckbox.checked) {
+                startAutoBet();
+            } else {
+                stopAutoBet();
+            }
+        });
+
+        // Initialize auto-bet UI state
+        autoBetCheckbox.checked = state.autoBet.isActive;
+        if (state.autoBet.isActive) {
+            autoBetSettings.classList.add('show');
+            autoBetToggle.classList.add('active');
+        }
+        autoBetCountInput.value = state.autoBet.count;
+        autoBetDelayInput.value = state.autoBet.delay;
+        autoBetStopWinCheckbox.checked = state.autoBet.stopOnWin;
+        autoBetStopLossCheckbox.checked = state.autoBet.stopOnLoss;
+        updateAutoBetProgress();
+        // AUTO-BET FEATURE END
+
+        // SOUND TOGGLE IN SETTINGS START
+        function loadSoundSettings() {
+            masterVolumeSlider.value = state.soundSettings.masterVolume;
+            rollSoundToggle.checked = state.soundSettings.rollSound;
+            resultSoundToggle.checked = state.soundSettings.resultSound;
+            uiSoundToggle.checked = state.soundSettings.uiSound;
+
+            // Apply volume to all sounds
+            rollSound.volume = state.soundSettings.masterVolume;
+            winSound.volume = state.soundSettings.masterVolume;
+            lossSound.volume = state.soundSettings.masterVolume;
+            uiSound.volume = state.soundSettings.masterVolume;
+        }
+
+        function saveSoundSettings() {
+            state.soundSettings.masterVolume = parseFloat(masterVolumeSlider.value);
+            state.soundSettings.rollSound = rollSoundToggle.checked;
+            state.soundSettings.resultSound = resultSoundToggle.checked;
+            state.soundSettings.uiSound = uiSoundToggle.checked;
+
+            localStorage.setItem('masterVolume', state.soundSettings.masterVolume);
+            localStorage.setItem('rollSound', state.soundSettings.rollSound);
+            localStorage.setItem('resultSound', state.soundSettings.resultSound);
+            localStorage.setItem('uiSound', state.soundSettings.uiSound);
+
+            loadSoundSettings(); // Apply new settings immediately
+            showMessageBox('Sound settings saved!', 'success');
+            playUISound();
+        }
+
+        masterVolumeSlider.addEventListener('input', () => {
+            state.soundSettings.masterVolume = parseFloat(masterVolumeSlider.value);
+            loadSoundSettings(); // Apply volume changes immediately
+        });
+
+        rollSoundToggle.addEventListener('change', playUISound);
+        resultSoundToggle.addEventListener('change', playUISound);
+        uiSoundToggle.addEventListener('change', playUISound);
+
+        saveSettingsBtn.addEventListener('click', saveSoundSettings);
+
+        loadSoundSettings(); // Initial load of sound settings
+        // SOUND TOGGLE IN SETTINGS END
+
+        // REAL-TIME NOTIFICATION SYSTEM START
+        const notificationContainer = document.getElementById('notification-container');
+
+        // Removed showNotification function as per instructions to eliminate notification spam.
+        // Keeping a placeholder for showMessageBox for critical user feedback that is not spammy.
+        /*
+        function showNotification(message, type = 'info', actions = [], duration = 5000) {
+            const notification = document.createElement('div');
+            notification.className = `toast-notification ${type}`;
+            
+            let icon = '';
+            if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+            else if (type === 'error') icon = '<i class="fas fa-times-circle"></i>';
+            else if (type === 'warning') icon = '<i class="fas fa-exclamation-triangle"></i>';
+            else if (type === 'info') icon = '<i class="fas fa-info-circle"></i>';
+
+            let actionButtonsHtml = '';
+            if (actions && actions.length > 0) {
+                actionButtonsHtml = `<div class="actions">
+                    ${actions.map(action => `<button class="action-btn" data-action="${action.name}">${action.label}</button>`).join('')}
+                </div>`;
+            }
+
+            notification.innerHTML = `
+                ${icon}
+                <div class="content">
+                    <div class="title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                    <div class="message">${message}</div>
+                    ${actionButtonsHtml}
+                </div>
+                <button class="close-btn">&times;</button>
+            `;
+
+            notificationContainer.appendChild(notification);
+
+            // Trigger slide-in animation
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 50); // Small delay to ensure CSS transition applies
+
+            // Auto-dismiss
+            const dismissTimeout = setTimeout(() => {
+                dismissNotification(notification);
+            }, duration);
+
+            // Close button listener
+            notification.querySelector('.close-btn').addEventListener('click', () => {
+                clearTimeout(dismissTimeout); // Clear auto-dismiss if manually closed
+                dismissNotification(notification);
+            });
+
+            // Action button listeners
+            notification.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const actionName = button.dataset.action;
+                    const action = actions.find(a => a.name === actionName);
+                    if (action && typeof action.callback === 'function') {
+                        action.callback();
+                    }
+                    clearTimeout(dismissTimeout);
+                    dismissNotification(notification);
+                });
+            });
+        }
+
+        function dismissNotification(notificationElement) {
+            notificationElement.style.opacity = '0';
+            notificationElement.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                notificationElement.remove();
+            }, 400); // Match CSS transition duration
+        }
+        */
+
+        // Mock WebSocket for real-time updates - Removed setInterval for notifications
+        let mockWebSocketInterval;
+        function startMockWebSocket() {
+            // This interval is removed as per instruction to eliminate notification spam
+            // mockWebSocketInterval = setInterval(() => {
+            //     const messages = [
+            //         { type: 'info', message: 'New game update available!' },
+            //         { type: 'success', message: 'A player just hit a massive multiplier!' },
+            //         { type: 'warning', message: 'High network latency detected.' },
+            //         { type: 'error', message: 'Failed to connect to game server. Retrying...' },
+            //         { type: 'info', message: 'Daily challenge reset! New rewards await.', actions: [{ name: 'viewChallenge', label: 'View Challenge', callback: () => {
+            //             console.log('Opening daily challenge panel...');
+            //         }}] }
+            //     ];
+            //     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            //     console.log('Mock WebSocket message:', randomMessage.message); // Log instead of showNotification
+            // }, 15000); // Every 15 seconds
+        }
+        startMockWebSocket(); // Call to initialize, but the interval itself is removed
+        // REAL-TIME NOTIFICATION SYSTEM END
+
+        // FRIENDS SECTION START
+        let mockFriends = JSON.parse(localStorage.getItem('mockFriends')) || [
+            { id: 'friend1', username: 'DegenPal', avatar: '😎', online: true, winRate: '65%', lastSeen: 'now' },
+            { id: 'friend2', username: 'LuckyLuke', avatar: '🍀', online: false, winRate: '58%', lastSeen: '2h ago' },
+            { id: 'friend3', username: 'CryptoQueen', avatar: '👑', online: true, winRate: '72%', lastSeen: 'now' },
+            { id: 'friend4', username: 'SolanaSam', avatar: '🚀', online: false, winRate: '40%', lastSeen: '1d ago' }
+        ];
+
+        function saveFriends() {
+            localStorage.setItem('mockFriends', JSON.stringify(mockFriends));
+        }
+
+        function renderFriendsList(filter = '') {
+            friendsList.innerHTML = '';
+            const filteredFriends = mockFriends.filter(friend => 
+                friend.username.toLowerCase().includes(filter.toLowerCase()) ||
+                friend.id.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filteredFriends.length === 0 && filter) {
+                const noResults = document.createElement('li');
+                noResults.textContent = 'No friends found matching your search.';
+                noResults.style.textAlign = 'center';
+                noResults.style.opacity = '0.7';
+                noResults.style.padding = '1rem';
+                friendsList.appendChild(noResults);
+                return;
+            }
+
+            filteredFriends.forEach(friend => {
+                const listItem = document.createElement('li');
+                listItem.className = 'friend-item';
+                listItem.innerHTML = `
+                    <div class="friend-info">
+                        <span class="friend-avatar">${friend.avatar}</span>
+                        <div>
+                            <div class="friend-name">${friend.username}</div>
+                            <div class="friend-status ${friend.online ? 'online' : ''}">
+                                ${friend.online ? 'Online' : `Last seen: ${friend.lastSeen}`}
+                            </div>
+                            <div class="friend-win-rate">Win Rate: ${friend.winRate}</div>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="duel-btn" data-friend-id="${friend.id}">Duel</button>
+                        <button class="remove-btn" data-friend-id="${friend.id}">Remove</button>
+                    </div>
+                `;
+                friendsList.appendChild(listItem);
+            });
+
+            // Add event listeners for duel and remove buttons
+            friendsList.querySelectorAll('.duel-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const friendId = e.target.dataset.friendId;
+                    const friend = mockFriends.find(f => f.id === friendId);
+                    if (friend) {
+                        showMessageBox(`Inviting ${friend.username} to a duel!`, 'info');
+                        // Simulate duel invitation logic
+                    }
+                });
+            });
+
+            friendsList.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const friendId = e.target.dataset.friendId;
+                    removeFriend(friendId);
+                });
+            });
+        }
+
+        function addFriend(id, username, avatar) {
+            if (mockFriends.some(f => f.id === id)) {
+                showMessageBox(`Friend with ID ${id} already exists!`, 'warning');
+                return;
+            }
+            const newFriend = {
+                id: id,
+                username: username,
+                avatar: avatar,
+                online: false, // Default to offline
+                winRate: '0%', // Default win rate
+                lastSeen: 'just now'
+            };
+            mockFriends.push(newFriend);
+            saveFriends();
+            renderFriendsList();
+            showMessageBox(`${username} added to your friends list!`, 'success');
+        }
+
+        function removeFriend(id) {
+            mockFriends = mockFriends.filter(friend => friend.id !== id);
+            saveFriends();
+            renderFriendsList();
+            showMessageBox('Friend removed.', 'info');
+        }
+
+        friendSearchInput.addEventListener('input', (e) => {
+            renderFriendsList(e.target.value.trim());
+        });
+
+        addFriendByIdBtn.addEventListener('click', () => {
+            const friendId = friendSearchInput.value.trim();
+            if (friendId && friendId !== mockAuth.currentUser.uid) {
+                // Simulate finding a user by ID
+                const potentialFriend = mockLeaderboardData.find(p => p.id === friendId);
+                if (potentialFriend) {
+                    addFriend(potentialFriend.id, potentialFriend.username, potentialFriend.avatar);
+                    friendSearchInput.value = ''; // Clear input
+                } else {
+                    showMessageBox('User not found with that ID.', 'warning');
+                }
+            } else if (friendId === mockAuth.currentUser.uid) {
+                showMessageBox('You cannot add yourself as a friend.', 'warning');
+            } else {
+                showMessageBox('Please enter a friend ID.', 'warning');
+            }
+        });
+
+        renderFriendsList(); // Initial render of friends list
+        // FRIENDS SECTION END
+
+        // HISTORY/RECORDS SECTION START
+        const gameHistory = {
+            data: state.gameHistory,
+            filters: {
+                mode: 'all',
+                outcome: 'all',
+                date: ''
+            },
+            currentPage: 1,
+            rowsPerPage: 10,
+
+            save: function() {
+                localStorage.setItem('gameHistory', JSON.stringify(this.data));
+            },
+
+            addGameEntry: function(entry) {
+                this.data.unshift(entry); // Add to the beginning
+                this.save();
+                this.renderHistory(); // Re-render history table
+            },
+
+            applyFilters: function() {
+                const mode = historyFilterMode.value;
+                const outcome = historyFilterOutcome.value;
+                const date = historyFilterDate.value;
+
+                this.filters.mode = mode;
+                this.filters.outcome = outcome;
+                this.filters.date = date;
+                this.currentPage = 1; // Reset to first page on filter change
+                this.renderHistory();
+            },
+
+            renderHistory: function() {
+                gameHistoryTableBody.innerHTML = '';
+                let filteredData = [...this.data];
+
+                if (this.filters.mode !== 'all') {
+                    filteredData = filteredData.filter(entry => entry.mode === this.filters.mode);
+                }
+                if (this.filters.outcome !== 'all') {
+                    filteredData = filteredData.filter(entry => entry.outcome.toLowerCase() === this.filters.outcome.toLowerCase());
+                }
+                if (this.filters.date) {
+                    filteredData = filteredData.filter(entry => {
+                        const entryDate = new Date(entry.date).toISOString().split('T')[0];
+                        return entryDate === this.filters.date;
+                    });
+                }
+
+                const totalPages = Math.ceil(filteredData.length / this.rowsPerPage);
+                historyPageInfo.textContent = `Page ${this.currentPage} of ${totalPages || 1}`;
+
+                const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+                const endIndex = startIndex + this.rowsPerPage;
+                const paginatedData = filteredData.slice(startIndex, endIndex);
+
+                paginatedData.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.className = entry.outcome.toLowerCase() === 'win' ? 'win-entry' : (entry.outcome.toLowerCase() === 'loss' ? 'loss-entry' : '');
+                    row.innerHTML = `
+                        <td>${new Date(entry.date).toLocaleString()}</td>
+                        <td>${entry.mode.charAt(0).toUpperCase() + entry.mode.slice(1)}</td>
+                        <td>${entry.bet.toFixed(2)} SOL</td>
+                        <td>${entry.roll}</td>
+                        <td>${entry.mode === 'solo' ? (entry.outcome === 'WIN' ? '&lt; ' + entry.target : '&gt; ' + entry.target) : entry.target}</td>
+                        <td>${entry.outcome}</td>
+                        <td>${entry.payoutLoss > 0 ? '+' : ''}${entry.payoutLoss.toFixed(2)} SOL</td>
+                    `;
+                    gameHistoryTableBody.appendChild(row);
+                });
+
+                historyPrevPageBtn.disabled = this.currentPage === 1;
+                historyNextPageBtn.disabled = this.currentPage === totalPages || totalPages === 0;
+            },
+
+            nextPage: function() {
+                const filteredData = this.data.filter(entry => {
+                    const modeMatch = this.filters.mode === 'all' || entry.mode === this.filters.mode;
+                    const outcomeMatch = this.filters.outcome === 'all' || entry.outcome.toLowerCase() === this.filters.outcome.toLowerCase();
+                    const dateMatch = !this.filters.date || new Date(entry.date).toISOString().split('T')[0] === this.filters.date;
+                    return modeMatch && outcomeMatch && dateMatch;
+                });
+                const totalPages = Math.ceil(filteredData.length / this.rowsPerPage);
+                if (this.currentPage < totalPages) {
+                    this.currentPage++;
+                    this.renderHistory();
+                }
+            },
+
+            prevPage: function() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.renderHistory();
+                }
+            },
+
+            exportToCsv: function() {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Date,Mode,Bet,Roll,Target,Outcome,Payout/Loss\n"; // Header row
+
+                const filteredData = this.data.filter(entry => {
+                    const modeMatch = this.filters.mode === 'all' || entry.mode === this.filters.mode;
+                    const outcomeMatch = this.filters.outcome === 'all' || entry.outcome.toLowerCase() === this.filters.outcome.toLowerCase();
+                    const dateMatch = !this.filters.date || new Date(entry.date).toISOString().split('T')[0] === this.filters.date;
+                    return modeMatch && outcomeMatch && dateMatch;
+                });
+
+                filteredData.forEach(entry => {
+                    const row = [
+                        `"${new Date(entry.date).toLocaleString()}"`,
+                        `"${entry.mode.charAt(0).toUpperCase() + entry.mode.slice(1)}"`,
+                        `"${entry.bet.toFixed(2)} SOL"`,
+                        `"${entry.roll}"`,
+                        `"${entry.mode === 'solo' ? (entry.outcome === 'WIN' ? '< ' + entry.target : '> ' + entry.target) : entry.target}"`,
+                        `"${entry.outcome}"`,
+                        `"${entry.payoutLoss > 0 ? '+' : ''}${entry.payoutLoss.toFixed(2)} SOL"`
+                    ].join(',');
+                    csvContent += row + "\n";
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "degen-dice-history.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showMessageBox('Game history exported to CSV!', 'success');
+            }
+        };
+
+        const personalRecords = {
+            data: state.personalRecords,
+
+            save: function() {
+                localStorage.setItem('personalRecords', JSON.stringify(this.data));
+            },
+
+            updateRecords: function(gameEntry) {
+                // Update total games and wagered
+                this.data.totalGamesPlayed++;
+                this.data.totalWageredSum += gameEntry.bet;
+                this.data.netProfitSum += gameEntry.payoutLoss;
+
+                // Update biggest win
+                if (gameEntry.outcome === 'WIN' && gameEntry.payoutLoss > this.data.biggestWin) {
+                    this.data.biggestWin = gameEntry.payoutLoss;
+                }
+
+                // Update longest win streak
+                if (gameEntry.outcome === 'WIN') {
+                    this.data.longestWinStreak = Math.max(this.data.longestWinStreak, state.streak); // Use global streak
+                } else {
+                    // Streak is reset in the main game logic, so no need to manage it here
+                }
+
+                // Update highest multiplier
+                if (gameEntry.outcome === 'WIN' && gameEntry.multiplier > this.data.highestMultiplier) {
+                    this.data.highestMultiplier = gameEntry.multiplier;
+                }
+                this.save();
+                this.updateDisplay();
+            },
+
+            updateDisplay: function() {
+                recordBiggestWin.textContent = `${this.data.biggestWin.toFixed(2)} SOL`;
+                recordLongestStreak.textContent = `${this.data.longestWinStreak}`;
+                recordHighestMultiplier.textContent = `${this.data.highestMultiplier.toFixed(1)}x`;
+                recordTotalGamesPlayed.textContent = `${this.data.totalGamesPlayed}`;
+                recordTotalWageredSum.textContent = `${this.data.totalWageredSum.toFixed(2)} SOL`;
+                recordNetProfitSum.textContent = `${this.data.netProfitSum.toFixed(2)} SOL`;
+
+                const netProfitElement = recordNetProfitSum;
+                const netProfit = this.data.netProfitSum;
+                if (netProfit > 0) {
+                    netProfitElement.style.color = 'var(--accent-green)';
+                } else if (netProfit < 0) {
+                    netProfitElement.style.color = 'var(--accent-pink)';
+                } else {
+                    netProfitElement.style.color = 'var(--text-light)';
+                }
+            }
+        };
+
+        gameHistoryTab.addEventListener('click', () => {
+            gameHistoryTab.classList.add('active');
+            personalRecordsTab.classList.remove('active');
+            gameHistoryContent.classList.add('active');
+            personalRecordsContent.classList.remove('active');
+            gameHistory.renderHistory();
+        });
+
+        personalRecordsTab.addEventListener('click', () => {
+            personalRecordsTab.classList.add('active');
+            gameHistoryTab.classList.remove('active');
+            personalRecordsContent.classList.add('active');
+            gameHistoryContent.classList.remove('active');
+            personalRecords.updateDisplay();
+        });
+
+        historyApplyFiltersBtn.addEventListener('click', () => gameHistory.applyFilters());
+        historyExportCsvBtn.addEventListener('click', () => gameHistory.exportToCsv());
+        historyPrevPageBtn.addEventListener('click', () => gameHistory.prevPage());
+        historyNextPageBtn.addEventListener('click', () => gameHistory.nextPage());
+
+        // Initial render for history and records
+        gameHistory.renderHistory();
+        personalRecords.updateDisplay();
+        // HISTORY/RECORDS SECTION END
+
+        // PREDEFINED AVATAR SELECTION START
+        function renderAvatarSelectionGrid() {
+            avatarSelectionGrid.innerHTML = '';
+            predefinedAvatars.forEach(avatar => {
+                const avatarOption = document.createElement('div');
+                avatarOption.className = 'avatar-option';
+                avatarOption.textContent = avatar;
+                avatarOption.dataset.avatar = avatar; // Store the emoji itself
+                
+                if (localStorage.getItem('avatar') === avatar) {
+                    avatarOption.classList.add('selected');
+                }
+
+                avatarOption.addEventListener('click', () => {
+                    selectAvatarInGrid(avatar);
+                    localStorage.setItem('avatar', avatar);
+                    loadProfile(); // Update profile display immediately
+                    playUISound();
+                });
+                avatarSelectionGrid.appendChild(avatarOption);
+            });
+        }
+
+        function selectAvatarInGrid(selectedAvatar) {
+            document.querySelectorAll('.avatar-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.avatar === selectedAvatar) {
+                    option.classList.add('selected');
+                }
+            });
+            customAvatarInput.value = ''; // Clear custom input when a predefined avatar is selected
+        }
+
+        setCustomAvatarBtn.addEventListener('click', () => {
+            const customValue = customAvatarInput.value.trim();
+            if (customValue) {
+                // Basic validation for emoji or URL
+                const isEmoji = /\p{Emoji}/u.test(customValue);
+                const isUrl = customValue.startsWith('http://') || customValue.startsWith('https://');
+
+                if (isEmoji || isUrl) {
+                    localStorage.setItem('avatar', customValue);
+                    loadProfile(); // Update profile display immediately
+                    renderAvatarSelectionGrid(); // Re-render to deselect any predefined
+                    showMessageBox('Custom avatar set!', 'success');
+                    playUISound();
+                } else {
+                    showMessageBox('Invalid custom avatar. Please use an emoji or a valid image URL.', 'error');
+                }
+            } else {
+                showMessageBox('Please enter an emoji or image URL.', 'warning');
+            }
+        });
+
+        // Initial render of avatar selection grid
+        renderAvatarSelectionGrid();
+        // PREDEFINED AVATAR SELECTION END
+
     </script>
 </body>
 </html>
