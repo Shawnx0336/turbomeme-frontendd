@@ -3916,10 +3916,10 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
                         </p>
                         <p>+${winnings.toFixed(2)} SOL added to your balance!</p>
                         <p style="font-size: 0.9rem; opacity: 0.7;">Multiplier: ${multiplier.toFixed(2)}x</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Server Seed Hash: ${sha256(state.provablyFair.serverSeed)}</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Client Seed: ${state.provablyFair.clientSeed}</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Nonce: ${state.provablyFair.nonce -1}</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Next Server Seed Hash: ${sha256(state.provablyFair.nextServerSeed)}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5; word-break: break-all; overflow-wrap: break-word;">Server Seed Hash: ${sha256(state.provablyFair.serverSeed)}</p>
+<p style="font-size: 0.8rem; opacity: 0.5; word-break: break-all; overflow-wrap: break-word;">Client Seed: ${state.provablyFair.clientSeed}</p>
+<p style="font-size: 0.8rem; opacity: 0.5;">Nonce: ${state.provablyFair.nonce -1}</p>
+<p style="font-size: 0.8rem; opacity: 0.5; word-break: break-all; overflow-wrap: break-word;">Next Server Seed Hash: ${sha256(state.provablyFair.nextServerSeed)}</p>
                         `;
                     resultDetails.innerHTML = resultHTML;
                     resultModal.style.display = 'flex';
