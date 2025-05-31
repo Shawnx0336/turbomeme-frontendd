@@ -323,9 +323,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 2rem;
-            padding-top: calc(var(--header-height) + 2rem);
+            padding-top: calc(var(--header-height) + 0.5rem);  /* was +2rem */
+padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
@@ -337,7 +338,7 @@
         .dice-area {
             display: flex;
             gap: 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 0.75rem;
             position: relative;
         }
 
