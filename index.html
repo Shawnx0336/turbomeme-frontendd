@@ -2474,16 +2474,7 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             <a href="#" id="mobile-disconnect-btn" style="display: none;"><i class="fas fa-power-off"></i> Disconnect</a>
         </div>
     </div>
-<!-- Epic Jade Dragon Duel Intro -->
-    <div class="duel-intro-overlay" id="duel-intro-overlay">
-        <div class="duel-intro-content">
-            <div class="jade-dragon left">🐉</div>
-            <div class="jade-dragon right">🐉</div>
-            <div class="duel-mode-title">DUEL MODE</div>
-            <div class="countdown-display" id="countdown-display">3</div>
-            <div class="duel-particles" id="duel-particles"></div>
-        </div>
-    </div>
+
     <div class="game-container">
         <div class="mode-toggle">
             <button id="solo-mode-btn" class="active">Solo Mode</button>
@@ -3324,69 +3315,7 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
         const rollUnderBtn = document.getElementById('roll-under-btn');
         const rollOverBtn = document.getElementById('roll-over-btn');
         const rollModeLabel = document.getElementById('roll-mode-label');
-// EPIC JADE DRAGON DUEL INTRO SYSTEM
-        function showEpicDuelIntro() {
-            return new Promise((resolve) => {
-                const overlay = document.getElementById('duel-intro-overlay');
-                const countdown = document.getElementById('countdown-display');
-                
-                // Create particles
-                createDuelParticles();
-                
-                overlay.style.display = 'flex';
-                
-                // Play epic sound (if available)
-                playUISound();
-                
-                // Countdown sequence
-                let count = 3;
-                countdown.textContent = count;
-                countdown.style.opacity = '1';
-                
-                const countdownInterval = setInterval(() => {
-                    count--;
-                    if (count > 0) {
-                        countdown.textContent = count;
-                        playUISound();
-                    } else {
-                        countdown.textContent = 'FIGHT!';
-                        countdown.style.color = 'var(--accent-pink)';
-                        playUISound();
-                        
-                        setTimeout(() => {
-                            overlay.style.opacity = '0';
-                            overlay.style.transform = 'scale(1.1)';
-                            overlay.style.transition = 'all 0.5s ease';
-                            
-                            setTimeout(() => {
-                                overlay.style.display = 'none';
-                                overlay.style.opacity = '1';
-                                overlay.style.transform = 'scale(1)';
-                                overlay.style.transition = '';
-                                countdown.style.color = 'var(--accent-gold)';
-                                resolve();
-                            }, 500);
-                        }, 1000);
-                        
-                        clearInterval(countdownInterval);
-                    }
-                }, 1000);
-            });
-        }
 
-        function createDuelParticles() {
-            const container = document.getElementById('duel-particles');
-            container.innerHTML = '';
-            
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'duel-particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 3 + 's';
-                particle.style.background = Math.random() > 0.5 ? 'var(--accent-green)' : 'var(--accent-pink)';
-                container.appendChild(particle);
-            }
-        }
         // NEW: Custom bet input functionality
         const customBetInput = document.getElementById('custom-bet-input');
         const clearBetBtn = document.getElementById('clear-bet-btn');
@@ -3813,19 +3742,18 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             findMatch();
         });
 
-        // New ready confirmation with epic dragon intro
-        confirmReadyBtn.addEventListener('click', async function() {
+        // New ready confirmation
+        confirmReadyBtn.addEventListener('click', function() {
             this.disabled = true;
-            this.textContent = 'Preparing for battle...';
+            this.textContent = 'Waiting for opponent...';
             
-            // Show epic dragon intro
-            await showEpicDuelIntro();
-            
-            // After intro, enable rolling
-            rollButton.style.display = 'block';
-            rollButton.disabled = false;
-            matchmakingStatus.textContent = 'BATTLE BEGINS - ROLL NOW!';
-            confirmReadyBtn.style.display = 'none';
+            // Simulate opponent ready
+            setTimeout(() => {
+                rollButton.style.display = 'block';
+                rollButton.disabled = false; // Enable roll button
+                matchmakingStatus.textContent = 'Opponent ready! ROLL NOW';
+                confirmReadyBtn.style.display = 'none'; // Hide confirm ready button
+            }, 2000);
         });
 
         // PROVABLY FAIR VERIFICATION START
@@ -4014,10 +3942,10 @@ state.rollResult = shouldWin ? 'WIN' : 'LOSE';
                             YOU LOSE!
                         </p>
                         <p>-${state.chipValue.toFixed(2)} SOL deducted from your balance.</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Server Seed Hash: ${sha256(state.provablyFair.serverSeed)}</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Client Seed: ${state.provablyFair.clientSeed}</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Nonce: ${state.provablyFair.nonce -1}</p>
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Next Server Seed Hash: ${sha256(state.provablyFair.nextServerSeed)}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.5; word-break: break-all; overflow-wrap: break-word;">Server Seed Hash: ${sha256(state.provablyFair.serverSeed)}</p>
+<p style="font-size: 0.8rem; opacity: 0.5; word-break: break-all; overflow-wrap: break-word;">Client Seed: ${state.provablyFair.clientSeed}</p>
+<p style="font-size: 0.8rem; opacity: 0.5;">Nonce: ${state.provablyFair.nonce -1}</p>
+<p style="font-size: 0.8rem; opacity: 0.5; word-break: break-all; overflow-wrap: break-word;">Next Server Seed Hash: ${sha256(state.provablyFair.nextServerSeed)}</p>
                         `;
                     resultDetails.innerHTML = resultHTML;
                     resultModal.style.display = 'flex';
