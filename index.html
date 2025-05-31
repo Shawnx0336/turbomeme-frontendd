@@ -3855,11 +3855,15 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
                 state.provablyFair.nonce++; // Increment nonce
                 saveProvablyFairState(); // Save updated nonce
 
-                // 75/25 HOUSE ADVANTAGE: Use random number instead of dice logic
-// Keep dice visual but use 75% house win rate for actual results
+               // Use actual dice logic for win/loss determination
 const sum = state.diceValues[0] + state.diceValues[1];
-const randomResult = Math.random(); // 0 to 1
-const shouldWin = randomResult < 0.25; // 25% chance to win
+let shouldWin = false;
+
+if (state.rollMode === 'under') {
+    shouldWin = sum <= state.rollUnder;  // Changed from < to <=
+} else { // roll over
+    shouldWin = sum >= state.rollUnder;  // Changed from > to >=
+}
 
 state.rollResult = shouldWin ? 'WIN' : 'LOSE';
 
