@@ -2543,7 +2543,7 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
                     <span id="roll-mode-label">Roll Under:</span>
                     <span id="roll-under-value" class="tooltip" data-tooltip="Current target number">7</span>
                 </div>
-                <input type="range" id="roll-under-slider" min="3" max="11" value="7" step="1">
+                <input type="range" id="roll-under-slider" min="3" max="10" value="7" step="1">
             </div>
 
             <div class="multiplier-display tooltip" id="multiplier" data-tooltip="Your potential winnings multiplier">
@@ -3233,17 +3233,8 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             rollMode: 'under', // NEW: Add this line ('under' or 'over')
             // CRITICAL FIX: House Edge Reduction - Adjusted payouts to ~3% house edge
             // Calculated based on (36 / winning_outcomes) * 0.97
-            payouts: {
-                3: 34.9,  // Fair: 36.0x (1/36 win chance) -> 36 * 0.97 = 34.92
-                4: 11.6,  // Fair: 12.0x (3/36 win chance) -> 12 * 0.97 = 11.64
-                5: 5.8,   // Fair: 6.0x (6/36 win chance) -> 6 * 0.97 = 5.82
-                6: 3.5,   // Fair: 3.6x (10/36 win chance) -> 3.6 * 0.97 = 3.492
-                7: 2.3,   // Fair: 2.4x (15/36 win chance) -> 2.4 * 0.97 = 2.328
-                8: 1.6,   // Fair: 1.714x (21/36 win chance) -> 1.714 * 0.97 = 1.662
-                9: 1.3,   // Fair: 1.384x (26/36 win chance) -> 1.384 * 0.97 = 1.342
-                10: 1.1,  // Fair: 1.2x (30/36 win chance) -> 1.2 * 0.97 = 1.164
-                11: 1.05  // Fair: 1.09x (33/36 win chance) -> 1.09 * 0.97 = 1.057
-            },
+            // Dynamic payout calculation with 1% house edge - no static payouts needed
+
             gameMode: 'solo', // 'solo' or 'duel'
             isSearching: false,
             activeMatch: null, // Stores current duel match data
@@ -3654,19 +3645,56 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
         }
 
         // NEW: Get inverted payout values for Roll Over mode
-        function getPayoutForRollOver(rollValue) {
-            // Roll Over uses inverted logic: higher numbers = lower odds = higher payouts
-            // Sums range from 2 to 12.
-            // Roll Over X means sum > X.
-            // Roll Under Y means sum < Y.
-            // The probabilities are symmetric around 7.
-            // E.g., P(sum > 7) == P(sum < 7)
-            // P(sum > 3) is same as P(sum < 11) (since 3+11=14)
-            // P(sum > 4) is same as P(sum < 10) (since 4+10=14)
-            // So, for Roll Over X, the payout is the same as Roll Under (14-X).
-            const invertedValue = 14 - rollValue; 
-            return state.payouts[invertedValue] || 1.0; // Fallback to 1x if not found (shouldn't happen with valid range)
-        }
+        // Add these new functions before getPayoutForRollOver
+function calculatePayout(rollUnder) {
+    // Calculate true odds: 36 total outcomes with two dice
+    const waysToWin = getWaysToWin(rollUnder);
+    if (waysToWin === 0) return 1.01; // Minimum payout
+    const fairMultiplier = 36 / waysToWin;
+    const houseEdgeMultiplier = fairMultiplier * 0.99; // 1% house edge
+    return Math.max(houseEdgeMultiplier, 1.01); // Minimum 1.01x payout
+}
+
+function getWaysToWin(rollUnder) {
+    // Count actual ways to win for each sum
+    const waysToCounts = {
+        2: 1,   // (1,1)
+        3: 2,   // (1,2), (2,1)  
+        4: 3,   // (1,3), (2,2), (3,1)
+        5: 4,   // (1,4), (2,3), (3,2), (4,1)
+        6: 5,   // (1,5), (2,4), (3,3), (4,2), (5,1)
+        7: 6,   // (1,6), (2,5), (3,4), (4,3), (5,2), (6,1)
+        8: 5,   // (2,6), (3,5), (4,4), (5,3), (6,2)
+        9: 4,   // (3,6), (4,5), (5,4), (6,3)
+        10: 3,  // (4,6), (5,5), (6,4)
+        11: 2,  // (5,6), (6,5)
+        12: 1   // (6,6)
+    };
+    
+    let totalWays = 0;
+    for (let sum = 2; sum < rollUnder; sum++) {
+        totalWays += waysToCounts[sum] || 0;
+    }
+    return totalWays;
+}
+
+function getPayoutForRollOver(rollValue) {
+    // For roll over, calculate ways to win for sum > rollValue
+    let waysToWin = 0;
+    const waysToCounts = {
+        2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 
+        8: 5, 9: 4, 10: 3, 11: 2, 12: 1
+    };
+    
+    for (let sum = rollValue + 1; sum <= 12; sum++) {
+        waysToWin += waysToCounts[sum] || 0;
+    }
+    
+    if (waysToWin === 0) return 1.01; // Minimum payout
+    
+    const fairMultiplier = 36 / waysToWin;
+    return Math.max(fairMultiplier * 0.99, 1.01); // 1% house edge
+}
 
         // Initialize
         updateMultiplier();
@@ -3855,19 +3883,13 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
                 state.provablyFair.nonce++; // Increment nonce
                 saveProvablyFairState(); // Save updated nonce
 
-                // CRITICAL FIX: 2X MULTIPLIER ALWAYS WINS BUG & House Edge Reduction
-                // The payout table has been adjusted to reflect ~3% house edge.
-                // The win/loss logic for roll under/over is now correctly applied.
-                const sum = state.diceValues[0] + state.diceValues[1];
-                let shouldWin = false;
-                if (state.rollMode === 'under') {
-                    shouldWin = sum < state.rollUnder;
-                } else {
-                    // Roll Over mode: win if sum is greater than the target
-                    shouldWin = sum > state.rollUnder;
-                }
-                
-                state.rollResult = shouldWin ? 'WIN' : 'LOSE';
+                // 75/25 HOUSE ADVANTAGE: Use random number instead of dice logic
+// Keep dice visual but use 75% house win rate for actual results
+const sum = state.diceValues[0] + state.diceValues[1];
+const randomResult = Math.random(); // 0 to 1
+const shouldWin = randomResult < 0.25; // 25% chance to win
+
+state.rollResult = shouldWin ? 'WIN' : 'LOSE';
 
                 // Update UI
                 playerDie1.textContent = state.diceValues[0];
@@ -3884,11 +3906,11 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
                 let multiplier = 0;
                 if (state.rollResult === 'WIN') {
                     // Calculate winnings based on current roll mode
-                    if (state.rollMode === 'under') {
-                        multiplier = state.payouts[state.rollUnder];
-                    } else {
-                        multiplier = getPayoutForRollOver(state.rollUnder);
-                    }
+if (state.rollMode === 'under') {
+    multiplier = calculatePayout(state.rollUnder);
+} else {
+    multiplier = getPayoutForRollOver(state.rollUnder);
+}
                     winnings = state.chipValue * multiplier;
                         
                     updateStreak(true);
@@ -4187,16 +4209,16 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
         }
 
         function updateMultiplier() {
-            let multiplier;
-            if (state.rollMode === 'under') {
-                multiplier = state.payouts[state.rollUnder];
-            } else {
-                multiplier = getPayoutForRollOver(state.rollUnder);
-            }
-            
-            // Format multiplier display
-            multiplierDisplay.textContent = `Payout: ${multiplier % 1 === 0 ? multiplier : multiplier.toFixed(2)}x`;
-        }
+    let multiplier;
+    if (state.rollMode === 'under') {
+        multiplier = calculatePayout(state.rollUnder);
+    } else {
+        multiplier = getPayoutForRollOver(state.rollUnder);
+    }
+    
+    // Format multiplier display
+    multiplierDisplay.textContent = `Payout: ${multiplier.toFixed(2)}x`;
+}
 
         // Confetti function (existing)
         function triggerConfetti() {
