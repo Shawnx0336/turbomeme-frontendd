@@ -3860,9 +3860,9 @@ const sum = state.diceValues[0] + state.diceValues[1];
 let shouldWin = false;
 
 if (state.rollMode === 'under') {
-    shouldWin = sum <= state.rollUnder;  // Changed from < to <=
+    shouldWin = sum < state.rollUnder;   // WIN if dice sum is LESS than target
 } else { // roll over
-    shouldWin = sum >= state.rollUnder;  // Changed from > to >=
+    shouldWin = sum > state.rollUnder;   // WIN if dice sum is GREATER than target
 }
 
 state.rollResult = shouldWin ? 'WIN' : 'LOSE';
