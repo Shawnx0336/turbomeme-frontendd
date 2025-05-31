@@ -605,16 +605,19 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             background: rgba(255, 255, 255, 0.05);
         }
         .clear-bet-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
-            border: none;
-            padding: 0.75rem 1rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            letter-spacing: 0.5px;
-        }
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border: none;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
         .clear-bet-btn:hover {
             background: rgba(255, 255, 255, 0.2);
             color: var(--text-light);
@@ -892,15 +895,16 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             color: var(--accent-green);
         }
         .close-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #aaa;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    z-index: 10;
+}
         .close-button:hover,
         .close-button:focus {
             color: var(--text-light);
@@ -1182,13 +1186,14 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             padding: 1.5rem;
         }
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 1rem;
+}
         .modal-header h2 {
             margin: 0;
             color: var(--accent-green);
@@ -1437,11 +1442,22 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
         }
 
         .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--accent-green);
-            margin-bottom: 0.25rem;
-        }
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent-green);
+    margin-bottom: 0.25rem;
+    word-break: break-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ADD this media query after the above rule: */
+@media (max-width: 480px) {
+    .stat-value {
+        font-size: 1rem;
+    }
+}
 
         .stat-label {
             font-size: 0.85rem;
@@ -1735,9 +1751,11 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
                 display: none !important;
             }
             body.chat-open .chat-header {
-                padding-top: constant(safe-area-inset-top);
-                padding-top: env(safe-area-inset-top);
-            }
+    padding-top: calc(constant(safe-area-inset-top) + 1rem);
+    padding-top: calc(env(safe-area-inset-top) + 1rem);
+    justify-content: space-between;
+    align-items: center;
+}
             body.chat-open .chat-input-area {
                 padding-bottom: constant(safe-area-inset-bottom);
                 padding-bottom: env(safe-area-inset-bottom);
@@ -2050,16 +2068,27 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             text-align: left;
         }
         #provably-fair-modal input[type="text"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: var(--radius-sm);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background-color: rgba(0, 0, 0, 0.3);
-            color: var(--text-light);
-            font-family: monospace;
-            word-break: break-all;
-        }
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.3);
+    color: var(--text-light);
+    font-family: monospace;
+    word-break: break-all;
+    font-size: 0.8rem;
+    overflow-wrap: break-word;
+}
+
+/* ADD this new rule after the above: */
+#provably-fair-modal .seed-pair p {
+    margin: 5px 0;
+    font-size: 0.8rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
         #provably-fair-modal .seed-pair {
             background-color: rgba(255, 255, 255, 0.05);
             padding: 10px;
@@ -2637,9 +2666,23 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             <div id="wallet-selection-screen">
                 <div class="wallet-options">
                     <button id="connect-phantom">
-                        <svg width="24" height="24" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">    <circle cx="54" cy="54" r="54" fill="url(#paint0_linear_0_1)"/>    <path d="M76.7279 83.2052C74.4254 85.7885 70.5846 86.5349 67.3234 85.0656L51.8925 78.2764L41.4079 83.6688C38.6729 85.159 35.2734 84.7736 32.9698 82.6998C30.6662 80.6261 29.8378 77.209 31.1438 74.0307C32.2566 71.3168 34.5273 69.1613 37.3642 68.017L52.3697 62.3670L59.9921 59.9848C64.075 58.4976 68.3959 59.2232 71.9728 61.9903C75.5496 64.7489 77.8768 68.9622 78.3695 73.639L78.7671 76.9919C79.1365 80.1458 78.2408 81.5928 76.7279 83.2052Z" fill="white"/>    <defs>        <linearGradient id="paint0_linear_0_1" x1="54" y1="0" x2="54" y2="108" gradientUnits="userSpaceOnUse">            <stop stop-color="#534BB1"/>            <stop offset="1" stop-color="#551BF9"/>        </linearGradient>    </defs></svg>
-                        Phantom
-                    </button>
+    <svg width="24" height="24" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="64" cy="64" r="64" fill="url(#paint0_linear_phantom)"/>
+        <path d="M64 8C33.072 8 8 33.072 8 64s25.072 56 56 56 56-25.072 56-56S94.928 8 64 8z" fill="url(#paint1_linear_phantom)"/>
+        <path d="M88.986 35.894c-11.05 0-20.03 8.98-20.03 20.03 0 11.05 8.98 20.03 20.03 20.03s20.03-8.98 20.03-20.03c0-11.05-8.98-20.03-20.03-20.03zm-49.972 0c-11.05 0-20.03 8.98-20.03 20.03 0 11.05 8.98 20.03 20.03 20.03s20.03-8.98 20.03-20.03c0-11.05-8.98-20.03-20.03-20.03z" fill="#AB9FF2"/>
+        <defs>
+            <linearGradient id="paint0_linear_phantom" x1="64" y1="8" x2="64" y2="120" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#534BB1"/>
+                <stop offset="1" stop-color="#551BF9"/>
+            </linearGradient>
+            <linearGradient id="paint1_linear_phantom" x1="64" y1="8" x2="64" y2="120" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#9945FF"/>
+                <stop offset="1" stop-color="#14F195"/>
+            </linearGradient>
+        </defs>
+    </svg>
+    Phantom
+</button>
                     <button id="connect-solflare">
                         <img src="https://solflare.com/favicon.ico" alt="Solflare Icon"> 
                         Solflare
@@ -4568,34 +4611,37 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
         const leaderboardList = document.getElementById('leaderboard-list');
 
         let mockLeaderboardData = [
-            { id: 1, username: 'CryptoKing', avatar: '😎', wins: 150 },
-            { id: 2, username: 'SOL_Roller', avatar: '🥳', wins: 120 },
-            { id: 3, username: 'DegenMaster', avatar: '🤩', wins: 95 },
-            { id: 4, username: 'LuckyCharm', avatar: '🍀', wins: 88 },
-            { id: 5, username: 'BlockchainPro', avatar: '💎', wins: 76 },
-            { id: 6, username: 'NFT_Gamer', avatar: '🎮', wins: 65 },
-            { id: 7, username: 'YieldFarmer', avatar: '🧑‍🌾', wins: 50 },
-            { id: 8, username: 'TokenTrader', avatar: '📈', wins: 45 },
-            { id: 9, username: 'Web3_Novice', avatar: '🐣', wins: 30 },
-            { id: 10, username: 'HODLer', avatar: '🧘', wins: 25 },
-        ];
+    { id: 1, username: 'CryptoKing', avatar: '😎', wins: 150, totalWon: 2847.5 },
+    { id: 2, username: 'SOL_Roller', avatar: '🥳', wins: 120, totalWon: 1956.3 },
+    { id: 3, username: 'DegenMaster', avatar: '🤩', wins: 95, totalWon: 1743.8 },
+    { id: 4, username: 'LuckyCharm', avatar: '🍀', wins: 88, totalWon: 1524.2 },
+    { id: 5, username: 'BlockchainPro', avatar: '💎', wins: 76, totalWon: 1389.7 },
+    { id: 6, username: 'NFT_Gamer', avatar: '🎮', wins: 65, totalWon: 1156.4 },
+    { id: 7, username: 'YieldFarmer', avatar: '🧑‍🌾', wins: 50, totalWon: 987.6 },
+    { id: 8, username: 'TokenTrader', avatar: '📈', wins: 45, totalWon: 834.2 },
+    { id: 9, username: 'Web3_Novice', avatar: '🐣', wins: 30, totalWon: 567.9 },
+    { id: 10, username: 'HODLer', avatar: '🧘', wins: 25, totalWon: 445.1 },
+];
 
         function renderLeaderboard() {
-            leaderboardList.innerHTML = '';
-            mockLeaderboardData.sort((a, b) => b.wins - a.wins);
-            mockLeaderboardData.slice(0, 10).forEach(player => {
-                const listItem = document.createElement('li');
-                listItem.className = 'leaderboard-item fade-in';
-                listItem.innerHTML = `
-                    <div class="player-info">
-                        <span class="avatar">${player.avatar}</span>
-                        <span class="username">${player.username}</span>
-                    </div>
-                    <span class="wins">${player.wins} Wins</span>
-                `;
-                leaderboardList.appendChild(listItem);
-            });
-        }
+    leaderboardList.innerHTML = '';
+    mockLeaderboardData.sort((a, b) => b.totalWon - a.totalWon);
+    mockLeaderboardData.slice(0, 10).forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.className = 'leaderboard-item fade-in';
+        listItem.innerHTML = `
+            <div class="player-info">
+                <span class="avatar">${player.avatar}</span>
+                <div class="username">
+                    <div>${player.username}</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">${player.totalWon.toFixed(1)} SOL won</div>
+                </div>
+            </div>
+            <span class="wins">${player.wins} Wins</span>
+        `;
+        leaderboardList.appendChild(listItem);
+    });
+}
 
         function updateLeaderboardWins() {
             if (realWallet.isConnected && realWallet.address) {
