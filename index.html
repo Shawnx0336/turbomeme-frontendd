@@ -460,11 +460,19 @@
             gap: 1rem;
             margin-bottom: 1rem;
         }
-        .mode-toggle button {
-            flex: 1;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
+       .mode-toggle button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+}
+
         .mode-toggle button.active {
             background-color: var(--accent-green);
             box-shadow: var(--shadow-glow) var(--accent-green);
@@ -1011,10 +1019,8 @@
             animation: pulse 1s infinite;
         }
 #leaderboard-mode-btn {
-    text-align: center !important;
-    padding-left: 0.3rem !important;
-    padding-right: 0.7rem !important;
-    justify-content: center !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
 }
         .chat-container {
             position: fixed;
