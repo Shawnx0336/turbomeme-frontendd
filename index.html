@@ -109,6 +109,30 @@
             border-radius: 1px;
             opacity: 0.7;
         }
+        /* Added CSS for header-center */
+        .header-center {
+            flex: 0 0 auto; /* Change from flex: 1 to not take all space */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 1rem; /* Add margins for spacing */
+        }
+        #header-balance {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            padding: 0.4rem 0.8rem; /* Reduce padding */
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            font-weight: 600;
+            font-size: 0.9rem; /* Reduce font size */
+            display: none; /* Initially hidden */
+        }
+        #header-balance.connected {
+            display: flex; /* Show when connected */
+        }
+        #header-balance i {
+            font-size: 0.8rem; /* Smaller icon */
+        }
 
         /* 5. Enhanced Wallet Info with Shimmer Effect */
         .wallet-info {
@@ -405,14 +429,14 @@
             background: var(--glass-bg);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
-            padding: 2rem;
+            padding: 1.5rem; /* Reduced from 2rem */
             border-radius: var(--radius-lg);
             border: 1px solid var(--glass-border);
             width: 100%;
             max-width: 500px;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem; /* Reduced from 1.5rem */
             box-shadow: var(--shadow-heavy);
             position: relative;
             overflow: hidden;
@@ -538,9 +562,9 @@
         .custom-bet-container {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem; /* Reduced from 1rem */
             background: rgba(0, 0, 0, 0.3);
-            padding: 0.75rem;
+            padding: 0.5rem; /* Reduced from 0.75rem */
             border-radius: var(--radius-md);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -557,9 +581,9 @@
             background: transparent;
             border: none;
             color: var(--text-light);
-            font-size: 1.1rem;
+            font-size: 1rem; /* Reduced from 1.1rem */
             font-weight: 600;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem; /* Reduced from 0.75rem 1rem */
             outline: none;
             width: 100%;
             min-width: 0;
@@ -900,48 +924,66 @@
             width: 24px;
             height: 24px;
         }
-        .leaderboard-sidebar {
-            position: fixed;
-            top: var(--header-height);
-            right: 0;
-            width: var(--leaderboard-width);
-            height: calc(100% - var(--header-height));
-            background: rgba(20, 20, 20, 0.9);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem;
+        /* Leaderboard CSS rules */
+        .leaderboard-content {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 2rem 1rem;
             box-sizing: border-box;
-            z-index: 15;
-            overflow-y: auto;
-            transform: translateX(0);
-            transition: transform 0.3s ease-in-out;
         }
-        .leaderboard-sidebar h3 {
-            margin-top: 0;
-            color: var(--accent-green);
+        .leaderboard-header {
             text-align: center;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        .leaderboard-header h2 {
+            font-size: 2.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+        }
+        .leaderboard-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin: 0;
+        }
+        .leaderboard-container {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-heavy);
         }
         .leaderboard-list {
             list-style: none;
             padding: 0;
             margin: 0;
+            max-width: 600px;
+            margin: 0 auto;
         }
         .leaderboard-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 0;
+            padding: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            text-align: center; /* Add this line */
         }
         .leaderboard-item:last-child {
             border-bottom: none;
+            margin-bottom: 0;
         }
+        /* End Leaderboard CSS rules */
+
         .leaderboard-item .player-info {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem; /* Increase gap slightly */
+            flex: 1; /* Add this to take available space */
+            justify-content: flex-start; /* Ensure left alignment */
         }
         .leaderboard-item .player-info .avatar {
             width: 24px;
@@ -953,9 +995,14 @@
             align-items: center;
             font-size: 1rem;
         }
+        .leaderboard-item .player-info .username {
+            flex: 1; /* Add this to center the username */
+            text-align: left; /* Keep username left-aligned within its space */
+        }
         .leaderboard-item .wins {
             font-weight: 700;
             color: var(--accent-green);
+            text-align: right; /* Ensure wins stay right-aligned */
         }
         .leaderboard-item.fade-in {
             animation: fadeIn 0.5s ease;
@@ -963,6 +1010,12 @@
         .leaderboard-item.pulse {
             animation: pulse 1s infinite;
         }
+#leaderboard-mode-btn {
+    text-align: center !important;
+    padding-left: 0.3rem !important;
+    padding-right: 0.7rem !important;
+    justify-content: center !important;
+}
         .chat-container {
             position: fixed;
             bottom: calc(1rem + constant(safe-area-inset-bottom));
@@ -1112,7 +1165,73 @@
         .profile-section:last-child {
             border-bottom: none;
             margin-bottom: 0;
+            padding-bottom: 0;
         }
+        /* Profile Modal specific CSS */
+        .profile-modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: var(--accent-green);
+        }
+        .update-btn {
+            background: var(--accent-green);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .avatar-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 8px;
+            margin: 1rem 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .avatar-option {
+            width: 50px;
+            height: 50px;
+            font-size: 1.8rem;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        @media (max-width: 768px) {
+            .avatar-selection-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 6px;
+            }
+            .avatar-option {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+            }
+            .profile-modal-content {
+                padding: 1rem;
+                margin: 1rem;
+            }
+        }
+        /* End Profile Modal specific CSS */
         .transaction-options {
             display: flex;
             flex-direction: column;
@@ -1495,7 +1614,9 @@
             .header-logo {
                 font-size: 1.5rem;
             }
-            .header-actions-right .wallet-info,
+            .header-actions-right .wallet-info {
+                display: none; /* Hide wallet info on mobile, only show balance */
+            }
             .header-actions-right .profile-dropdown-container {
                 display: none;
             }
@@ -1556,13 +1677,12 @@
                 font-size: 1.5rem;
                 min-height: 2.5rem;
             }
-            .leaderboard-sidebar {
+            .leaderboard-content {
                 width: 100%;
-                right: -100%;
-                transition: transform 0.3s ease-in-out;
+                /* No need for transform: translateX(100%) here as it's now a tabbed content */
             }
-            body.leaderboard-open .leaderboard-sidebar {
-                transform: translateX(-100%);
+            body.leaderboard-open .leaderboard-content {
+                /* This class is no longer relevant for tabbed content */
             }
             .chat-container {
                 width: var(--chat-bubble-size);
@@ -2267,6 +2387,13 @@
         <div class="header-logo">
             DegenDice
         </div>
+        <div class="header-center">
+            <div class="balance-display connected" id="header-balance">
+                <i class="fas fa-coins"></i>
+                <span id="balance-amount">SOL 1000.000</span>
+                <i class="fas fa-sync-alt balance-refresh-icon" id="balance-refresh-icon" title="Refresh Balance"></i>
+            </div>
+        </div>
         <div class="header-actions-right">
             <div class="wallet-info" id="wallet-info">
                 <i class="fas fa-wallet"></i> Wallet: Not connected
@@ -2316,6 +2443,7 @@
         <div class="mode-toggle">
             <button id="solo-mode-btn" class="active">Solo Mode</button>
             <button id="duel-mode-btn">Duel Mode</button>
+            <button id="leaderboard-mode-btn">Leaderboard</button>
         </div>
 
         <div class="dice-area">
@@ -2406,12 +2534,7 @@
                                class="custom-bet-input">
                         <button id="clear-bet-btn" class="clear-bet-btn">CLEAR</button>
                     </div>
-                    <div class="balance-display">
-                        <i class="fas fa-coins"></i>
-                        <span id="balance-amount">SOL 1000.000</span>
-                        <i class="fas fa-sync-alt balance-refresh-icon" id="balance-refresh-icon" title="Refresh Balance"></i>
                     </div>
-                </div>
             </div>
 
             <div class="auto-bet-controls">
@@ -2478,6 +2601,16 @@
                 <div class="feed-item win">Anonymous won 2.5x on Roll Under 8!</div>
                 <div class="feed-item loss">Player123 lost 1.2 SOL on Roll Over 6</div>
                 <div class="feed-item win">CryptoKing hit 5.5x multiplier!</div>
+            </div>
+        </div>
+        
+        <div class="leaderboard-content" id="leaderboard-content" style="display: none;">
+            <div class="leaderboard-header">
+                <h2>🏆 Leaderboard</h2>
+                <p class="leaderboard-subtitle">Top players by wins</p>
+            </div>
+            <div class="leaderboard-container">
+                <ul class="leaderboard-list" id="leaderboard-list"></ul>
             </div>
         </div>
 
@@ -2550,9 +2683,12 @@
     </div>
 
     <div id="profile-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content profile-modal-content">
             <span class="close-button">&times;</span>
-            <h2>Profile</h2>
+            <div class="modal-header">
+                <h2>Profile</h2>
+                <button id="update-profile-btn" class="update-btn">Update</button>
+            </div>
             <div class="profile-options profile-section">
                 <label for="username-input">Username: <span id="current-avatar-preview" class="avatar-preview"></span></label>
                 <input type="text" id="username-input" placeholder="Enter your username">
@@ -2597,7 +2733,6 @@
                 <div class="referral-code" id="referral-code" style="font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0; color: var(--accent-green);">YOURCODE123</div>
                 <button id="copy-referral-btn" style="background-color: var(--accent-green); color: var(--bg-dark);">Copy Code</button>
             </div>
-            <button id="save-profile-btn">Save Profile</button>
         </div>
     </div>
 
@@ -2811,11 +2946,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="leaderboard-sidebar" id="leaderboard-sidebar">
-        <h3>Leaderboard 🔥</h3>
-        <ul class="leaderboard-list" id="leaderboard-list">
-            </ul>
     </div>
 
     <div id="notification-container"></div>
@@ -3139,7 +3269,7 @@
         // NEW: Custom bet input functionality
         const customBetInput = document.getElementById('custom-bet-input');
         const clearBetBtn = document.getElementById('clear-bet-btn');
-        const balanceAmount = document.getElementById('balance-amount');
+        // Removed balanceAmount as it's now in header
 
         // NEW: Duel mode specific buttons/elements
         const stakeFindButton = document.getElementById('stake-find-button');
@@ -3230,23 +3360,46 @@
         const predefinedAvatars = ['😎', '🥳', '🤩', '🚀', '💎', '🐶', '🐱', '🦊', '🐻', '🐼', '🤖', '👽', '👻', '👾', '👑', '🌟', '⚡', '🔥', '🌊', '🌈'];
         // AVATAR SELECTION DOM ELEMENTS END
 
+        // LEADERBOARD TAB DOM ELEMENTS
+        const leaderboardModeBtn = document.getElementById('leaderboard-mode-btn');
+        const leaderboardContent = document.getElementById('leaderboard-content');
+        // LEADERBOARD TAB DOM ELEMENTS END
+
         // --- PvP Specific Functions (Moved to before initialization) ---
 
         function setGameMode(mode) {
             state.gameMode = mode;
             soloModeBtn.classList.remove('active');
             duelModeBtn.classList.remove('active');
+            leaderboardModeBtn.classList.remove('active'); // Remove active from leaderboard button
+
+            // Hide all main game content areas
+            document.querySelector('.dice-area').style.display = 'none'; // Hide dice area
+            document.querySelector('.controls').style.display = 'none'; // Hide controls
+            document.querySelector('.daily-challenge-panel').style.display = 'none'; // Hide daily challenge
+            document.querySelector('.result-display').style.display = 'none'; // Hide result display
+
+            soloControls.style.display = 'none';
+            multiplierDisplay.style.display = 'none';
+            rollButton.style.display = 'none';
+            stakeFindButton.style.display = 'none';
+            opponentDie1.style.display = 'none';
+            opponentDie2.style.display = 'none';
+            duelInfo.style.display = 'none';
+            duelHistorySection.style.display = 'none';
+            leaderboardContent.style.display = 'none'; // Hide leaderboard content
+            autoBetToggle.style.display = 'none';
 
             if (mode === 'solo') {
                 soloModeBtn.classList.add('active');
+                document.querySelector('.dice-area').style.display = 'flex'; // Show dice area
+                document.querySelector('.controls').style.display = 'flex'; // Show controls
+                document.querySelector('.daily-challenge-panel').style.display = 'block'; // Show daily challenge
+                document.querySelector('.result-display').style.display = 'block'; // Show result display
+
                 soloControls.style.display = 'flex';
                 multiplierDisplay.style.display = 'block';
                 rollButton.style.display = 'block';
-                stakeFindButton.style.display = 'none'; // Hide stake & find button
-                opponentDie1.style.display = 'none';
-                opponentDie2.style.display = 'none';
-                duelInfo.style.display = 'none';
-                duelHistorySection.style.display = 'none';
                 autoBetToggle.style.display = 'flex'; // Show auto-bet in solo mode
 
                 // Reset dice colors to default white for solo
@@ -3258,17 +3411,18 @@
                 playerDie2.style.boxShadow = 'var(--shadow-glow) rgba(255, 255, 255, 0.2)';
 
                 rollButton.disabled = false; // Always enabled in solo
-            } else { // Duel mode
+            } else if (mode === 'duel') { // Duel mode
                 duelModeBtn.classList.add('active');
-                soloControls.style.display = 'none';
-                multiplierDisplay.style.display = 'none';
-                rollButton.style.display = 'none'; // Hide roll button initially
+                document.querySelector('.dice-area').style.display = 'flex'; // Show dice area
+                document.querySelector('.controls').style.display = 'flex'; // Show controls
+                document.querySelector('.daily-challenge-panel').style.display = 'block'; // Show daily challenge
+                document.querySelector('.result-display').style.display = 'block'; // Show result display
+
                 stakeFindButton.style.display = 'block'; // Show stake & find button
                 opponentDie1.style.display = 'flex'; // Show opponent dice
                 opponentDie2.style.display = 'flex'; // Show opponent dice
                 duelInfo.style.display = 'block';
                 duelHistorySection.style.display = 'block';
-                autoBetToggle.style.display = 'none'; // Hide auto-bet in duel mode
                 stopAutoBet(); // Stop auto-bet if active
 
                 // Set distinct dice colors for player and opponent
@@ -3286,6 +3440,16 @@
                 playerStakeDisplay.textContent = '0.00 SOL';
                 opponentStakeDisplay.textContent = '0.00 SOL';
                 resultDisplay.textContent = ''; // Clear result display
+            } else if (mode === 'leaderboard') {
+                leaderboardModeBtn.classList.add('active');
+                // Hide ALL game elements
+                document.querySelector('.dice-area').style.display = 'none';
+                document.querySelector('.controls').style.display = 'none';
+                document.querySelector('.daily-challenge-panel').style.display = 'none';
+                document.querySelector('.result-display').style.display = 'none';
+                
+                leaderboardContent.style.display = 'block';
+                autoBetToggle.style.display = 'none';
             }
             // Reset dice values and result display when switching modes
             playerDie1.textContent = '1';
@@ -3509,6 +3673,7 @@
 
         soloModeBtn.addEventListener('click', () => setGameMode('solo'));
         duelModeBtn.addEventListener('click', () => setGameMode('duel'));
+        leaderboardModeBtn.addEventListener('click', () => setGameMode('leaderboard'));
         // findMatchButton.addEventListener('click', findMatch); // This is replaced by stake-find-button
 
         // New event listener for stake-find-button
@@ -4312,14 +4477,18 @@
 
             updateWalletUI() {
                 const walletInfo = document.getElementById('wallet-info');
+                const headerBalance = document.getElementById('header-balance');
+        
                 if (this.isConnected) {
-                    walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: ${this.address.substring(0, 6)}...${this.address.slice(-4)} (${this.balance.toFixed(2)} SOL)`;
+                    walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Connected`;
+                    headerBalance.classList.add('connected'); // Show balance
                 } else {
-                    walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Wallet: Not connected`;
+                    walletInfo.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
+                    headerBalance.classList.remove('connected'); // Hide balance
                 }
-                
+        
                 updateBalanceDisplay();
-                updateMobileMenuVisibility(); // Add this line
+                updateMobileMenuVisibility();
                 this.updateTransactionModals();
             }
 
@@ -4536,7 +4705,7 @@
 
         // --- Profile System ---
         const usernameInput = document.getElementById('username-input');
-        const saveProfileBtn = document.getElementById('save-profile-btn');
+        const saveProfileBtn = document.getElementById('save-profile-btn'); // This ID will be updated to update-profile-btn
         const profileAvatarIcon = document.querySelector('#profile-avatar-new i');
 
         function loadProfile() {
@@ -4566,29 +4735,31 @@
             selectAvatarInGrid(savedAvatar || '👤'); // Select current avatar in grid
         }
 
-        saveProfileBtn.addEventListener('click', () => {
+        // Replace the existing saveProfileBtn event listener with:
+        document.getElementById('update-profile-btn').addEventListener('click', () => {
             const username = usernameInput.value.trim();
-            const avatar = localStorage.getItem('avatar') || '👤'; // Get the currently selected avatar
-
+            const avatar = localStorage.getItem('avatar') || '👤';
             if (username) {
                 localStorage.setItem('username', username);
             } else {
-                 localStorage.removeItem('username');
+                localStorage.removeItem('username');
             }
-            // Avatar is already saved by avatar selection functions
-
-            loadProfile();
+            loadProfile(); // Update profile display immediately
             profileModal.style.display = 'none';
-             if (realWallet.isConnected && realWallet.address) {
-                 let currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
-                 if (currentUser) {
-                      currentUser.username = username || 'You';
-                      currentUser.avatar = avatar;
-                      renderLeaderboard();
-                 }
-             }
-             showMessageBox('Profile updated successfully!', 'success');
+                
+            if (realWallet.isConnected && realWallet.address) {
+                let currentUser = mockLeaderboardData.find(player => player.id === mockAuth.currentUser.uid);
+                if (currentUser) {
+                    currentUser.username = username || 'You';
+                    currentUser.avatar = avatar;
+                    renderLeaderboard();
+                }
+            }
+            showMessageBox('Profile updated successfully!', 'success');
         });
+        // Remove the old saveProfileBtn reference and update the HTML ID
+        // Note: The old saveProfileBtn variable is no longer needed, and the HTML ID is updated in the HTML section.
+
 
         loadProfile();
 
@@ -4853,7 +5024,7 @@
 
         // Adjust leaderboard and chat visibility on window resize
         window.addEventListener('resize', () => {
-            const leaderboardSidebar = document.getElementById('leaderboard-sidebar');
+            const leaderboardContent = document.getElementById('leaderboard-content');
             const chatContainer = document.getElementById('chat-container');
             const chatHeader = document.getElementById('chat-header');
             const chatBody = document.getElementById('chat-body');
@@ -4863,7 +5034,7 @@
             if (window.innerWidth > 768) {
                 document.body.classList.remove('leaderboard-open');
                 document.body.classList.remove('chat-open');
-                leaderboardSidebar.style.transform = 'translateX(0)';
+                // leaderboardContent.style.transform = 'translateX(0)'; // No longer needed for tabbed content
 
                 chatContainer.style.position = 'fixed';
                 chatContainer.style.width = 'var(--chat-width)';
@@ -4882,7 +5053,7 @@
                 chatBody.style.display = 'flex';
                 chatInput.parentElement.style.display = 'flex';
             } else {
-                leaderboardSidebar.style.transform = 'translateX(100%)';
+                // leaderboardContent.style.transform = 'translateX(100%)'; // No longer needed for tabbed content
 
                 if (!document.body.classList.contains('chat-open')) {
                     chatContainer.style.position = 'fixed';
@@ -5107,10 +5278,16 @@
 
         function updateBalanceDisplay() {
             const balance = realWallet.balance || 0;
-            balanceAmount.textContent = `SOL ${balance.toLocaleString('en-US', {
-                minimumFractionDigits: 3,
-                maximumFractionDigits: 3
+            const balanceText = `${balance.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             })}`;
+                
+            // Update header balance
+            const headerBalance = document.querySelector('#header-balance #balance-amount');
+            if (headerBalance) {
+                headerBalance.textContent = balanceText;
+            }
         }
 
         function handleCustomBetInput() {
@@ -5533,7 +5710,7 @@
                 autoBetCheckbox.checked = !autoBetCheckbox.checked;
             }
             if (autoBetCheckbox.checked) {
-                toggleAutoBetSettings();
+                startAutoBet();
             } else {
                 autoBetSettings.classList.remove('show');
                 autoBetToggle.classList.remove('active');
