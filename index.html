@@ -2474,7 +2474,16 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             <a href="#" id="mobile-disconnect-btn" style="display: none;"><i class="fas fa-power-off"></i> Disconnect</a>
         </div>
     </div>
-
+<!-- Epic Jade Dragon Duel Intro -->
+    <div class="duel-intro-overlay" id="duel-intro-overlay">
+        <div class="duel-intro-content">
+            <div class="jade-dragon left">🐉</div>
+            <div class="jade-dragon right">🐉</div>
+            <div class="duel-mode-title">DUEL MODE</div>
+            <div class="countdown-display" id="countdown-display">3</div>
+            <div class="duel-particles" id="duel-particles"></div>
+        </div>
+    </div>
     <div class="game-container">
         <div class="mode-toggle">
             <button id="solo-mode-btn" class="active">Solo Mode</button>
@@ -3315,7 +3324,69 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
         const rollUnderBtn = document.getElementById('roll-under-btn');
         const rollOverBtn = document.getElementById('roll-over-btn');
         const rollModeLabel = document.getElementById('roll-mode-label');
+// EPIC JADE DRAGON DUEL INTRO SYSTEM
+        function showEpicDuelIntro() {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('duel-intro-overlay');
+                const countdown = document.getElementById('countdown-display');
+                
+                // Create particles
+                createDuelParticles();
+                
+                overlay.style.display = 'flex';
+                
+                // Play epic sound (if available)
+                playUISound();
+                
+                // Countdown sequence
+                let count = 3;
+                countdown.textContent = count;
+                countdown.style.opacity = '1';
+                
+                const countdownInterval = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        countdown.textContent = count;
+                        playUISound();
+                    } else {
+                        countdown.textContent = 'FIGHT!';
+                        countdown.style.color = 'var(--accent-pink)';
+                        playUISound();
+                        
+                        setTimeout(() => {
+                            overlay.style.opacity = '0';
+                            overlay.style.transform = 'scale(1.1)';
+                            overlay.style.transition = 'all 0.5s ease';
+                            
+                            setTimeout(() => {
+                                overlay.style.display = 'none';
+                                overlay.style.opacity = '1';
+                                overlay.style.transform = 'scale(1)';
+                                overlay.style.transition = '';
+                                countdown.style.color = 'var(--accent-gold)';
+                                resolve();
+                            }, 500);
+                        }, 1000);
+                        
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
+            });
+        }
 
+        function createDuelParticles() {
+            const container = document.getElementById('duel-particles');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'duel-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.background = Math.random() > 0.5 ? 'var(--accent-green)' : 'var(--accent-pink)';
+                container.appendChild(particle);
+            }
+        }
         // NEW: Custom bet input functionality
         const customBetInput = document.getElementById('custom-bet-input');
         const clearBetBtn = document.getElementById('clear-bet-btn');
@@ -3409,6 +3480,145 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
 
         const predefinedAvatars = ['😎', '🥳', '🤩', '🚀', '💎', '🐶', '🐱', '🦊', '🐻', '🐼', '🤖', '👽', '👻', '👾', '👑', '🌟', '⚡', '🔥', '🌊', '🌈'];
         // AVATAR SELECTION DOM ELEMENTS END
+/* EPIC JADE DRAGON DUEL INTRO */
+        .duel-intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000000 0%, #1a0a1a 50%, #2d1b69 100%);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .duel-intro-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .jade-dragon {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            font-size: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            filter: drop-shadow(0 0 30px #00ff99);
+            animation-duration: 2s;
+            animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .jade-dragon.left {
+            left: -400px;
+            animation-name: slideInLeft;
+            color: var(--accent-green);
+        }
+
+        .jade-dragon.right {
+            right: -400px;
+            animation-name: slideInRight;
+            color: var(--accent-pink);
+            transform: scaleX(-1);
+        }
+
+        @keyframes slideInLeft {
+            0% { left: -400px; }
+            70% { left: calc(50% - 200px); }
+            100% { left: calc(50% - 150px); }
+        }
+
+        @keyframes slideInRight {
+            0% { right: -400px; }
+            70% { right: calc(50% - 200px); }
+            100% { right: calc(50% - 150px); }
+        }
+
+        .duel-mode-title {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--accent-green), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 50px rgba(0, 255, 153, 0.5);
+            opacity: 0;
+            animation: titleFadeIn 1s ease 0.5s forwards;
+            letter-spacing: 3px;
+        }
+
+        .countdown-display {
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 6rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 0 0 30px var(--accent-gold);
+            opacity: 0;
+            animation: countdownPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes titleFadeIn {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes countdownPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+            50% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+        }
+
+        .duel-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .duel-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: particleFloat 3s infinite ease-in-out;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% { opacity: 0; transform: translateY(100vh) scale(0); }
+            50% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Mobile adjustments for dragon intro */
+        @media (max-width: 768px) {
+            .jade-dragon {
+                width: 200px;
+                height: 200px;
+                font-size: 150px;
+            }
+            
+            .duel-mode-title {
+                font-size: 2.5rem;
+            }
+            
+            .countdown-display {
+                font-size: 4rem;
+            }
+        }
 
         // LEADERBOARD TAB DOM ELEMENTS
         const leaderboardModeBtn = document.getElementById('leaderboard-mode-btn');
@@ -3742,18 +3952,19 @@ padding-bottom: 1rem; /* prevent too much spacing under ROLL */
             findMatch();
         });
 
-        // New ready confirmation
-        confirmReadyBtn.addEventListener('click', function() {
+        // New ready confirmation with epic dragon intro
+        confirmReadyBtn.addEventListener('click', async function() {
             this.disabled = true;
-            this.textContent = 'Waiting for opponent...';
+            this.textContent = 'Preparing for battle...';
             
-            // Simulate opponent ready
-            setTimeout(() => {
-                rollButton.style.display = 'block';
-                rollButton.disabled = false; // Enable roll button
-                matchmakingStatus.textContent = 'Opponent ready! ROLL NOW';
-                confirmReadyBtn.style.display = 'none'; // Hide confirm ready button
-            }, 2000);
+            // Show epic dragon intro
+            await showEpicDuelIntro();
+            
+            // After intro, enable rolling
+            rollButton.style.display = 'block';
+            rollButton.disabled = false;
+            matchmakingStatus.textContent = 'BATTLE BEGINS - ROLL NOW!';
+            confirmReadyBtn.style.display = 'none';
         });
 
         // PROVABLY FAIR VERIFICATION START
